@@ -46,29 +46,16 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     /// </summary>
     /// <param name="key">The asset name.</param>
     /// <returns>The unique URL if availabe, the same <paramref name="key"/> if not available.</returns>
-    public string this[string key]
-    {
-        get
-        {
-            if (_uniqueUrlMappings.TryGetValue(key, out var value))
-            {
-                return value.Url;
-            }
-
-            return key;
-        }
-    }
+    public string this[string key] => _uniqueUrlMappings.TryGetValue(key, out var value) ? value.Url : key;
 
     /// <summary>
     /// Determines whether the specified path is a content-specific URL.
     /// </summary>
     /// <param name="path">The path to check.</param>
     /// <returns><c>true</c> if the path is a content-specific URL; otherwise, <c>false</c>.</returns>
-    public bool IsContentSpecificUrl(string path)
-    {
-        return _contentSpecificUrls.Contains(path);
-    }
+    public bool IsContentSpecificUrl(string path) => _contentSpecificUrls.Contains(path);
 
+    // IReadOnlyList<ResourceAsset> implementation
     ResourceAsset IReadOnlyList<ResourceAsset>.this[int index] => _resources[index];
     int IReadOnlyCollection<ResourceAsset>.Count => _resources.Count;
     IEnumerator<ResourceAsset> IEnumerable<ResourceAsset>.GetEnumerator() => _resources.GetEnumerator();

@@ -95,7 +95,7 @@ public sealed class ImportMapDefinition
             }
             else if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
             {
-                label = property.Name;
+                label = property.Value;
             }
 
             if (integrity != null && label != null)
@@ -134,10 +134,16 @@ public sealed class ImportMapDefinition
                 importMap._scopes ??= [];
                 foreach (var (key, value) in item.Scopes)
                 {
-                    foreach (var (scopeKey, scopeValue) in value)
+                    if (importMap._scopes.TryGetValue(key, out var existingScope) && existingScope != null)
                     {
-                        importMap._scopes[key] ??= new Dictionary<string, string>();
-                        ((Dictionary<string, string>)importMap._scopes[key])[scopeKey] = scopeValue;
+                        foreach (var (scopeKey, scopeValue) in value)
+                        {
+                            ((Dictionary<string, string>)importMap._scopes[key])[scopeKey] = scopeValue;
+                        }
+                    }
+                    else
+                    {
+                        importMap._scopes[key] = new Dictionary<string, string>(value);
                     }
                 }
             }
