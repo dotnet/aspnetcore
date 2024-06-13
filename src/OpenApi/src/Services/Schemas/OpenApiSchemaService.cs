@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using JsonSchemaMapper;
@@ -59,7 +61,10 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-
+            if (context.GetCustomAttributes(typeof(DefaultValueAttribute)).LastOrDefault() is DefaultValueAttribute { Value: { } defaultValue })
+            {
+                schema.ApplyDefaultValue(defaultValue, context.TypeInfo);
+            }
         }
     };
 
@@ -71,7 +76,7 @@ internal sealed class OpenApiSchemaService(
         var schemaAsJsonObject = _schemaStore.GetOrAdd(key, CreateSchema);
         if (parameterDescription is not null)
         {
-            schemaAsJsonObject.ApplyParameterInfo(parameterDescription);
+            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, OpenApiJsonSchemaContext.Default.GetTypeInfo(type)!);
         }
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");

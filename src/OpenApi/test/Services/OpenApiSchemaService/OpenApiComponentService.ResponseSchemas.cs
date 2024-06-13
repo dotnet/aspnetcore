@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBase
@@ -87,6 +88,51 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                     Assert.Equal("string", property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_GeneratesSchemaForPoco_WithValidationAttributes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/", () => new ProjectBoard { Id = 2, Name = "Test", IsPrivate = false });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var response = operation.Responses["200"];
+
+            Assert.NotNull(response);
+            var content = Assert.Single(response.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema);
+            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Collection(content.Value.Schema.Properties,
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(1, property.Value.Minimum);
+                    Assert.Equal(100, property.Value.Maximum);
+                },
+                property =>
+                {
+                    Assert.Equal("name", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(5, property.Value.MinLength);
+                },
+                property =>
+                {
+                    Assert.Equal("isPrivate", property.Key);
+                    Assert.Equal("boolean", property.Value.Type);
+                    var defaultValue = Assert.IsAssignableFrom<OpenApiBoolean>(property.Value.Default);
+                    Assert.True(defaultValue.Value);
+                });
+
         });
     }
 

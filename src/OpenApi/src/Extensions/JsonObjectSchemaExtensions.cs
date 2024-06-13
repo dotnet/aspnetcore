@@ -4,7 +4,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
@@ -119,6 +121,22 @@ internal static class JsonObjectSchemaExtensions
     }
 
     /// <summary>
+    /// Populate the default value into the current schema.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="defaultValue">An object representing the <see cref="object"/> associated with the default value.</param>
+    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the target type.</param>
+    internal static void ApplyDefaultValue(this JsonObject schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo)
+    {
+        if (jsonTypeInfo is null || defaultValue is null)
+        {
+            return;
+        }
+
+        schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+    }
+
+    /// <summary>
     /// Applies the primitive types and formats to the schema based on the type.
     /// </summary>
     /// <remarks>
@@ -228,7 +246,8 @@ internal static class JsonObjectSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription)
+    /// <param name="typeInfo"></param>
+    internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription, JsonTypeInfo typeInfo)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
         // For example:
@@ -251,6 +270,7 @@ internal static class JsonObjectSchemaExtensions
         {
             var attributes = validations.OfType<ValidationAttribute>();
             schema.ApplyValidationAttributes(attributes);
+            schema.ApplyDefaultValue(parameterDescription.DefaultValue, typeInfo);
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
