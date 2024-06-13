@@ -256,8 +256,8 @@ internal static class JsonObjectSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
-    /// <param name="typeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription, JsonTypeInfo typeInfo)
+    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
+    internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
         // For example:
@@ -284,11 +284,11 @@ internal static class JsonObjectSchemaExtensions
             {
                 if (parameterInfo.HasDefaultValue)
                 {
-                    schema.ApplyDefaultValue(parameterInfo.DefaultValue, typeInfo);
+                    schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
                 }
                 else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
                 {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, typeInfo);
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
                 }
             }
         }
