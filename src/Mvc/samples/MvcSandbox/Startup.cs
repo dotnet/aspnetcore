@@ -16,23 +16,20 @@ public class Startup
     public void Configure(IApplicationBuilder app)
     {
         app.UseDeveloperExceptionPage();
+        app.UseStaticFiles();
 
         app.UseRouting();
 
         static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapStaticAssets();
             endpoints.MapGet("/MapGet", () => "MapGet");
 
-            endpoints.MapControllers()
-                .WithResourceCollection();
-
+            endpoints.MapControllers();
             endpoints.MapControllerRoute(
                 Guid.NewGuid().ToString(),
                 "{controller=Home}/{action=Index}/{id?}");
 
-            endpoints.MapRazorPages()
-                .WithResourceCollection();
+            endpoints.MapRazorPages();
         }
 
         app.UseEndpoints(builder =>
