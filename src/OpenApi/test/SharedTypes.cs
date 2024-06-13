@@ -76,16 +76,19 @@ internal class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, i
     public IEnumerable<T> Items { get; set; } = items;
 }
 
+#nullable enable
 internal class ProjectBoard
 {
-    [Required]
     [Range(1, 100)]
+    [DefaultValue(null)]
     public int Id { get; set; }
 
     [MinLength(5)]
+    [DefaultValue(null)]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
-    public required string Name { get; set; }
+    public string? Name { get; set; }
 
     [DefaultValue(true)]
     public required bool IsPrivate { get; set; }
 }
+#nullable restore

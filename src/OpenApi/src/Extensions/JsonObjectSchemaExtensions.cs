@@ -1,14 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.OpenApi.Models;
@@ -128,12 +131,19 @@ internal static class JsonObjectSchemaExtensions
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the target type.</param>
     internal static void ApplyDefaultValue(this JsonObject schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo)
     {
-        if (jsonTypeInfo is null || defaultValue is null)
+        if (jsonTypeInfo is null)
         {
             return;
         }
 
-        schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+        if (defaultValue is null)
+        {
+            schema[OpenApiSchemaKeywords.DefaultKeyword] = null;
+        }
+        else
+        {
+            schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+        }
     }
 
     /// <summary>
@@ -246,7 +256,7 @@ internal static class JsonObjectSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
-    /// <param name="typeInfo"></param>
+    /// <param name="typeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
     internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription, JsonTypeInfo typeInfo)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
@@ -270,7 +280,17 @@ internal static class JsonObjectSchemaExtensions
         {
             var attributes = validations.OfType<ValidationAttribute>();
             schema.ApplyValidationAttributes(attributes);
-            schema.ApplyDefaultValue(parameterDescription.DefaultValue, typeInfo);
+            if (parameterDescription.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+            {
+                if (parameterInfo.HasDefaultValue)
+                {
+                    schema.ApplyDefaultValue(parameterInfo.DefaultValue, typeInfo);
+                }
+                else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                {
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, typeInfo);
+                }
+            }
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying

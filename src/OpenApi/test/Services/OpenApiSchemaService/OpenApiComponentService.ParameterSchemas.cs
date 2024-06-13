@@ -146,6 +146,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         });
     }
 
+#nullable enable
     public static object[][] RouteParametersWithDefaultValues =>
     [
         [(int id = 2) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
@@ -161,6 +162,12 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [([DefaultValue(true)] bool id) => { }, (IOpenApiAny defaultValue) => Assert.True(((OpenApiBoolean)defaultValue).Value)],
         [([DefaultValue(TaskStatus.Canceled)] TaskStatus status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
         [([DefaultValue(Status.Pending)] Status status) => { }, (IOpenApiAny defaultValue) => Assert.Equal("Pending", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(null)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue(2)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
+        [([DefaultValue(null)] string? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue("foo")] string? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal("foo", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(null)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
     ];
 
     [Theory]
@@ -182,6 +189,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             assert(openApiDefault);
         });
     }
+#nullable restore
 
     [Fact]
     public async Task GetOpenApiParameters_HandlesEnumParameterWithoutConverter()

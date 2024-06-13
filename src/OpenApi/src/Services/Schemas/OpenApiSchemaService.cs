@@ -61,9 +61,9 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-            if (context.GetCustomAttributes(typeof(DefaultValueAttribute)).LastOrDefault() is DefaultValueAttribute { Value: { } defaultValue })
+            if (context.GetCustomAttributes(typeof(DefaultValueAttribute)).LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
             {
-                schema.ApplyDefaultValue(defaultValue, context.TypeInfo);
+                schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
             }
         }
     };

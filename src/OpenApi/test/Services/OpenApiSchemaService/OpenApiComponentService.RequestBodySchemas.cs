@@ -82,12 +82,14 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                     Assert.Equal("integer", property.Value.Type);
                     Assert.Equal(1, property.Value.Minimum);
                     Assert.Equal(100, property.Value.Maximum);
+                    Assert.True(property.Value.Default is OpenApiNull);
                 },
                 property =>
                 {
                     Assert.Equal("name", property.Key);
                     Assert.Equal("string", property.Value.Type);
                     Assert.Equal(5, property.Value.MinLength);
+                    Assert.True(property.Value.Default is OpenApiNull);
                 },
                 property =>
                 {
