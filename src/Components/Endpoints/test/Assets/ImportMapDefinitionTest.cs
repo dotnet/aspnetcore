@@ -112,7 +112,7 @@ public class ImportMapDefinitionTest
         var expectedJson = """
             {
               "imports": {
-                "jquery.js": "jquery.fingerprint.js"
+                "./jquery.js": "./jquery.fingerprint.js"
               },
               "integrity": {
                 "jquery.fingerprint.js": "sha384-abc123"
