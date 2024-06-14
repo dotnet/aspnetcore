@@ -865,7 +865,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_FallbackSrc_AppendVersion_WithResourceCollection()
+    public void RenderScriptTags_FallbackSrc_AppendVersion_WithStaticAssets()
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -987,7 +987,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_GlobbedSrc_WithFileVersion_WithResourceCollection()
+    public void RenderScriptTags_GlobbedSrc_WithFileVersion_WithStaticAssets()
     {
         // Arrange
         var expectedContent = "<script " +

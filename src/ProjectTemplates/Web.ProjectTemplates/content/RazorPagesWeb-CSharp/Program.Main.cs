@@ -143,7 +143,7 @@ public class Program
 
         app.MapStaticAssets();
         app.MapRazorPages()
-           .WithResourceCollection();
+           .WithStaticAssets();
         #if (IndividualB2CAuth || OrganizationalAuth)
         app.MapControllers();
         #endif

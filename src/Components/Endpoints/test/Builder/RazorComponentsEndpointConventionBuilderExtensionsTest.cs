@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.Builder;
 public class RazorComponentsEndpointConventionBuilderExtensionsTest
 {
     [Fact]
-    public void WithResourceCollection_DoesNotAddResourceCollection_ToEndpoints_NoStaticAssetsMapped()
+    public void WithStaticAssets_DoesNotAddResourceCollection_ToEndpoints_NoStaticAssetsMapped()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Act
-        builder.WithResourceCollection();
+        builder.WithStaticAssets();
 
         // Assert
         Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
@@ -39,15 +39,15 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_DoesNotAddResourceCollection_ToEndpoints_NoMatchingStaticAssetsMapped()
+    public void WithStaticAssets_DoesNotAddResourceCollection_ToEndpoints_NoMatchingStaticAssetsMapped()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Act
-        builder.WithResourceCollection();
+        builder.WithStaticAssets();
 
         // Assert
         Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
@@ -58,15 +58,15 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsResourceCollection_ToEndpoints_NamedManifest()
+    public void WithStaticAssets_AddsResourceCollection_ToEndpoints_NamedManifest()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Act
-        builder.WithResourceCollection("TestManifests/Test.staticwebassets.endpoints.json");
+        builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
         Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
@@ -80,9 +80,9 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsDefaultResourceCollection_ToEndpoints_ByDefault()
+    public void WithStaticAssets_AddsDefaultResourceCollection_ToEndpoints_ByDefault()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
 
@@ -101,15 +101,15 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsResourceCollection_ToEndpoints_DefaultManifest()
+    public void WithStaticAssets_AddsResourceCollection_ToEndpoints_DefaultManifest()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Act
-        builder.WithResourceCollection();
+        builder.WithStaticAssets();
 
         // Assert
         Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
@@ -123,9 +123,9 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsDefaultResourceCollectionToEndpoints_WhenNoManifestProvided_EvenIfManyAvailable()
+    public void WithStaticAssets_AddsDefaultResourceCollectionToEndpoints_WhenNoManifestProvided_EvenIfManyAvailable()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
         endpointBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
@@ -133,7 +133,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         // Act
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
-        // Assert       
+        // Assert
         Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
@@ -145,18 +145,18 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsMatchingResourceCollectionToEndpoints_WhenExplicitManifestProvided_EvenIfManyAvailable()
+    public void WithStaticAssets_AddsMatchingResourceCollectionToEndpoints_WhenExplicitManifestProvided_EvenIfManyAvailable()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
         endpointBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Act
-        builder.WithResourceCollection("TestManifests/Test.staticwebassets.endpoints.json");
+        builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
-        // Assert       
+        // Assert
         Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
@@ -168,9 +168,9 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_AddsCollectionFromGroup_WhenMappedInsideAnEndpointGroup()
+    public void WithStaticAssets_AddsCollectionFromGroup_WhenMappedInsideAnEndpointGroup()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
 
@@ -179,7 +179,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(group);
 
         // Act
-        builder.WithResourceCollection("TestManifests/Test.staticwebassets.endpoints.json");
+        builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;
@@ -194,9 +194,9 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void WithResourceCollection_DoesNotAddResourceCollectionFromGroup_WhenMappingNotFound_InsideGroup()
+    public void WithStaticAssets_DoesNotAddResourceCollectionFromGroup_WhenMappingNotFound_InsideGroup()
     {
-        // Arrange        
+        // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
         endpointBuilder.MapStaticAssets();
 
@@ -205,7 +205,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(group);
 
         // Act
-        builder.WithResourceCollection();
+        builder.WithStaticAssets();
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;

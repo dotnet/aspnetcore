@@ -18,7 +18,7 @@ public static class PageActionEndpointConventionBuilderResourceCollectionExtensi
     /// <param name="builder">The <see cref="PageActionEndpointConventionBuilder"/>.</param>
     /// <param name="manifestPath">The manifest associated with the assets.</param>
     /// <returns></returns>
-    public static PageActionEndpointConventionBuilder WithResourceCollection(
+    public static PageActionEndpointConventionBuilder WithStaticAssets(
         this PageActionEndpointConventionBuilder builder,
         string? manifestPath = null)
     {

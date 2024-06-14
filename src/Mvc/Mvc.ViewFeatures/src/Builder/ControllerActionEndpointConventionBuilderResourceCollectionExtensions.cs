@@ -20,7 +20,7 @@ public static class ControllerActionEndpointConventionBuilderResourceCollectionE
     /// <param name="builder">The <see cref="ControllerActionEndpointConventionBuilder"/>.</param>
     /// <param name="manifestPath">The manifest associated with the assets.</param>
     /// <returns></returns>
-    public static ControllerActionEndpointConventionBuilder WithResourceCollection(
+    public static ControllerActionEndpointConventionBuilder WithStaticAssets(
         this ControllerActionEndpointConventionBuilder builder,
         string manifestPath = null)
     {

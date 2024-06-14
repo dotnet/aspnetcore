@@ -37,9 +37,9 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
 
         // Setup the convention to find the list of descriptors in the endpoint builder and
         // populate a resource collection out of them.
-        // The user can call WithResourceCollection with a manifest path to override the manifest
+        // The user can call WithStaticAssets with a manifest path to override the manifest
         // to use for the resource collection in case more than one has been mapped.
-        result.WithResourceCollection();
+        result.WithStaticAssets();
 
         return result;
     }

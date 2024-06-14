@@ -886,7 +886,7 @@ public class LinkTagHelperTest
     }
 
     [Fact]
-    public void RenderLinkTags_FallbackHref_WithFileVersion_WithResourceCollection()
+    public void RenderLinkTags_FallbackHref_WithFileVersion_WithStaticAssets()
     {
         // Arrange
         var expectedPostElement = Environment.NewLine +
@@ -1054,7 +1054,7 @@ public class LinkTagHelperTest
     }
 
     [Fact]
-    public void RendersLinkTags_GlobbedHref_WithFileVersion_WithResourceCollection()
+    public void RendersLinkTags_GlobbedHref_WithFileVersion_WithStaticAssets()
     {
         // Arrange
         var context = MakeTagHelperContext(

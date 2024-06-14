@@ -47,7 +47,7 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
     /// the <see cref="StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssets(Routing.IEndpointRouteBuilder, string?)"/>
     /// call.
     /// </remarks>
-    public static RazorComponentsEndpointConventionBuilder WithResourceCollection(
+    public static RazorComponentsEndpointConventionBuilder WithStaticAssets(
         this RazorComponentsEndpointConventionBuilder builder,
         string? manifestPath = null)
     {

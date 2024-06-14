@@ -165,7 +165,7 @@ public class ImageTagHelperTest
     [InlineData("~/images/test-image.png", "/bar", "/bar/images/test-image.fingerprint.png")]
     [InlineData("/images/test-image.png", null, "/images/test-image.fingerprint.png")]
     [InlineData("images/test-image.png", null, "images/test-image.fingerprint.png")]
-    public void RendersImageTag_AddsFileVersion_WithResourceCollection(string src, string pathBase, string expectedValue)
+    public void RendersImageTag_AddsFileVersion_WithStaticAssets(string src, string pathBase, string expectedValue)
     {
         // Arrange
         var context = MakeTagHelperContext(
