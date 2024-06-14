@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Assets;
@@ -21,7 +22,7 @@ public class ImportMapDefinitionTest
                 "jquery": "https://cdn.example.com/jquery.js"
               }
             }
-            """;
+            """.Replace("\r\n", "\n");
 
         var importMapDefinition = new ImportMapDefinition(
             new Dictionary<string, string>
@@ -33,7 +34,7 @@ public class ImportMapDefinitionTest
             );
 
         // Assert
-        Assert.Equal(expectedJson, importMapDefinition.ToJson());
+        Assert.Equal(expectedJson, importMapDefinition.ToJson().Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public class ImportMapDefinitionTest
                 }
               }
             }
-            """;
+            """.Replace("\r\n", "\n");
 
         var importMapDefinition = new ImportMapDefinition(
             null,
@@ -62,7 +63,7 @@ public class ImportMapDefinitionTest
             null);
 
         // Assert
-        Assert.Equal(expectedJson, importMapDefinition.ToJson());
+        Assert.Equal(expectedJson, importMapDefinition.ToJson().Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -78,7 +79,7 @@ public class ImportMapDefinitionTest
                 "https://cdn.example.com/jquery.js": "sha384-abc123"
               }
             }
-            """;
+            """.Replace("\r\n", "\n");
 
         var importMapDefinition = new ImportMapDefinition(
             new Dictionary<string, string>
@@ -92,7 +93,7 @@ public class ImportMapDefinitionTest
             });
 
         // Assert
-        Assert.Equal(expectedJson, importMapDefinition.ToJson());
+        Assert.Equal(expectedJson, importMapDefinition.ToJson().Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -118,13 +119,13 @@ public class ImportMapDefinitionTest
                 "jquery.fingerprint.js": "sha384-abc123"
               }
             }
-            """;
+            """.Replace("\r\n", "\n");
 
         // Act
         var importMapDefinition = ImportMapDefinition.FromResourceCollection(resourceAssetCollection);
 
         // Assert
-        Assert.Equal(expectedJson, importMapDefinition.ToJson());
+        Assert.Equal(expectedJson, importMapDefinition.ToJson().Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -189,12 +190,12 @@ public class ImportMapDefinitionTest
                 "https://cdn.example.com/react.js": "sha384-def456"
               }
             }
-            """;
+            """.Replace("\r\n", "\n");
 
         // Act
         var combinedImportMap = ImportMapDefinition.Combine(firstImportMap, secondImportMap);
 
         // Assert
-        Assert.Equal(expectedImportMap, combinedImportMap.ToJson());
+        Assert.Equal(expectedImportMap, combinedImportMap.ToJson().Replace("\r\n", "\n"));
     }
 }
