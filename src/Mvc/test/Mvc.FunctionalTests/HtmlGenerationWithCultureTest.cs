@@ -38,6 +38,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest
     public WebApplicationFactory<StartupWithCultureReplace> Factory { get; private set; }
     public HttpClient Client { get; private set; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByCulture()
     {
@@ -82,6 +83,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByUICulture()
     {

@@ -45,6 +45,7 @@ public class ComponentRenderingFunctionalTests : LoggedTest
         AssertComponent("<p>Hello world!</p>", "Greetings", content);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55928")]
     [Fact]
     public async Task Renders_RoutingComponent()
     {

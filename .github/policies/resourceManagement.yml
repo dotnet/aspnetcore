@@ -497,19 +497,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-preview5
+          milestone: 9.0-preview6
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-preview4
+          branch: release/9.0-preview5
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-preview4
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview4 branch'
+          milestone: 9.0-preview5
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview5 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -527,7 +527,7 @@ configuration:
 
             Because there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.
 
-            You can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
+            You can find it [here](https://learn.microsoft.com/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
 
             If these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up.
       description: Provide Blazor WASM Debugging Troubleshooting link
@@ -592,21 +592,6 @@ configuration:
 
             Otherwise, please add `tell-mode` label.
       description: Add release/8.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
-          branch: release/7.0
-      then:
-      - addMilestone:
-          milestone: 7.0.x
-      - addReply:
-          reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/7.0 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -685,19 +670,8 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.30
+          milestone: 6.0.32
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/7.0
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 7.0.19
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -707,7 +681,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.5
+          milestone: 8.0.7
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues

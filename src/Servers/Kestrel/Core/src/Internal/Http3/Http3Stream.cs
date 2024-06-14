@@ -166,6 +166,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
 
+            // This has the side-effect of validating the error code, so do it before we consume the error code
+            _errorCodeFeature.Error = (long)errorCode;
+
             _context.WebTransportSession?.Abort(abortReason, errorCode);
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
@@ -181,7 +184,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             RequestBodyPipe.Writer.Complete(exception);
 
             // Abort framewriter and underlying transport after stopping output.
-            _errorCodeFeature.Error = (long)errorCode;
             _frameWriter.Abort(abortReason);
         }
     }

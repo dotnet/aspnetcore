@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -61,12 +64,15 @@ public static class OpenApiServiceCollectionExtensions
     private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
     {
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiComponentService>(documentName);
+        services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
+        services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
         // Required to resolve document names for build-time generation
         services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+        // Required to support JSON serializations
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
         return services;
     }
 }

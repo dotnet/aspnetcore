@@ -33,6 +33,7 @@ public class RoutingAcrossPipelineBranchesTests : LoggedTest
     public WebApplicationFactory<RoutingWebSite.StartupRoutingDifferentBranches> Factory { get; private set; }
     public HttpClient Client { get; private set; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55933")]
     [Fact]
     public async Task MatchesConventionalRoutesInTheirBranches()
     {

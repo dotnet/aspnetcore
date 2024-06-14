@@ -1735,11 +1735,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
     }
 
     /// <summary>
-    /// Sets a flag indicating whether the specified <paramref name="user"/> is locked out,
+    /// Sets a flag indicating whether the specified <paramref name="user"/> can be locked out,
     /// as an asynchronous operation.
     /// </summary>
     /// <param name="user">The user whose locked out status should be set.</param>
-    /// <param name="enabled">Flag indicating whether the user is locked out or not.</param>
+    /// <param name="enabled">Flag indicating whether the user can be locked out or not.</param>
     /// <returns>
     /// The <see cref="Task"/> that represents the asynchronous operation, the <see cref="IdentityResult"/> of the operation
     /// </returns>

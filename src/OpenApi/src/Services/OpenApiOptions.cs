@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 public sealed class OpenApiOptions
 {
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
+    internal readonly List<Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task>> SchemaTransformers = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiOptions"/> class
@@ -87,6 +88,19 @@ public sealed class OpenApiOptions
         ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
 
         DocumentTransformers.Add(new DelegateOpenApiDocumentTransformer(transformer));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given delegate as a schema transformer on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <param name="transformer">The delegate representing the schema transformer.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions UseSchemaTransformer(Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task> transformer)
+    {
+        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+
+        SchemaTransformers.Add(transformer);
         return this;
     }
 }

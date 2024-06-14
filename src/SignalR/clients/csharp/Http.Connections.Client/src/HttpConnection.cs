@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
@@ -469,6 +470,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 #else
                 request.Properties.Add("IsNegotiate", true);
 #endif
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.

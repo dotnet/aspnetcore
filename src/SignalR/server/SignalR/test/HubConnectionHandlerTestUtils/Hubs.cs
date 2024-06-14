@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -369,6 +370,12 @@ public class MethodHub : TestHub
         var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
         yield return sum;
     }
+
+    public void ActivityMethod(TestActivitySource testActivitySource)
+    {
+        var activity = testActivitySource.ActivitySource.StartActivity("inner", ActivityKind.Server);
+        activity.Stop();
+    }
 }
 
 internal class SelfRef
@@ -379,6 +386,11 @@ internal class SelfRef
     }
 
     public SelfRef Self { get; set; }
+}
+
+public class TestActivitySource
+{
+    public ActivitySource ActivitySource { get; set; }
 }
 
 public abstract class TestHub : Hub
@@ -704,6 +716,13 @@ public class StreamingHub : TestHub
     }
 
     public async Task<ChannelReader<string>> CounterChannelAsync(int count)
+    {
+        await Task.Yield();
+        return CounterChannel(count);
+    }
+
+    [HubMethodName("RenamedCounterChannel")]
+    public async Task<ChannelReader<string>> CounterChannelAsync2(int count)
     {
         await Task.Yield();
         return CounterChannel(count);

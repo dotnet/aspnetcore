@@ -31,7 +31,7 @@
               }
             }
           }
-        },
+        }
       },
       "post": {
         "tags": [
@@ -41,7 +41,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/getbyidandname/{id}/{name}": {
@@ -90,7 +90,47 @@
               }
             }
           }
+        }
+      }
+    },
+    "/forms": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "minLength": 5,
+                    "type": "string"
+                  },
+                  "Description": {
+                    "minLength": 5,
+                    "type": "string"
+                  },
+                  "IsCompleted": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "application/x-www-form-urlencoded": {
+                  "style": "form",
+                  "explode": true
+                }
+              }
+            }
+          }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     }
   },

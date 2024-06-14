@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -17,12 +18,20 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class OpenApiEndpointConventionBuilderExtensions
 {
+    private const string TrimWarningMessage = "Calls Microsoft.AspNetCore.OpenApi.OpenApiGenerator.GetOpenApiOperation(MethodInfo, EndpointMetadataCollection, RoutePattern) which uses dynamic analysis. Use IServiceCollection.AddOpenApi() to generate OpenAPI metadata at startup for all endpoints,";
+
     /// <summary>
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint.
     /// </summary>
+    /// <remarks>
+    /// This method does not integrate with built-in OpenAPI document generation support in ASP.NET Core
+    /// and is primarily intended for consumption along-side Swashbuckle.AspNetCore.
+    /// </remarks>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresDynamicCode(TrimWarningMessage)]
+    [RequiresUnreferencedCode(TrimWarningMessage)]
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         builder.Finally(builder => AddAndConfigureOperationForEndpoint(builder));
@@ -33,9 +42,15 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint and modifies it with the given <paramref name="configureOperation"/>.
     /// </summary>
+    /// <remarks>
+    /// This method does not integrate with built-in OpenAPI document generation support in ASP.NET Core
+    /// and is primarily intended for consumption along-side Swashbuckle.AspNetCore.
+    /// </remarks>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="configureOperation">An <see cref="Func{T, TResult}"/> that returns a new OpenAPI annotation given a generated operation.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresDynamicCode(TrimWarningMessage)]
+    [RequiresUnreferencedCode(TrimWarningMessage)]
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder, Func<OpenApiOperation, OpenApiOperation> configureOperation)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -43,6 +58,8 @@ public static class OpenApiEndpointConventionBuilderExtensions
         return builder;
     }
 
+    [RequiresDynamicCode(TrimWarningMessage)]
+    [RequiresUnreferencedCode(TrimWarningMessage)]
     private static void AddAndConfigureOperationForEndpoint(EndpointBuilder endpointBuilder, Func<OpenApiOperation, OpenApiOperation>? configure = null)
     {
         foreach (var item in endpointBuilder.Metadata)

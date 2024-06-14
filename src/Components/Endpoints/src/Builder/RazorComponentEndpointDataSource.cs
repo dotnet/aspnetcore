@@ -39,12 +39,12 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     public RazorComponentEndpointDataSource(
         ComponentApplicationBuilder builder,
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
-        IApplicationBuilder applicationBuilder,
+        IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentEndpointFactory factory,
         HotReloadService? hotReloadService = null)
     {
         _builder = builder;
-        _applicationBuilder = applicationBuilder;
+        _applicationBuilder = endpointRouteBuilder.CreateApplicationBuilder();
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         _hotReloadService = hotReloadService;
@@ -52,6 +52,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
             builder,
+            endpointRouteBuilder,
             _options,
             _conventions,
             _finallyConventions);
