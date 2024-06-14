@@ -175,6 +175,121 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/array-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrayOfint"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/list-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrayOfint"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/ienumerable-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/frozen-dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -188,6 +303,18 @@
           "name": {
             "$ref": "#/components/schemas/string"
           }
+        }
+      },
+      "ArrayOfint": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/int"
+        }
+      },
+      "DictionaryOfstringAndint": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/int"
         }
       },
       "int": {

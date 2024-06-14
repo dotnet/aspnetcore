@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -101,6 +103,11 @@ schemas.MapGet("/iresult-with-produces", () => Results.Ok(new Triangle { Color =
 schemas.MapGet("/primitives", ([Description("The ID associated with the Todo item.")] int id, [Description("The number of Todos to fetch")] int size) => { });
 schemas.MapGet("/product", (Product product) => TypedResults.Ok(product));
 schemas.MapGet("/account", (Account account) => TypedResults.Ok(account));
+schemas.MapPost("/array-of-ints", (int[] values) => values.Sum());
+schemas.MapPost("/list-of-ints", (List<int> values) => values.Count);
+schemas.MapPost("/ienumerable-of-ints", (IEnumerable<int> values) => values.Count());
+schemas.MapGet("/dictionary-of-ints", () => new Dictionary<string, int> { { "one", 1 }, { "two", 2 } });
+schemas.MapGet("/frozen-dictionary-of-ints", () => ImmutableDictionary.CreateRange(new Dictionary<string, int> { { "one", 1 }, { "two", 2 } }));
 
 app.MapControllers();
 
