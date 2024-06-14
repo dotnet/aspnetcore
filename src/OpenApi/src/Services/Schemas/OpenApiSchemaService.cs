@@ -38,19 +38,16 @@ internal sealed class OpenApiSchemaService(
         // setting `JsonPropertyInfo.IsRequired` based on the presence of the `RequiredAttribute`.
         TypeInfoResolver = jsonOptions.Value.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
         {
-            if (jsonTypeInfo.Type is Type type)
+            if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
             {
-                if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
-                {
-                    return;
-                }
-                foreach (var propertyInfo in jsonTypeInfo.Properties)
-                {
-                    var hasRequiredAttribute = propertyInfo.AttributeProvider?
-                        .GetCustomAttributes(inherit: false)
-                        .Any(attr => attr is RequiredAttribute);
-                    propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
-                }
+                return;
+            }
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                var hasRequiredAttribute = propertyInfo.AttributeProvider?
+                    .GetCustomAttributes(inherit: false)
+                    .Any(attr => attr is RequiredAttribute);
+                propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
             }
         })
     };

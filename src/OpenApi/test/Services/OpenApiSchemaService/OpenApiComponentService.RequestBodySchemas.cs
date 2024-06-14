@@ -102,6 +102,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             Assert.Collection(schema.Required,
                 property => Assert.Equal("title", property),
                 property => Assert.Equal("completed", property));
+            Assert.DoesNotContain("assignee", schema.Required);
         });
     }
 
