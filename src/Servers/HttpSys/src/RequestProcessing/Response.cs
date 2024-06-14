@@ -389,8 +389,11 @@ internal sealed class Response
         // Gather everything from the request that affects the response:
         var requestVersion = Request.ProtocolVersion;
         var requestConnectionString = Request.Headers[HeaderNames.Connection];
+        var requestKeepAliveString = Request.Headers[HeaderNames.KeepAlive];
         var isHeadRequest = Request.IsHeadMethod;
         var requestCloseSet = Matches(Constants.Close, requestConnectionString);
+        var requestConnectionKeepAliveSet = Matches(Constants.KeepAlive, requestConnectionString);
+        var requestKeepAliveSet = Matches(bool.TrueString, requestKeepAliveString);
 
         // Gather everything the app may have set on the response:
         // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
@@ -403,7 +406,7 @@ internal sealed class Response
 
         // Determine if the connection will be kept alive or closed.
         var keepConnectionAlive = true;
-        if (requestVersion <= Constants.V1_0 // Http.Sys does not support "Keep-Alive: true" or "Connection: Keep-Alive"
+        if ((requestVersion <= Constants.V1_0 && !(requestConnectionKeepAliveSet || requestKeepAliveSet))
             || (requestVersion == Constants.V1_1 && requestCloseSet)
             || responseCloseSet)
         {

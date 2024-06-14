@@ -207,12 +207,11 @@ public class ResponseHeaderTests : IDisposable
     }
 
     [ConditionalFact]
-    public async Task ResponseHeaders_HTTP10KeepAliveRequest_Gets11Close()
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_Gets11NoClose()
     {
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
         {
-            // Http.Sys does not support 1.0 keep-alives.
             Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -221,7 +220,7 @@ public class ResponseHeaderTests : IDisposable
             HttpResponseMessage response = await responseTask;
             response.EnsureSuccessStatusCode();
             Assert.Equal(new Version(1, 1), response.Version);
-            Assert.True(response.Headers.ConnectionClose.Value);
+            Assert.Null(response.Headers.ConnectionClose);
         }
     }
 
