@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// A resource proeperty.
+/// A resource property.
 /// </summary>
 /// <param name="name">The name of the property.</param>
 /// <param name="value">The value of the property.</param>

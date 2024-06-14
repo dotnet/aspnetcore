@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
 {
-    string? _collectionUrl;
-    ImportMapDefinition? _collectionEndpointImportMap;
-    ResourceAssetCollection? _collection;
-    ImportMapDefinition? _collectionImportMap;
+    private string? _collectionUrl;
+    private ImportMapDefinition? _collectionEndpointImportMap;
+    private ResourceAssetCollection? _collection;
+    private ImportMapDefinition? _collectionImportMap;
 
     public void OnBeforeCreateEndpoints(RazorComponentEndpointUpdateContext context)
     {

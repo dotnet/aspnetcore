@@ -7,7 +7,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// A resource of the component application, such as a script, stylesheet or image.
+/// A resource of the components application, such as a script, stylesheet or image.
 /// </summary>
 /// <param name="url">The URL of the resource.</param>
 /// <param name="properties">The properties associated to this resource.</param>

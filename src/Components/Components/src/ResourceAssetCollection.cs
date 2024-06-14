@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.Frozen;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -15,8 +16,8 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     /// </summary>
     public static readonly ResourceAssetCollection Empty = new([]);
 
-    private readonly Dictionary<string, ResourceAsset> _uniqueUrlMappings;
-    private readonly HashSet<string> _contentSpecificUrls;
+    private readonly FrozenDictionary<string, ResourceAsset> _uniqueUrlMappings;
+    private readonly FrozenSet<string> _contentSpecificUrls;
     private readonly IReadOnlyList<ResourceAsset> _resources;
 
     /// <summary>
@@ -25,8 +26,8 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     /// <param name="resources">The list of resources available.</param>
     public ResourceAssetCollection(IReadOnlyList<ResourceAsset> resources)
     {
-        _uniqueUrlMappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase);
-        _contentSpecificUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var mappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase);
+        var contentSpecificUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         _resources = resources;
         foreach (var resource in resources)
         {
@@ -34,11 +35,18 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
             {
                 if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                 {
-                    _uniqueUrlMappings[property.Value] = resource;
-                    _contentSpecificUrls.Add(resource.Url);
+                    if (mappings.TryGetValue(property.Value, out var value))
+                    {
+                        throw new InvalidOperationException($"The static asset '{property.Value}' is already mapped to {value.Url}.");
+                    }
+                    mappings[property.Value] = resource;
+                    contentSpecificUrls.Add(resource.Url);
                 }
             }
         }
+
+        _uniqueUrlMappings = mappings.ToFrozenDictionary();
+        _contentSpecificUrls = contentSpecificUrls.ToFrozenSet();
     }
 
     /// <summary>

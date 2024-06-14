@@ -23,7 +23,7 @@ public sealed class ImportMap : IComponent
 
     /// <summary>
     /// Gets or sets the import map definition to use for the component. If not set
-    /// the component will generte the import map based on the assets defined for this
+    /// the component will generate the import map based on the assets defined for this
     /// application.
     /// </summary>
     [Parameter]

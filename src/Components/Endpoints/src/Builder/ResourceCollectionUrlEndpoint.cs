@@ -122,7 +122,7 @@ internal partial class ResourceCollectionUrlEndpoint
         incrementalHash.GetCurrentHash(result);
         // Base64 encoding at most increases size by (4 * byteSize / 3 + 2),
         // add an extra byte for the initial dot.
-        Span<char> fingerprintSpan = stackalloc char[incrementalHash.HashLengthInBytes * 4 / 3 + 3];
+        Span<char> fingerprintSpan = stackalloc char[(incrementalHash.HashLengthInBytes * 4 / 3) + 3];
         var length = WebUtilities.WebEncoders.Base64UrlEncode(result, fingerprintSpan[1..]);
         fingerprintSpan[0] = '.';
         return fingerprintSpan[..(length + 1)].ToString();
@@ -280,12 +280,14 @@ internal partial class ResourceCollectionUrlEndpoint
 
             builderConeg.Metadata.Add(encodingMetadata);
 
-            yield return fingerprintedGzBuilder;
-            yield return fingerprintedBuilder;
-            yield return fingerprintedBuilderConeg;
-            yield return gzBuilder;
-            yield return builderConeg;
-            yield return builder;
+            return [
+                fingerprintedGzBuilder,
+                fingerprintedBuilder,
+                fingerprintedBuilderConeg,
+                gzBuilder,
+                builderConeg,
+                builder
+            ];
         }
     }
 }
