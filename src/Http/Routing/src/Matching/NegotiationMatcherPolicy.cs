@@ -235,7 +235,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         {
             var endpoint = endpoints[i];
             var metadata = GetMetadataValue(endpoint) ?? DefaultNegotiationValue;
-            if (!edges.TryGetValue(metadata, out var endpointsForType))
+            if (!edges.TryGetValue(metadata, out var _))
             {
                 edges.Add(metadata, []);
             }
@@ -360,7 +360,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
     {
         if (endpointsQuality.Length == 0)
         {
-            return 0;
+            throw new InvalidOperationException("No quality values found.");
         }
 
         var result = endpointsQuality[0];

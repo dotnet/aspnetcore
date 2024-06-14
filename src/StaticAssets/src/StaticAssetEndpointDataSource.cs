@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.StaticAssets;
 internal class StaticAssetsEndpointDataSource : EndpointDataSource
 {
     private readonly object _lock = new();
-    private readonly StaticAssetsManifest _manifest;
     private readonly List<StaticAssetDescriptor> _descriptors;
     private readonly StaticAssetEndpointFactory _endpointFactory;
     private readonly List<Action<EndpointBuilder>> _conventions = [];
@@ -27,13 +26,11 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
 
     internal StaticAssetsEndpointDataSource(
         IServiceProvider serviceProvider,
-        StaticAssetsManifest manifest,
         StaticAssetEndpointFactory endpointFactory,
         string manifestName,
         List<StaticAssetDescriptor> descriptors)
     {
         ServiceProvider = serviceProvider;
-        _manifest = manifest;
         _descriptors = descriptors;
         ManifestPath = manifestName;
         _endpointFactory = endpointFactory;
@@ -98,9 +95,11 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
         {
             var endpoints = new List<Endpoint>();
 
-            foreach (var resource in _manifest.Endpoints)
+            foreach (var asset in _descriptors)
             {
-                endpoints.Add(_endpointFactory.Create(resource, _conventions, _finallyConventions));
+                // At this point the descriptor becomes immutable.
+                asset.Freeze();
+                endpoints.Add(_endpointFactory.Create(asset, _conventions, _finallyConventions));
             }
 
             var oldCancellationTokenSource = _cancellationTokenSource;
