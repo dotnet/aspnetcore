@@ -76,6 +76,15 @@ internal class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, i
     public IEnumerable<T> Items { get; set; } = items;
 }
 
+internal class RequiredTodo
+{
+    [Required]
+    public string Title { get; set; } = string.Empty;
+    [Required]
+    public bool Completed { get; set; }
+    public string Assignee { get; set; } = string.Empty;
+}
+
 #nullable enable
 internal class ProjectBoard
 {

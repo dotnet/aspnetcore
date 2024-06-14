@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -262,15 +264,22 @@ internal sealed class OpenApiDocumentService(
                     "Path" => ParameterLocation.Path,
                     _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
                 },
-                // Per the OpenAPI specification, parameters that are sourced from the path
-                // are always required, regardless of the requiredness status of the parameter.
-                Required = parameter.Source == BindingSource.Path || parameter.IsRequired,
+                Required = IsRequired(parameter),
                 Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, parameter, cancellationToken),
             };
             parameters ??= [];
             parameters.Add(openApiParameter);
         }
         return parameters;
+    }
+
+    private static bool IsRequired(ApiParameterDescription parameter)
+    {
+        var hasRequiredAttribute = parameter.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescriptor &&
+            parameterInfoDescriptor.ParameterInfo.GetCustomAttributes(inherit: true).Any(attr => attr is RequiredAttribute);
+        // Per the OpenAPI specification, parameters that are sourced from the path
+        // are always required, regardless of the requiredness status of the parameter.
+        return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;
     }
 
     private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, CancellationToken cancellationToken)
@@ -301,7 +310,7 @@ internal sealed class OpenApiDocumentService(
 
         var requestBody = new OpenApiRequestBody
         {
-            Required = formParameters.Any(parameter => parameter.IsRequired),
+            Required = formParameters.Any(IsRequired),
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
@@ -435,7 +444,7 @@ internal sealed class OpenApiDocumentService(
 
         var requestBody = new OpenApiRequestBody
         {
-            Required = bodyParameter.IsRequired,
+            Required = IsRequired(bodyParameter),
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 

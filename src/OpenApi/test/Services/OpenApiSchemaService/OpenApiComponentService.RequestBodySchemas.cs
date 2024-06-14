@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -99,6 +100,58 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                     Assert.True(defaultValue.Value);
                 });
 
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsRequiredAttributeOnBodyParameter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/required-poco", ([Required] Todo todo) => { });
+        builder.MapPost("/non-required-poco", (Todo todo) => { });
+        builder.MapPost("/required-form", ([Required][FromForm] Todo todo) => { });
+        builder.MapPost("/non-required-form", ([FromForm] Todo todo) => { });
+        builder.MapPost("/", (ProjectBoard todo) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.True(GetRequestBodyForPath(document, "/required-poco").Required);
+            Assert.False(GetRequestBodyForPath(document, "/non-required-poco").Required);
+            Assert.True(GetRequestBodyForPath(document, "/required-form").Required);
+            Assert.False(GetRequestBodyForPath(document, "/non-required-form").Required);
+        });
+
+        static OpenApiRequestBody GetRequestBodyForPath(OpenApiDocument document, string path)
+        {
+            var operation = document.Paths[path].Operations[OperationType.Post];
+            return operation.RequestBody;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsRequiredAttributeOnBodyProperties()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/required-properties", (RequiredTodo todo) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+            Assert.Collection(schema.Required,
+                property => Assert.Equal("title", property),
+                property => Assert.Equal("completed", property));
+            Assert.DoesNotContain("assignee", schema.Required);
         });
     }
 
