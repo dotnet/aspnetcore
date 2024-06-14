@@ -398,9 +398,14 @@ public class KestrelServerOptions
                 return null;
             }
 
-            if (!CertificateManager.Instance.IsTrusted(cert))
+            switch (CertificateManager.Instance.GetTrustLevel(cert))
             {
-                logger.DeveloperCertificateNotTrusted();
+                case CertificateManager.TrustLevel.Partial:
+                    logger.DeveloperCertificatePartiallyTrusted();
+                    break;
+                case CertificateManager.TrustLevel.None:
+                    logger.DeveloperCertificateNotTrusted();
+                    break;
             }
 
             return cert;
