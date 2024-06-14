@@ -26,28 +26,30 @@ public static class ControllerActionEndpointConventionBuilderResourceCollectionE
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var endpointBuilder = builder.Items["__EndpointRouteBuilder"];
-        var (resolver, registered) = builder.Items.TryGetValue("__ResourceCollectionResolver", out var value)
-            ? ((ResourceCollectionResolver)value, true)
-            : (new ResourceCollectionResolver((IEndpointRouteBuilder)endpointBuilder), false);
-
-        resolver.ManifestName = manifestPath;
-        if (!registered)
+        if (builder.Items.TryGetValue("__EndpointRouteBuilder", out var endpointBuilder))
         {
-            var collection = resolver.ResolveResourceCollection();
-            var importMap = resolver.ResolveImportMap();
+            var (resolver, registered) = builder.Items.TryGetValue("__ResourceCollectionResolver", out var value)
+                ? ((ResourceCollectionResolver)value, true)
+                : (new ResourceCollectionResolver((IEndpointRouteBuilder)endpointBuilder), false);
 
-            builder.Add(endpointBuilder =>
+            resolver.ManifestName = manifestPath;
+            if (!registered)
             {
-                // Do not add metadata to API controllers
-                if (endpointBuilder.Metadata.OfType<ApiControllerAttribute>().Any())
-                {
-                    return;
-                }
+                var collection = resolver.ResolveResourceCollection();
+                var importMap = resolver.ResolveImportMap();
 
-                endpointBuilder.Metadata.Add(collection);
-                endpointBuilder.Metadata.Add(importMap);
-            });
+                builder.Add(endpointBuilder =>
+                {
+                    // Do not add metadata to API controllers
+                    if (endpointBuilder.Metadata.OfType<ApiControllerAttribute>().Any())
+                    {
+                        return;
+                    }
+
+                    endpointBuilder.Metadata.Add(collection);
+                    endpointBuilder.Metadata.Add(importMap);
+                });
+            }
         }
 
         return builder;

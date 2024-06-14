@@ -24,22 +24,24 @@ public static class PageActionEndpointConventionBuilderResourceCollectionExtensi
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var endpointBuilder = builder.Items["__EndpointRouteBuilder"];
-        var (resolver, registered) = builder.Items.TryGetValue("__ResourceCollectionResolver", out var value)
+        if (builder.Items.TryGetValue("__EndpointRouteBuilder", out var endpointBuilder))
+        {
+            var (resolver, registered) = builder.Items.TryGetValue("__ResourceCollectionResolver", out var value)
             ? ((ResourceCollectionResolver)value, true)
             : (new ResourceCollectionResolver((IEndpointRouteBuilder)endpointBuilder), false);
 
-        resolver.ManifestName = manifestPath;
-        if (!registered)
-        {
-            var collection = resolver.ResolveResourceCollection();
-            var importMap = resolver.ResolveImportMap();
-
-            builder.Add(endpointBuilder =>
+            resolver.ManifestName = manifestPath;
+            if (!registered)
             {
-                endpointBuilder.Metadata.Add(collection);
-                endpointBuilder.Metadata.Add(importMap);
-            });
+                var collection = resolver.ResolveResourceCollection();
+                var importMap = resolver.ResolveImportMap();
+
+                builder.Add(endpointBuilder =>
+                {
+                    endpointBuilder.Metadata.Add(collection);
+                    endpointBuilder.Metadata.Add(importMap);
+                });
+            }
         }
 
         return builder;

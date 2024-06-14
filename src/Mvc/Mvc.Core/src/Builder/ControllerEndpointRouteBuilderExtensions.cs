@@ -29,7 +29,11 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var result = GetOrCreateDataSource(endpoints).DefaultBuilder;
-        result.Items["__EndpointRouteBuilder"] = endpoints;
+        if (!result.Items.ContainsKey("__EndpointRouteBuilder"))
+        {
+            result.Items["__EndpointRouteBuilder"] = endpoints;
+        }
+
         return result;
     }
 
@@ -48,7 +52,10 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
-        dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+        if (!dataSource.DefaultBuilder.Items.ContainsKey("__EndpointRouteBuilder"))
+        {
+            dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+        }
 
         return dataSource.AddRoute(
             "default",
@@ -94,7 +101,10 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
-        dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+        if (!dataSource.DefaultBuilder.Items.ContainsKey("__EndpointRouteBuilder"))
+        {
+            dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+        }
 
         return dataSource.AddRoute(
             name,
