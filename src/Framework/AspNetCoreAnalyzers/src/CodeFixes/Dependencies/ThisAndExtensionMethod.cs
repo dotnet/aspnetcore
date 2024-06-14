@@ -19,6 +19,6 @@ internal readonly struct ThisAndExtensionMethod(ITypeSymbol thisType, string ext
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(ThisType, ExtensionMethod);
+        return HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ThisType), ExtensionMethod);
     }
 }
