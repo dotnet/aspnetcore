@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.AspNetCore.StaticAssets.Infrastructure;
@@ -47,30 +48,28 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
             string integrity = null;
 #endif
 
-            if (descriptor.Selectors.Count > 1)
+            // If there's a selector this means that this is an alternative representation for a resource, so skip it.
+            if (descriptor.Selectors.Count == 0)
             {
-                // If there's a selector this means that this is an alternative representation for a resource, so skip it.
-                continue;
-            }
-
-            var foundProperties = 0;
-            for (var i = 0; i < descriptor.Properties.Count; i++)
-            {
-                var property = descriptor.Properties[i];
-                if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+                var foundProperties = 0;
+                for (var i = 0; i < descriptor.Properties.Count; i++)
                 {
-                    label = property.Value;
-                    foundProperties++;
+                    var property = descriptor.Properties[i];
+                    if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+                    {
+                        label = property.Value;
+                        foundProperties++;
+                    }
+
+                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        integrity = property.Value;
+                        foundProperties++;
+                    }
                 }
 
-                else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
-                {
-                    integrity = property.Value;
-                    foundProperties++;
-                }
+                AddResource(resources, descriptor, label, integrity, foundProperties);
             }
-
-            AddResource(resources, descriptor, label, integrity, foundProperties);
         }
 
         // Sort the resources because we are going to generate a hash for the collection to use when we expose it as an endpoint
