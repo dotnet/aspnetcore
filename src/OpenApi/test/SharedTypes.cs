@@ -101,3 +101,15 @@ internal class ProjectBoard
     public required bool IsPrivate { get; set; }
 }
 #nullable restore
+
+internal class Account
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+internal class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}

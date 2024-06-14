@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaStore
 {
-    private readonly ConcurrentDictionary<OpenApiSchemaKey, JsonObject> _schemas = new()
+    private readonly Dictionary<OpenApiSchemaKey, JsonObject> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
         [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject
@@ -50,7 +49,8 @@ internal sealed class OpenApiSchemaStore
         },
     };
 
-    private readonly ConcurrentDictionary<OpenApiSchema, string?> _schemasWithReference = new(OpenApiSchemaComparer.Instance);
+    private readonly Dictionary<OpenApiSchema, string?> _schemasWithReference = new(OpenApiSchemaComparer.Instance);
+    private readonly Dictionary<string, int> _referenceIdCounter = new();
 
     /// <summary>
     /// Resolves the JSON schema for the given type and parameter description.
@@ -60,7 +60,13 @@ internal sealed class OpenApiSchemaStore
     /// <returns>A <see cref="JsonObject" /> representing the JSON schema associated with the key.</returns>
     public JsonObject GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonObject> valueFactory)
     {
-        return _schemas.GetOrAdd(key, valueFactory);
+        if (_schemas.TryGetValue(key, out var schema))
+        {
+            return schema;
+        }
+        var targetSchema = valueFactory(key);
+        _schemas.Add(key, targetSchema);
+        return targetSchema;
     }
 
     /// <summary>
@@ -75,35 +81,88 @@ internal sealed class OpenApiSchemaStore
     /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
     public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema)
     {
-        _schemasWithReference.AddOrUpdate(schema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+        AddOrUpdateSchemaByReference(schema);
         if (schema.AdditionalProperties is not null)
         {
-            _schemasWithReference.AddOrUpdate(schema.AdditionalProperties, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+            AddOrUpdateSchemaByReference(schema.AdditionalProperties);
         }
         if (schema.Items is not null)
         {
-            _schemasWithReference.AddOrUpdate(schema.Items, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+            AddOrUpdateSchemaByReference(schema.Items);
         }
         if (schema.AllOf is not null)
         {
             foreach (var allOfSchema in schema.AllOf)
             {
-                _schemasWithReference.AddOrUpdate(allOfSchema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+                AddOrUpdateSchemaByReference(allOfSchema);
             }
         }
         if (schema.AnyOf is not null)
         {
             foreach (var anyOfSchema in schema.AnyOf)
             {
-                _schemasWithReference.AddOrUpdate(anyOfSchema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+                AddOrUpdateSchemaByReference(anyOfSchema);
             }
         }
         if (schema.Properties is not null)
         {
             foreach (var property in schema.Properties.Values)
             {
-                _schemasWithReference.AddOrUpdate(property, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+                AddOrUpdateSchemaByReference(property);
             }
+        }
+    }
+
+    private void AddOrUpdateSchemaByReference(OpenApiSchema schema)
+    {
+        if (_schemasWithReference.TryGetValue(schema, out var referenceId))
+        {
+            // If we've already used this reference ID else where in the document, increment a counter value to the reference
+            // ID to avoid name collisions. These collisions are most likely to occur when the same .NET type produces a different
+            // schema in the OpenAPI document because of special annotations provided on it. For example, in the two type definitions
+            // below:
+            // public class Todo
+            // {
+            //     public int Id { get; set; }
+            //     public string Name { get; set; }
+            // }
+            // public class Project
+            // {
+            //     public int Id { get; set; }
+            //     [MinLength(5)]
+            //     public string Title { get; set; }
+            // }
+            // The `Title` and `Name` properties are both strings but the `Title` property has a `minLength` annotation
+            // on it that will materialize into a different schema.
+            // {
+            //
+            //      "type": "string",
+            //      "minLength": 5
+            // }
+            // {
+            //      "type": "string"
+            // }
+            // In this case, although the reference ID  based on the .NET type we would use is `string`, the
+            // two schemas are distinct.
+            if (referenceId == null)
+            {
+                var targetReferenceId = GetSchemaReferenceId(schema);
+                if (_referenceIdCounter.TryGetValue(targetReferenceId, out var counter))
+                {
+                    counter++;
+                    _referenceIdCounter[targetReferenceId] = counter;
+                    _schemasWithReference[schema] = $"{targetReferenceId}{counter}";
+                }
+                else
+                {
+                    _referenceIdCounter[targetReferenceId] = 1;
+                    _schemasWithReference[schema] = targetReferenceId;
+                }
+            }
+        }
+        else
+        {
+            _schemasWithReference[schema] = null;
         }
     }
 
@@ -118,5 +177,5 @@ internal sealed class OpenApiSchemaStore
         throw new InvalidOperationException("The schema reference ID must be set on the schema.");
     }
 
-    public ConcurrentDictionary<OpenApiSchema, string?> SchemasByReference => _schemasWithReference;
+    public Dictionary<OpenApiSchema, string?> SchemasByReference => _schemasWithReference;
 }

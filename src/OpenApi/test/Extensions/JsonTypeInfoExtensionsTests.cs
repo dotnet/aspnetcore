@@ -57,6 +57,7 @@ public class JsonTypeInfoExtensionsTests
         [typeof(ProblemDetails), "ProblemDetails"],
         [typeof(Dictionary<string, string[]>), "DictionaryOfstringAndArrayOfstring"],
         [typeof(Dictionary<string, List<string[]>>), "DictionaryOfstringAndArrayOfArrayOfstring"],
+        [typeof(Dictionary<string, IEnumerable<string[]>>), "DictionaryOfstringAndArrayOfArrayOfstring"],
     ];
 
     [Theory]

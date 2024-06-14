@@ -25,7 +25,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/string"
+                    "type": "string"
                   }
                 }
               }
@@ -43,114 +43,15 @@
           }
         }
       }
-    },
-    "/getbyidandname/{id}/{name}": {
-      "get": {
-        "tags": [
-          "Test"
-        ],
-        "parameters": [
-          {
-            "name": "Id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "Name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/string1"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/forms": {
-      "post": {
-        "tags": [
-          "Test"
-        ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "Title": {
-                    "$ref": "#/components/schemas/string1"
-                  },
-                  "Description": {
-                    "$ref": "#/components/schemas/string1"
-                  },
-                  "IsCompleted": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "encoding": {
-                "application/x-www-form-urlencoded": {
-                  "style": "form",
-                  "explode": true
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
     }
   },
-  "components": {
-    "schemas": {
-      "string": {
-        "type": "string"
-      },
-      "string1": {
-        "minLength": 5,
-        "type": "string"
-      }
-    }
-  },
+  "components": { },
   "tags": [
     {
       "name": "users"
     },
     {
       "name": "Sample"
-    },
-    {
-      "name": "Test"
     }
   ]
 }

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -14,8 +13,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransformer
 {
-    private readonly Dictionary<string, int> _referenceIdCounter = new();
-
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
         var schemaStore = context.ApplicationServices.GetRequiredKeyedService<OpenApiSchemaStore>(context.DocumentName);
@@ -33,46 +30,9 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
                 // Note: we create a copy of the schema here to avoid modifying the original schema
                 // so that comparisons between the original schema and the resolved schema during
                 // the transformation process are consistent.
-                var resolvedSchema = ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, skipResolution: true);
-                // If we've already used this reference ID else where in the document, increment a counter value to the reference
-                // ID to avoid name collisions. These collisions are most likely to occur when the same .NET type produces a different
-                // schema in the OpenAPI document because of special annotations provided on it. For example, in the two type definitions
-                // below:
-                // public class Todo
-                // {
-                //     public int Id { get; set; }
-                //     public string Name { get; set; }
-                // }
-                // public class Project
-                // {
-                //     public int Id { get; set; }
-                //     [MinLength(5)]
-                //     public string Title { get; set; }
-                // }
-                // The `Title` and `Name` properties are both strings but the `Title` property has a `minLength` annotation
-                // on it that will materialize into a different schema.
-                // {
-                //
-                //      "type": "string",
-                //      "minLength": 5
-                // }
-                // {
-                //      "type": "string"
-                // }
-                // In this case, although the reference ID  based on the .NET type we would use is `string`, the
-                // two schemas are distinct.
-                if (!document.Components.Schemas.TryAdd(referenceId, resolvedSchema))
-                {
-                    var counter = _referenceIdCounter[referenceId];
-                    _referenceIdCounter[referenceId] += 1;
-                    document.Components.Schemas.Add($"{referenceId}{counter}", resolvedSchema);
-                    schemasByReference[schema] = $"{referenceId}{counter}";
-                }
-                else
-                {
-                    _referenceIdCounter[referenceId] = 1;
-
-                }
+                document.Components.Schemas.Add(
+                    referenceId,
+                    ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, skipResolution: true));
             }
         }
 
@@ -125,7 +85,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
     /// <param name="schema">The inline schema to replace with a reference.</param>
     /// <param name="schemasByReference">A cache of schemas and their associated reference IDs.</param>
     /// <param name="skipResolution">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
-    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, ConcurrentDictionary<OpenApiSchema, string?> schemasByReference, bool skipResolution = false)
+    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, Dictionary<OpenApiSchema, string?> schemasByReference, bool skipResolution = false)
     {
         if (schema is null)
         {

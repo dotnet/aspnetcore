@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -44,7 +43,7 @@ internal sealed class OpenApiDocumentService(
     /// are unique within the lifetime of an application and serve as helpful associators between
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
-    private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+    private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)

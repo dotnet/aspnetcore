@@ -14,8 +14,10 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     [Theory]
     [InlineData("v1")]
     [InlineData("v2")]
+    [InlineData("controllers")]
     [InlineData("responses")]
     [InlineData("forms")]
+    [InlineData("schemas-by-ref")]
     public async Task VerifyOpenApiDocument(string documentName)
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);

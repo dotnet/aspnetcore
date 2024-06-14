@@ -1,0 +1,221 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample | schemas-by-ref",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/schemas-by-ref/typed-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/multiple-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-no-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-with-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/primitives": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "The ID associated with the Todo item.",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "The number of Todos to fetch",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/product": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/account": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Account"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/int"
+          },
+          "name": {
+            "$ref": "#/components/schemas/string"
+          }
+        }
+      },
+      "int": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/int"
+          },
+          "name": {
+            "$ref": "#/components/schemas/string"
+          }
+        }
+      },
+      "string": {
+        "type": "string"
+      },
+      "Triangle": {
+        "type": "object"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}
