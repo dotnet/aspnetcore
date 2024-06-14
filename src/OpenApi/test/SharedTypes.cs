@@ -4,7 +4,9 @@
 // This file contains shared types that are used across tests, sample apps,
 // and benchmark apps.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 
@@ -82,3 +84,20 @@ internal class RequiredTodo
     public bool Completed { get; set; }
     public string Assignee { get; set; } = string.Empty;
 }
+
+#nullable enable
+internal class ProjectBoard
+{
+    [Range(1, 100)]
+    [DefaultValue(null)]
+    public int Id { get; set; }
+
+    [MinLength(5)]
+    [DefaultValue(null)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
+    public string? Name { get; set; }
+
+    [DefaultValue(true)]
+    public required bool IsPrivate { get; set; }
+}
+#nullable restore
