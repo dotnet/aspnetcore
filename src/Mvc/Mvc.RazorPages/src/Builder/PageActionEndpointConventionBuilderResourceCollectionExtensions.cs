@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Routing;
+using static Microsoft.AspNetCore.Builder.RazorPagesEndpointRouteBuilderExtensions;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class PageActionEndpointConventionBuilderResourceCollectionExtensions
 {
+    private const string ResourceCollectionResolverKey = "__ResourceCollectionResolver";
+
     /// <summary>
     /// Adds a <see cref="ResourceAssetCollection"/> metadata instance to the endpoints.
     /// </summary>
@@ -24,15 +27,16 @@ public static class PageActionEndpointConventionBuilderResourceCollectionExtensi
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (builder.Items.TryGetValue("__EndpointRouteBuilder", out var endpointBuilder))
+        if (builder.Items.TryGetValue(EndpointRouteBuilderKey, out var endpointBuilder))
         {
-            var (resolver, registered) = builder.Items.TryGetValue("__ResourceCollectionResolver", out var value)
+            var (resolver, registered) = builder.Items.TryGetValue(ResourceCollectionResolverKey, out var value)
             ? ((ResourceCollectionResolver)value, true)
             : (new ResourceCollectionResolver((IEndpointRouteBuilder)endpointBuilder), false);
 
             resolver.ManifestName = manifestPath;
             if (!registered)
             {
+                builder.Items[ResourceCollectionResolverKey] = resolver;
                 var collection = resolver.ResolveResourceCollection();
                 var importMap = resolver.ResolveImportMap();
 

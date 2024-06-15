@@ -4,10 +4,8 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -535,43 +533,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
     {
         if (AppendVersion == true)
         {
-            var assetCollection = GetAssetCollection();
             var pathBase = ViewContext.HttpContext.Request.PathBase;
-            if (assetCollection != null)
+
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, url, out var resolvedUrl))
             {
-                var value = url.StartsWith('/') ? url[1..] : url;
-                if (assetCollection.IsContentSpecificUrl(value))
-                {
-                    return url;
-                }
-
-                var src = assetCollection[value];
-                if (!string.Equals(src, value, StringComparison.Ordinal))
-                {
-                    return url.StartsWith('/') ? $"/{src}" : src;
-                }
-                if (pathBase.HasValue && url.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
-                {
-                    var length = pathBase.Value.EndsWith('/') ? pathBase.Value.Length : pathBase.Value.Length + 1;
-                    var relativePath = url[length..];
-                    if (assetCollection.IsContentSpecificUrl(relativePath))
-                    {
-                        return url;
-                    }
-
-                    src = assetCollection[relativePath];
-                    if (!string.Equals(src, relativePath, StringComparison.Ordinal))
-                    {
-                        if (pathBase.Value.EndsWith('/'))
-                        {
-                            return $"{pathBase}{src}";
-                        }
-                        else
-                        {
-                            return $"{pathBase}/{src}";
-                        }
-                    }
-                }
+                url = resolvedUrl;
+                return url;
             }
 
             if (url != null)
@@ -581,11 +548,6 @@ public class LinkTagHelper : UrlResolutionTagHelper
         }
 
         return url;
-    }
-
-    private ResourceAssetCollection GetAssetCollection()
-    {
-        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 
     private enum Mode

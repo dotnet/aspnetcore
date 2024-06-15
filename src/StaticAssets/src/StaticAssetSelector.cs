@@ -25,7 +25,7 @@ public sealed class StaticAssetSelector(string name, string value, string qualit
     public string Value { get; } = value;
 
     /// <summary>
-    /// The static server quality associated to this selector. Used to break ties when a request matches multiple values
+    /// The static asset server quality associated to this selector. Used to break ties when a request matches multiple values
     /// with the same degree of specificity.
     /// </summary>
     public string Quality { get; } = quality;

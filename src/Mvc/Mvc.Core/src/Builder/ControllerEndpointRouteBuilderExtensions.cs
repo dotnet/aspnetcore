@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class ControllerEndpointRouteBuilderExtensions
 {
+    internal const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
     /// <summary>
     /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
     /// </summary>
@@ -29,9 +31,9 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var result = GetOrCreateDataSource(endpoints).DefaultBuilder;
-        if (!result.Items.ContainsKey("__EndpointRouteBuilder"))
+        if (!result.Items.ContainsKey(EndpointRouteBuilderKey))
         {
-            result.Items["__EndpointRouteBuilder"] = endpoints;
+            result.Items[EndpointRouteBuilderKey] = endpoints;
         }
 
         return result;
@@ -52,9 +54,9 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
-        if (!dataSource.DefaultBuilder.Items.ContainsKey("__EndpointRouteBuilder"))
+        if (!dataSource.DefaultBuilder.Items.ContainsKey(EndpointRouteBuilderKey))
         {
-            dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+            dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
         }
 
         return dataSource.AddRoute(
@@ -101,9 +103,9 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
-        if (!dataSource.DefaultBuilder.Items.ContainsKey("__EndpointRouteBuilder"))
+        if (!dataSource.DefaultBuilder.Items.ContainsKey(EndpointRouteBuilderKey))
         {
-            dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+            dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
         }
 
         return dataSource.AddRoute(

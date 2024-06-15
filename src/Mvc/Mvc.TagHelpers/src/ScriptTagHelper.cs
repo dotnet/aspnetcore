@@ -408,42 +408,11 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     {
         if (AppendVersion == true)
         {
-            var assetCollection = GetAssetCollection();
             var pathBase = ViewContext.HttpContext.Request.PathBase;
-            if (assetCollection != null)
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, srcValue, out var resolvedUrl))
             {
-                var value = srcValue.StartsWith('/') ? srcValue[1..] : srcValue;
-                if (assetCollection.IsContentSpecificUrl(value))
-                {
-                    return srcValue;
-                }
-                var src = assetCollection[value];
-                if (!string.Equals(src, value, StringComparison.Ordinal))
-                {
-                    return srcValue.StartsWith('/') ? $"/{src}" : src;
-                }
-
-                if (pathBase.HasValue && srcValue.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
-                {
-                    var length = pathBase.Value.EndsWith('/') ? pathBase.Value.Length : pathBase.Value.Length + 1;
-                    var relativePath = srcValue[length..];
-                    if (assetCollection.IsContentSpecificUrl(relativePath))
-                    {
-                        return srcValue;
-                    }
-                    src = assetCollection[relativePath];
-                    if (!string.Equals(src, relativePath, StringComparison.Ordinal))
-                    {
-                        if (pathBase.Value.EndsWith('/'))
-                        {
-                            return $"{pathBase}{src}";
-                        }
-                        else
-                        {
-                            return $"{pathBase}/{src}";
-                        }
-                    }
-                }
+                srcValue = resolvedUrl;
+                return srcValue;
             }
 
             if (srcValue != null)
@@ -453,11 +422,6 @@ public class ScriptTagHelper : UrlResolutionTagHelper
         }
 
         return srcValue;
-    }
-
-    private ResourceAssetCollection GetAssetCollection()
-    {
-        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 
     private void AppendVersionedSrc(
