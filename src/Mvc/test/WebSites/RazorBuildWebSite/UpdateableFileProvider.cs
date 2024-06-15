@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
@@ -26,6 +26,10 @@ public class UpdateableFileProvider : IFileProvider
                 "/Pages/UpdateablePage.cshtml",
                 new TestFileInfo("@page" + Environment.NewLine + "Original content")
             },
+            {
+                "/Pages/Fallback.cshtml",
+                new TestFileInfo(string.Empty)
+            }
         };
 
     public IDirectoryContents GetDirectoryContents(string subpath)
