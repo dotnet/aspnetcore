@@ -19,13 +19,6 @@ public class OpenApiXmlComparerTests
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void ProducesCorrectHashCodeForXml(OpenApiXml xml, OpenApiXml anotherXml, bool isEqual)
-    {
-        // Act
-        var hash = OpenApiXmlComparer.Instance.GetHashCode(xml);
-        var anotherHash = OpenApiXmlComparer.Instance.GetHashCode(anotherXml);
-
-        // Assert
-        Assert.Equal(isEqual, hash.Equals(anotherHash));
-    }
+    public void ProducesCorrectEqualityForOpenApiXml(OpenApiXml xml, OpenApiXml anotherXml, bool isEqual)
+        => Assert.Equal(isEqual, OpenApiXmlComparer.Instance.Equals(xml, anotherXml));
 }

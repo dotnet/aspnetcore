@@ -13,17 +13,11 @@ public class OpenApiExternalDocsComparerTests
         [new OpenApiExternalDocs { Description = "description" }, new OpenApiExternalDocs { Description = "description" }, true],
         [new OpenApiExternalDocs { Description = "description" }, new OpenApiExternalDocs { Description = "description", Url = new Uri("http://localhost") }, false],
         [new OpenApiExternalDocs { Description = "description", Url = new Uri("http://localhost") }, new OpenApiExternalDocs { Description = "description", Url = new Uri("http://localhost") }, true],
+        [new OpenApiExternalDocs { Description = "description", Url = new Uri("http://localhost") }, new OpenApiExternalDocs { Description = "description", Url = new Uri("http://localhost") }, true],
     ];
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void ProducesCorrectHashCodeForAny(OpenApiExternalDocs externalDocs, OpenApiExternalDocs anotherExternalDocs, bool isEqual)
-    {
-        // Act
-        var hash = OpenApiExternalDocsComparer.Instance.GetHashCode(externalDocs);
-        var anotherHash = OpenApiExternalDocsComparer.Instance.GetHashCode(anotherExternalDocs);
-
-        // Assert
-        Assert.Equal(isEqual, hash.Equals(anotherHash));
-    }
+    public void ProducesCorrectEqualityForOpenApiExternalDocs(OpenApiExternalDocs externalDocs, OpenApiExternalDocs anotherExternalDocs, bool isEqual)
+        => Assert.Equal(isEqual, OpenApiExternalDocsComparer.Instance.Equals(externalDocs, anotherExternalDocs));
 }

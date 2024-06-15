@@ -24,20 +24,16 @@ internal sealed class OpenApiReferenceComparer : IEqualityComparer<OpenApiRefere
             return true;
         }
 
-        return GetHashCode(x) == GetHashCode(y);
+        return x.ExternalResource == y.ExternalResource &&
+            x.HostDocument?.HashCode == y.HostDocument?.HashCode &&
+            x.Id == y.Id &&
+            x.Type == y.Type;
     }
 
     public int GetHashCode(OpenApiReference obj)
     {
         var hashCode = new HashCode();
         hashCode.Add(obj.ExternalResource);
-        if (obj.HostDocument is not null)
-        {
-            // Microsoft.OpenApi provides a HashCode property for
-            // the OpenAPI document that we can use to uniquely identify
-            // the host document that is referenced here.
-            hashCode.Add(obj.HostDocument.HashCode);
-        };
         hashCode.Add(obj.Id);
         if (obj.Type is not null)
         {

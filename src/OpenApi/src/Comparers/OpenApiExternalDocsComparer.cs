@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Any;
+using System.Linq;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -25,7 +25,10 @@ internal sealed class OpenApiExternalDocsComparer : IEqualityComparer<OpenApiExt
             return true;
         }
 
-        return GetHashCode(x) == GetHashCode(y);
+        return x.Description == y.Description &&
+            x.Url == y.Url &&
+            x.Extensions.Count == y.Extensions.Count
+            && x.Extensions.Keys.All(k => y.Extensions.ContainsKey(k) && y.Extensions[k] == x.Extensions[k]);
     }
 
     public int GetHashCode(OpenApiExternalDocs obj)
@@ -33,18 +36,7 @@ internal sealed class OpenApiExternalDocsComparer : IEqualityComparer<OpenApiExt
         var hashCode = new HashCode();
         hashCode.Add(obj.Description);
         hashCode.Add(obj.Url);
-        foreach (var item in obj.Extensions)
-        {
-            hashCode.Add(item.Key, StringComparer.Ordinal);
-            if (item.Value is IOpenApiAny openApiAny)
-            {
-                hashCode.Add(openApiAny, OpenApiAnyComparer.Instance);
-            }
-            else
-            {
-                hashCode.Add(item.Value);
-            }
-        }
+        hashCode.Add(obj.Extensions.Count);
         return hashCode.ToHashCode();
     }
 }

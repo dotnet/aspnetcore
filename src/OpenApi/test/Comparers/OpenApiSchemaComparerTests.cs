@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Diagnostics.Runtime.Interop;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
@@ -96,13 +95,6 @@ public class OpenApiSchemaComparerTests
 
     [Theory]
     [MemberData(nameof(SinglePropertyData))]
-    public void SinglePropertyProducesCorrectHashCode(OpenApiSchema schema, OpenApiSchema anotherSchema, bool isEqual)
-    {
-        // Act
-        var hash = OpenApiSchemaComparer.Instance.GetHashCode(schema);
-        var anotherHash = OpenApiSchemaComparer.Instance.GetHashCode(anotherSchema);
-
-        // Assert
-        Assert.Equal(isEqual, hash.Equals(anotherHash));
-    }
+    public void ProducesCorrectEqualityForOpenApiSchema(OpenApiSchema schema, OpenApiSchema anotherSchema, bool isEqual)
+        => Assert.Equal(isEqual, OpenApiSchemaComparer.Instance.Equals(schema, anotherSchema));
 }

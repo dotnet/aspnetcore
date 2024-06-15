@@ -21,13 +21,6 @@ public class OpenApiReferenceComparerTests
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void ProducesCorrectHashCodeForReference(OpenApiReference reference, OpenApiReference anotherReference, bool isEqual)
-    {
-        // Act
-        var hash = OpenApiReferenceComparer.Instance.GetHashCode(reference);
-        var anotherHash = OpenApiReferenceComparer.Instance.GetHashCode(anotherReference);
-
-        // Assert
-        Assert.Equal(isEqual, hash.Equals(anotherHash));
-    }
+    public void ProducesCorrectEqualityForOpenApiReference(OpenApiReference reference, OpenApiReference anotherReference, bool isEqual)
+        => Assert.Equal(isEqual, OpenApiReferenceComparer.Instance.Equals(reference, anotherReference));
 }

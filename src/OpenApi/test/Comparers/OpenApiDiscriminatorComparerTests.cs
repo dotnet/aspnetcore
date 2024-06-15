@@ -18,13 +18,6 @@ public class OpenApiDiscriminatorComparerTests
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void ProducesCorrectHashCodeForDiscriminator(OpenApiDiscriminator discriminator, OpenApiDiscriminator anotherDiscriminator, bool isEqual)
-    {
-        // Act
-        var hash = OpenApiDiscriminatorComparer.Instance.GetHashCode(discriminator);
-        var anotherHash = OpenApiDiscriminatorComparer.Instance.GetHashCode(anotherDiscriminator);
-
-        // Assert
-        Assert.Equal(isEqual, hash.Equals(anotherHash));
-    }
+    public void ProducesCorrectEqualityForOpenApiDiscriminator(OpenApiDiscriminator discriminator, OpenApiDiscriminator anotherDiscriminator, bool isEqual)
+        => Assert.Equal(isEqual, OpenApiDiscriminatorComparer.Instance.Equals(discriminator, anotherDiscriminator));
 }
