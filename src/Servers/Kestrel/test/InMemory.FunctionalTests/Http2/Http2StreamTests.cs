@@ -38,7 +38,7 @@ public class Http2StreamTests : Http2TestBase
         await StartStreamAsync(1, headers, endStream: true);
 
         await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, 1, Http2ErrorCode.PROTOCOL_ERROR, "Malformed request: invalid headers.");
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestHeaders), ConnectionTags["error.type"]);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -2233,7 +2233,7 @@ public class Http2StreamTests : Http2TestBase
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
         await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorWritingHeaders), ConnectionTags[KestrelMetrics.ErrorType]);
+        AssertConnectionEndReason(ConnectionEndReason.ErrorWritingHeaders);
     }
 
     [Fact]
@@ -2584,7 +2584,7 @@ public class Http2StreamTests : Http2TestBase
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorWritingHeaders), ConnectionTags[KestrelMetrics.ErrorType]);
+        AssertConnectionEndReason(ConnectionEndReason.ErrorWritingHeaders);
     }
 
     [Fact]
@@ -5812,7 +5812,7 @@ public class Http2StreamTests : Http2TestBase
             expectedLastStreamId: 1,
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestHeaders), ConnectionTags[KestrelMetrics.ErrorType]);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -5832,7 +5832,7 @@ public class Http2StreamTests : Http2TestBase
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestHeaders), ConnectionTags[KestrelMetrics.ErrorType]);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]

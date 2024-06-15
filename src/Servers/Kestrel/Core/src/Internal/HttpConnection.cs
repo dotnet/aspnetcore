@@ -45,8 +45,12 @@ internal sealed class HttpConnection : ITimeoutHandler
 
     public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
     {
+        IConnectionMetricsTagsFeature? connectionMetricsTagsFeature = null;
+
         try
         {
+            connectionMetricsTagsFeature = _context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
+
             // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
             _timeoutControl.Initialize();
 
@@ -112,6 +116,13 @@ internal sealed class HttpConnection : ITimeoutHandler
         catch (Exception ex)
         {
             Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
+        }
+        finally
+        {
+            if (_context.MetricsContext.ConnectionEndReason is { } connectionEndReason)
+            {
+                KestrelMetrics.AddConnectionEndReason(connectionMetricsTagsFeature, connectionEndReason);
+            }
         }
     }
 

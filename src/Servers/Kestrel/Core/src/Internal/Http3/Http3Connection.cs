@@ -40,7 +40,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly object _protocolSelectionLock = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    private readonly IConnectionMetricsTagsFeature? _metricsTagsFeature;
     private readonly Dictionary<long, WebTransportSession>? _webtransportSessions;
 
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
@@ -57,10 +56,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
         _context = context;
         _streamLifetimeHandler = this;
-        MetricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
-
+        MetricsContext = context.MetricsContext;
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
-        _metricsTagsFeature = context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
 
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
@@ -187,7 +184,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         if (!previousState)
         {
             _errorCodeFeature.Error = (long)errorCode;
-            KestrelMetrics.AddConnectionEndReason(_metricsTagsFeature, reason);
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
 
             if (TryStopAcceptingStreams())
             {

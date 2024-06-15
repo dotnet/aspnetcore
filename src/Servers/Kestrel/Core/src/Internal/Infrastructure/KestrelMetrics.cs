@@ -366,9 +366,16 @@ internal sealed class KestrelMetrics
     public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)
     {
         // Cache the state at the start of the connection so we produce consistent start/stop events.
-        return new ConnectionMetricsContext(connection,
-            _activeConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
-            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _activeTlsHandshakesCounter.Enabled);
+        return new ConnectionMetricsContext
+        {
+            ConnectionContext = connection,
+            CurrentConnectionsCounterEnabled = _activeConnectionsCounter.Enabled,
+            ConnectionDurationEnabled = _connectionDuration.Enabled,
+            QueuedConnectionsCounterEnabled = _queuedConnectionsCounter.Enabled,
+            QueuedRequestsCounterEnabled = _queuedRequestsCounter.Enabled,
+            CurrentUpgradedRequestsCounterEnabled = _currentUpgradedRequestsCounter.Enabled,
+            CurrentTlsHandshakesCounterEnabled = _activeTlsHandshakesCounter.Enabled
+        };
     }
 
     public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
@@ -413,7 +420,7 @@ internal sealed class KestrelMetrics
         return false;
     }
 
-    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason, bool overwrite = false)
+    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
     {
         Debug.Assert(reason != ConnectionEndReason.Unset);
 
@@ -421,13 +428,22 @@ internal sealed class KestrelMetrics
         {
             if (TryGetErrorType(reason, out var errorTypeValue))
             {
-                if (overwrite)
+                feature.TryAddTag(ErrorType, errorTypeValue);
+            }
+        }
+    }
+
+    public static void AddConnectionEndReason(ConnectionMetricsContext? context, ConnectionEndReason reason, bool overwrite = false)
+    {
+        Debug.Assert(reason != ConnectionEndReason.Unset);
+
+        if (context != null)
+        {
+            if (TryGetErrorType(reason, out _))
+            {
+                if (context.ConnectionEndReason == null || overwrite)
                 {
-                    feature.SetTag(ErrorType, errorTypeValue);
-                }
-                else
-                {
-                    feature.TryAddTag(ErrorType, errorTypeValue);
+                    context.ConnectionEndReason = reason;
                 }
             }
         }

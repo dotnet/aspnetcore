@@ -117,10 +117,10 @@ public class Http1OutputProducerTests : IDisposable
     [Fact]
     public void AbortsTransportEvenAfterDispose()
     {
-        var metricsTagsFeature = new TestConnectionMetricsTagsFeature();
         var mockConnectionContext = new Mock<ConnectionContext>();
+        var metricsContext = new ConnectionMetricsContext { ConnectionContext = mockConnectionContext.Object };
 
-        var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object, metricsTagsFeature: metricsTagsFeature);
+        var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object, metricsContext: metricsContext);
 
         outputProducer.Dispose();
 
@@ -134,7 +134,7 @@ public class Http1OutputProducerTests : IDisposable
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp), metricsTagsFeature.Tags.Single(t => t.Key == KestrelMetrics.ErrorType).Value);
+        Assert.Equal(ConnectionEndReason.AbortedByApp, metricsContext.ConnectionEndReason);
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class Http1OutputProducerTests : IDisposable
     private TestHttpOutputProducer CreateOutputProducer(
         PipeOptions pipeOptions = null,
         ConnectionContext connectionContext = null,
-        IConnectionMetricsTagsFeature metricsTagsFeature = null)
+        ConnectionMetricsContext metricsContext = null)
     {
         pipeOptions = pipeOptions ?? new PipeOptions();
         connectionContext = connectionContext ?? Mock.Of<ConnectionContext>();
@@ -238,21 +238,21 @@ public class Http1OutputProducerTests : IDisposable
             serviceContext.Log,
             Mock.Of<ITimeoutControl>(),
             Mock.Of<IHttpMinResponseDataRateFeature>(),
-            metricsTagsFeature ?? new TestConnectionMetricsTagsFeature(),
+            metricsContext ?? new ConnectionMetricsContext { ConnectionContext = connectionContext },
             Mock.Of<IHttpOutputAborter>());
 
         return socketOutput;
     }
 
-    private class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
     {
-        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
+        public ConnectionMetricsContext MetricsContext { get; }
     }
 
     private class TestHttpOutputProducer : Http1OutputProducer
     {
-        public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, KestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, IConnectionMetricsTagsFeature metricsTagsFeature, IHttpOutputAborter outputAborter)
-            : base(pipe.Writer, connectionId, connectionContext, memoryPool, log, timeoutControl, minResponseDataRateFeature, metricsTagsFeature, outputAborter)
+        public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, KestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, ConnectionMetricsContext metricsContext, IHttpOutputAborter outputAborter)
+            : base(pipe.Writer, connectionId, connectionContext, memoryPool, log, timeoutControl, minResponseDataRateFeature, metricsContext, outputAborter)
         {
             Pipe = pipe;
         }

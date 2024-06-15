@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -28,12 +29,20 @@ public class HttpResponseHeadersTests
         {
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+            var connectionContext = Mock.Of<ConnectionContext>();
+            var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
+
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
+
             var http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: new TestServiceContext(),
-                connectionContext: Mock.Of<ConnectionContext>(),
+                connectionContext: connectionContext,
                 transport: pair.Transport,
                 memoryPool: memoryPool,
-                connectionFeatures: new FeatureCollection());
+                connectionFeatures: connectionFeatures,
+                metricsContext: metricsContext);
 
             var http1Connection = new Http1Connection(http1ConnectionContext);
 
