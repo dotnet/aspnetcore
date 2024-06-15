@@ -242,13 +242,11 @@ internal class StaticAssetsInvoker
     {
         private readonly HttpContext _context = null!;
         private readonly HttpRequest _request = null!;
-        private readonly HttpResponse _response = null!;
         private readonly EntityTagHeaderValue _etag;
         private readonly DateTimeOffset _lastModified;
         private readonly long _length;
         private readonly ILogger _logger;
         private readonly RequestHeaders _requestHeaders;
-        private readonly ResponseHeaders _responseHeaders;
 
         public StaticAssetInvocationContext(
             HttpContext context,
@@ -259,9 +257,9 @@ internal class StaticAssetsInvoker
         {
             _context = context;
             _request = context.Request;
-            _responseHeaders = context.Response.GetTypedHeaders();
+            ResponseHeaders = context.Response.GetTypedHeaders();
             _requestHeaders = _request.GetTypedHeaders();
-            _response = context.Response;
+            Response = context.Response;
             _etag = entityTag;
             _lastModified = lastModified;
             _length = length;
@@ -270,9 +268,9 @@ internal class StaticAssetsInvoker
 
         public CancellationToken CancellationToken => _context.RequestAborted;
 
-        public ResponseHeaders ResponseHeaders => _responseHeaders;
+        public ResponseHeaders ResponseHeaders { get; }
 
-        public HttpResponse Response => _response;
+        public HttpResponse Response { get; }
 
         public (PreconditionState, bool isRange, RangeItemHeaderValue? range) ComprehendRequestHeaders()
         {
@@ -399,11 +397,9 @@ internal class StaticAssetsInvoker
             PreconditionState ifMatchState,
             PreconditionState ifNoneMatchState,
             PreconditionState ifModifiedSinceState,
-            PreconditionState ifUnmodifiedSinceState) =>
-            GetMaxPreconditionState(ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState);
-
-        private static PreconditionState GetMaxPreconditionState(params Span<PreconditionState> states)
+            PreconditionState ifUnmodifiedSinceState)
         {
+            Span<PreconditionState> states = [ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState];
             var max = PreconditionState.Unspecified;
             for (var i = 0; i < states.Length; i++)
             {
