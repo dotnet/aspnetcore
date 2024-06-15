@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTestBase
@@ -257,6 +259,59 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // The items in the array are mapped to the Todo reference
             Assert.NotNull(requestBodySchema.GetEffective(document).Items.Reference.Id);
             Assert.Equal(4, requestBodySchema.GetEffective(document).Items.GetEffective(document).Properties.Count);
+        });
+    }
+
+    [Fact]
+    public async Task TypeModifiedWithSchemaTransformerMapsToDifferentReferenceId()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/todo", (Todo todo) => { });
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        options.UseSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.Type == typeof(Todo) && context.ParameterDescription is not null)
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var path = Assert.Single(document.Paths.Values);
+            var postOperation = path.Operations[OperationType.Post];
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            // Schemas are distinct because of applied transformer so no reference is used.
+            Assert.Null(requestSchema.Reference);
+            Assert.Equal("todo", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
+            // Schemas are distinct because of applied transformer so no reference is used.
+            Assert.Null(responseSchema.Reference);
+
+            // References are still created for common types within the complex object (boolean, int, etc.)
+            Assert.Collection(document.Components.Schemas.Keys,
+            key =>
+            {
+                Assert.Equal("boolean", key);
+            },
+            key =>
+            {
+                Assert.Equal("DateTime", key);
+            },
+            key =>
+            {
+                Assert.Equal("int", key);
+            },
+            key =>
+            {
+                Assert.Equal("string", key);
+            });
         });
     }
 }
