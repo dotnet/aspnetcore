@@ -23,6 +23,8 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
         _finallyConventions = finallyConventions;
     }
 
+    internal IDictionary<string, object> Items { get; set; } = new Dictionary<string, object>();
+
     /// <summary>
     /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
     /// </summary>

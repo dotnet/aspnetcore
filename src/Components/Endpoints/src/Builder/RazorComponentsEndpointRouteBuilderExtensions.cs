@@ -33,7 +33,15 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
         AddBlazorWebJsEndpoint(endpoints);
         OpaqueRedirection.AddBlazorOpaqueRedirectionEndpoint(endpoints);
 
-        return GetOrCreateDataSource<TRootComponent>(endpoints).DefaultBuilder;
+        var result = GetOrCreateDataSource<TRootComponent>(endpoints).DefaultBuilder;
+
+        // Setup the convention to find the list of descriptors in the endpoint builder and
+        // populate a resource collection out of them.
+        // The user can call WithStaticAssets with a manifest path to override the manifest
+        // to use for the resource collection in case more than one has been mapped.
+        result.WithStaticAssets();
+
+        return result;
     }
 
     private static void AddBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
@@ -67,7 +75,8 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
 #endif
     }
 
-    private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(IEndpointRouteBuilder endpoints)
+    private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(
+        IEndpointRouteBuilder endpoints)
     {
         var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
         if (dataSource == null)

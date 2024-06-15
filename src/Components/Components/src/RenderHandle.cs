@@ -74,6 +74,17 @@ public readonly struct RenderHandle
     }
 
     /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with the <see cref="Renderer"/>.
+    /// </summary>
+    public ResourceAssetCollection Assets
+    {
+        get
+        {
+            return _renderer?.Assets ?? throw new InvalidOperationException("No renderer has been initialized.");
+        }
+    }
+
+    /// <summary>
     /// Notifies the renderer that the component should be rendered.
     /// </summary>
     /// <param name="renderFragment">The content that should be rendered.</param>

@@ -5,11 +5,20 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.StaticAssets;
 
-// Represents a property of an endpoint.
+/// <summary>
+/// A property associated with a static asset.
+/// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal sealed class EndpointProperty(string name, string value)
+public sealed class StaticAssetProperty(string name, string value)
 {
+    /// <summary>
+    /// The name of the property.
+    /// </summary>
     public string Name { get; } = name;
+
+    /// <summary>
+    /// The value of the property.
+    /// </summary>
     public string Value { get; } = value;
 
     private string GetDebuggerDisplay() => $"Name: {Name} Value:{Value}";

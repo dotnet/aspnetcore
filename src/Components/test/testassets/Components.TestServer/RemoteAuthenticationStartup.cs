@@ -28,7 +28,11 @@ public class RemoteAuthenticationStartup
             app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {
+#if !DEBUG
                 endpoints.MapStaticAssets(Path.Combine("trimmed-or-threading", "Components.TestServer", "Components.TestServer.staticwebassets.endpoints.json"));
+#else
+                endpoints.MapStaticAssets("Components.TestServer.staticwebassets.endpoints.json");
+#endif
                 endpoints.MapRazorComponents<RemoteAuthenticationApp>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmRemoteAuthentication"))
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmRemoteAuthentication");

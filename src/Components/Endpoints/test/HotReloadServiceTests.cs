@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 
