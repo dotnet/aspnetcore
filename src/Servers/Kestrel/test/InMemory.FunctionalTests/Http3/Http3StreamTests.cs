@@ -777,7 +777,7 @@ public class Http3StreamTests : Http3TestBase
         }, requestHeaders, endStream: true);
 
         await requestStream.ExpectReceiveEndOfStream();
-        await appTcs.Task;
+        await appTcs.Task.DefaultTimeout();
     }
 
     [Fact]

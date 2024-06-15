@@ -230,6 +230,8 @@ internal class Http3InMemory
             ConnectionId = "TEST"
         };
 
+        var metricsContext = MultiplexedConnectionContext.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
+
         var httpConnectionContext = new HttpMultiplexedConnectionContext(
             connectionId: MultiplexedConnectionContext.ConnectionId,
             HttpProtocols.Http3,
@@ -239,7 +241,8 @@ internal class Http3InMemory
             serviceContext: _serviceContext,
             memoryPool: _memoryPool,
             localEndPoint: null,
-            remoteEndPoint: null);
+            remoteEndPoint: null,
+            metricsContext: metricsContext);
         httpConnectionContext.TimeoutControl = _timeoutControl;
 
         _httpConnection = new HttpConnection(httpConnectionContext);
@@ -1010,6 +1013,8 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         Features.Set<IConnectionMetricsContextFeature>(this);
         Features.Set<IConnectionMetricsTagsFeature>(this);
         ConnectionClosedRequested = ConnectionClosingCts.Token;
+
+        MetricsContext = TestContextFactory.CreateMetricsContext(this);
     }
 
     public override string ConnectionId { get; set; }

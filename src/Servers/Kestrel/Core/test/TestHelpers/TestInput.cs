@@ -30,19 +30,24 @@ class TestInput : IDisposable
         Transport = pair.Transport;
         Application = pair.Application;
 
+        var connectionContext = Mock.Of<ConnectionContext>();
+        var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
+
         var connectionFeatures = new FeatureCollection();
         connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+        connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
 
         Http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: new TestServiceContext
             {
                 Log = log ?? new KestrelTrace(NullLoggerFactory.Instance)
             },
-            connectionContext: Mock.Of<ConnectionContext>(),
+            connectionContext: connectionContext,
             transport: Transport,
             timeoutControl: timeoutControl ?? Mock.Of<ITimeoutControl>(),
             memoryPool: _memoryPool,
-            connectionFeatures: connectionFeatures);
+            connectionFeatures: connectionFeatures,
+            metricsContext: metricsContext);
 
         Http1Connection = new Http1Connection(Http1ConnectionContext);
         Http1Connection.HttpResponseControl = Mock.Of<IHttpResponseControl>();

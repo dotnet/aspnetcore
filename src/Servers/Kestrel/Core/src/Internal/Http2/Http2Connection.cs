@@ -141,7 +141,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         _context = context;
         _streamLifetimeHandler = this;
-        _metricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
+        _metricsContext = context.MetricsContext;
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _metricsTagsFeature = context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
 
@@ -224,7 +224,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Debug.Assert(_errorCodeFeature.Error == -1, "Error code feature should only be set once.");
 
         _errorCodeFeature.Error = (long)errorCode;
-        KestrelMetrics.AddConnectionEndReason(_metricsTagsFeature, reason);
+        KestrelMetrics.AddConnectionEndReason(_metricsContext, reason);
     }
 
     public void Abort(ConnectionAbortedException ex, ConnectionEndReason reason)

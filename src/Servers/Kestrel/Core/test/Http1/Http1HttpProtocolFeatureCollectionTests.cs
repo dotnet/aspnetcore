@@ -26,12 +26,19 @@ public class Http1HttpProtocolFeatureCollectionTests
 
     public Http1HttpProtocolFeatureCollectionTests()
     {
+        var connectionContext = Mock.Of<ConnectionContext>();
+        var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
+
+        var connectionFeatures = new FeatureCollection();
+        connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
+
         var context = TestContextFactory.CreateHttpConnectionContext(
-            connectionContext: Mock.Of<ConnectionContext>(),
+            connectionContext: connectionContext,
             serviceContext: new TestServiceContext(),
             transport: Mock.Of<IDuplexPipe>(),
-            connectionFeatures: new FeatureCollection(),
-            timeoutControl: Mock.Of<ITimeoutControl>());
+            connectionFeatures: connectionFeatures,
+            timeoutControl: Mock.Of<ITimeoutControl>(),
+            metricsContext: metricsContext);
 
         _httpConnectionContext = context;
         _http1Connection = new TestHttp1Connection(context);

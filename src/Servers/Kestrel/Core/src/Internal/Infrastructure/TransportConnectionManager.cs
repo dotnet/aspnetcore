@@ -5,7 +5,6 @@
 
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -78,8 +77,9 @@ internal sealed class TransportConnectionManager
         {
             if (kvp.Value.TryGetConnection(out var connection))
             {
+                // Connection didn't shutdown in allowed time. Force close the connection and set the end reason.
                 KestrelMetrics.AddConnectionEndReason(
-                    connection.TransportConnection.Features.Get<IConnectionMetricsTagsFeature>(),
+                    connection.TransportConnection.Features.Get<IConnectionMetricsContextFeature>()?.MetricsContext,
                     ConnectionEndReason.AppShutdown, overwrite: true);
 
                 connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
