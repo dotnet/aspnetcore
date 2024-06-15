@@ -15,23 +15,22 @@ namespace Microsoft.AspNetCore.StaticAssets;
 internal class StaticAssetsInvoker
 {
     private readonly StaticAssetDescriptor _resource;
-
+    private readonly IFileProvider _fileProvider;
     private readonly ILogger _logger;
     private readonly string? _contentType;
-
-    private readonly IFileInfo _fileInfo;
 
     private readonly EntityTagHeaderValue _etag;
     private readonly long _length;
     private readonly DateTimeOffset _lastModified;
     private readonly List<StaticAssetResponseHeader> _remainingHeaders;
 
-    public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileInfo fileInfo, ILogger<StaticAssetsInvoker> logger)
+    private IFileInfo? _fileInfo;
+
+    public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileProvider fileProvider, ILogger<StaticAssetsInvoker> logger)
     {
         _resource = resource;
-        _fileInfo = fileInfo;
+        _fileProvider = fileProvider;
         _logger = logger;
-        _fileInfo = fileInfo;
         _remainingHeaders ??= [];
 
         foreach (var responseHeader in resource.ResponseHeaders)
@@ -77,7 +76,12 @@ internal class StaticAssetsInvoker
 
     public string Route => _resource.Route;
 
-    public string PhysicalPath => _fileInfo.PhysicalPath ?? string.Empty;
+    public string PhysicalPath => FileInfo.PhysicalPath ?? string.Empty;
+
+    public IFileInfo FileInfo => _fileInfo ??=
+        _fileProvider.GetFileInfo(_resource.AssetPath) is IFileInfo file and { Exists: true } ?
+        file :
+        throw new InvalidOperationException($"The file '{_resource.AssetPath}' could not be found.");
 
     private Task ApplyResponseHeadersAsync(StaticAssetInvocationContext context, int statusCode)
     {
@@ -176,7 +180,7 @@ internal class StaticAssetsInvoker
         await ApplyResponseHeadersAsync(context, StatusCodes.Status200OK);
         try
         {
-            await context.Response.SendFileAsync(_fileInfo, 0, _length, context.CancellationToken);
+            await context.Response.SendFileAsync(FileInfo, 0, _length, context.CancellationToken);
         }
         catch (OperationCanceledException ex)
         {
@@ -214,9 +218,9 @@ internal class StaticAssetsInvoker
 
         try
         {
-            var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : Route;
+            var logPath = !string.IsNullOrEmpty(FileInfo.PhysicalPath) ? FileInfo.PhysicalPath : Route;
             _logger.SendingFileRange(requestContext.Response.Headers.ContentRange, logPath);
-            await requestContext.Response.SendFileAsync(_fileInfo, start, length, requestContext.CancellationToken);
+            await requestContext.Response.SendFileAsync(FileInfo, start, length, requestContext.CancellationToken);
         }
         catch (OperationCanceledException ex)
         {

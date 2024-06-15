@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.StaticAssets;
@@ -39,10 +40,8 @@ internal class StaticAssetEndpointFactory(IServiceProvider serviceProvider)
         }
 
         var logger = serviceProvider.GetRequiredService<ILogger<StaticAssetsInvoker>>();
-        var fileInfo = serviceProvider.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(resource.AssetPath) ??
-            throw new InvalidOperationException($"The file '{resource.AssetPath}' could not be found.");
-
-        var invoker = new StaticAssetsInvoker(resource, fileInfo, logger);
+        var fileProvider = serviceProvider.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider;
+        var invoker = new StaticAssetsInvoker(resource, fileProvider, logger);
 
         routeEndpointBuilder.RequestDelegate = invoker.Invoke;
 
