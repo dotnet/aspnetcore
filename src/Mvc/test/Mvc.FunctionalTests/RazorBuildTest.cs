@@ -112,6 +112,8 @@ public class RazorBuildTest : LoggedTest
 
         // Act - 2
         await UpdateFile(path, "@GetType().Assembly");
+        // Run twice to make sure recompilation is cached
+        _ = await Client.GetStringAsync("/UpdateableViews");
         body = await Client.GetStringAsync("/UpdateableViews");
 
         // Assert - 2
@@ -149,6 +151,9 @@ public class RazorBuildTest : LoggedTest
         // Act - 2
         await UpdateRazorPages();
         await UpdateFile("/Pages/UpdateablePage.cshtml", "@page" + Environment.NewLine + "@GetType().Assembly");
+
+        // Run twice to make sure recompilation is cached
+        _ = await Client.GetStringAsync("/UpdateablePage");
         body = await Client.GetStringAsync("/UpdateablePage");
 
         // Assert - 2

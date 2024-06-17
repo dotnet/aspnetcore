@@ -26,10 +26,6 @@ public class UpdateableFileProvider : IFileProvider
                 "/Pages/UpdateablePage.cshtml",
                 new TestFileInfo("@page" + Environment.NewLine + "Original content")
             },
-            {
-                "/Pages/Fallback.cshtml",
-                new TestFileInfo(string.Empty)
-            }
         };
 
     public IDirectoryContents GetDirectoryContents(string subpath)
