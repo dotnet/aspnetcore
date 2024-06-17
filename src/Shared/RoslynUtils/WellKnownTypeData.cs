@@ -113,11 +113,14 @@ internal static class WellKnownTypeData
         Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions,
         Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute,
         Microsoft_AspNetCore_Authorization_AuthorizationOptions,
-        Microsoft_Extensions_DependencyInjection_IServiceCollection
+        Microsoft_Extensions_DependencyInjection_IServiceCollection,
+        Microsoft_AspNetCore_Authorization_IAllowAnonymous,
+        Microsoft_AspNetCore_Authorization_IAuthorizeData,
+        System_AttributeUsageAttribute,
     }
 
-    public static string[] WellKnownTypeNames = new[]
-    {
+    public static string[] WellKnownTypeNames =
+    [
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.IHeaderDictionary",
         "Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider",
@@ -225,5 +228,8 @@ internal static class WellKnownTypeData
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute",
         "Microsoft.AspNetCore.Authorization.AuthorizationOptions",
         "Microsoft.Extensions.DependencyInjection.IServiceCollection",
-    };
+        "Microsoft.AspNetCore.Authorization.IAllowAnonymous",
+        "Microsoft.AspNetCore.Authorization.IAuthorizeData",
+        "System.AttributeUsageAttribute",
+    ];
 }
