@@ -23,7 +23,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         DiagnosticDescriptors.AmbiguousActionRoute,
-        DiagnosticDescriptors.AuthorizeAttributeOverridden
+        DiagnosticDescriptors.OverriddenAuthorizeAttribute
     );
 
     public override void Initialize(AnalysisContext context)

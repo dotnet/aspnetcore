@@ -6,7 +6,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier
 
 namespace Microsoft.AspNetCore.Analyzers.Mvc;
 
-public partial class AuthorizeAttributeOverriddenTest
+public partial class DetectOverriddenAuthorizeAttributeTest
 {
     private const string CommonPrefix = """
 using System;
@@ -32,7 +32,7 @@ public class MyController
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyController").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyController").WithLocation(0)
         );
     }
 
@@ -70,7 +70,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(0)
         );
     }
 
@@ -95,9 +95,9 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(1),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(2)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(1),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(2)
         );
     }
 
@@ -119,7 +119,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(0)
         );
     }
 
@@ -142,7 +142,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase").WithLocation(0)
         );
     }
 
@@ -179,8 +179,8 @@ public class MyOtherController : MyControllerBase
         // entire MvcAnalyzer which I don't think is a good tradeoff. I assume that this scenario is rare enough and that overreporting
         // is benign enough to not warrant the performance hit.
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(0)
         );
     }
 
@@ -209,7 +209,7 @@ public class MyAllowAnonymousAttribute : Attribute, IAllowAnonymous
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyController").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyController").WithLocation(0)
         );
     }
 
@@ -292,7 +292,7 @@ public class MyController
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyController.Get").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyController.Get").WithLocation(0)
         );
     }
 
@@ -326,7 +326,7 @@ public class MyController
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyController").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyController").WithLocation(0)
         );
     }
 
@@ -349,7 +349,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase.Get").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase.Get").WithLocation(0)
         );
     }
 
@@ -424,7 +424,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase.Get").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase.Get").WithLocation(0)
         );
     }
 
@@ -448,7 +448,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBase.Get").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBase.Get").WithLocation(0)
         );
     }
 
@@ -476,7 +476,7 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(0)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(0)
         );
     }
 
@@ -507,9 +507,9 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(1),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase").WithLocation(2)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(1),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase").WithLocation(2)
         );
     }
 
@@ -540,13 +540,13 @@ public class MyController : MyControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase.Get").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("MyControllerBaseBase.Get").WithLocation(1)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase.Get").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("MyControllerBaseBase.Get").WithLocation(1)
         );
     }
 
     [Fact]
-    public async Task MultipleControllers_WithMultipleActions_HasDiagnostics()
+    public async Task AttributesOnMultipleActions_AttributesOnMultipleControllers_HasDiagnostics()
     {
         // Copied from https://github.com/dotnet/aspnetcore/issues/43550#issuecomment-1940287150
         var source = $$"""
@@ -593,10 +593,10 @@ public class OAuthControllerInherited3 : ControllerBase
 """;
 
         await VerifyCS.VerifyAnalyzerAsync(source,
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("OAuthControllerAnon").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("OAuthControllerAnon").WithLocation(1),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("OAuthControllerMultiple").WithLocation(2),
-            new DiagnosticResult(DiagnosticDescriptors.AuthorizeAttributeOverridden).WithArguments("OAuthControllerInherited3").WithLocation(3)
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("OAuthControllerAnon").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("OAuthControllerAnon").WithLocation(1),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("OAuthControllerMultiple").WithLocation(2),
+            new DiagnosticResult(DiagnosticDescriptors.OverriddenAuthorizeAttribute).WithArguments("OAuthControllerInherited3").WithLocation(3)
         );
     }
 }

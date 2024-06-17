@@ -37,8 +37,8 @@ public partial class MvcAnalyzer
             if (foundAllowAnonymous)
             {
                 // Anything we find after this would be farther away, so we can short circuit.
-                ReportAuthorizeAttributeOverriddenDiagnosticsIfAny(context, authorizeAttributes, currentClass.Name);
-                // Keep track of the nearest class with [AllowAnonymous] for later reporting of method-level [Authorize] attributes.
+                ReportOverriddenAuthorizeAttributeDiagnosticsIfAny(context, authorizeAttributes, currentClass.Name);
+                // Keep track of the nearest class with [AllowAnonymous] for later reporting of action-level [Authorize] attributes.
                 allowAnonClass = currentClass.Name;
                 return;
             }
@@ -58,51 +58,48 @@ public partial class MvcAnalyzer
     {
         Debug.Assert(authorizeAttributes.Count is 0);
 
-        bool foundAllowAnonymous;
         var isCheckingBaseType = false;
         var currentMethod = actionSymbol;
 
         foreach (var currentClass in actionSymbol.ContainingType.GetTypeHierarchy())
         {
+            bool foundAllowAnonymous;
+
             if (currentMethod is not null && IsSameSymbol(currentMethod.ContainingType, currentClass))
             {
                 FindAuthorizeAndAllowAnonymous(wellKnownTypes, currentMethod, isCheckingBaseType, authorizeAttributes, out foundAllowAnonymous);
                 if (foundAllowAnonymous)
                 {
-                    // [AllowAnonymous] was found on the action method. Anything we find after this would be farther away, so we don't need to report any
-                    // [Authorize] attributes unless we already found one on the very same method or an override.
-                    ReportAuthorizeAttributeOverriddenDiagnosticsIfAny(context, authorizeAttributes, currentMethod.ContainingType.Name, currentMethod.Name);
+                    // [AllowAnonymous] was found on the action method. Anything we find after this would be farther away, so we short circuit.
+                    ReportOverriddenAuthorizeAttributeDiagnosticsIfAny(context, authorizeAttributes, currentMethod.ContainingType.Name, currentMethod.Name);
                     return;
                 }
 
                 currentMethod = currentMethod.OverriddenMethod;
 
-                if (currentMethod is null)
+                // We've already checked the controller and any base classes for overridden attributes in DetectOverriddenAuthorizeAttributeOnController.
+                // If there are no more base methods, and we are not tracking any unreported [Authorize] attributes that might be overridden by a class, we're done.
+                if (currentMethod is null && (authorizeAttributes.Count is 0 || !isCheckingBaseType))
                 {
-                    if (authorizeAttributes.Count is 0)
+                    if (allowAnonClass is not null)
                     {
-                        // We've already checked the Controller and any base classes for overridden attributes in DetectOverriddenAuthorizeAttributeOnController.
-                        // If there are no more base methods and are not tracking any unreported [Authorize] attributes that might be overridden by a class, we're done.
-                        return;
+                        // We don't use allowAnonClass once we start checking overrides to avoid false positives. But if we found [Authorize] directly on a non-virtual
+                        // action, we can report it without rechecking the controller or its base types for [AllowAnonymous] when given a non-null allowAnonClass.
+                        ReportOverriddenAuthorizeAttributeDiagnosticsIfAny(context, authorizeAttributes, allowAnonClass);
                     }
 
-                    if (!isCheckingBaseType && allowAnonClass is not null)
-                    {
-                        // Don't use allowAnonClass once we start checking overrides to avoid false positives. But if we found [Authorize] directly on a non-virtual
-                        // action method, we can report it without rechecking the controller or its base types for [AllowAnonymous] if an allowAnonClass was passed in.
-                        ReportAuthorizeAttributeOverriddenDiagnosticsIfAny(context, authorizeAttributes, allowAnonClass);
-                        return;
-                    }
+                    return;
                 }
             }
 
-            // We're mostly looking for [Authorize] on virtual methods and verifying they are not overridden by farther away [AllowAnonymous] attributes,
-            // but we still need to track [Authorize] attributes on classes in case there is a [AllowAnonymous] on a base method farther away.
+            // Now, we're mostly trying to detect [Authorize] on virtual actions which are not covered by allowAnonClass. Overridden [Authorize] attributes on classes
+            // have mostly been reported already, but we still need to track those too just in case there is [AllowAnonymous] on a base method farther away.
             FindAuthorizeAndAllowAnonymous(wellKnownTypes, currentClass, isCheckingBaseType, authorizeAttributes, out foundAllowAnonymous);
             if (foundAllowAnonymous)
             {
-                // We've already searched Controllers and their base types for overridden [Authorize] attribute locations, we don't need to report those again.
-                ReportAuthorizeAttributeOverriddenDiagnosticsIfAny(context, authorizeAttributes.Where(a => a.IsTargetingMethod), currentClass.Name);
+                // We are only concerned with method-level [Authorize] attributes that are overridden by the [AllowAnonymous] found on this class.
+                // Any child classes should have already been reported in DetectOverriddenAuthorizeAttributeOnController.
+                ReportOverriddenAuthorizeAttributeDiagnosticsIfAny(context, authorizeAttributes.Where(a => a.IsTargetingMethod), currentClass.Name);
                 return;
             }
 
@@ -199,28 +196,25 @@ public partial class MvcAnalyzer
         {
             var isTargetingMethod = symbol is IMethodSymbol;
             authorizeAttributes.Add(new(localAuthorizeAttribute, isTargetingMethod));
-            if (localAuthorizeAttributeOverflow is not null)
+            foreach (var extraAttribute in localAuthorizeAttributeOverflow ?? Enumerable.Empty<AttributeData>())
             {
-                foreach (var extraAttribute in localAuthorizeAttributeOverflow)
-                {
-                    authorizeAttributes.Add(new(extraAttribute, isTargetingMethod));
-                }
+                authorizeAttributes.Add(new(extraAttribute, isTargetingMethod));
             }
         }
     }
 
-    private static void ReportAuthorizeAttributeOverriddenDiagnosticsIfAny(SymbolAnalysisContext context,
+    private static void ReportOverriddenAuthorizeAttributeDiagnosticsIfAny(SymbolAnalysisContext context,
         IEnumerable<AttributeInfo> authorizeAttributes, string allowAnonClass, string? allowAnonMethod = null)
     {
         string? allowAnonLocation = null;
 
         foreach (var authorizeAttribute in authorizeAttributes)
         {
-            allowAnonLocation ??= allowAnonMethod is null ? allowAnonClass : $"{allowAnonClass}.{allowAnonMethod}";
             if (authorizeAttribute.AttributeData.ApplicationSyntaxReference is { } syntaxReference)
             {
+                allowAnonLocation ??= allowAnonMethod is null ? allowAnonClass : $"{allowAnonClass}.{allowAnonMethod}";
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.AuthorizeAttributeOverridden,
+                    DiagnosticDescriptors.OverriddenAuthorizeAttribute,
                     syntaxReference.GetSyntax(context.CancellationToken).GetLocation(),
                     allowAnonLocation));
             }

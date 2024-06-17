@@ -215,11 +215,11 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
-    internal static readonly DiagnosticDescriptor AuthorizeAttributeOverridden = new(
+    internal static readonly DiagnosticDescriptor OverriddenAuthorizeAttribute = new(
         "ASP0026",
-        new LocalizableResourceString(nameof(Resources.Analyzer_AuthorizeAttributeOverridden_Title), Resources.ResourceManager, typeof(Resources)),
-        new LocalizableResourceString(nameof(Resources.Analyzer_AuthorizeAttributeOverridden_Message), Resources.ResourceManager, typeof(Resources)),
-        "Usage",
+        new LocalizableResourceString(nameof(Resources.Analyzer_OverriddenAuthorizeAttribute_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_OverriddenAuthorizeAttribute_Message), Resources.ResourceManager, typeof(Resources)),
+        "Security",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
