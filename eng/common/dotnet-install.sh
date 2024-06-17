@@ -82,7 +82,7 @@ if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi
 
-InstallDotNet $dotnetRoot $version "$architecture" $runtime true $runtimeSourceFeed $runtimeSourceFeedKey || {
+InstallDotNet "$dotnetRoot" $version "$architecture" $runtime true $runtimeSourceFeed $runtimeSourceFeedKey || {
   local exit_code=$?
   Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
   ExitWithExitCode $exit_code
