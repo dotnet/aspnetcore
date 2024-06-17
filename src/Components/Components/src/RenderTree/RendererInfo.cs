@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components;
 /// <param name="isInteractive">A flag to indicate if the platform is interactive.</param>
 public sealed class RendererInfo(string rendererName, bool isInteractive)
 {
-
     /// <summary>
     /// Gets the name of the platform.
     /// </summary>
