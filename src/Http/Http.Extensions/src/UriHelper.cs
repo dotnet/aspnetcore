@@ -203,54 +203,7 @@ public static class UriHelper
     /// suitable only for display.</returns>
     public static string GetDisplayUrl(this HttpRequest request)
     {
-        var scheme = request.Scheme ?? string.Empty;
-        var host = request.Host.Value ?? string.Empty;
-        var pathBase = request.PathBase.Value ?? string.Empty;
-        var path = request.Path.Value ?? string.Empty;
-        var queryString = request.QueryString.Value ?? string.Empty;
-
-        var length = scheme.Length + SchemeDelimiter.Length + host.Length
-            + pathBase.Length + path.Length + queryString.Length;
-
-        return string.Create(
-            length,
-            (scheme, host, pathBase, path, queryString),
-            static (buffer, uriParts) =>
-            {
-                var (scheme, host, pathBase, path, queryString) = uriParts;
-
-                if (scheme.Length > 0)
-                {
-                    scheme.CopyTo(buffer);
-                    buffer = buffer.Slice(scheme.Length);
-                }
-
-                SchemeDelimiter.CopyTo(buffer);
-                buffer = buffer.Slice(SchemeDelimiter.Length);
-
-                if (host.Length > 0)
-                {
-                    host.CopyTo(buffer);
-                    buffer = buffer.Slice(host.Length);
-                }
-
-                if (pathBase.Length > 0)
-                {
-                    pathBase.CopyTo(buffer);
-                    buffer = buffer.Slice(pathBase.Length);
-                }
-
-                if (path.Length > 0)
-                {
-                    path.CopyTo(buffer);
-                    buffer = buffer.Slice(path.Length);
-                }
-
-                if (queryString.Length > 0)
-                {
-                    queryString.CopyTo(buffer);
-                }
-            });
+        return string.Concat((ReadOnlySpan<string?>)[request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
     }
 
     /// <summary>
