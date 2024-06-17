@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
@@ -98,6 +100,7 @@ public class RazorBuildTest : LoggedTest
     }
 
     [Fact]
+    [LogLevel(LogLevel.Trace)]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -142,6 +145,7 @@ public class RazorBuildTest : LoggedTest
     }
 
     [Fact]
+    [LogLevel(LogLevel.Trace)]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange
