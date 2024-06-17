@@ -52,9 +52,9 @@ public readonly struct RenderHandle
         ?? throw new InvalidOperationException("No renderer has been initialized.");
 
     /// <summary>
-    /// Gets the <see cref="ComponentPlatform"/> the component is running on.
+    /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
-    public ComponentPlatform Platform => _renderer?.ComponentPlatform ?? throw new InvalidOperationException("No renderer has been initialized.");
+    public RendererInfo RendererInfo => _renderer?.RendererInfo ?? throw new InvalidOperationException("No renderer has been initialized.");
 
     /// <summary>
     /// Retrieves the <see cref="IComponentRenderMode"/> assigned to the component.

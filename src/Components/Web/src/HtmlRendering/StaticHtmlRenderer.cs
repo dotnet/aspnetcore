@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 /// </summary>
 public partial class StaticHtmlRenderer : Renderer
 {
-    private static readonly ComponentPlatform _componentPlatform = new ComponentPlatform("Static", isInteractive: false);
+    private static readonly RendererInfo _componentPlatform = new RendererInfo("Static", isInteractive: false);
 
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly NavigationManager? _navigationManager;
@@ -41,7 +41,7 @@ public partial class StaticHtmlRenderer : Renderer
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
     /// <inheritdoc/>
-    protected internal override ComponentPlatform ComponentPlatform => _componentPlatform;
+    protected internal override RendererInfo RendererInfo => _componentPlatform;
 
     /// <summary>
     /// Adds a root component of the specified type and begins rendering it.

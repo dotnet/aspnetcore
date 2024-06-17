@@ -43,9 +43,9 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
-    /// Gets the <see cref="ComponentPlatform"/> the component is running on.
+    /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
-    protected ComponentPlatform Platform => _renderHandle.Platform;
+    protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
 
     /// <summary>
     /// Gets the <see cref="ResourceAssetCollection"/> for the application.

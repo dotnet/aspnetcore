@@ -18,7 +18,7 @@ internal partial class RemoteRenderer : WebRenderer
 #pragma warning restore CA1852 // Seal internal types
 {
     private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
-    private static readonly ComponentPlatform _componentPlatform = new("Server", isInteractive: true);
+    private static readonly RendererInfo _componentPlatform = new("Server", isInteractive: true);
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;
@@ -62,7 +62,7 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
 
-    protected override ComponentPlatform ComponentPlatform => _componentPlatform;
+    protected override RendererInfo RendererInfo => _componentPlatform;
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
