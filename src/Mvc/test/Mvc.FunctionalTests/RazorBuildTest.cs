@@ -112,8 +112,13 @@ public class RazorBuildTest : LoggedTest
 
         // Act - 2
         await UpdateFile(path, "@GetType().Assembly");
-        // Run twice to make sure recompilation is cached
-        _ = await Client.GetStringAsync("/UpdateableViews");
+
+        // Run a few times to make sure recompilation occurs.
+        // MemoryCache runs cache item expiration in the background so there is some delay before the cache is cleared and recompilation can occur.
+        for (var i = 0; i < 10; i++)
+        {
+            _ = await Client.GetStringAsync("/UpdateableViews");
+        }
         body = await Client.GetStringAsync("/UpdateableViews");
 
         // Assert - 2
@@ -152,8 +157,12 @@ public class RazorBuildTest : LoggedTest
         await UpdateRazorPages();
         await UpdateFile("/Pages/UpdateablePage.cshtml", "@page" + Environment.NewLine + "@GetType().Assembly");
 
-        // Run twice to make sure recompilation is cached
-        _ = await Client.GetStringAsync("/UpdateablePage");
+        // Run a few times to make sure recompilation occurs.
+        // MemoryCache runs cache item expiration in the background so there is some delay before the cache is cleared and recompilation can occur.
+        for (var i = 0; i < 10; i++)
+        {
+            _ = await Client.GetStringAsync("/UpdateableViews");
+        }
         body = await Client.GetStringAsync("/UpdateablePage");
 
         // Assert - 2
