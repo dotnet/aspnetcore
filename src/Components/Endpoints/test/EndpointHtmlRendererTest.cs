@@ -1680,7 +1680,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
-
+        services.AddScoped<ResourceCollectionProvider>();
         return services;
     }
 

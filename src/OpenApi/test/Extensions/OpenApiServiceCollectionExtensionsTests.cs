@@ -35,7 +35,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
@@ -69,7 +69,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
@@ -102,7 +102,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
@@ -135,7 +135,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
@@ -157,7 +157,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
@@ -181,7 +181,7 @@ public class OpenApiServiceCollectionExtensions
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiSchemaService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
         Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();

@@ -20,7 +20,6 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55297")]
     public async void HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;

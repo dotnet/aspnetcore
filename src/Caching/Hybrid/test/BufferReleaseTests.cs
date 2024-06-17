@@ -53,7 +53,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotSame(first, second);
 
         Assert.Equal(1, cacheItem.RefCount);
-        await cache.RemoveKeyAsync(key);
+        await cache.RemoveAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
 
@@ -138,7 +138,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotSame(first, second);
 
         Assert.Equal(1, cacheItem.RefCount);
-        await cache.RemoveKeyAsync(key);
+        await cache.RemoveAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
         Assert.Null(await cache.BackendCache.GetAsync(key)); // should be gone from L2 too
@@ -196,7 +196,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotSame(first, second);
 
         Assert.Equal(1, cacheItem.RefCount);
-        await cache.RemoveKeyAsync(key);
+        await cache.RemoveAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
         Assert.Null(await cache.BackendCache.GetAsync(key)); // should be gone from L2 too

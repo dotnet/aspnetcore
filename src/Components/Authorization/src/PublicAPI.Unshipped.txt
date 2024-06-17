@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.AuthenticationStateData() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.Claims.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string!>>!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.Claims.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.NameClaimType.get -> string!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.NameClaimType.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.RoleClaimType.get -> string!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.RoleClaimType.set -> void
