@@ -2,11 +2,11 @@
 @using Microsoft.AspNetCore.Components.Web;
 @inject IJSRuntime JSRuntime
 
-<p id="platform-name">@Platform.Name</p>
+<p id="platform-name">@RendererInfo.Name</p>
 
 <p id="basic-app-styles">@Assets["BasicTestApp.styles.css"]</p>
 
-@if (!Platform.IsInteractive)
+@if (!RendererInfo.IsInteractive)
 {
     <button id="import-module" onclick="import('./Index.mjs')">Import JS Module</button>    
 }else
