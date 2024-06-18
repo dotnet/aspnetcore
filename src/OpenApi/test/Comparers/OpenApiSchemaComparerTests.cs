@@ -97,4 +97,211 @@ public class OpenApiSchemaComparerTests
     [MemberData(nameof(SinglePropertyData))]
     public void ProducesCorrectEqualityForOpenApiSchema(OpenApiSchema schema, OpenApiSchema anotherSchema, bool isEqual)
         => Assert.Equal(isEqual, OpenApiSchemaComparer.Instance.Equals(schema, anotherSchema));
+
+    [Fact]
+    public void ValidatePropertiesOnOpenApiSchema()
+    {
+        var propertyNames = typeof(OpenApiSchema).GetProperties().Select(property => property.Name).ToList();
+        var originalSchema = new OpenApiSchema
+        {
+            AdditionalProperties = new OpenApiSchema(),
+            AdditionalPropertiesAllowed = true,
+            AllOf = [new OpenApiSchema()],
+            AnyOf = [new OpenApiSchema()],
+            Deprecated = true,
+            Default = new OpenApiString("default"),
+            Description = "description",
+            Discriminator = new OpenApiDiscriminator(),
+            Example = new OpenApiString("example"),
+            ExclusiveMaximum = true,
+            ExclusiveMinimum = true,
+            Extensions = new Dictionary<string, IOpenApiExtension>
+            {
+                ["key"] = new OpenApiString("value")
+            },
+            ExternalDocs = new OpenApiExternalDocs(),
+            Enum = [new OpenApiString("test")],
+            Format = "object",
+            Items = new OpenApiSchema(),
+            Maximum = 10,
+            MaxItems = 10,
+            MaxLength = 10,
+            MaxProperties = 10,
+            Minimum = 10,
+            MinItems = 10,
+            MinLength = 10,
+            MinProperties = 10,
+            MultipleOf = 10,
+            OneOf = [new OpenApiSchema()],
+            Not = new OpenApiSchema(),
+            Nullable = false,
+            Pattern = "pattern",
+            Properties = new Dictionary<string, OpenApiSchema> { ["name"] = new OpenApiSchema() },
+            ReadOnly = true,
+            Required = new HashSet<string> { "required" },
+            Reference = new OpenApiReference { Id = "Id", Type = ReferenceType.Schema },
+            UniqueItems = false,
+            UnresolvedReference = true,
+            WriteOnly = true,
+            Xml = new OpenApiXml { Name = "Name" },
+        };
+
+        OpenApiSchema modifiedSchema = new(originalSchema) { AdditionalProperties = new OpenApiSchema { Type = "string" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.AdditionalProperties)));
+
+        modifiedSchema = new(originalSchema) { AdditionalPropertiesAllowed = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.AdditionalPropertiesAllowed)));
+
+        modifiedSchema = new(originalSchema) { AllOf = [new OpenApiSchema { Type = "string" }] };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.AllOf)));
+
+        modifiedSchema = new(originalSchema) { AnyOf = [new OpenApiSchema { Type = "string" }] };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.AnyOf)));
+
+        modifiedSchema = new(originalSchema) { Deprecated = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Deprecated)));
+
+        modifiedSchema = new(originalSchema) { Default = new OpenApiString("another default") };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Default)));
+
+        modifiedSchema = new(originalSchema) { Description = "another description" };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Description)));
+
+        modifiedSchema = new(originalSchema) { Discriminator = new OpenApiDiscriminator { PropertyName = "PropertyName" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Discriminator)));
+
+        modifiedSchema = new(originalSchema) { Example = new OpenApiString("another example") };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Example)));
+
+        modifiedSchema = new(originalSchema) { ExclusiveMaximum = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.ExclusiveMaximum)));
+
+        modifiedSchema = new(originalSchema) { ExclusiveMinimum = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.ExclusiveMinimum)));
+
+        modifiedSchema = new(originalSchema) { Extensions = new Dictionary<string, IOpenApiExtension> { ["key"] = new OpenApiString("another value") } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Extensions)));
+
+        modifiedSchema = new(originalSchema) { ExternalDocs = new OpenApiExternalDocs { Description = "another description" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.ExternalDocs)));
+
+        modifiedSchema = new(originalSchema) { Enum = [new OpenApiString("another test")] };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Enum)));
+
+        modifiedSchema = new(originalSchema) { Format = "string" };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Format)));
+
+        modifiedSchema = new(originalSchema) { Items = new OpenApiSchema { Type = "string" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Items)));
+
+        modifiedSchema = new(originalSchema) { Maximum = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Maximum)));
+
+        modifiedSchema = new(originalSchema) { MaxItems = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MaxItems)));
+
+        modifiedSchema = new(originalSchema) { MaxLength = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MaxLength)));
+
+        modifiedSchema = new(originalSchema) { MaxProperties = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MaxProperties)));
+
+        modifiedSchema = new(originalSchema) { Minimum = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Minimum)));
+
+        modifiedSchema = new(originalSchema) { MinItems = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MinItems)));
+
+        modifiedSchema = new(originalSchema) { MinLength = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MinLength)));
+
+        modifiedSchema = new(originalSchema) { MinProperties = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MinProperties)));
+
+        modifiedSchema = new(originalSchema) { MultipleOf = 20 };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.MultipleOf)));
+
+        modifiedSchema = new(originalSchema) { OneOf = [new OpenApiSchema { Type = "string" }] };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.OneOf)));
+
+        modifiedSchema = new(originalSchema) { Not = new OpenApiSchema { Type = "string" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Not)));
+
+        modifiedSchema = new(originalSchema) { Nullable = true };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Nullable)));
+
+        modifiedSchema = new(originalSchema) { Pattern = "another pattern" };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Pattern)));
+
+        modifiedSchema = new(originalSchema) { Properties = new Dictionary<string, OpenApiSchema> { ["name"] = new OpenApiSchema { Type = "integer" } } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Properties)));
+
+        modifiedSchema = new(originalSchema) { ReadOnly = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.ReadOnly)));
+
+        modifiedSchema = new(originalSchema) { Required = new HashSet<string> { "another required" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Required)));
+
+        modifiedSchema = new(originalSchema) { Reference = new OpenApiReference { Id = "Another Id", Type = ReferenceType.Schema } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Reference)));
+
+        modifiedSchema = new(originalSchema) { Title = "Another Title" };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Title)));
+
+        modifiedSchema = new(originalSchema) { Type = "integer" };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Type)));
+
+        modifiedSchema = new(originalSchema) { UniqueItems = true };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.UniqueItems)));
+
+        modifiedSchema = new(originalSchema) { UnresolvedReference = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.UnresolvedReference)));
+
+        modifiedSchema = new(originalSchema) { WriteOnly = false };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.WriteOnly)));
+
+        modifiedSchema = new(originalSchema) { Xml = new OpenApiXml { Name = "Another Name" } };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Xml)));
+
+        Assert.Empty(propertyNames);
+    }
 }

@@ -21,7 +21,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
         document.Components ??= new OpenApiComponents();
         document.Components.Schemas ??= new Dictionary<string, OpenApiSchema>();
 
-        foreach (var (schema, referenceId) in schemasByReference.OrderBy(kvp => kvp.Value))
+        foreach (var (schema, referenceId) in schemasByReference.Where(kvp => kvp.Value is not null).OrderBy(kvp => kvp.Value))
         {
             // Reference IDs are only set for schemas that appear  more than once in the OpenAPI
             // document and should be represented as references instead of inlined in the document.
@@ -32,7 +32,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
                 // the transformation process are consistent.
                 document.Components.Schemas.Add(
                     referenceId,
-                    ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, skipResolution: true));
+                    ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, isTopLevel: true));
             }
         }
 
@@ -84,15 +84,19 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
     /// </summary>
     /// <param name="schema">The inline schema to replace with a reference.</param>
     /// <param name="schemasByReference">A cache of schemas and their associated reference IDs.</param>
-    /// <param name="skipResolution">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
-    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, Dictionary<OpenApiSchema, string?> schemasByReference, bool skipResolution = false)
+    /// <param name="isTopLevel">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
+    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, Dictionary<OpenApiSchema, string?> schemasByReference, bool isTopLevel = false)
     {
         if (schema is null)
         {
             return schema;
         }
 
-        if (!skipResolution && schemasByReference.TryGetValue(schema, out var referenceId) && referenceId is not null)
+        // If we're resolving schemas for a top-level schema being referenced in the `components.schema` property
+        // we don't want to replace the top-level inline schema with a reference to itself. We want to replace
+        // inline schemas to reference schemas for all schemas referenced in the top-level schema though (such as
+        // `allOf`, `oneOf`, `anyOf`, `items`, `properties`, etc.) which is why `isTopLevel` is only set once.
+        if (!isTopLevel && schemasByReference.TryGetValue(schema, out var referenceId) && referenceId is not null)
         {
             return new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = referenceId } };
         }

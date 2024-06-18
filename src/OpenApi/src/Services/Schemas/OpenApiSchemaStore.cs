@@ -49,7 +49,7 @@ internal sealed class OpenApiSchemaStore
         },
     };
 
-    private readonly Dictionary<OpenApiSchema, string?> _schemasWithReference = new(OpenApiSchemaComparer.Instance);
+    public readonly Dictionary<OpenApiSchema, string?> SchemasByReference = new(OpenApiSchemaComparer.Instance);
     private readonly Dictionary<string, int> _referenceIdCounter = new();
 
     /// <summary>
@@ -115,7 +115,7 @@ internal sealed class OpenApiSchemaStore
 
     private void AddOrUpdateSchemaByReference(OpenApiSchema schema)
     {
-        if (_schemasWithReference.TryGetValue(schema, out var referenceId))
+        if (SchemasByReference.TryGetValue(schema, out var referenceId))
         {
             // If we've already used this reference ID else where in the document, increment a counter value to the reference
             // ID to avoid name collisions. These collisions are most likely to occur when the same .NET type produces a different
@@ -151,18 +151,18 @@ internal sealed class OpenApiSchemaStore
                 {
                     counter++;
                     _referenceIdCounter[targetReferenceId] = counter;
-                    _schemasWithReference[schema] = $"{targetReferenceId}{counter}";
+                    SchemasByReference[schema] = $"{targetReferenceId}{counter}";
                 }
                 else
                 {
                     _referenceIdCounter[targetReferenceId] = 1;
-                    _schemasWithReference[schema] = targetReferenceId;
+                    SchemasByReference[schema] = targetReferenceId;
                 }
             }
         }
         else
         {
-            _schemasWithReference[schema] = null;
+            SchemasByReference[schema] = null;
         }
     }
 
@@ -176,6 +176,4 @@ internal sealed class OpenApiSchemaStore
 
         throw new InvalidOperationException("The schema reference ID must be set on the schema.");
     }
-
-    public Dictionary<OpenApiSchema, string?> SchemasByReference => _schemasWithReference;
 }

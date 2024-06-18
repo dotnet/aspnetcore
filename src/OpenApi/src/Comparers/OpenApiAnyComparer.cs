@@ -54,9 +54,16 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
         {
             hashCode.Add(primitive.PrimitiveType);
         }
+        if (obj is OpenApiBinary binary)
+        {
+            hashCode.AddBytes(binary.Value);
+        }
+        if (obj is OpenApiByte bytes)
+        {
+            hashCode.AddBytes(bytes.Value);
+        }
         hashCode.Add<object?>(obj switch
         {
-            OpenApiBinary binary => binary.Value,
             OpenApiInteger integer => integer.Value,
             OpenApiLong @long => @long.Value,
             OpenApiDouble @double => @double.Value,
@@ -64,7 +71,6 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
             OpenApiBoolean boolean => boolean.Value,
             OpenApiString @string => @string.Value,
             OpenApiPassword password => password.Value,
-            OpenApiByte @byte => @byte.Value,
             OpenApiDate date => date.Value,
             OpenApiDateTime dateTime => dateTime.Value,
             _ => null
