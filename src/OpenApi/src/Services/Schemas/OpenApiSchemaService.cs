@@ -76,7 +76,8 @@ internal sealed class OpenApiSchemaService(
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary"
                 };
             }
-            schema.ApplyPrimitiveTypesAndFormats(type);
+            schema.ApplyPrimitiveTypesAndFormats(context);
+            schema.ApplySchemaReferenceId(context);
             if (context.GetCustomAttributes(typeof(ValidationAttribute)) is { } validationAttributes)
             {
                 schema.ApplyValidationAttributes(validationAttributes);
@@ -102,6 +103,7 @@ internal sealed class OpenApiSchemaService(
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
+        _schemaStore.PopulateSchemaIntoReferenceCache(schema);
         return schema;
     }
 

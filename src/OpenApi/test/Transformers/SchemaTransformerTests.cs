@@ -134,10 +134,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             var path = Assert.Single(document.Paths.Values);
             var postOperation = path.Operations[OperationType.Post];
-            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("1", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
             var getOperation = path.Operations[OperationType.Get];
-            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("1", ((OpenApiString)responseSchema.Extensions["x-my-extension"]).Value);
         });
     }

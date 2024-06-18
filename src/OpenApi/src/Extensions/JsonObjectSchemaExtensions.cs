@@ -164,14 +164,15 @@ internal static class JsonObjectSchemaExtensions
     /// opposed to after the generated schemas have been mapped to OpenAPI schemas.
     /// </remarks>
     /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
-    /// <param name="type">The <see cref="Type"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonObject schema, Type type)
+    /// <param name="context">The <see cref="JsonSchemaGenerationContext"/> associated with the <see paramref="schema"/>.</param>
+    internal static void ApplyPrimitiveTypesAndFormats(this JsonObject schema, JsonSchemaGenerationContext context)
     {
-        if (_simpleTypeToOpenApiSchema.TryGetValue(type, out var openApiSchema))
+        if (_simpleTypeToOpenApiSchema.TryGetValue(context.TypeInfo.Type, out var openApiSchema))
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
+            schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
         }
     }
 
@@ -323,5 +324,15 @@ internal static class JsonObjectSchemaExtensions
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
         }
+    }
+
+    /// <summary>
+    /// Set the x-schema-id property on the schema to the identifier associated with the type.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="context">The <see cref="JsonSchemaGenerationContext"/> associated with the current type.</param>
+    internal static void ApplySchemaReferenceId(this JsonObject schema, JsonSchemaGenerationContext context)
+    {
+        schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
     }
 }

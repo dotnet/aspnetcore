@@ -264,14 +264,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(defaultResponse);
             Assert.Empty(defaultResponse.Description);
             var defaultContent = Assert.Single(defaultResponse.Content.Values);
-            Assert.Collection(defaultContent.Schema.Properties, property =>
+            Assert.Collection(defaultContent.Schema.Properties,
+            property =>
             {
                 Assert.Equal("code", property.Key);
-                Assert.Equal("integer", property.Value.Type);
-            }, property =>
+                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+            },
+            property =>
             {
                 Assert.Equal("message", property.Key);
-                Assert.Equal("string", property.Value.Type);
+                Assert.Equal("string", property.Value.GetEffective(document).Type);
             });
             // Generates the 200 status code response with the `Todo` response type.
             var okResponse = operation.Responses["200"];
@@ -284,11 +286,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Collection(schema.Properties, property =>
             {
                 Assert.Equal("id", property.Key);
-                Assert.Equal("integer", property.Value.Type);
+                Assert.Equal("integer", property.Value.GetEffective(document).Type);
             }, property =>
             {
                 Assert.Equal("title", property.Key);
-                Assert.Equal("string", property.Value.Type);
+                Assert.Equal("string", property.Value.GetEffective(document).Type);
             }, property =>
             {
                 Assert.Equal("completed", property.Key);
