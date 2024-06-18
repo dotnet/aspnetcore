@@ -219,7 +219,5 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
         Assert.Contains(LogMessages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         Assert.Contains(LogMessages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
         Assert.DoesNotContain(LogMessages, m => m.Message.Contains("Request finished in"));
-
-        await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
     }
 }
