@@ -717,7 +717,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 #pragma warning disable CS0618 // Type or member is obsolete
         catch (BadHttpRequestException ex)
         {
-            OnBaseRequest(result.Buffer, ex);
+            OnBadRequest(result.Buffer, ex);
             throw;
         }
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -776,11 +776,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-    private void OnBaseRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+    private void OnBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         var reason = ex.Reason;
 
+        // Some code shared between HTTP versions throws errors. For example, HttpRequestHeaders collection
+        // throws when an invalid content length is set.
+        // Only want to set a reasons for HTTP/1.1 connection, so set end reason by catching the exception here.
         switch (reason)
         {
             case RequestRejectionReason.UnrecognizedHTTPVersion:
