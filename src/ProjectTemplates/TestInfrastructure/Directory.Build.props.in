@@ -5,6 +5,7 @@
     <ArtifactsBinDir>${ArtifactsBinDir}</ArtifactsBinDir>
     <TargetingPackLayoutRoot>${TargetingPackLayoutRoot}</TargetingPackLayoutRoot>
     <SharedFrameworkLayoutRoot>${SharedFrameworkLayoutRoot}</SharedFrameworkLayoutRoot>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
   </PropertyGroup>
 
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
