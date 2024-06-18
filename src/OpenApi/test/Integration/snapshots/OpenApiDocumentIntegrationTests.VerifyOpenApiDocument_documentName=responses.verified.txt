@@ -78,30 +78,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "anyOf": [
-                    {
-                      "required": [
-                        "$type"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "$type": { }
-                      }
-                    },
-                    {
-                      "required": [
-                        "$type"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "$type": { }
-                      }
-                    },
-                    {
-                      "type": "object"
-                    }
-                  ]
+                  "type": "object"
                 }
               }
             }

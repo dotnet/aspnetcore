@@ -8,8 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
-using JsonSchemaMapper;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -22,8 +22,10 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// Provides a set of extension methods for modifying the opaque JSON Schema type
 /// that is provided by the underlying schema generator in System.Text.Json.
 /// </summary>
-internal static class JsonObjectSchemaExtensions
+internal static class JsonNodeSchemaExtensions
 {
+    private static readonly NullabilityInfoContext _nullabilityInfoContext = new();
+
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
@@ -43,6 +45,8 @@ internal static class JsonObjectSchemaExtensions
         [typeof(char)] = new() { Type = "string" },
         [typeof(Uri)] = new() { Type = "string", Format = "uri" },
         [typeof(string)] = new() { Type = "string" },
+        [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
+        [typeof(DateOnly)] = new() { Type = "string", Format = "date" },
     };
 
     /// <summary>
@@ -52,7 +56,7 @@ internal static class JsonObjectSchemaExtensions
     /// OpenApi schema v3 supports the validation vocabulary supported by JSON Schema. Because the underlying
     /// schema generator does not handle validation attributes to the validation vocabulary, we apply that mapping here.
     ///
-    /// Note that this method targets <see cref="JsonObject"/> and not <see cref="OpenApiSchema"/> because it is
+    /// Note that this method targets <see cref="JsonNode"/> and not <see cref="OpenApiSchema"/> because it is
     /// designed to be invoked via the `OnGenerated` callback provided by the underlying schema generator
     /// so that attributes can be mapped to the properties associated with inputs and outputs to a given request.
     ///
@@ -74,9 +78,9 @@ internal static class JsonObjectSchemaExtensions
     /// will result in the schema having a type of "string" and a format of "uri" even though the model binding
     /// layer will validate the string against *both* constraints.
     /// </remarks>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="validationAttributes">A list of the validation attributes to apply.</param>
-    internal static void ApplyValidationAttributes(this JsonObject schema, IEnumerable<Attribute> validationAttributes)
+    internal static void ApplyValidationAttributes(this JsonNode schema, IEnumerable<Attribute> validationAttributes)
     {
         foreach (var attribute in validationAttributes)
         {
@@ -126,10 +130,10 @@ internal static class JsonObjectSchemaExtensions
     /// <summary>
     /// Populate the default value into the current schema.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="defaultValue">An object representing the <see cref="object"/> associated with the default value.</param>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the target type.</param>
-    internal static void ApplyDefaultValue(this JsonObject schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo)
+    internal static void ApplyDefaultValue(this JsonNode schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo)
     {
         if (jsonTypeInfo is null)
         {
@@ -159,29 +163,35 @@ internal static class JsonObjectSchemaExtensions
     /// based on whether the underlying schema generator returned an array type containing "null" to
     /// represent a nullable type or if the type was denoted as nullable from our lookup cache.
     ///
-    /// Note that this method targets <see cref="JsonObject"/> and not <see cref="OpenApiSchema"/> because
+    /// Note that this method targets <see cref="JsonNode"/> and not <see cref="OpenApiSchema"/> because
     /// it is is designed to be invoked via the `OnGenerated` callback in the underlying schema generator as
     /// opposed to after the generated schemas have been mapped to OpenAPI schemas.
     /// </remarks>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
-    /// <param name="context">The <see cref="JsonSchemaGenerationContext"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonObject schema, JsonSchemaGenerationContext context)
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
+    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context)
     {
-        if (_simpleTypeToOpenApiSchema.TryGetValue(context.TypeInfo.Type, out var openApiSchema))
+        var type = context.TypeInfo.Type;
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (_simpleTypeToOpenApiSchema.TryGetValue(underlyingType ?? type, out var openApiSchema))
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
             schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+            schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
+            // Clear out patterns that the underlying JSON schema generator uses to represent
+            // validations for DateTime, DateTimeOffset, and integers.
+            schema[OpenApiSchemaKeywords.PatternKeyword] = null;
         }
     }
 
     /// <summary>
     /// Applies route constraints to the target schema.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="constraints">The list of <see cref="IRouteConstraint"/>s associated with the route parameter.</param>
-    internal static void ApplyRouteConstraints(this JsonObject schema, IEnumerable<IRouteConstraint> constraints)
+    internal static void ApplyRouteConstraints(this JsonNode schema, IEnumerable<IRouteConstraint> constraints)
     {
         // Apply constraints in reverse order because when it comes to the routing
         // layer the first constraint that is violated causes routing to short circuit.
@@ -255,10 +265,10 @@ internal static class JsonObjectSchemaExtensions
     /// <summary>
     /// Applies parameter-specific customizations to the target schema.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo)
+    internal static void ApplyParameterInfo(this JsonNode schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
         // For example:
@@ -281,17 +291,24 @@ internal static class JsonObjectSchemaExtensions
         {
             var attributes = validations.OfType<ValidationAttribute>();
             schema.ApplyValidationAttributes(attributes);
-            if (parameterDescription.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+        }
+        if (parameterDescription.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+        {
+            if (parameterInfo.HasDefaultValue)
             {
-                if (parameterInfo.HasDefaultValue)
-                {
-                    schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
-                }
-                else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
-                {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
-                }
+                schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
             }
+            else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+            {
+                schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
+            }
+
+            if (parameterInfo.GetCustomAttributes().OfType<ValidationAttribute>() is { } validationAttributes)
+            {
+                schema.ApplyValidationAttributes(validationAttributes);
+            }
+
+            schema.ApplyNullabilityContextInfo(parameterInfo);
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
@@ -305,9 +322,9 @@ internal static class JsonObjectSchemaExtensions
     /// <summary>
     /// Applies the polymorphism options to the target schema following OpenAPI v3's conventions.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
-    /// <param name="context">The <see cref="JsonSchemaGenerationContext"/> associated with the current type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonObject schema, JsonSchemaGenerationContext context)
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context)
     {
         if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions)
         {
@@ -329,10 +346,48 @@ internal static class JsonObjectSchemaExtensions
     /// <summary>
     /// Set the x-schema-id property on the schema to the identifier associated with the type.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
-    /// <param name="context">The <see cref="JsonSchemaGenerationContext"/> associated with the current type.</param>
-    internal static void ApplySchemaReferenceId(this JsonObject schema, JsonSchemaGenerationContext context)
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context)
     {
         schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+    }
+
+    /// <summary>
+    /// Support applying nullability status for reference types provided as a parameter.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="parameterInfo">The <see cref="ParameterInfo" /> associated with the schema.</param>
+    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ParameterInfo parameterInfo)
+    {
+        if (parameterInfo.ParameterType.IsValueType)
+        {
+            return;
+        }
+
+        var nullabilityInfo = _nullabilityInfoContext.Create(parameterInfo);
+        if (nullabilityInfo.WriteState == NullabilityState.Nullable)
+        {
+            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
+        }
+    }
+
+    /// <summary>
+    /// Support applying nullability status for reference types provided as a property or field.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="attributeProvider">The <see cref="PropertyInfo" /> or <see cref="FieldInfo"/> associated with the schema.</param>
+    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ICustomAttributeProvider attributeProvider)
+    {
+        var nullabilityInfo = attributeProvider switch
+        {
+            PropertyInfo propertyInfo => !propertyInfo.PropertyType.IsValueType ? _nullabilityInfoContext.Create(propertyInfo) : null,
+            FieldInfo fieldInfo => !fieldInfo.FieldType.IsValueType ? _nullabilityInfoContext.Create(fieldInfo) : null,
+            _ => null
+        };
+        if (nullabilityInfo is { WriteState: NullabilityState.Nullable } or { ReadState: NullabilityState.Nullable })
+        {
+            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
+        }
     }
 }

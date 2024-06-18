@@ -93,21 +93,19 @@
           {
             "name": "id",
             "in": "query",
+            "description": "The ID associated with the Todo item.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "description": "The ID associated with the Todo item.",
-              "format": "int32"
+              "$ref": "#/components/schemas/int"
             }
           },
           {
             "name": "size",
             "in": "query",
+            "description": "The number of Todos to fetch",
             "required": true,
             "schema": {
-              "type": "integer",
-              "description": "The number of Todos to fetch",
-              "format": "int32"
+              "$ref": "#/components/schemas/int"
             }
           }
         ],
