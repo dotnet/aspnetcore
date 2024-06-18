@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticAssets.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,19 +52,17 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new WebAssemblyRenderModeWithOptions(options));
 
         var endpointBuilder = ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(builder);
+        var environment = endpointBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
         // If the static assets data source for the given manifest name is already added, then just wire-up the Blazor WebAssembly conventions.
         // MapStaticWebAssetEndpoints is idempotent and will not add the data source if it already exists.
-        if (HasStaticAssetDataSource(endpointBuilder, options.StaticAssetsManifestPath))
+        var descriptors = StaticAssetsEndpointDataSourceHelper.ResolveStaticAssetDescriptors(endpointBuilder, options.StaticAssetsManifestPath);
+        if (descriptors != null && descriptors.Count > 0)
         {
-            options.ConventionsApplied = true;
-            endpointBuilder.MapStaticAssets(options.StaticAssetsManifestPath)
-                .AddBlazorWebAssemblyConventions();
-
+            ComponentWebAssemblyConventions.AddBlazorWebAssemblyConventions(descriptors, environment);
             return builder;
         }
 
-        var environment = endpointBuilder.ServiceProvider.GetRequiredService<IHostEnvironment>();
         if (environment.IsDevelopment())
         {
             var logger = endpointBuilder.ServiceProvider.GetRequiredService<ILogger<WebAssemblyComponentsEndpointOptions>>();
@@ -79,19 +77,6 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         }
 
         return builder;
-    }
-
-    private static bool HasStaticAssetDataSource(IEndpointRouteBuilder endpointRouteBuilder, string? staticAssetsManifestName)
-    {
-        foreach (var ds in endpointRouteBuilder.DataSources)
-        {
-            if (StaticAssetsEndpointDataSourceHelper.IsStaticAssetsDataSource(ds, staticAssetsManifestName))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     internal static partial class Log

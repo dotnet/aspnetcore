@@ -41,6 +41,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private readonly RazorComponentsServiceOptions _options;
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
+    private ResourceAssetCollection? _resourceCollection;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -96,6 +97,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             }
         }
 
+        InitializeResourceCollection(httpContext);
+
         if (handler != null && form != null)
         {
             httpContext.RequestServices.GetRequiredService<HttpContextFormDataProvider>()
@@ -117,15 +120,38 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
             routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
-            if (httpContext.GetEndpoint() is RouteEndpoint endpoint)
+            if (httpContext.GetEndpoint() is RouteEndpoint routeEndpoint)
             {
-                routingStateProvider.RouteData.Template = endpoint.RoutePattern.RawText;
+                routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;
             }
+        }
+    }
+
+    private static void InitializeResourceCollection(HttpContext httpContext)
+    {
+
+        var endpoint = httpContext.GetEndpoint();
+        var resourceCollection = GetResourceCollection(httpContext);
+        var resourceCollectionUrl = resourceCollection != null && endpoint != null ?
+            endpoint.Metadata.GetMetadata<ResourceCollectionUrlMetadata>() :
+            null;
+
+        var resourceCollectionProvider = resourceCollectionUrl != null ? httpContext.RequestServices.GetService<ResourceCollectionProvider>() : null;
+        if (resourceCollectionUrl != null && resourceCollectionProvider != null)
+        {
+            resourceCollectionProvider.SetResourceCollectionUrl(resourceCollectionUrl.Url);
+            resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
         }
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new EndpointComponentState(this, componentId, component, parentComponentState);
+
+    /// <inheritdoc/>
+    protected override ResourceAssetCollection Assets =>
+        _resourceCollection ??= GetResourceCollection(_httpContext) ?? base.Assets;
+
+    private static ResourceAssetCollection? GetResourceCollection(HttpContext httpContext) => httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {

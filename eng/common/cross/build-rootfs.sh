@@ -131,6 +131,7 @@ __AlpineKeys='
 __Keyring=
 __SkipSigCheck=0
 __UseMirror=0
+__UseDeb822Format=0
 
 __UnprocessedBuildArgs=
 while :; do
@@ -181,7 +182,6 @@ while :; do
             __AlpinePackages="${__AlpinePackages// lldb-dev/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
-            __UbuntuRepo="http://deb.debian.org/debian"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             unset __LLDB_Package
 
@@ -288,6 +288,12 @@ while :; do
                 __CodeName=jammy
             fi
             ;;
+        noble) # Ubuntu 24.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=noble
+            fi
+            __UseDeb822Format=1
+            ;;
         jessie) # Debian 8
             __CodeName=jessie
 
@@ -313,6 +319,13 @@ while :; do
             ;;
         bullseye) # Debian 11
             __CodeName=bullseye
+
+            if [[ -z "$__UbuntuRepo" ]]; then
+                __UbuntuRepo="http://ftp.debian.org/debian/"
+            fi
+            ;;
+        bookworm) # Debian 12
+            __CodeName=bookworm
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -725,8 +738,11 @@ elif [[ -n "$__CodeName" ]]; then
     fi
 
     # shellcheck disable=SC2086
+    echo running debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
     debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
-    cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list"
+    mkdir -p "$__RootfsDir/etc/apt/sources.list.d/"
+    grep -q "Types:" "$__CrossDir/$__BuildArch/sources.list.$__CodeName" && filename="$__CodeName.sources" || filename="$__CodeName.list"
+    cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list.d/$filename"
     chroot "$__RootfsDir" apt-get update
     chroot "$__RootfsDir" apt-get -f -y install
     # shellcheck disable=SC2086

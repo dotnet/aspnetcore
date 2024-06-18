@@ -4,15 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />   
-    <link rel="stylesheet" href="css/bootstrap-icons/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/site.css" />
-    <link href="BlazorUnitedApp.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Assets["css/bootstrap/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/bootstrap-icons/bootstrap-icons.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/site.css"]" />
+    <link href="@Assets["BlazorUnitedApp.styles.css"]" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
+
+    <ImportMap />
     <HeadOutlet />
 </head>
 <body>
     <Routes />
-    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
+    <script src=""_framework/blazor.web.js"></script>
 </body>
 </html>

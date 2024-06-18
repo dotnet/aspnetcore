@@ -145,8 +145,7 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/
 
     - job:
       displayName: Signing Validation

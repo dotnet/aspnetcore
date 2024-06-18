@@ -20,7 +20,7 @@ The `templateIs1ESManaged` is available on most templates and affects which of t
 
 ## Multiple outputs
 
-1ES pipeline templates impose a policy where every publish artifact execution results in additional security scans being injected into your pipeline.  When using `templates-official/jobs/jobs.yml`, Arcade reduces the number of additional security injections by gathering all publishing outputs into the [Build.ArtifactStagingDirectory](https://learn.microsoft.com/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services), and utilizing the [outputParentDirectory](https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/1es-pipeline-templates/features/outputs#multiple-outputs) feature of 1ES pipeline templates.  When implementing your pipeline, if you ensure publish artifacts are located in the `$(Build.ArtifactStagingDirectory)`, and utilize the 1ES provided template context, then you can reduce the number of security scans for your pipeline.
+1ES pipeline templates impose a policy where every publish artifact execution results in additional security scans being injected into your pipeline.  When using `templates-official/jobs/jobs.yml`, Arcade reduces the number of additional security injections by gathering all publishing outputs into the [Build.ArtifactStagingDirectory](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services), and utilizing the [outputParentDirectory](https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/1es-pipeline-templates/features/outputs#multiple-outputs) feature of 1ES pipeline templates.  When implementing your pipeline, if you ensure publish artifacts are located in the `$(Build.ArtifactStagingDirectory)`, and utilize the 1ES provided template context, then you can reduce the number of security scans for your pipeline.
 
 Example:
 ``` yaml
@@ -76,13 +76,11 @@ eng\common\
             source-build.yml                 (shim)
         post-build\
             post-build.yml                   (shim)
-            trigger-subscription.yml         (shim)
             common-variabls.yml              (shim)
             setup-maestro-vars.yml           (shim)
         steps\
             publish-build-artifacts.yml      (logic)
             publish-pipeline-artifacts.yml   (logic)
-            add-build-channel.yml            (shim)
             component-governance.yml         (shim)
             generate-sbom.yml                (shim)
             publish-logs.yml                 (shim)
@@ -107,9 +105,7 @@ eng\common\
             common-variabls.yml              (logic)
             post-build.yml                   (logic)
             setup-maestro-vars.yml           (logic)
-            trigger-subscription.yml         (logic)
         steps\
-            add-build-to-channel.yml         (logic)
             component-governance.yml         (logic)
             generate-sbom.yml                (logic)
             publish-build-artifacts.yml      (redirect)

@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
@@ -30,7 +33,26 @@ internal sealed class OpenApiSchemaService(
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
     private readonly OpenApiOptions _openApiOptions = optionsMonitor.Get(documentName);
-    private readonly JsonSerializerOptions _jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
+    {
+        // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
+        // setting `JsonPropertyInfo.IsRequired` based on the presence of the `RequiredAttribute`.
+        TypeInfoResolver = jsonOptions.Value.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
+        {
+            if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
+            {
+                return;
+            }
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                var hasRequiredAttribute = propertyInfo.AttributeProvider?
+                    .GetCustomAttributes(inherit: false)
+                    .Any(attr => attr is RequiredAttribute);
+                propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
+            }
+        })
+    };
+
     private readonly JsonSchemaMapperConfiguration _configuration = new()
     {
         OnSchemaGenerated = (context, schema) =>
@@ -59,7 +81,10 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-
+            if (context.GetCustomAttributes(typeof(DefaultValueAttribute)).LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+            {
+                schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+            }
         }
     };
 
@@ -71,7 +96,7 @@ internal sealed class OpenApiSchemaService(
         var schemaAsJsonObject = _schemaStore.GetOrAdd(key, CreateSchema);
         if (parameterDescription is not null)
         {
-            schemaAsJsonObject.ApplyParameterInfo(parameterDescription);
+            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");

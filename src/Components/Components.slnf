@@ -19,6 +19,7 @@
       "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\\src\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj",
       "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid\\src\\Microsoft.AspNetCore.Components.QuickGrid.csproj",
       "src\\Components\\Samples\\BlazorServerApp\\BlazorServerApp.csproj",
+      "src\\Components\\Samples\\BlazorUnitedApp.Client\\BlazorUnitedApp.Client.csproj",
       "src\\Components\\Samples\\BlazorUnitedApp\\BlazorUnitedApp.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",

@@ -24,4 +24,5 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.StaticAssets.Tests" />
   </ItemGroup>
+
 </Project>

@@ -17,6 +17,24 @@ if (-not $WhatIf) {
     Remove-Item .\package-lock.json
 }
 
+try {
+    Get-Command vsts-npm-auth -CommandType ExternalScript
+    Write-Host "vsts-npm-auth is already installed"
+}
+catch {
+    Write-Host "Installing vsts-npm-auth"
+    if (-not $WhatIf) {
+        npm install -g vsts-npm-auth
+    }
+}
+
+Write-Host "Provisioning a token for the NPM registry. You might be prompted to authenticate."
+if (-not $WhatIf) {
+    # This command provisions a PAT token for the VSTS NPM registry that lasts for 15 minutes, which is more than enough time to run npm install
+    # and ensure any missing package is mirrored.
+    vsts-npm-auth -E 15 -F -C .\.npmrc
+}
+
 Write-Host "Running npm install"
 if (-not $WhatIf) {
     npm install --prefer-online --include optional

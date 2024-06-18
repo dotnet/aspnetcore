@@ -347,14 +347,14 @@ function InitializeBuildTool {
   fi
 }
 
-# Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
+# Set RestoreNoHttpCache as a workaround for https://github.com/NuGet/Home/issues/3116
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
-      export NUGET_PACKAGES="$HOME/.nuget/packages"
+      export NUGET_PACKAGES="$HOME/.nuget/packages/"
     else
-      export NUGET_PACKAGES="$repo_root/.packages"
-      export RESTORENOCACHE=true
+      export NUGET_PACKAGES="$repo_root/.packages/"
+      export RESTORENOHTTPCACHE=true
     fi
   fi
 
@@ -438,7 +438,7 @@ function StopProcesses {
 }
 
 function MSBuild {
-  local args=$@
+  local args=( "$@" )
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
@@ -473,7 +473,7 @@ function MSBuild {
     args+=( "-logger:$selectedPath" )
   fi
 
-  MSBuild-Core ${args[@]}
+  MSBuild-Core "${args[@]}"
 }
 
 function MSBuild-Core {

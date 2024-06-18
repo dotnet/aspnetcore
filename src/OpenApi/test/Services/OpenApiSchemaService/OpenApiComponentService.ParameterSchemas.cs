@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -145,6 +146,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         });
     }
 
+#nullable enable
     public static object[][] RouteParametersWithDefaultValues =>
     [
         [(int id = 2) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
@@ -154,6 +156,18 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [(TaskStatus status = TaskStatus.Canceled) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
         // Default value for enums is serialized as string when a converter is registered.
         [(Status status = Status.Pending) => { }, (IOpenApiAny defaultValue) => Assert.Equal("Pending", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(2)] int id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
+        [([DefaultValue(3f)] float id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(3, ((OpenApiInteger)defaultValue).Value)],
+        [([DefaultValue("test")] string id) => { }, (IOpenApiAny defaultValue) => Assert.Equal("test", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(true)] bool id) => { }, (IOpenApiAny defaultValue) => Assert.True(((OpenApiBoolean)defaultValue).Value)],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
+        [([DefaultValue(Status.Pending)] Status status) => { }, (IOpenApiAny defaultValue) => Assert.Equal("Pending", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(null)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue(2)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
+        [([DefaultValue(null)] string? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue("foo")] string? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal("foo", ((OpenApiString)defaultValue).Value)],
+        [([DefaultValue(null)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
     ];
 
     [Theory]
@@ -175,6 +189,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             assert(openApiDefault);
         });
     }
+#nullable restore
 
     [Fact]
     public async Task GetOpenApiParameters_HandlesEnumParameterWithoutConverter()
@@ -341,6 +356,31 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
             verifySchema(parameter.Schema);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesParametersWithRequiredAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act -- route parameters are always required so we test other
+        // parameter sources here.
+        builder.MapGet("/api-1", ([Required] string id) => { });
+        builder.MapGet("/api-2", ([Required] int? age) => { });
+        builder.MapGet("/api-3", ([Required] Guid guid) => { });
+        builder.MapGet("/api-4", ([Required][FromHeader] DateTime date) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            foreach (var path in document.Paths.Values)
+            {
+                var operation = path.Operations[OperationType.Get];
+                var parameter = Assert.Single(operation.Parameters);
+                Assert.True(parameter.Required);
+            }
         });
     }
 
