@@ -190,7 +190,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
             Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
             {
-                AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp));
+                AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.BodyReaderInvalidState));
             });
         }
     }
@@ -382,6 +382,37 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         });
         Assert.Collection(activeConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
+    }
+
+    [Fact]
+    public async Task Http1Connection_ServerAbort_HasErrorType()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using var server = new TestServer(c =>
+        {
+            c.Abort();
+            return Task.CompletedTask;
+        }, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(sendString).DefaultTimeout();
+
+            await connection.ReceiveEnd().DefaultTimeout();
+
+            await connection.WaitForConnectionClose().DefaultTimeout();
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp));
+        });
     }
 
     private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
@@ -716,6 +747,56 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             Assert.Equal("http", (string)measurement.Tags["network.protocol.name"]);
             Assert.Equal(httpVersion, (string)measurement.Tags["network.protocol.version"]);
         }
+    }
+
+    [Fact]
+    public async Task Http2Connection_ServerAbort_NoErrorType()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        await using (var server = new TestServer(context =>
+        {
+            context.Response.WriteAsync("Hello world");
+            context.Abort();
+            return Task.CompletedTask;
+        },
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
+        listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        }))
+        {
+            using var connection = server.CreateConnection();
+
+            using var socketsHandler = new SocketsHttpHandler()
+            {
+                ConnectCallback = (_, _) =>
+                {
+                    return new ValueTask<Stream>(connection.Stream);
+                },
+                SslOptions = new SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true
+                }
+            };
+
+            using var httpClient = new HttpClient(socketsHandler);
+
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                RequestUri = new Uri("http://localhost/"),
+                Version = new Version(2, 0),
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+            };
+
+            using var responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+            responseMessage.EnsureSuccessStatusCode();
+
+            await connection.WaitForConnectionClose();
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2));
     }
 
     [ConditionalFact]

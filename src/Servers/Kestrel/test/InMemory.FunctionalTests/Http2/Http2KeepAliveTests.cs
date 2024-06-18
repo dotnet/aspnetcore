@@ -18,6 +18,7 @@ public class Http2KeepAliveTests : Http2TestBase
         Assert.Null(_connection._keepAlive);
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -47,6 +48,7 @@ public class Http2KeepAliveTests : Http2TestBase
         Assert.Equal(KeepAliveState.PingSent, _connection._keepAlive._state);
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -68,6 +70,7 @@ public class Http2KeepAliveTests : Http2TestBase
             withStreamId: 0).DefaultTimeout();
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -90,6 +93,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(TimeSpan.FromSeconds(1.1));
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -106,6 +110,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(TimeSpan.FromSeconds(1.1));
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -128,6 +133,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(TimeSpan.FromSeconds(1.1));
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -165,6 +171,7 @@ public class Http2KeepAliveTests : Http2TestBase
             withStreamId: 0).DefaultTimeout();
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -195,6 +202,8 @@ public class Http2KeepAliveTests : Http2TestBase
         Assert.Equal(KeepAliveState.Timeout, _connection._keepAlive._state);
 
         VerifyGoAway(await ReceiveFrameAsync().DefaultTimeout(), 0, Http2ErrorCode.INTERNAL_ERROR);
+
+        AssertConnectionEndReason(ConnectionEndReason.KeepAliveTimeout);
     }
 
     [Fact]
@@ -226,6 +235,7 @@ public class Http2KeepAliveTests : Http2TestBase
             withStreamId: 1).DefaultTimeout();
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -249,6 +259,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(TimeSpan.FromSeconds(1.1));
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -302,6 +313,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         // Server could send RST_STREAM
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true).DefaultTimeout();
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -359,5 +371,6 @@ public class Http2KeepAliveTests : Http2TestBase
 
         // Server could send RST_STREAM
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true).DefaultTimeout();
+        AssertConnectionNoError();
     }
 }

@@ -422,7 +422,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
             error = ex;
             errorCode = Http2ErrorCode.INTERNAL_ERROR;
-            reason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.OtherError;
         }
         finally
         {

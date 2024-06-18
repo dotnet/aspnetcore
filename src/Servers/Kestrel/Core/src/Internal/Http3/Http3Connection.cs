@@ -479,7 +479,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
-            reason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.OtherError;
         }
         catch (Http3ConnectionErrorException ex)
         {
@@ -490,7 +490,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         catch (Exception ex)
         {
             error = ex;
-            reason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.OtherError;
         }
         finally
         {
@@ -558,7 +558,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             }
             catch
             {
-                Abort(CreateConnectionAbortError(error, clientAbort), Http3ErrorCode.InternalError, ConnectionEndReason.UnexpectedError);
+                Abort(CreateConnectionAbortError(error, clientAbort), Http3ErrorCode.InternalError, ConnectionEndReason.OtherError);
                 throw;
             }
             finally

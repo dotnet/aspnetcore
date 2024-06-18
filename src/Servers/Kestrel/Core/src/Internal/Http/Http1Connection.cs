@@ -62,7 +62,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             _context.ServiceContext.Log,
             _context.TimeoutControl,
             minResponseDataRateFeature: this,
-            ConnectionMetricsContext,
+            MetricsContext,
             outputAborter: this);
 
         Input = _context.Transport.Input;
@@ -70,7 +70,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         MemoryPool = _context.MemoryPool;
     }
 
-    private ConnectionMetricsContext ConnectionMetricsContext => _context.MetricsContext;
+    public ConnectionMetricsContext MetricsContext => _context.MetricsContext;
 
     public PipeReader Input { get; }
 
@@ -85,7 +85,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         if (IsUpgraded)
         {
             KestrelEventSource.Log.RequestUpgradedStop(this);
-            ServiceContext.Metrics.RequestUpgradedStop(_context.MetricsContext);
+            ServiceContext.Metrics.RequestUpgradedStop(MetricsContext);
 
             ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
         }
@@ -134,7 +134,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// </summary>
     public void StopProcessingNextRequest(ConnectionEndReason reason)
     {
-        KestrelMetrics.AddConnectionEndReason(ConnectionMetricsContext, reason);
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
 
         _keepAlive = false;
         Input.CancelPendingRead();
@@ -147,12 +147,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     }
 
     public void HandleRequestHeadersTimeout()
-        => SendTimeoutResponse();
+    {
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.RequestHeadersTimeout);
+        SendTimeoutResponse();
+    }
 
     public void HandleReadDataRateTimeout()
     {
         Debug.Assert(MinRequestBodyDataRate != null);
 
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.MinRequestBodyDataRate);
         Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
         SendTimeoutResponse();
     }
@@ -706,17 +710,22 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
         catch (InvalidOperationException) when (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
         {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
             throw;
         }
 #pragma warning disable CS0618 // Type or member is obsolete
         catch (BadHttpRequestException ex)
         {
-            DetectHttp2Preface(result.Buffer, ex);
-
+            OnBaseRequest(result.Buffer, ex);
             throw;
         }
 #pragma warning restore CS0618 // Type or member is obsolete
+        catch (Exception)
+        {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
+            throw;
+        }
         finally
         {
             Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
@@ -730,9 +739,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     endConnection = true;
                     return true;
                 case RequestProcessingStatus.ParsingRequestLine:
+                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
                     break;
                 case RequestProcessingStatus.ParsingHeaders:
+                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
                     break;
             }
@@ -748,6 +759,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
             // a 408 response.
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.RequestHeadersTimeout);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestHeadersTimeout);
         }
 
@@ -764,8 +776,55 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-    private void DetectHttp2Preface(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+    private void OnBaseRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
 #pragma warning restore CS0618 // Type or member is obsolete
+    {
+        var reason = ex.Reason;
+
+        switch (reason)
+        {
+            case RequestRejectionReason.UnrecognizedHTTPVersion:
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidHttpVersion);
+                DetectHttp2Preface(requestData);
+                break;
+            case RequestRejectionReason.InvalidRequestLine:
+            case RequestRejectionReason.RequestLineTooLong:
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestLine);
+                break;
+            case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
+            case RequestRejectionReason.InvalidRequestHeader:
+            case RequestRejectionReason.InvalidContentLength:
+            case RequestRejectionReason.HeadersExceedMaxTotalSize:
+            case RequestRejectionReason.TooManyHeaders:
+            case RequestRejectionReason.MultipleContentLengths:
+            case RequestRejectionReason.MalformedRequestInvalidHeaders:
+            case RequestRejectionReason.InvalidRequestTarget:
+            case RequestRejectionReason.InvalidCharactersInHeaderName:
+            case RequestRejectionReason.LengthRequiredHttp10:
+            case RequestRejectionReason.OptionsMethodRequired:
+            case RequestRejectionReason.ConnectMethodRequired:
+            case RequestRejectionReason.MissingHostHeader:
+            case RequestRejectionReason.MultipleHostHeaders:
+            case RequestRejectionReason.InvalidHostHeader:
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
+                break;
+            case RequestRejectionReason.TlsOverHttpError:
+            case RequestRejectionReason.UnexpectedEndOfRequestContent:
+            case RequestRejectionReason.BadChunkSuffix:
+            case RequestRejectionReason.BadChunkSizeData:
+            case RequestRejectionReason.ChunkedRequestIncomplete:
+            case RequestRejectionReason.RequestBodyTooLarge:
+            case RequestRejectionReason.RequestHeadersTimeout:
+            case RequestRejectionReason.RequestBodyTimeout:
+            case RequestRejectionReason.FinalTransferCodingNotChunked:
+            case RequestRejectionReason.RequestBodyExceedsContentLength:
+            default:
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
+                break;
+        }
+    }
+
+    private void DetectHttp2Preface(ReadOnlySequence<byte> requestData)
     {
         const int PrefaceLineLength = 16;
 
@@ -775,8 +834,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // If there is an unrecognized HTTP version, it is the first request on the connection, and the request line
             // bytes matches the HTTP/2 preface request line bytes then log and return a HTTP/2 GOAWAY frame.
-            if (ex.Reason == RequestRejectionReason.UnrecognizedHTTPVersion
-                && _requestCount == 1
+            if (_requestCount == 1
                 && requestData.Length >= PrefaceLineLength)
             {
                 var clientPrefaceRequestLine = Http2.Http2Connection.ClientPreface.Slice(0, PrefaceLineLength);

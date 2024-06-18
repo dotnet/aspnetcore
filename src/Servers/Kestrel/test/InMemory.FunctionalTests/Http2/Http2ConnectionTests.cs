@@ -5242,7 +5242,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
         Assert.Same(exception, logMessage.Exception);
 
-        AssertConnectionEndReason(ConnectionEndReason.UnexpectedError);
+        AssertConnectionEndReason(ConnectionEndReason.OtherError);
     }
 
     [Theory]
