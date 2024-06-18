@@ -21,7 +21,7 @@ public class RemoteAuthenticationTest :
 {
     public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
+        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
         .Value == "true";
 
     public RemoteAuthenticationTest(
@@ -67,7 +67,7 @@ public class RemoteAuthenticationTest :
 
     private static string GetPublishedContentRoot(Assembly assembly)
     {
-        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", assembly.GetName().Name);
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed", assembly.GetName().Name);
 
         if (!Directory.Exists(contentRoot))
         {

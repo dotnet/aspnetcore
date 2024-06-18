@@ -36,8 +36,11 @@
 
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
     <PropertyGroup>
-      <_RuntimeConfigProperties>
-        SharedFxVersion=$(SharedFxVersion);
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_RuntimeConfigProperties>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
       </_RuntimeConfigProperties>
 
       <_RuntimeConfigPath>$(OutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
