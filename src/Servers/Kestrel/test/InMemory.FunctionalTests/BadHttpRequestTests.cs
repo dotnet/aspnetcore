@@ -15,6 +15,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -226,7 +227,10 @@ public class BadHttpRequestTests : LoggedTest
     [Fact]
     public async Task BadRequestForHttp2()
     {
-        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))))
         {
             using (var client = server.CreateConnection())
             {
@@ -238,6 +242,11 @@ public class BadHttpRequestTests : LoggedTest
                 Assert.Empty(await client.Stream.ReadUntilEndAsync().DefaultTimeout());
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidHttpVersion), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]

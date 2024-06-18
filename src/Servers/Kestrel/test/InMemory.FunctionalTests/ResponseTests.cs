@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -140,7 +141,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ResponseBodyWriteAsyncCanBeCancelled()
     {
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var cts = new CancellationTokenSource();
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var writeBlockedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -202,6 +206,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await Assert.ThrowsAsync<OperationCanceledException>(() => appTcs.Task).DefaultTimeout();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.WriteCanceled), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]

@@ -131,9 +131,14 @@ internal sealed class KestrelMetrics
                 tags.Add("http.connection.protocol_code", protocolErrorCode);
             }
 
-            if (exception != null)
+            // Check if there is an end reason on the context. For example, the connection could have been aborted by shutdown.
+            if (metricsContext.ConnectionEndReason is { } reason && TryGetErrorType(reason, out var errorValue))
             {
-                tags.TryAddTag("error.type", exception.GetType().FullName);
+                tags.TryAddTag(ErrorType, errorValue);
+            }
+            else if (exception != null)
+            {
+                tags.TryAddTag(ErrorType, exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -484,7 +489,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.MaxFrameLengthExceeded => "max_frame_length_exceeded",
             ConnectionEndReason.ErrorReadingHeaders => "error_reading_headers",
             ConnectionEndReason.ErrorWritingHeaders => "error_writing_headers",
-            ConnectionEndReason.UnexpectedError => "unexpected_error",
+            ConnectionEndReason.OtherError => "other_error",
             ConnectionEndReason.InvalidHttpVersion => "invalid_http_version",
             ConnectionEndReason.RequestHeadersTimeout => "request_headers_timeout",
             ConnectionEndReason.MinRequestBodyDataRate => "min_request_body_data_rate",
@@ -493,12 +498,14 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.OutputQueueSizeExceeded => "output_queue_size_exceeded",
             ConnectionEndReason.ClosedCriticalStream => "closed_critical_stream",
             ConnectionEndReason.AbortedByApp => "aborted_by_app",
+            ConnectionEndReason.WriteCanceled => "write_canceled",
             ConnectionEndReason.BodyReaderInvalidState => "body_reader_invalid_state",
             ConnectionEndReason.ServerTimeout => "server_timeout",
             ConnectionEndReason.StreamCreationError => "stream_creation_error",
             ConnectionEndReason.IOError => "io_error",
             ConnectionEndReason.AppShutdown => "app_shutdown",
             ConnectionEndReason.TlsHandshakeFailed => "tls_handshake_failed",
+            ConnectionEndReason.InvalidRequestLine => "invalid_request_line",
             _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
         };
 
