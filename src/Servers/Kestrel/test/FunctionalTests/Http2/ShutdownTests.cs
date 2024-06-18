@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
+using System.Buffers;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2;
@@ -173,11 +174,9 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
-
         var testContext = new TestServiceContext(LoggerFactory)
         {
-            MemoryPoolFactory = memoryPoolFactory.Create
+            MemoryPoolFactory = () => new PinnedBlockMemoryPool()
         };
 
         ThrowOnUngracefulShutdown = false;
