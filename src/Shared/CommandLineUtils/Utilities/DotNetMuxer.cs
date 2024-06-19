@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.CommandLineUtils;
@@ -22,7 +23,9 @@ internal static class DotNetMuxer
 
     static DotNetMuxer()
     {
-        MuxerPath = TryFindMuxerPath();
+        var dotNetRootOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .SingleOrDefault(a => a.Key == "DotNetExeOverride")?.Value;
+        MuxerPath = dotNetRootOverride ?? TryFindMuxerPath();
     }
 
     /// <summary>

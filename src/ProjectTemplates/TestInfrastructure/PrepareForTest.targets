@@ -26,6 +26,7 @@
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
+      <TemplateTestDotNetRoot>$(TestTemplateCreationFolder)\dotnet\</TemplateTestDotNetRoot>
     </PropertyGroup>
 
     <ItemGroup>
@@ -48,9 +49,15 @@
         <_Parameter1>TestTemplateCreationFolder</_Parameter1>
         <_Parameter2>$(TestTemplateCreationFolder)</_Parameter2>
       </AssemblyAttribute>
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>CustomTemplateHivePath</_Parameter1>
         <_Parameter2>$(CustomTemplateHivePath)</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>DotNetExeOverride</_Parameter1>
+        <_Parameter2>$(TemplateTestDotNetRoot)dotnet.exe</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
 
@@ -61,6 +68,7 @@
 
     <ItemGroup>
       <_ExistingFilesFromLastRun Include="$(TestTemplateCreationFolder)**\*" />
+      <!-- <_ExistingFilesFromLastRun Include="$(TemplateTestDotNetRoot)**\*" /> -->
     </ItemGroup>
 
     <Delete Files="@(_ExistingFilesFromLastRun)" ContinueOnError="true" />
@@ -71,6 +79,20 @@
     <RemoveDir Directories="$(TestPackageRestorePath)" Condition="Exists('$(TestPackageRestorePath)')" ContinueOnError="true">
       <Output TaskParameter="RemovedDirectories" ItemName="_CleanedUpDirectories" />
     </RemoveDir>
+
+    <ItemGroup>
+      <_FilesToCopy Include="$(LocalDotNetRoot)dotnet.exe" />
+      <_FilesToCopy Include="$(LocalDotNetRoot)host\**\*" DestinationRelativeFolder="host\" />
+      <_FilesToCopy Include="$(LocalDotNetRoot)shared\**\*" DestinationRelativeFolder="shared\" />
+      <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />
+      <_FilesToCopy Include="$(SharedFrameworkLayoutRoot)\**\*" />
+
+      <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)\%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_FilesToCopy)"
+          DestinationFiles="@(_DestinationFiles)"
+          SkipUnchangedFiles="true" />
 
     <Message Importance="high" Text="Removed directory %(_CleanedUpDirectories.Identity)" />
 
