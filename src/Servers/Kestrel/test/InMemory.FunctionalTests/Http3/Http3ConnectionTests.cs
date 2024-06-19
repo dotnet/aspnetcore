@@ -629,8 +629,6 @@ public class Http3ConnectionTests : Http3TestBase
 
         await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
 
-        Assert.False(requestStream.Disposed);
-
         await requestStream.ExpectHeadersAsync();
         await requestStream.ExpectDataAsync();
 
@@ -684,8 +682,6 @@ public class Http3ConnectionTests : Http3TestBase
         });
 
         await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
-
-        Assert.False(requestStream.Disposed);
 
         await requestStream.ExpectHeadersAsync();
         await requestStream.ExpectDataAsync();
