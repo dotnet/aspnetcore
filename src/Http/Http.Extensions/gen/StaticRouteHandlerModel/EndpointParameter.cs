@@ -111,6 +111,7 @@ internal class EndpointParameter
             // and codegen. Emit a diagnostic when these are encountered to avoid producing buggy code.
             else if (!(SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
                     || Type.SpecialType == SpecialType.System_String
+                    || (IsArray && ElementType.SpecialType == SpecialType.System_String)
                     || TryGetParsability(Type, wellKnownTypes, out var _)
                     || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _))))
             {
