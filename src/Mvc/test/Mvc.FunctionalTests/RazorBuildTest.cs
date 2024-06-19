@@ -84,7 +84,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
-    [SkipOnHelix(Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
+    [SkipOnHelix("https://github.dev/dotnet/aspnetcore/pull/56292", Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
-    [SkipOnHelix(Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
+    [SkipOnHelix("https://github.dev/dotnet/aspnetcore/pull/56292", Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange
