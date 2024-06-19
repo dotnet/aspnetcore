@@ -27,6 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestCompilation.cs" LinkBase="AnalyzerTesting" />
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestReferences.cs" LinkBase="AnalyzerTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
     <HelixCorrelationPayload Include="$(RepoRoot)NuGet.config" />
   </ItemGroup>
 

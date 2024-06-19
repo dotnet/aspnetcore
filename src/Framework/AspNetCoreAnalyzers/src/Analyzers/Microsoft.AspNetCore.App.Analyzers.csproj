@@ -32,4 +32,17 @@
     <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(AnalyzerSharedSourceRoot)StartupFacts.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)StartupAnalysis.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)ServicesAnalysis.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)ServicesItem.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)OptionsAnalysis.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)OptionsItem.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)MiddlewareAnalysis.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)MiddlewareItem.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)StartupSymbols.cs" LinkBase="Shared" />
+    <Compile Include="$(AnalyzerSharedSourceRoot)SymbolNames.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>
