@@ -68,7 +68,6 @@
 
     <ItemGroup>
       <_ExistingFilesFromLastRun Include="$(TestTemplateCreationFolder)**\*" />
-      <!-- <_ExistingFilesFromLastRun Include="$(TemplateTestDotNetRoot)**\*" /> -->
     </ItemGroup>
 
     <Delete Files="@(_ExistingFilesFromLastRun)" ContinueOnError="true" />
