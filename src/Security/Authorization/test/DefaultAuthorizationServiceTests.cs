@@ -91,6 +91,27 @@ public class DefaultAuthorizationServiceTests
     }
 
     [Fact]
+    public async Task Authorize_ShouldAllowIfClaimMatchesPredicate()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy =>
+            {
+                policy.AddAuthenticationSchemes("Basic");
+                policy.RequireClaim(claim => claim.Type == "Permission" && claim.Value == "CanViewPage");
+            });
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.True(allowed.Succeeded);
+    }
+
+    [Fact]
     public async Task Authorize_ShouldInvokeAllHandlersByDefault()
     {
         // Arrange
@@ -252,6 +273,27 @@ public class DefaultAuthorizationServiceTests
                 },
                 "Basic")
             );
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.False(allowed.Succeeded);
+    }
+
+    [Fact]
+    public async Task Authorize_ShouldNotAllowIfClaimDoesNotMatchPredicate()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy =>
+            {
+                policy.AddAuthenticationSchemes("Basic");
+                policy.RequireClaim(claim => claim.Type == "Permission" && claim.Value == "CanViewAnything");
+            });
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
 
         // Act
         var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
