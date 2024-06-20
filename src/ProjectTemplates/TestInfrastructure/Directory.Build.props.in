@@ -5,6 +5,7 @@
     <ArtifactsBinDir>${ArtifactsBinDir}</ArtifactsBinDir>
     <TargetingPackLayoutRoot>${TargetingPackLayoutRoot}</TargetingPackLayoutRoot>
     <SharedFrameworkLayoutRoot>${SharedFrameworkLayoutRoot}</SharedFrameworkLayoutRoot>
+    <TestDependsOnAspNetPackages>${TestDependsOnAspNetPackages}</TestDependsOnAspNetPackages>
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
   </PropertyGroup>
 
