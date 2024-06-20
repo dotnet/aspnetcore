@@ -57,8 +57,8 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     public IEnumerable<string>? AllowedValues { get; }
 
     /// <summary>
-    ///  A predicate to evaluate the claims.
-    ///  Used if specified instead of <see cref="ClaimType"/> and <see cref="AllowedValues"/>.
+    /// A predicate to evaluate the claims.
+    /// Used if specified instead of <see cref="ClaimType"/> and <see cref="AllowedValues"/>.
     /// </summary>
     public Predicate<Claim>? Match { get; }
 
