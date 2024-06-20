@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -268,7 +270,9 @@ internal sealed class OpenApiDocumentService(
                 },
                 Required = IsRequired(parameter),
                 Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, parameter, cancellationToken),
+                Description = GetParameterDescriptionFromAttribute(parameter)
             };
+
             parameters ??= [];
             parameters.Add(openApiParameter);
         }
@@ -283,6 +287,13 @@ internal sealed class OpenApiDocumentService(
         // are always required, regardless of the requiredness status of the parameter.
         return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;
     }
+
+    // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
+    private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter) =>
+        parameter.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo } &&
+        parameterInfo.GetCustomAttributes().OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute ?
+            descriptionAttribute.Description :
+            null;
 
     private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, CancellationToken cancellationToken)
     {
@@ -447,7 +458,8 @@ internal sealed class OpenApiDocumentService(
         var requestBody = new OpenApiRequestBody
         {
             Required = IsRequired(bodyParameter),
-            Content = new Dictionary<string, OpenApiMediaType>()
+            Content = new Dictionary<string, OpenApiMediaType>(),
+            Description = GetParameterDescriptionFromAttribute(bodyParameter)
         };
 
         foreach (var requestForm in supportedRequestFormats)

@@ -418,6 +418,24 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesParametersWithDescriptionAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([Description("The ID of the entity")] int id) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("The ID of the entity", parameter.Description);
+        });
+    }
+
     [Route("/api/{id}/{date}")]
     private void AcceptsParametersInModel(RouteParamsContainer model) { }
 

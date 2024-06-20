@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaStore
 {
-    private readonly Dictionary<OpenApiSchemaKey, JsonObject> _schemas = new()
+    private readonly Dictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
         [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject
@@ -58,7 +58,7 @@ internal sealed class OpenApiSchemaStore
     /// <param name="key">The key associated with the generated schema.</param>
     /// <param name="valueFactory">A function used to generated the JSON object representing the schema.</param>
     /// <returns>A <see cref="JsonObject" /> representing the JSON schema associated with the key.</returns>
-    public JsonObject GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonObject> valueFactory)
+    public JsonNode GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonNode> valueFactory)
     {
         if (_schemas.TryGetValue(key, out var schema))
         {
