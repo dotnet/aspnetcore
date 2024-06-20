@@ -7,6 +7,8 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components;
 
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
+
 internal class ResourceCollectionProvider
 {
     private const string ResourceCollectionUrlKey = "__ResourceCollectionUrl";
@@ -52,6 +54,8 @@ internal class ResourceCollectionProvider
         _resourceCollection = resourceCollection;
     }
 
+    [DynamicDependency(JsonSerialized, typeof(ResourceAsset))]
+    [DynamicDependency(JsonSerialized, typeof(ResourceAssetProperty))]
     private async Task<ResourceAssetCollection> LoadResourceCollection()
     {
         if (_url == null)
