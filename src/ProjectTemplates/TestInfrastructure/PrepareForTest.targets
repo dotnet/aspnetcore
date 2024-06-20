@@ -88,7 +88,7 @@
       <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />
       <_FilesToCopy Include="$(SharedFrameworkLayoutRoot)\**\*" />
 
-      <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)\%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
+      <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_FilesToCopy)"
