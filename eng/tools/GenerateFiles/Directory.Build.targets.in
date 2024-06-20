@@ -122,8 +122,8 @@
 
   <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
   <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
-    <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
-    <EnableRuntimePackDownload>false</EnableRuntimePackDownload>
+    <EnableTargetingPackDownload Condition="'$(TestDependsOnAspNetPackages)' != 'true'">false</EnableTargetingPackDownload>
+    <EnableRuntimePackDownload Condition="'$(TestDependsOnAspNetPackages)' != 'true'">false</EnableRuntimePackDownload>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
