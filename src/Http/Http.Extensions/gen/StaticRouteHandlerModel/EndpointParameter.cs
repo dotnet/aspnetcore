@@ -109,11 +109,7 @@ internal class EndpointParameter
             }
             // Complex form binding is only supported in RDF because it uses shared source with Blazor that requires dynamic analysis
             // and codegen. Emit a diagnostic when these are encountered to avoid producing buggy code.
-            else if (!(SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
-                    || Type.SpecialType == SpecialType.System_String
-                    || (IsArray && ElementType.SpecialType == SpecialType.System_String)
-                    || TryGetParsability(Type, wellKnownTypes, out var _)
-                    || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _))))
+            else if (RequiresComplexFormBinding(wellKnownTypes))
             {
                 var location = endpoint.Operation.Syntax.GetLocation();
                 endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveParameterDescriptor, location, symbol.Name));
@@ -258,6 +254,13 @@ internal class EndpointParameter
         endpoint.EmitterContext.HasJsonBodyOrService |= Source == EndpointParameterSource.JsonBodyOrService;
         endpoint.EmitterContext.HasJsonBodyOrQuery |= Source == EndpointParameterSource.JsonBodyOrQuery;
     }
+
+    private bool RequiresComplexFormBinding(WellKnownTypes wellKnownTypes)
+        => !(SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
+                || Type.SpecialType == SpecialType.System_String
+                || (IsArray && ElementType.SpecialType == SpecialType.System_String)
+                || TryGetParsability(Type, wellKnownTypes, out var _)
+                || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _)));
 
     private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
         => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
