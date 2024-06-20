@@ -27,6 +27,8 @@
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
       <TemplateTestDotNetRoot>$(TestTemplateCreationFolder)\dotnet\</TemplateTestDotNetRoot>
+      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
+      <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -56,8 +58,8 @@
       </AssemblyAttribute>
 
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>DotNetExeOverride</_Parameter1>
-        <_Parameter2>$(TemplateTestDotNetRoot)dotnet.exe</_Parameter2>
+        <_Parameter1>DotNetHostOverride</_Parameter1>
+        <_Parameter2>$(TemplateTestDotNetRoot)$(_DotNetHostFileName)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
 
@@ -80,7 +82,7 @@
     </RemoveDir>
 
     <ItemGroup>
-      <_FilesToCopy Include="$(LocalDotNetRoot)dotnet.exe" />
+      <_FilesToCopy Include="$(LocalDotNetRoot)$(_DotNetHostFileName)" />
       <_FilesToCopy Include="$(LocalDotNetRoot)host\**\*" DestinationRelativeFolder="host\" />
       <_FilesToCopy Include="$(LocalDotNetRoot)shared\**\*" DestinationRelativeFolder="shared\" />
       <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />

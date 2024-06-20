@@ -24,9 +24,9 @@ internal static class DotNetMuxer
 
     static DotNetMuxer()
     {
-        var dotNetRootOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(a => a.Key == "DotNetExeOverride")?.Value;
-        MuxerPath = dotNetRootOverride ?? TryFindMuxerPath();
+        var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;
+        MuxerPath = dotNetHostOverride ?? TryFindMuxerPath();
     }
 
     /// <summary>
