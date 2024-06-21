@@ -42,7 +42,7 @@ internal static class DotNetMuxer
 
     private static string? TryFindMuxerPath()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")))
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
         {
             var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;
