@@ -65,10 +65,10 @@ export class BrowserRenderer {
     if (elementsToClearOnRootComponentRender.delete(element)) {
       emptyLogicalElement(element);
 
-      if (element instanceof Comment) {
+      if (Object.prototype.toString.call(element) === "[object Comment]") {
         // We sanitize start comments by removing all the information from it now that we don't need it anymore
         // as it adds noise to the DOM.
-        element.textContent = '!';
+        (element as unknown as Comment).textContent = '!';
       }
     }
 
