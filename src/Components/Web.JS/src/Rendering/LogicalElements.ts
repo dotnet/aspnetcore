@@ -152,7 +152,7 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   // If the child is a component comment with logical children, its children
   // need to be inserted into the parent node
   let nodeToInsert = child;
-  if (child instanceof Comment) {
+  if (Object.prototype.toString.call(child) === "[object Comment]") {
     const existingGranchildren = getLogicalChildrenArray(childAsLogicalElement);
     if (existingGranchildren?.length > 0) {
       const lastNodeToInsert = findLastDomNodeInRange(childAsLogicalElement);
@@ -196,7 +196,7 @@ export function removeLogicalChild(parent: LogicalElement, childIndex: number): 
   const childToRemove = childrenArray.splice(childIndex, 1)[0];
 
   // If it's a logical container, also remove its descendants
-  if (childToRemove instanceof Comment) {
+  if (Object.prototype.toString.call(childToRemove) === "[object Comment]") {
     const grandchildrenArray = getLogicalChildrenArray(childToRemove);
     if (grandchildrenArray) {
       while (grandchildrenArray.length > 0) {
@@ -307,8 +307,8 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
 export function getClosestDomElement(logicalElement: LogicalElement): Element | (LogicalElement & DocumentFragment) {
   if (logicalElement instanceof Element || logicalElement instanceof DocumentFragment) {
     return logicalElement;
-  } else if (logicalElement instanceof Comment) {
-    return logicalElement.parentNode! as Element;
+  } else if (Object.prototype.toString.call(logicalElement) === "[object Comment]") {
+    return (logicalElement as unknown as Comment).parentNode! as Element;
   } else {
     throw new Error('Not a valid logical element');
   }
@@ -331,7 +331,7 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   // It does not update the logical children array of anything
   if (parent instanceof Element || parent instanceof DocumentFragment) {
     parent.appendChild(child);
-  } else if (parent instanceof Comment) {
+  } else if (Object.prototype.toString.call(parent) === "[object Comment]") {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
     if (parentLogicalNextSibling) {
       // Since the parent has a logical next-sibling, its appended child goes right before that
