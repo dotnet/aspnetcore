@@ -24,12 +24,9 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// </summary>
     /// <param name="errors">The validation errors.</param>
     public HttpValidationProblemDetails(IDictionary<string, string[]> errors)
-        : this(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
     {
-    }
+        ArgumentNullException.ThrowIfNull(errors);
 
-    private HttpValidationProblemDetails(Dictionary<string, string[]> errors)
-    {
         Title = "One or more validation errors occurred.";
         Errors = errors;
     }

@@ -712,12 +712,31 @@ public static partial class Results
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+        => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Problem(
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
         => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
 
     /// <summary>
@@ -742,12 +761,12 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult ValidationProblem(
         IDictionary<string, string[]> errors,
-        string? detail = null,
-        string? instance = null,
-        int? statusCode = null,
-        string? title = null,
-        string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
     {
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
         var problemDetails = new HttpValidationProblemDetails(errors)
@@ -765,7 +784,44 @@ public static partial class Results
         return TypedResults.Problem(problemDetails);
     }
 
-    private static void CopyExtensions(IDictionary<string, object?>? extensions, HttpValidationProblemDetails problemDetails)
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response
+    /// with a <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult ValidationProblem(
+        IEnumerable<KeyValuePair<string, string[]>> errors,
+        string? detail = null,
+        string? instance = null,
+        int? statusCode = null,
+        string? title = null,
+        string? type = null,
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
+    {
+        // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
+        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
+        {
+            Detail = detail,
+            Instance = instance,
+            Type = type,
+            Status = statusCode,
+        };
+
+        problemDetails.Title = title ?? problemDetails.Title;
+
+        CopyExtensions(extensions, problemDetails);
+
+        return TypedResults.Problem(problemDetails);
+    }
+
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, HttpValidationProblemDetails problemDetails)
     {
         if (extensions is not null)
         {
