@@ -26,7 +26,7 @@
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
-      <TemplateTestDotNetRoot Condition="'$(HELIX_CORRELATION_PAYLOAD)' == ''">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
+      <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
       <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
@@ -91,7 +91,7 @@
       <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <Message Importance="High" Text="HELIX_CORRELATION_PAYLOAD = '$(HELIX_CORRELATION_PAYLOAD)'" />
+    <Message Importance="High" Text="IsHelixJob = '$(IsHelixJob)'" />
     <Message Importance="High" Text="Copying files..." />
     <Message Importance="High" Text="Copying to %(_DestinationFiles.Identity)" />
 
