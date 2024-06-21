@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly NullabilityInfoContext _nullabilityInfoContext = new();
-
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
@@ -365,7 +363,8 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
-        var nullabilityInfo = _nullabilityInfoContext.Create(parameterInfo);
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
         if (nullabilityInfo.WriteState == NullabilityState.Nullable)
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;
@@ -376,16 +375,10 @@ internal static class JsonNodeSchemaExtensions
     /// Support applying nullability status for reference types provided as a property or field.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="attributeProvider">The <see cref="PropertyInfo" /> or <see cref="FieldInfo"/> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ICustomAttributeProvider attributeProvider)
+    /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
+    internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
-        var nullabilityInfo = attributeProvider switch
-        {
-            PropertyInfo propertyInfo => !propertyInfo.PropertyType.IsValueType ? _nullabilityInfoContext.Create(propertyInfo) : null,
-            FieldInfo fieldInfo => !fieldInfo.FieldType.IsValueType ? _nullabilityInfoContext.Create(fieldInfo) : null,
-            _ => null
-        };
-        if (nullabilityInfo is { WriteState: NullabilityState.Nullable } or { ReadState: NullabilityState.Nullable })
+        if (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable)
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;
         }

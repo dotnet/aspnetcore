@@ -200,9 +200,6 @@
   },
   "components": {
     "schemas": {
-      "boolean": {
-        "type": "boolean"
-      },
       "DateTime": {
         "type": "string",
         "format": "date-time"
@@ -217,13 +214,6 @@
           "$ref": "#/components/schemas/IFormFile"
         }
       },
-      "int": {
-        "type": "integer",
-        "format": "int32"
-      },
-      "string": {
-        "type": "string"
-      },
       "Todo": {
         "required": [
           "id",
@@ -234,13 +224,14 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/int"
+            "type": "integer",
+            "format": "int32"
           },
           "title": {
-            "$ref": "#/components/schemas/string"
+            "type": "string"
           },
           "completed": {
-            "$ref": "#/components/schemas/boolean"
+            "type": "boolean"
           },
           "createdAt": {
             "$ref": "#/components/schemas/DateTime"

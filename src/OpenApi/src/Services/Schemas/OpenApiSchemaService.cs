@@ -83,9 +83,9 @@ internal sealed class OpenApiSchemaService(
             }
             schema.ApplyPrimitiveTypesAndFormats(context);
             schema.ApplySchemaReferenceId(context);
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider } jsonPropertyInfo)
             {
-                schema.ApplyNullabilityContextInfo(attributeProvider);
+                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
