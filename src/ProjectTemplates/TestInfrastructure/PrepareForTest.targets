@@ -26,7 +26,7 @@
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
-      <TemplateTestDotNetRoot>$(TestTemplateCreationFolder)\dotnet\</TemplateTestDotNetRoot>
+      <TemplateTestDotNetRoot Condition="'$(HELIX_CORRELATION_PAYLOAD)' == ''">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
       <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
@@ -57,7 +57,7 @@
         <_Parameter2>$(CustomTemplateHivePath)</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(TemplateTestDotNetRoot)' != ''">
         <_Parameter1>DotNetHostOverride</_Parameter1>
         <_Parameter2>$(TemplateTestDotNetRoot)$(_DotNetHostFileName)</_Parameter2>
       </AssemblyAttribute>
@@ -81,7 +81,7 @@
       <Output TaskParameter="RemovedDirectories" ItemName="_CleanedUpDirectories" />
     </RemoveDir>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(TemplateTestDotNetRoot)' != ''">
       <_FilesToCopy Include="$(LocalDotNetRoot)$(_DotNetHostFileName)" />
       <_FilesToCopy Include="$(LocalDotNetRoot)host\**\*" DestinationRelativeFolder="host\" />
       <_FilesToCopy Include="$(LocalDotNetRoot)shared\**\*" DestinationRelativeFolder="shared\" />
@@ -90,6 +90,10 @@
 
       <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
+
+    <Message Importance="High" Text="HELIX_CORRELATION_PAYLOAD = '$(HELIX_CORRELATION_PAYLOAD)'" />
+    <Message Importance="High" Text="Copying files..." />
+    <Message Importance="High" Text="Copying to %(_DestinationFiles.Identity)" />
 
     <Copy SourceFiles="@(_FilesToCopy)"
           DestinationFiles="@(_DestinationFiles)"
