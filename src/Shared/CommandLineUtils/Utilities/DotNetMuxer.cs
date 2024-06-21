@@ -24,9 +24,7 @@ internal static class DotNetMuxer
 
     static DotNetMuxer()
     {
-        var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;
-        MuxerPath = dotNetHostOverride ?? TryFindMuxerPath();
+        MuxerPath = TryFindMuxerPath();
     }
 
     /// <summary>
@@ -44,6 +42,17 @@ internal static class DotNetMuxer
 
     private static string? TryFindMuxerPath()
     {
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")))
+        {
+            var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;
+            if (dotNetHostOverride is not null)
+            {
+                Console.WriteLine("Resolved .NET host from DotNetHostOverride metadata attribute: " + dotNetHostOverride);
+                return dotNetHostOverride;
+            }
+        }
+
         var expectedFileName = MuxerName;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -55,6 +64,7 @@ internal static class DotNetMuxer
         var mainModuleFileName = Path.GetFileName(mainModuleFullPath);
         if (string.Equals(expectedFileName, mainModuleFileName, StringComparison.OrdinalIgnoreCase))
         {
+            Console.WriteLine("Resolved .NET host from currently running process: " + mainModuleFullPath);
             return mainModuleFullPath;
         }
 
@@ -67,9 +77,11 @@ internal static class DotNetMuxer
         if (File.Exists(candidateDotNetExePath))
         {
             var normalizedPath = Path.GetFullPath(candidateDotNetExePath);
+            Console.WriteLine("Resolved .NET host from CLR location: " + mainModuleFullPath);
             return normalizedPath;
         }
 
+        Console.WriteLine("Could not resolve .NET host: using default value");
         return null;
     }
 }
