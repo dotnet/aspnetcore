@@ -6,16 +6,16 @@ using Microsoft.OpenApi.Models;
 namespace Microsoft.AspNetCore.OpenApi;
 
 /// <summary>
-/// Represents a transformer that can be used to modify an OpenAPI document.
+/// Represents a transformer that can be used to modify an OpenAPI schema.
 /// </summary>
-public interface IOpenApiDocumentTransformer
+public interface IOpenApiSchemaTransformer
 {
     /// <summary>
     /// Transforms the specified OpenAPI document.
     /// </summary>
-    /// <param name="document">The <see cref="OpenApiDocument"/> to modify.</param>
-    /// <param name="context">The <see cref="OpenApiDocumentTransformerContext"/> associated with the <see paramref="document"/>.</param>
+    /// <param name="schema">The <see cref="OpenApiSchema"/> to modify.</param>
+    /// <param name="context">The <see cref="OpenApiSchemaTransformerContext"/> associated with the <see paramref="schema"/>.</param>
     /// <param name="cancellationToken">The cancellation token to use.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken);
+    Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken);
 }

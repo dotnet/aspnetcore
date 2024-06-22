@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -19,11 +18,11 @@ builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddOpenApi("v1", options =>
 {
     options.AddHeader("X-Version", "1.0");
-    options.UseTransformer<BearerSecuritySchemeTransformer>();
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 builder.Services.AddOpenApi("v2", options => {
-    options.UseTransformer(new AddContactTransformer());
-    options.UseTransformer((document, context, token) => {
+    options.AddDocumentTransformer(new AddContactTransformer());
+    options.AddDocumentTransformer((document, context, token) => {
         document.Info.License = new OpenApiLicense { Name = "MIT" };
         return Task.CompletedTask;
     });
