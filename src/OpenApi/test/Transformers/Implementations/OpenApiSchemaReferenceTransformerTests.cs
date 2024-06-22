@@ -267,7 +267,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
 
         var options = new OpenApiOptions();
-        options.UseSchemaTransformer((schema, context, cancellationToken) =>
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
             if (context.Type == typeof(Todo) && context.ParameterDescription is not null)
             {

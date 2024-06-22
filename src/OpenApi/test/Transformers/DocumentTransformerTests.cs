@@ -18,12 +18,12 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer((document, context, cancellationToken) =>
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
             document.Info.Description = "1";
             return Task.CompletedTask;
         });
-        options.UseTransformer((document, context, cancellationToken) =>
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
             Assert.Equal("1", document.Info.Description);
             document.Info.Description = "2";
@@ -45,7 +45,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer<ActivatedTransformer>();
+        options.AddDocumentTransformer<ActivatedTransformer>();
 
         await VerifyOpenApiDocument(builder, options, document =>
         {
@@ -62,7 +62,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer(new ActivatedTransformer());
+        options.AddDocumentTransformer(new ActivatedTransformer());
 
         await VerifyOpenApiDocument(builder, options, document =>
         {
@@ -79,7 +79,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/todo", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer<ActivatedTransformerWithDependency>();
+        options.AddDocumentTransformer<ActivatedTransformerWithDependency>();
 
         // Assert that singleton dependency is only instantiated once
         // regardless of the number of requests.
@@ -105,7 +105,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/todo", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer<ActivatedTransformerWithDependency>();
+        options.AddDocumentTransformer<ActivatedTransformerWithDependency>();
 
         // Assert that transient dependency is instantiated twice for each
         // request to the OpenAPI document.
@@ -131,7 +131,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer<DisposableTransformer>();
+        options.AddDocumentTransformer<DisposableTransformer>();
 
         DisposableTransformer.DisposeCount = 0;
         await VerifyOpenApiDocument(builder, options, document =>
@@ -150,7 +150,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
-        options.UseTransformer<AsyncDisposableTransformer>();
+        options.AddDocumentTransformer<AsyncDisposableTransformer>();
 
         AsyncDisposableTransformer.DisposeCount = 0;
         await VerifyOpenApiDocument(builder, options, document =>
