@@ -14,7 +14,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 {
     public override string ProjectType => "blazor";
 
-    [Theory]
+    [ConditionalTheory]
     [SkipNonHelix]
     [InlineData(BrowserKind.Chromium, "None")]
     [InlineData(BrowserKind.Chromium, "Server")]
