@@ -15,19 +15,20 @@ steps:
         artifactName: ReleaseConfigs
         checkDownloadedFiles: true
 
-  - task: PowerShell@2
+  - task: AzureCLI@2
     name: setReleaseVars
     displayName: Set Release Configs Vars
     inputs:
-      targetType: inline
-      pwsh: true
-      script: |
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
         try {
           if (!$Env:PromoteToMaestroChannels -or $Env:PromoteToMaestroChannels.Trim() -eq '') {
             $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
 
             $BarId = $Content | Select -Index 0
-            $Channels = $Content | Select -Index 1             
+            $Channels = $Content | Select -Index 1
             $IsStableBuild = $Content | Select -Index 2
 
             $AzureDevOpsProject = $Env:System_TeamProject
@@ -35,15 +36,16 @@ steps:
             $AzureDevOpsBuildId = $Env:Build_BuildId
           }
           else {
-            $buildApiEndpoint = "${Env:MaestroApiEndPoint}/api/builds/${Env:BARBuildId}?api-version=${Env:MaestroApiVersion}"
+            . $(Build.SourcesDirectory)\eng\common\tools.ps1
+            $darc = Get-Darc
+            $buildInfo = & $darc get-build `
+              --id ${{ parameters.BARBuildId }} `
+              --extended `
+              --output-format json `
+              --ci `
+              | convertFrom-Json
 
-            $apiHeaders = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
-            $apiHeaders.Add('Accept', 'application/json')
-            $apiHeaders.Add('Authorization',"Bearer ${Env:MAESTRO_API_TOKEN}")
-
-            $buildInfo = try { Invoke-WebRequest -Method Get -Uri $buildApiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
-            
-            $BarId = $Env:BARBuildId
+            $BarId = ${{ parameters.BARBuildId }}
             $Channels = $Env:PromoteToMaestroChannels -split ","
             $Channels = $Channels -join "]["
             $Channels = "[$Channels]"
@@ -69,6 +71,4 @@ steps:
           exit 1
         }
     env:
-      MAESTRO_API_TOKEN: $(MaestroApiAccessToken)
-      BARBuildId: ${{ parameters.BARBuildId }}
       PromoteToMaestroChannels: ${{ parameters.PromoteToChannelIds }}
