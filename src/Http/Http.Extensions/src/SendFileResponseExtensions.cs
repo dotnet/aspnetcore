@@ -124,14 +124,11 @@ public static class SendFileResponseExtensions
 
     private static void CheckRange(long offset, long? count, long fileLength)
     {
-        if (offset < 0 || offset > fileLength)
+        ArgumentOutOfRangeException.ThrowIfLessThan(offset, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(offset, fileLength);
+        if (count is {} countValue)
         {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if (count.HasValue &&
-            (count.GetValueOrDefault() < 0 || count.GetValueOrDefault() > fileLength - offset))
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(countValue, countValue, nameof(count));
         }
     }
 }
