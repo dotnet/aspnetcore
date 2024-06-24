@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Any;
@@ -605,5 +606,49 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                     Assert.Equal("string", property.Value.AdditionalProperties.Items.GetEffective(document).Type);
                 });
         });
+    }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/56351
+    [Fact]
+    public async Task GetOpenApiResponse_SupportsObjectTypeProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/", () => new ClassWithObjectProperty { Object = new Todo(1, "Test Title", true, DateTime.Now) });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            Assert.Equal("object", mediaType.Schema.Type);
+            Assert.Collection(mediaType.Schema.Properties,
+                property =>
+                {
+                    Assert.Equal("object", property.Key);
+                    Assert.Null(property.Value.Type);
+                    Assert.False(property.Value.Nullable);
+                },
+                property =>
+                {
+                    Assert.Equal("anotherObject", property.Key);
+                    Assert.Null(property.Value.Type);
+                    Assert.Equal(32, ((OpenApiInteger)property.Value.Default).Value);
+                    Assert.Equal("This is a description", property.Value.Description);
+                });
+        });
+    }
+
+    private class ClassWithObjectProperty
+    {
+        public object Object { get; set; }
+
+        [Description("This is a description")]
+        [DefaultValue(32)]
+        public object AnotherObject { get; set; }
     }
 }

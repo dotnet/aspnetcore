@@ -23,7 +23,8 @@ internal static class JsonTypeInfoExtensions
         typeof(ulong),
         typeof(short),
         typeof(ushort),
-        typeof(char)
+        typeof(char),
+        typeof(object)
     ];
     private static readonly Dictionary<Type, string> _simpleTypeToName = new()
     {
