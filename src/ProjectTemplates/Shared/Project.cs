@@ -66,13 +66,19 @@ public class Project : IDisposable
         bool useLocalDB = false,
         bool noHttps = false,
         bool errorOnRestoreError = true,
+        bool isItemTemplate = false,
         string[] args = null,
         // Used to set special options in MSBuild
         IDictionary<string, string> environmentVariables = null)
     {
-        var hiveArg = $"--no-restore --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
+        var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
         environmentVariables ??= new Dictionary<string, string>();
+        if (!isItemTemplate)
+        {
+            argString += " --no-restore";
+        }
+
         if (!string.IsNullOrEmpty(auth))
         {
             argString += $" --auth {auth}";
@@ -119,21 +125,24 @@ public class Project : IDisposable
         var createResult = new ProcessResult(createExecution);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", this, createResult));
 
-        argString = "restore /bl";
-        using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-        await restoreExecution.Exited;
-
-        var restoreResult = new ProcessResult(restoreExecution);
-
-        // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-        if (errorOnRestoreError && (restoreExecution.Output.Contains("Restore failed.") || restoreExecution.Error.Contains("Restore failed.")))
+        if (!isItemTemplate)
         {
-            restoreResult.ExitCode = -1;
+            argString = "restore /bl";
+            using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+            await restoreExecution.Exited;
+
+            var restoreResult = new ProcessResult(restoreExecution);
+
+            // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
+            if (errorOnRestoreError && (restoreExecution.Output.Contains("Restore failed.") || restoreExecution.Error.Contains("Restore failed.")))
+            {
+                restoreResult.ExitCode = -1;
+            }
+
+            CaptureBinLogOnFailure(restoreExecution);
+
+            Assert.True(0 == restoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, restoreResult));
         }
-
-        CaptureBinLogOnFailure(restoreExecution);
-
-        Assert.True(0 == restoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, restoreResult));
     }
 
     internal async Task RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)

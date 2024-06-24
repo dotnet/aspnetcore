@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
@@ -42,7 +43,7 @@ internal static class DotNetMuxer
 
     private static string? TryFindMuxerPath()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+        if (!HelixHelper.OnHelix())
         {
             var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;

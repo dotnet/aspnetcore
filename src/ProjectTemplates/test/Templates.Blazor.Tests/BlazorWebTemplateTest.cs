@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
@@ -14,6 +15,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     public override string ProjectType => "blazor";
 
     [Theory]
+    [SkipNonHelix]
     [InlineData(BrowserKind.Chromium, "None")]
     [InlineData(BrowserKind.Chromium, "Server")]
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
