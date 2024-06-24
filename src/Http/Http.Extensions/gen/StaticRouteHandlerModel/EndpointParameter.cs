@@ -107,9 +107,11 @@ internal class EndpointParameter
             {
                 AssigningCode = "httpContext.Request.Form";
             }
-            // Complex form binding is only supported in RDF because it uses shared source with Blazor that requires dynamic analysis
-            // and codegen. Emit a diagnostic when these are encountered to avoid producing buggy code.
-            else if (RequiresComplexFormBinding(wellKnownTypes))
+            // Minimal APIs shares the same implementation that Blazor uses for complex form binding at runtime.
+            // This implementation doesn't support source generation so RDG only supports simple binding for form-based
+            // arguments. If we encounter a complex object being bound from a form, emit a diagnostic and fallback to
+            // dynamic code-gen.
+            else if (!UsesSimpleBinding(wellKnownTypes))
             {
                 var location = endpoint.Operation.Syntax.GetLocation();
                 endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveParameterDescriptor, location, symbol.Name));
@@ -255,12 +257,12 @@ internal class EndpointParameter
         endpoint.EmitterContext.HasJsonBodyOrQuery |= Source == EndpointParameterSource.JsonBodyOrQuery;
     }
 
-    private bool RequiresComplexFormBinding(WellKnownTypes wellKnownTypes)
-        => !(SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
+    private bool UsesSimpleBinding(WellKnownTypes wellKnownTypes)
+        => SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
                 || Type.SpecialType == SpecialType.System_String
                 || (IsArray && ElementType.SpecialType == SpecialType.System_String)
                 || TryGetParsability(Type, wellKnownTypes, out var _)
-                || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _)));
+                || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _));
 
     private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
         => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
