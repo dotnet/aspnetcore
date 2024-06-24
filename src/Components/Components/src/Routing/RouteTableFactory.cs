@@ -200,7 +200,7 @@ internal class RouteTableFactory
 
     private static void DetectAmbiguousRoutes(TreeRouteBuilder builder)
     {
-        var seen = new Dictionary<InboundRouteEntry, InboundRouteEntry>(new InboundRouteEntryEqualityComparer());
+        var seen = new HashSet<InboundRouteEntry>(new InboundRouteEntryAmbiguityEqualityComparer());
         seen.EnsureCapacity(builder.InboundEntries.Count);
 
         for (var i = 0; i < builder.InboundEntries.Count; i++)
@@ -219,7 +219,7 @@ internal class RouteTableFactory
                     """);
             }
 
-            seen.Add(current, current);
+            seen.Add(current);
         }
     }
 
@@ -299,7 +299,7 @@ internal class RouteTableFactory
         };
     }
 
-    private class InboundRouteEntryEqualityComparer : IEqualityComparer<InboundRouteEntry>
+    private sealed class InboundRouteEntryAmbiguityEqualityComparer : IEqualityComparer<InboundRouteEntry>
     {
         public bool Equals(InboundRouteEntry? x, InboundRouteEntry? y)
         {
