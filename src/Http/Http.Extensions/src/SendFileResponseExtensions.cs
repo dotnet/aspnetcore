@@ -128,7 +128,7 @@ public static class SendFileResponseExtensions
         ArgumentOutOfRangeException.ThrowIfGreaterThan(offset, fileLength);
         if (count is {} countValue)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(countValue, countValue, nameof(count));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(countValue, fileLength - offset, nameof(count));
         }
     }
 }
