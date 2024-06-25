@@ -91,10 +91,6 @@
       <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <Message Importance="High" Text="IsHelixJob = '$(IsHelixJob)'" />
-    <Message Importance="High" Text="Copying files..." />
-    <Message Importance="High" Text="Copying to %(_DestinationFiles.Identity)" />
-
     <Copy SourceFiles="@(_FilesToCopy)"
           DestinationFiles="@(_DestinationFiles)"
           SkipUnchangedFiles="true" />
