@@ -769,7 +769,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             }
 
             var executor = CustomAwaitableSupport
-                ? ObjectMethodExecutor.Create(methodInfo, hubTypeInfo)
+                ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
@@ -779,6 +779,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             Log.HubMethodBound(_logger, hubName, methodName);
         }
     }
+
+    [RequiresUnreferencedCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport=true' is not trim compatible.")]
+    [RequiresDynamicCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport=true' is not native AOT compatible.")]
+    private static ObjectMethodExecutor CreateObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetType)
+       => ObjectMethodExecutor.Create(methodInfo, targetType);
 
     public override IReadOnlyList<Type> GetParameterTypes(string methodName)
     {
