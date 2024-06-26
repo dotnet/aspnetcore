@@ -295,7 +295,7 @@
       }
     },
     "/schemas-by-ref/shape": {
-      "get": {
+      "post": {
         "tags": [
           "Sample"
         ],
@@ -335,7 +335,7 @@
       }
     },
     "/schemas-by-ref/weatherforecastbase": {
-      "get": {
+      "post": {
         "tags": [
           "Sample"
         ],
@@ -379,7 +379,7 @@
       }
     },
     "/schemas-by-ref/person": {
-      "get": {
+      "post": {
         "tags": [
           "Sample"
         ],

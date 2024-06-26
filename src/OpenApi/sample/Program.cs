@@ -108,9 +108,9 @@ schemas.MapPost("/list-of-ints", (List<int> values) => values.Count);
 schemas.MapPost("/ienumerable-of-ints", (IEnumerable<int> values) => values.Count());
 schemas.MapGet("/dictionary-of-ints", () => new Dictionary<string, int> { { "one", 1 }, { "two", 2 } });
 schemas.MapGet("/frozen-dictionary-of-ints", () => ImmutableDictionary.CreateRange(new Dictionary<string, int> { { "one", 1 }, { "two", 2 } }));
-schemas.MapGet("/shape", (Shape shape) => { });
-schemas.MapGet("/weatherforecastbase", (WeatherForecastBase forecast) => { });
-schemas.MapGet("/person", (Person person) => { });
+schemas.MapPost("/shape", (Shape shape) => { });
+schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
+schemas.MapPost("/person", (Person person) => { });
 
 app.MapControllers();
 
