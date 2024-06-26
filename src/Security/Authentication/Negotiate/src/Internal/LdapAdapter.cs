@@ -69,9 +69,29 @@ internal static partial class LdapAdapter
             if (userSID is { Count: 1 })
             {
                 var usid = ParseSID((byte[])userSID[0]);
-                if (usid is not null)
+                if (usid is string)
                 {
-                    retrievedClaims.Add(new(ClaimTypes.PrimarySid, usid.ToString()));
+                    retrievedClaims.Add(new(ClaimTypes.PrimarySid, usid));
+
+                    // Add the primaryGroupID as claim
+                    var primaryGID = userFound.Attributes["primarygroupid"];
+                    if (primaryGID is { Count: 1 })
+                    {
+                        if (primaryGID[0] is string)
+                        {
+                            if (((string)primaryGID[0]).All(Char.IsDigit))
+                            {
+                                // The primaryGroupID attribute is a relative ID (RID).
+                                // To construct the SID the authority part needs to be
+                                // copied from the user SID.
+                                int lastIndex = usid.LastIndexOf('-');
+                                if (lastIndex > 0)
+                                {
+                                    retrievedClaims.Add(new(ClaimTypes.PrimaryGroupSid, string.Concat(usid.Substring(0,lastIndex + 1), (string)primaryGID[0])));
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
