@@ -32,7 +32,7 @@ public class BootResourceCachingTest
 
     public override Task InitializeAsync()
     {
-        return base.InitializeAsync(Guid.NewGuid().ToString());
+        return base.InitializeAsync(null);
     }
 
     [Fact]
