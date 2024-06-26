@@ -440,7 +440,7 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
-        // Baggage can be used regardless of whether Distributed Tracing is used.
+        // Baggage can be used regardless of whether a distributed trace id was present on the inbound request.
         // https://www.w3.org/TR/baggage/#abstract
         var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
         {
