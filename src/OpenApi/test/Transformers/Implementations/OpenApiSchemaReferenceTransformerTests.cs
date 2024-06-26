@@ -201,14 +201,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal("string", requestBodySchema.AllOf[0].Properties["resume"].Type);
             Assert.Equal("binary", requestBodySchema.AllOf[0].Properties["resume"].Format);
 
-            // String parameter `name` should use reference ID shared by string properties in the
-            // Todo object.
+            // string parameter is not resolved to a top-level reference.
             Assert.Equal("object", requestBodySchema2.AllOf[0].Type);
-            var nameParameterReference = requestBodySchema2.AllOf[0].Properties["name"].Reference.Id;
-            var todoTitleReference = requestBodySchema.AllOf[1].GetEffective(document).Properties["title"].Reference.Id;
-            var todoTitleReference2 = requestBodySchema2.AllOf[1].GetEffective(document).Properties["title"].Reference.Id;
-            Assert.Equal(nameParameterReference, todoTitleReference);
-            Assert.Equal(nameParameterReference, todoTitleReference2);
+            Assert.Null(requestBodySchema.AllOf[1].GetEffective(document).Properties["title"].Reference);
+            Assert.Null(requestBodySchema2.AllOf[1].GetEffective(document).Properties["title"].Reference);
         });
     }
 
@@ -293,25 +289,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
             // Schemas are distinct because of applied transformer so no reference is used.
             Assert.Null(responseSchema.Reference);
-
-            // References are still created for common types within the complex object (boolean, int, etc.)
-            Assert.Collection(document.Components.Schemas.Keys,
-            key =>
-            {
-                Assert.Equal("boolean", key);
-            },
-            key =>
-            {
-                Assert.Equal("DateTime", key);
-            },
-            key =>
-            {
-                Assert.Equal("int", key);
-            },
-            key =>
-            {
-                Assert.Equal("string", key);
-            });
+            // No schemas get componentized here
+            Assert.Empty(document.Components.Schemas);
         });
     }
 }

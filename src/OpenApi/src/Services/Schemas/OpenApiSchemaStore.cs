@@ -144,9 +144,8 @@ internal sealed class OpenApiSchemaStore
             // }
             // In this case, although the reference ID  based on the .NET type we would use is `string`, the
             // two schemas are distinct.
-            if (referenceId == null)
+            if (referenceId == null && GetSchemaReferenceId(schema) is { } targetReferenceId)
             {
-                var targetReferenceId = GetSchemaReferenceId(schema);
                 if (_referenceIdCounter.TryGetValue(targetReferenceId, out var counter))
                 {
                     counter++;
@@ -166,7 +165,7 @@ internal sealed class OpenApiSchemaStore
         }
     }
 
-    private static string GetSchemaReferenceId(OpenApiSchema schema)
+    private static string? GetSchemaReferenceId(OpenApiSchema schema)
     {
         if (schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var referenceIdAny)
             && referenceIdAny is OpenApiString { Value: string referenceId })
@@ -174,6 +173,6 @@ internal sealed class OpenApiSchemaStore
             return referenceId;
         }
 
-        throw new InvalidOperationException("The schema reference ID must be set on the schema.");
+        return null;
     }
 }
