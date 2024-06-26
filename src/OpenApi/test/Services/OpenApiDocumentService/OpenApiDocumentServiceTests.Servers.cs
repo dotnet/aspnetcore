@@ -11,7 +11,7 @@ using Moq;
 public partial class OpenApiDocumentServiceTests
 {
     [Fact]
-    public void GetOpenApiInfo_RespectsHostEnvironmentName()
+    public void GetOpenApiServers_HandlesServerAddressFeatureWithValues()
     {
         // Arrange
         var hostEnvironment = new HostingEnvironment
@@ -24,17 +24,17 @@ public partial class OpenApiDocumentServiceTests
             hostEnvironment,
             new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
             new Mock<IKeyedServiceProvider>().Object,
-            new OpenApiTestServer());
+            new OpenApiTestServer(["http://localhost:5000"]));
 
         // Act
-        var info = docService.GetOpenApiInfo();
+        var servers = docService.GetOpenApiServers();
 
         // Assert
-        Assert.Equal("TestApplication | v1", info.Title);
+        Assert.Contains("http://localhost:5000", servers.Select(s => s.Url));
     }
 
     [Fact]
-    public void GetOpenApiInfo_RespectsDocumentName()
+    public void GetOpenApiServers_HandlesServerAddressFeatureWithNoValues()
     {
         // Arrange
         var hostEnvironment = new HostingEnvironment
@@ -50,9 +50,9 @@ public partial class OpenApiDocumentServiceTests
             new OpenApiTestServer());
 
         // Act
-        var info = docService.GetOpenApiInfo();
+        var servers = docService.GetOpenApiServers();
 
         // Assert
-        Assert.Equal("TestApplication | v2", info.Title);
+        Assert.Empty(servers);
     }
 }
