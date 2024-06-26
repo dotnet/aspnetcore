@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// A base class for a strongly typed SignalR hub.
 /// </summary>
 /// <typeparam name="T">The type of client.</typeparam>
+[RequiresDynamicCode("Creating a proxy instance requires generating code at runtime")]
 public abstract class Hub<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T> : Hub where T : class
 {
     private IHubCallerClients<T>? _clients;
@@ -19,7 +20,6 @@ public abstract class Hub<[DynamicallyAccessedMembers(DynamicallyAccessedMemberT
     /// </summary>
     public new IHubCallerClients<T> Clients
     {
-        [RequiresDynamicCode("Creating a proxy instance requires generating code at runtime")]
         get
         {
             if (_clients == null)
