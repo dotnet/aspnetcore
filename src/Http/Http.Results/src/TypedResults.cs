@@ -786,7 +786,9 @@ public static class TypedResults
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static ProblemHttpResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
@@ -864,7 +866,9 @@ public static class TypedResults
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static ValidationProblem ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,

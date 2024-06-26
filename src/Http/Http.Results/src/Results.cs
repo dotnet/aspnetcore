@@ -730,7 +730,9 @@ public static partial class Results
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static IResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
@@ -796,7 +798,9 @@ public static partial class Results
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static IResult ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
