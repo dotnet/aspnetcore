@@ -26,4 +26,5 @@ internal class OpenApiSchemaKeywords
     public const string RefKeyword = "$ref";
     public const string SchemaIdKeyword = "x-schema-id";
     public const string ConstKeyword = "const";
+    public const string ReadOnlyKeyword = "readOnly";
 }

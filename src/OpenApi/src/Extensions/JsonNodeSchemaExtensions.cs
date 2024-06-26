@@ -394,4 +394,22 @@ internal static class JsonNodeSchemaExtensions
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;
         }
     }
+
+    /// <summary>
+    /// Apply `readOnly` to the schema based on the presence of the <see cref="ReadOnlyAttribute"/> or whether the
+    /// property exposes a setter.
+    /// </summary>
+    /// <param name="schema"></param>
+    /// <param name="attributeProvider"></param>
+    internal static void ApplyReadOnly(this JsonNode schema, ICustomAttributeProvider attributeProvider)
+    {
+        if (attributeProvider is PropertyInfo jsonPropertyInfo)
+        {
+            schema[OpenApiSchemaKeywords.ReadOnlyKeyword] = !jsonPropertyInfo.CanWrite;
+        }
+        if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ReadOnlyAttribute>().SingleOrDefault() is { } readOnlyAttribute)
+        {
+            schema[OpenApiSchemaKeywords.ReadOnlyKeyword] = readOnlyAttribute.IsReadOnly;
+        }
+    }
 }

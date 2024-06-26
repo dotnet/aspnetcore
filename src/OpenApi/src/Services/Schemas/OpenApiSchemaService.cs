@@ -102,6 +102,7 @@ internal sealed class OpenApiSchemaService(
                     return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
                 }
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+                schema.ApplyReadOnly(attributeProvider);
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
