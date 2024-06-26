@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,7 +83,6 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/56322", Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -122,7 +120,6 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/56322", Queues = $"{HelixConstants.Debian12};{HelixConstants.Mariner}")]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange

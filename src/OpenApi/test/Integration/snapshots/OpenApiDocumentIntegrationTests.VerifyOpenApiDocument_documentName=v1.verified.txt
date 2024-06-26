@@ -71,16 +71,18 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "$ref": "#/components/schemas/int"
+                    "type": "integer",
+                    "format": "int32"
                   },
                   "title": {
-                    "$ref": "#/components/schemas/string"
+                    "type": "string"
                   },
                   "completed": {
-                    "$ref": "#/components/schemas/boolean"
+                    "type": "boolean"
                   },
                   "createdAt": {
-                    "$ref": "#/components/schemas/DateTime"
+                    "type": "string",
+                    "format": "date-time"
                   }
                 }
               }
@@ -107,7 +109,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/int"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -135,19 +138,22 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "$ref": "#/components/schemas/DateTime"
+                      "type": "string",
+                      "format": "date-time"
                     },
                     "id": {
-                      "$ref": "#/components/schemas/int"
+                      "type": "integer",
+                      "format": "int32"
                     },
                     "title": {
-                      "$ref": "#/components/schemas/string"
+                      "type": "string"
                     },
                     "completed": {
-                      "$ref": "#/components/schemas/boolean"
+                      "type": "boolean"
                     },
                     "createdAt": {
-                      "$ref": "#/components/schemas/DateTime"
+                      "type": "string",
+                      "format": "date-time"
                     }
                   }
                 }
@@ -163,26 +169,9 @@
       "ArrayOfGuid": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/Guid"
+          "type": "string",
+          "format": "uuid"
         }
-      },
-      "boolean": {
-        "type": "boolean"
-      },
-      "DateTime": {
-        "type": "string",
-        "format": "date-time"
-      },
-      "Guid": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "int": {
-        "type": "integer",
-        "format": "int32"
-      },
-      "string": {
-        "type": "string"
       }
     },
     "securitySchemes": {
