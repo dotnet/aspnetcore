@@ -16,11 +16,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
+              "$ref": "#/components/schemas/ArrayOfGuid"
             }
           },
           {
@@ -38,16 +34,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
+                  "$ref": "#/components/schemas/ArrayOfGuid"
                 }
               }
             }
           }
-        },
+        }
       }
     },
     "/v1/todos": {
@@ -79,18 +71,16 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "type": "integer",
-                    "format": "int32"
+                    "$ref": "#/components/schemas/int"
                   },
                   "title": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/string"
                   },
                   "completed": {
-                    "type": "boolean"
+                    "$ref": "#/components/schemas/boolean"
                   },
                   "createdAt": {
-                    "type": "string",
-                    "format": "date-time"
+                    "$ref": "#/components/schemas/DateTime"
                   }
                 }
               }
@@ -102,7 +92,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/v1/todos/{id}": {
@@ -117,8 +107,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "$ref": "#/components/schemas/int"
             }
           },
           {
@@ -146,140 +135,56 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "type": "string",
-                      "format": "date-time"
+                      "$ref": "#/components/schemas/DateTime"
                     },
                     "id": {
-                      "type": "integer",
-                      "format": "int32"
+                      "$ref": "#/components/schemas/int"
                     },
                     "title": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/string"
                     },
                     "completed": {
-                      "type": "boolean"
+                      "$ref": "#/components/schemas/boolean"
                     },
                     "createdAt": {
-                      "type": "string",
-                      "format": "date-time"
+                      "$ref": "#/components/schemas/DateTime"
                     }
                   }
                 }
               }
             }
           }
-        },
-      }
-    },
-    "/getbyidandname/{id}/{name}": {
-      "get": {
-        "tags": [
-          "Test"
-        ],
-        "parameters": [
-          {
-            "name": "Id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "Name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "minLength": 5,
-              "type": "string"
-            }
-          },
-          {
-            "name": "X-Version",
-            "in": "header",
-            "schema": {
-              "type": "string",
-              "default": "1.0"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-      }
-    },
-    "/forms": {
-      "post": {
-        "tags": [
-          "Test"
-        ],
-        "parameters": [
-          {
-            "name": "X-Version",
-            "in": "header",
-            "schema": {
-              "type": "string",
-              "default": "1.0"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "Title": {
-                    "minLength": 5,
-                    "type": "string"
-                  },
-                  "Description": {
-                    "minLength": 5,
-                    "type": "string"
-                  },
-                  "IsCompleted": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "encoding": {
-                "application/x-www-form-urlencoded": {
-                  "style": "form",
-                  "explode": true
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        },
+        }
       }
     }
   },
   "components": {
+    "schemas": {
+      "ArrayOfGuid": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Guid"
+        }
+      },
+      "boolean": {
+        "type": "boolean"
+      },
+      "DateTime": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Guid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "int": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "string": {
+        "type": "string"
+      }
+    },
     "securitySchemes": {
       "Bearer": {
         "type": "http",
@@ -291,9 +196,6 @@
   "tags": [
     {
       "name": "Sample"
-    },
-    {
-      "name": "Test"
     }
   ]
 }

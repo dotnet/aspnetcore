@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class RazorPagesEndpointRouteBuilderExtensions
 {
+    internal const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
     /// <summary>
     /// Adds endpoints for Razor Pages to the <see cref="IEndpointRouteBuilder"/>.
     /// </summary>
@@ -28,7 +30,12 @@ public static class RazorPagesEndpointRouteBuilderExtensions
 
         EnsureRazorPagesServices(endpoints);
 
-        return GetOrCreateDataSource(endpoints).DefaultBuilder;
+        var builder = GetOrCreateDataSource(endpoints).DefaultBuilder;
+        if (!builder.Items.ContainsKey(EndpointRouteBuilderKey))
+        {
+            builder.Items[EndpointRouteBuilderKey] = endpoints;
+        }
+        return builder;
     }
 
     /// <summary>

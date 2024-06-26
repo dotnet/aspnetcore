@@ -1,0 +1,111 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample | controllers",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/getbyidandname/{id}/{name}": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "parameters": [
+          {
+            "name": "Id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/string2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forms": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "$ref": "#/components/schemas/string2"
+                  },
+                  "Description": {
+                    "$ref": "#/components/schemas/string2"
+                  },
+                  "IsCompleted": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "application/x-www-form-urlencoded": {
+                  "style": "form",
+                  "explode": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "string": {
+        "type": "string"
+      },
+      "string2": {
+        "minLength": 5,
+        "type": "string"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Test"
+    }
+  ]
+}

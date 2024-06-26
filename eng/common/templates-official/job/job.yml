@@ -23,6 +23,7 @@ jobs:
             displayName: 'Publish logs'
             continueOnError: true
             condition: always()
+            sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if eq(parameters.enablePublishBuildArtifacts, true) }}:
         - output: buildArtifacts
@@ -32,13 +33,15 @@ jobs:
           ArtifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
           continueOnError: true
           condition: always()
+          sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
         - output: pipelineArtifact
           targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/eng/common/BuildConfiguration'
           artifactName: 'BuildConfiguration'
           displayName: 'Publish build retry configuration'
-          continueOnError: true  
+          continueOnError: true
+          sbomEnabled: false  # we don't need SBOM for BuildConfiguration
 
       - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
         - output: pipelineArtifact

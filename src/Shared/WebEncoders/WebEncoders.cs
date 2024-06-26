@@ -339,7 +339,17 @@ static class WebEncoders
         return base64Url;
     }
 
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Encodes <paramref name="input"/> using base64url encoding.
+    /// </summary>
+    /// <param name="input">The binary input to encode.</param>
+    /// <param name="output">The buffer to place the result in.</param>
+    /// <returns></returns>
+    public static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
+#else
     private static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
+#endif
     {
         Debug.Assert(output.Length >= GetArraySizeRequiredToEncode(input.Length));
 

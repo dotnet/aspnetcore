@@ -20,7 +20,9 @@ public class RazorComponentEndpointFactoryTest
         var finallyConventions = new List<Action<EndpointBuilder>>();
         var testRenderMode = new TestRenderMode();
         var configuredRenderModes = new ConfiguredRenderModesMetadata(new[] { testRenderMode });
-        factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
+        factory.AddEndpoints(
+            endpoints,
+            typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
             "/",

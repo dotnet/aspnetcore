@@ -44,7 +44,7 @@ public class AntiforgeryMiddlewareTest
             new("__RequestVerificationToken", tokens.RequestToken),
             new("name", "Test task"),
             new("isComplete", "false"),
-            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.CurrentCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
         var result = await client.SendAsync(request);
@@ -85,7 +85,7 @@ public class AntiforgeryMiddlewareTest
         {
             new("name", "Test task"),
             new("isComplete", "false"),
-            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.CurrentCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
         var result = await client.SendAsync(request);
@@ -128,7 +128,7 @@ public class AntiforgeryMiddlewareTest
             new("__RequestVerificationToken", tokens.RequestToken),
             new("name", "Test task"),
             new("isComplete", "false"),
-            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.CurrentCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(request));
@@ -160,7 +160,7 @@ public class AntiforgeryMiddlewareTest
             new("__RequestVerificationToken", tokens.RequestToken),
             new("name", "Test task"),
             new("isComplete", "false"),
-            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.CurrentCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
         var result = await client.SendAsync(request);
@@ -192,7 +192,7 @@ public class AntiforgeryMiddlewareTest
             new("__RequestVerificationToken", tokens.RequestToken),
             new("name", "Test task"),
             new("isComplete", "false"),
-            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.CurrentCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
         var result = await client.SendAsync(request);

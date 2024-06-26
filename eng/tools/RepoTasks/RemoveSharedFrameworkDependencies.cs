@@ -64,16 +64,11 @@ public class RemoveSharedFrameworkDependencies : Microsoft.Build.Utilities.Task
                     var updatedGroup = new PackageDependencyGroup(group.TargetFramework, packages);
                     foreach (var dependency in group.Packages)
                     {
-                        // Hack to temporarily avoid using ISet.Contains
-                        if (!dependencyToRemove.Add(dependency.Id))
+                        if (dependencyToRemove.Contains(dependency.Id))
                         {
                             referencesFrameworkOnlyAssembly = true;
                             Log.LogMessage($"  Remove dependency on '{dependency.Id}'");
                             continue;
-                        }
-                        else
-                        {
-                            dependencyToRemove.Remove(dependency.Id);
                         }
 
                         packages.Add(dependency);

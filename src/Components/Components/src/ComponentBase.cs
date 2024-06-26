@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components;
 public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
 {
     private readonly RenderFragment _renderFragment;
+    private (IComponentRenderMode? mode, bool cached) _renderMode;
     private RenderHandle _renderHandle;
     private bool _initialized;
     private bool _hasNeverRendered = true;
@@ -39,6 +40,32 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             _hasNeverRendered = false;
             BuildRenderTree(builder);
         };
+    }
+
+    /// <summary>
+    /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
+    /// </summary>
+    protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> for the application.
+    /// </summary>
+    protected ResourceAssetCollection Assets => _renderHandle.Assets;
+
+    /// <summary>
+    /// Gets the <see cref="IComponentRenderMode"/> assigned to this component.
+    /// </summary>
+    protected IComponentRenderMode? AssignedRenderMode
+    {
+        get
+        {
+            if (!_renderMode.cached)
+            {
+                _renderMode = (_renderHandle.RenderMode, true);
+            }
+
+            return _renderMode.mode;
+        }
     }
 
     /// <summary>

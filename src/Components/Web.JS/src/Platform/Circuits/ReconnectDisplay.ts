@@ -3,7 +3,7 @@
 
 export interface ReconnectDisplay {
   show(): void;
-  update(currentAttempt: number): void;
+  update(currentAttempt: number, secondsToNextAttempt: number): void;
   hide(): void;
   failed(): void;
   rejected(): void;

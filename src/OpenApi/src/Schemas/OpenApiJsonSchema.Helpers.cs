@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 internal sealed partial class OpenApiJsonSchema
 {
@@ -265,6 +266,11 @@ internal sealed partial class OpenApiJsonSchema
                 var props = ReadDictionary<OpenApiJsonSchema>(ref reader);
                 schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
                 break;
+            case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
+                reader.Read();
+                var additionalPropsConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
+                schema.AdditionalProperties = additionalPropsConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                break;
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = "object";
@@ -283,6 +289,13 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 var mappings = ReadDictionary<string>(ref reader);
                 schema.Discriminator.Mapping = mappings;
+                break;
+            case OpenApiConstants.SchemaId:
+                reader.Read();
+                schema.Extensions.Add(OpenApiConstants.SchemaId, new OpenApiString(reader.GetString()));
+                break;
+            default:
+                reader.Skip();
                 break;
         }
     }

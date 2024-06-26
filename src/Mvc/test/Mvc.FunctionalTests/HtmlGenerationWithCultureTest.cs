@@ -31,6 +31,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
 
     public HttpClient Client { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByCulture()
     {
@@ -75,6 +76,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByUICulture()
     {
@@ -124,8 +126,8 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56440")]
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     public async Task CacheTagHelper_VaryByCultureComposesWithOtherVaryByOptions()
     {
         // Arrange

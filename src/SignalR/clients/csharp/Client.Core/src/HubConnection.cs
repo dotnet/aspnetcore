@@ -825,25 +825,55 @@ public partial class HubConnection : IAsyncDisposable
             // For each stream that needs to be sent, run a "send items" task in the background.
             // This reads from the channel, attaches streamId, and sends to server.
             // A single background thread here quickly gets messy.
-            if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
+            if (ReflectionHelper.GetIAsyncEnumerableInterface(reader.GetType()) is { } asyncEnumerableType)
             {
-                _ = _sendIAsyncStreamItemsMethod
-                    .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1")!.GetGenericArguments())
-                    .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
+                InvokeStreamMethod(
+                    _sendIAsyncStreamItemsMethod,
+                    asyncEnumerableType.GetGenericArguments(),
+                    connectionState,
+                    kvp.Key.ToString(),
+                    reader,
+                    cts);
                 continue;
             }
 
             if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
             {
-                _ = _sendStreamItemsMethod
-                    .MakeGenericMethod(channelGenericType)
-                    .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
+                InvokeStreamMethod(
+                    _sendStreamItemsMethod,
+                    [channelGenericType],
+                    connectionState,
+                    kvp.Key.ToString(),
+                    reader,
+                    cts);
                 continue;
             }
 
             // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
             throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "The methods passed into here (SendStreamItems and SendIAsyncEnumerableStreamItems) don't have trimming annotations.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "There is a runtime check for ValueType streaming item type when PublishAot=true. Developers will get an exception in this situation before publishing.")]
+    private void InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
+    {
+#if NET
+        Debug.Assert(genericTypes.Length == 1);
+
+        if (!RuntimeFeature.IsDynamicCodeSupported && genericTypes[0].IsValueType)
+        {
+            // NativeAOT apps are not able to stream IAsyncEnumerable and ChannelReader of ValueTypes
+            // since we cannot create SendStreamItems and SendIAsyncEnumerableStreamItems methods with a generic ValueType.
+            throw new InvalidOperationException($"Unable to stream an item with type '{genericTypes[0]}' because it is a ValueType. Native code to support streaming this ValueType will not be available with native AOT.");
+        }
+#endif
+
+        _ = methodInfo
+            .MakeGenericMethod(genericTypes)
+            .Invoke(this, [connectionState, streamId, reader, tokenSource]);
     }
 
     // this is called via reflection using the `_sendStreamItems` field

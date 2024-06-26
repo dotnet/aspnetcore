@@ -200,29 +200,28 @@ jobs:
         publishArtifacts: false
 
   # Publish test results
-  - ${{ if and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')) }}:
-    - ${{ if eq(parameters.testResultsFormat, 'xunit') }}:
-      - task: PublishTestResults@2
-        displayName: Publish XUnit Test Results
-        inputs:
-          testResultsFormat: 'xUnit'
-          testResultsFiles: '*.xml'
-          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
-          testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
-          mergeTestResults: ${{ parameters.mergeTestResults }}
-        continueOnError: true
-        condition: always()
-    - ${{ if eq(parameters.testResultsFormat, 'vstest') }}:
-      - task: PublishTestResults@2
-        displayName: Publish TRX Test Results
-        inputs:
-          testResultsFormat: 'VSTest'
-          testResultsFiles: '*.trx'
-          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
-          testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
-          mergeTestResults: ${{ parameters.mergeTestResults }}
-        continueOnError: true
-        condition: always()
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:
+    - task: PublishTestResults@2
+      displayName: Publish XUnit Test Results
+      inputs:
+        testResultsFormat: 'xUnit'
+        testResultsFiles: '*.xml'
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
+        mergeTestResults: ${{ parameters.mergeTestResults }}
+      continueOnError: true
+      condition: always()
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'vstest')) }}:
+    - task: PublishTestResults@2
+      displayName: Publish TRX Test Results
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '*.trx'
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
+        mergeTestResults: ${{ parameters.mergeTestResults }}
+      continueOnError: true
+      condition: always()
 
   # gather artifacts
   - ${{ if ne(parameters.artifacts.publish, '') }}:
@@ -246,6 +245,8 @@ jobs:
           SourceFolder: 'artifacts/log'
           Contents: '**'
           TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+        continueOnError: true
+        condition: always()
       
   - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
     - task: CopyFiles@2
@@ -254,6 +255,8 @@ jobs:
         SourceFolder: 'artifacts/log/$(_BuildConfig)'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+      continueOnError: true
+      condition: always()
   - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
     - task: CopyFiles@2
       displayName: Gather buildconfiguration for build retry
@@ -261,6 +264,7 @@ jobs:
         SourceFolder: '$(Build.SourcesDirectory)/eng/common/BuildConfiguration'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/eng/common/BuildConfiguration'
-
+      continueOnError: true
+      condition: always()
   - ${{ each step in parameters.artifactPublishSteps }}:
     - ${{ step }}

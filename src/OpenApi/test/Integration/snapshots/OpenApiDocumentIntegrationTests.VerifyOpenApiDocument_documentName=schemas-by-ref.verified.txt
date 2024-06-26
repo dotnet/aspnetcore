@@ -1,0 +1,346 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample | schemas-by-ref",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/schemas-by-ref/typed-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/multiple-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-no-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-with-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/primitives": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "The ID associated with the Todo item.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/int"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of Todos to fetch",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/int"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/product": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/account": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Account"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/array-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrayOfint"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/list-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArrayOfint"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/ienumerable-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/int"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/frozen-dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/int"
+          },
+          "name": {
+            "$ref": "#/components/schemas/string"
+          }
+        }
+      },
+      "ArrayOfint": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/int"
+        }
+      },
+      "DictionaryOfstringAndint": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/int"
+        }
+      },
+      "int": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/int"
+          },
+          "name": {
+            "$ref": "#/components/schemas/string"
+          }
+        }
+      },
+      "string": {
+        "type": "string"
+      },
+      "Triangle": {
+        "type": "object"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}
