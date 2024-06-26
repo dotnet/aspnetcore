@@ -81,7 +81,8 @@
                     "type": "boolean"
                   },
                   "createdAt": {
-                    "$ref": "#/components/schemas/DateTime"
+                    "type": "string",
+                    "format": "date-time"
                   }
                 }
               }
@@ -137,7 +138,8 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "$ref": "#/components/schemas/DateTime"
+                      "type": "string",
+                      "format": "date-time"
                     },
                     "id": {
                       "type": "integer",
@@ -150,7 +152,8 @@
                       "type": "boolean"
                     },
                     "createdAt": {
-                      "$ref": "#/components/schemas/DateTime"
+                      "type": "string",
+                      "format": "date-time"
                     }
                   }
                 }
@@ -166,16 +169,9 @@
       "ArrayOfGuid": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/Guid"
+          "type": "string",
+          "format": "uuid"
         }
-      },
-      "DateTime": {
-        "type": "string",
-        "format": "date-time"
-      },
-      "Guid": {
-        "type": "string",
-        "format": "uuid"
       }
     },
     "securitySchemes": {

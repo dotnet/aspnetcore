@@ -289,13 +289,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
             // Schemas are distinct because of applied transformer so no reference is used.
             Assert.Null(responseSchema.Reference);
-
-            // References are only created for `DateTime` type
-            Assert.Collection(document.Components.Schemas.Keys,
-                key =>
-                {
-                    Assert.Equal("DateTime", key);
-                });
+            // No schemas get componentized here
+            Assert.Empty(document.Components.Schemas);
         });
     }
 }

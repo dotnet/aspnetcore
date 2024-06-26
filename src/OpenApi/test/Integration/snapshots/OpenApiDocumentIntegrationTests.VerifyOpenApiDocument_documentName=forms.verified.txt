@@ -200,10 +200,6 @@
   },
   "components": {
     "schemas": {
-      "DateTime": {
-        "type": "string",
-        "format": "date-time"
-      },
       "IFormFile": {
         "type": "string",
         "format": "binary"
@@ -234,7 +230,8 @@
             "type": "boolean"
           },
           "createdAt": {
-            "$ref": "#/components/schemas/DateTime"
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

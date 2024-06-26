@@ -24,9 +24,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly bool _isNullabilityInfoContextSupported =
-        AppContext.TryGetSwitch("System.Reflection.NullabilityInfoContext.IsSupported", out bool isSupported) ? isSupported : true;
-
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
@@ -364,7 +361,7 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="parameterInfo">The <see cref="ParameterInfo" /> associated with the schema.</param>
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, ParameterInfo parameterInfo)
     {
-        if (parameterInfo.ParameterType.IsValueType || !_isNullabilityInfoContextSupported)
+        if (parameterInfo.ParameterType.IsValueType)
         {
             return;
         }
@@ -384,6 +381,8 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
+        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
+        // all schema (no type, no format, no constraints).
         if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;

@@ -89,10 +89,6 @@
   },
   "components": {
     "schemas": {
-      "DateTime": {
-        "type": "string",
-        "format": "date-time"
-      },
       "Todo": {
         "required": [
           "id",
@@ -113,7 +109,8 @@
             "type": "boolean"
           },
           "createdAt": {
-            "$ref": "#/components/schemas/DateTime"
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
