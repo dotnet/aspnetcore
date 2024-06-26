@@ -4,12 +4,14 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -19,16 +21,11 @@ public partial class NativeAotTests : FunctionalTestBase
     [RemoteExecutionSupported]
     public void CanCallAsyncMethods()
     {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", "false");
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport", "false");
-        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", "false");
-
-        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
+        RunNativeAotTest(static async () =>
         {
             //System.Diagnostics.Debugger.Launch();
             var loggerFactory = new StringLoggerFactory();
-            await using (var server = await InProcessTestServer<Startup>.StartServer(loggerFactory))
+            await using (var server = await InProcessTestServer<Startup<AsyncMethodHub>>.StartServer(loggerFactory))
             {
                 var hubConnectionBuilder = new HubConnectionBuilder()
                     .WithUrl(server.Url + "/hub");
@@ -40,28 +37,99 @@ public partial class NativeAotTests : FunctionalTestBase
 
                 await connection.StartAsync().DefaultTimeout();
 
-                await connection.InvokeAsync("TaskMethod").DefaultTimeout();
+                await connection.InvokeAsync(nameof(AsyncMethodHub.TaskMethod)).DefaultTimeout();
                 Assert.Contains("TaskMethod called", loggerFactory.ToString());
 
-                await connection.InvokeAsync("ValueTaskMethod").DefaultTimeout();
+                await connection.InvokeAsync(nameof(AsyncMethodHub.ValueTaskMethod)).DefaultTimeout();
                 Assert.Contains("ValueTaskMethod called", loggerFactory.ToString());
 
-                await connection.InvokeAsync("CustomTaskMethod").DefaultTimeout();
+                await connection.InvokeAsync(nameof(AsyncMethodHub.CustomTaskMethod)).DefaultTimeout();
                 Assert.Contains("CustomTaskMethod called", loggerFactory.ToString());
 
-                var result = await connection.InvokeAsync<int>("TaskValueMethod").DefaultTimeout();
+                var result = await connection.InvokeAsync<int>(nameof(AsyncMethodHub.TaskValueMethod)).DefaultTimeout();
                 Assert.Equal(42, result);
 
-                result = await connection.InvokeAsync<int>("ValueTaskValueMethod").DefaultTimeout();
+                result = await connection.InvokeAsync<int>(nameof(AsyncMethodHub.ValueTaskValueMethod)).DefaultTimeout();
                 Assert.Equal(43, result);
 
-                result = await connection.InvokeAsync<int>("CustomTaskValueMethod").DefaultTimeout();
+                result = await connection.InvokeAsync<int>(nameof(AsyncMethodHub.CustomTaskValueMethod)).DefaultTimeout();
                 Assert.Equal(44, result);
+
+                var counterResults = new List<string>();
+                await foreach (var item in connection.StreamAsync<string>(nameof(AsyncMethodHub.CounterAsyncEnumerable), 4))
+                {
+                    counterResults.Add(item);
+                }
+                Assert.Equal(["0", "1", "2", "3"], counterResults);
+
+                counterResults.Clear();
+                await foreach (var item in connection.StreamAsync<string>(nameof(AsyncMethodHub.CounterAsyncEnumerableImpl), 5))
+                {
+                    counterResults.Add(item);
+                }
+                Assert.Equal(["0", "1", "2", "3", "4"], counterResults);
+
+                var echoResults = new List<string>();
+                var asyncEnumerable = connection.StreamAsync<string>(nameof(AsyncMethodHub.StreamEchoAsyncEnumerable), StreamMessages());
+                await foreach (var item in asyncEnumerable)
+                {
+                    echoResults.Add(item);
+                }
+                Assert.Equal(["echo:message one", "echo:message two"], echoResults);
+
+                echoResults.Clear();
+                var channel = Channel.CreateBounded<string>(10);
+                var echoResponseReader = await connection.StreamAsChannelAsync<string>(nameof(AsyncMethodHub.StreamEcho), channel.Reader);
+                await channel.Writer.WriteAsync("some data");
+                await channel.Writer.WriteAsync("some more data");
+                await channel.Writer.WriteAsync("even more data");
+                channel.Writer.Complete();
+
+                await foreach (var item in echoResponseReader.ReadAllAsync())
+                {
+                    echoResults.Add(item);
+                }
+                Assert.Equal(["echo:some data", "echo:some more data", "echo:even more data"], echoResults);
             }
-        }, options);
+        });
     }
 
-    public class Startup
+    private static async IAsyncEnumerable<string> StreamMessages()
+    {
+        await Task.Yield();
+        yield return "message one";
+        await Task.Yield();
+        yield return "message two";
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void UsingValueTypesInStreamingThrows()
+    {
+        RunNativeAotTest(static async () =>
+        {
+            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<AsyncEnumerableIntMethodHub>>.StartServer(NullLoggerFactory.Instance));
+            Assert.Contains("Unable to stream an item with type 'System.Int32' on method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+AsyncEnumerableIntMethodHub.StreamValueType' because it is a ValueType.", e.Message);
+        });
+
+        RunNativeAotTest(static async () =>
+        {
+            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<ChannelDoubleMethodHub>>.StartServer(NullLoggerFactory.Instance));
+            Assert.Contains("Unable to stream an item with type 'System.Double' on method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+ChannelDoubleMethodHub.StreamValueType' because it is a ValueType.", e.Message);
+        });
+    }
+
+    private static void RunNativeAotTest(Func<Task> test)
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", "false");
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport", "false");
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(test, options);
+    }
+
+    public class Startup<THub> where THub : Hub
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -82,7 +150,7 @@ public partial class NativeAotTests : FunctionalTestBase
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<AsyncMethodHub>("/hub");
+                endpoints.MapHub<THub>("/hub");
             });
         }
     }
@@ -126,6 +194,67 @@ public partial class NativeAotTests : FunctionalTestBase
             var task = new TaskOfTDerivedType<int>(44);
             task.Start();
             return task;
+        }
+
+        public async IAsyncEnumerable<string> CounterAsyncEnumerable(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        public StreamingHub.AsyncEnumerableImpl<string> CounterAsyncEnumerableImpl(int count)
+        {
+            return new StreamingHub.AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            Channel<string> output = Channel.CreateUnbounded<string>();
+
+            _ = Task.Run(async () =>
+            {
+                await foreach (var item in source.ReadAllAsync())
+                {
+                    await output.Writer.WriteAsync("echo:" + item);
+                }
+
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
+
+        public async IAsyncEnumerable<string> StreamEchoAsyncEnumerable(IAsyncEnumerable<string> source)
+        {
+            await foreach (var item in source)
+            {
+                yield return "echo:" + item;
+            }
+        }
+    }
+
+    public class AsyncEnumerableIntMethodHub : TestHub
+    {
+        public async IAsyncEnumerable<int> StreamValueType()
+        {
+            await Task.Yield();
+            yield return 1;
+            await Task.Yield();
+            yield return 2;
+        }
+    }
+
+    public class ChannelDoubleMethodHub : TestHub
+    {
+        public async Task StreamValueType(ILogger<ChannelDoubleMethodHub> logger, ChannelReader<double> source)
+        {
+            await foreach (var item in source.ReadAllAsync())
+            {
+                logger.LogInformation("Received: {item}", item);
+            }
         }
     }
 
@@ -202,6 +331,7 @@ public partial class NativeAotTests : FunctionalTestBase
         }
     }
 
+    [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(int))]
     internal partial class AppJsonSerializerContext : JsonSerializerContext
     {
