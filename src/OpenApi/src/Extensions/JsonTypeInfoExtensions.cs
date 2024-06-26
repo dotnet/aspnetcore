@@ -11,38 +11,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 
 internal static class JsonTypeInfoExtensions
 {
-    private static readonly List<Type> _exemptPrimitives =
-    [
-        typeof(bool),
-        typeof(byte),
-        typeof(sbyte),
-        typeof(byte[]),
-        typeof(string),
-        typeof(int),
-        typeof(uint),
-        typeof(nint),
-        typeof(nuint),
-        typeof(Int128),
-        typeof(UInt128),
-        typeof(long),
-        typeof(ulong),
-        typeof(float),
-        typeof(double),
-        typeof(decimal),
-        typeof(Half),
-        typeof(ulong),
-        typeof(short),
-        typeof(ushort),
-        typeof(char),
-        typeof(object),
-        typeof(DateTime),
-        typeof(DateTimeOffset),
-        typeof(TimeOnly),
-        typeof(DateOnly),
-        typeof(Guid),
-        typeof(Uri),
-        typeof(Version)
-    ];
     private static readonly Dictionary<Type, string> _simpleTypeToName = new()
     {
         [typeof(bool)] = "boolean",
@@ -85,7 +53,7 @@ internal static class JsonTypeInfoExtensions
     internal static string? GetSchemaReferenceId(this JsonTypeInfo jsonTypeInfo, bool isTopLevel = true)
     {
         var type = jsonTypeInfo.Type;
-        if (isTopLevel && _exemptPrimitives.Contains(type))
+        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(type))
         {
             return null;
         }
