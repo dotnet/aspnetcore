@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,9 @@ namespace Microsoft.AspNetCore.Http;
 internal sealed partial class ResponseCookies : IResponseCookies
 {
     private readonly IFeatureCollection _features;
+
     private ILogger? _logger;
+    private bool _retrievedLogger;
 
     /// <summary>
     /// Create a new wrapper.
@@ -45,19 +48,10 @@ internal sealed partial class ResponseCookies : IResponseCookies
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // SameSite=None cookies must be marked as Secure.
-        if (!options.Secure && options.SameSite == SameSiteMode.None)
+        var messagesToLog = GetMessagesToLog(options);
+        if (messagesToLog != MessagesToLog.None && TryGetLogger(out var logger))
         {
-            if (_logger == null)
-            {
-                var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
-                _logger = services?.GetService<ILogger<ResponseCookies>>();
-            }
-
-            if (_logger != null)
-            {
-                Log.SameSiteCookieNotSecure(_logger, key);
-            }
+            LogMessages(logger, messagesToLog, key);
         }
 
         var cookie = options.CreateCookieHeader(key, Uri.EscapeDataString(value)).ToString();
@@ -69,21 +63,12 @@ internal sealed partial class ResponseCookies : IResponseCookies
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // SameSite=None cookies must be marked as Secure.
-        if (!options.Secure && options.SameSite == SameSiteMode.None)
+        var messagesToLog = GetMessagesToLog(options);
+        if (messagesToLog != MessagesToLog.None && TryGetLogger(out var logger))
         {
-            if (_logger == null)
+            foreach (var keyValuePair in keyValuePairs)
             {
-                var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
-                _logger = services?.GetService<ILogger<ResponseCookies>>();
-            }
-
-            if (_logger != null)
-            {
-                foreach (var keyValuePair in keyValuePairs)
-                {
-                    Log.SameSiteCookieNotSecure(_logger, keyValuePair.Key);
-                }
+                LogMessages(logger, messagesToLog, keyValuePair.Key);
             }
         }
 
@@ -167,9 +152,95 @@ internal sealed partial class ResponseCookies : IResponseCookies
         });
     }
 
+    private bool TryGetLogger([NotNullWhen(true)] out ILogger? logger)
+    {
+        if (!_retrievedLogger)
+        {
+            _retrievedLogger = true;
+            var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
+            _logger = services?.GetService<ILogger<ResponseCookies>>();
+        }
+
+        logger = _logger;
+        return logger is not null;
+    }
+
+    private static MessagesToLog GetMessagesToLog(CookieOptions options)
+    {
+        var toLog = MessagesToLog.None;
+
+        if (!options.Secure && options.SameSite == SameSiteMode.None)
+        {
+            toLog |= MessagesToLog.SameSiteNotSecure;
+        }
+
+        if (options.Partitioned)
+        {
+            if (!options.Secure)
+            {
+                toLog |= MessagesToLog.PartitionedNotSecure;
+            }
+
+            if (options.SameSite != SameSiteMode.None)
+            {
+                toLog |= MessagesToLog.PartitionedNotSameSiteNone;
+            }
+
+            // Chromium checks this
+            if (options.Path != "/")
+            {
+                toLog |= MessagesToLog.PartitionedNotPathRoot;
+            }
+        }
+
+        return toLog;
+    }
+
+    private static void LogMessages(ILogger logger, MessagesToLog messages, string cookieName)
+    {
+        if ((messages & MessagesToLog.SameSiteNotSecure) != 0)
+        {
+            Log.SameSiteCookieNotSecure(logger, cookieName);
+        }
+
+        if ((messages & MessagesToLog.PartitionedNotSecure) != 0)
+        {
+            Log.PartitionedCookieNotSecure(logger, cookieName);
+        }
+
+        if ((messages & MessagesToLog.PartitionedNotSameSiteNone) != 0)
+        {
+            Log.PartitionedCookieNotSameSiteNone(logger, cookieName);
+        }
+
+        if ((messages & MessagesToLog.PartitionedNotPathRoot) != 0)
+        {
+            Log.PartitionedCookieNotPathRoot(logger, cookieName);
+        }
+    }
+
+    [Flags]
+    private enum MessagesToLog
+    {
+        None,
+        SameSiteNotSecure = 1 << 0,
+        PartitionedNotSecure = 1 << 1,
+        PartitionedNotSameSiteNone = 1 << 2,
+        PartitionedNotPathRoot = 1 << 3,
+    }
+
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.", EventName = "SameSiteNotSecure")]
+        [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'. This cookie will likely be rejected by the client.", EventName = "SameSiteNotSecure")]
         public static partial void SameSiteCookieNotSecure(ILogger logger, string name);
+
+        [LoggerMessage(2, LogLevel.Warning, "The cookie '{name}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", EventName = "PartitionedNotSecure")]
+        public static partial void PartitionedCookieNotSecure(ILogger logger, string name);
+
+        [LoggerMessage(3, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", EventName = "PartitionedNotSameSiteNone")]
+        public static partial void PartitionedCookieNotSameSiteNone(ILogger logger, string name);
+
+        [LoggerMessage(4, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'Path=/'. This cookie may be rejected by the client.", EventName = "PartitionedNotPathRoot")]
+        public static partial void PartitionedCookieNotPathRoot(ILogger logger, string name);
     }
 }

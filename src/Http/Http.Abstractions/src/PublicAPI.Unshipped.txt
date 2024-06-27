@@ -3,3 +3,5 @@
 Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 *REMOVED*Microsoft.AspNetCore.Http.HostString.Value.get -> string!
 Microsoft.AspNetCore.Http.HostString.Value.get -> string?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Partitioned.get -> bool
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Partitioned.set -> void

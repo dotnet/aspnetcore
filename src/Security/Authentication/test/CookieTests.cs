@@ -363,6 +363,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             o.Cookie.SameSite = SameSiteMode.None;
             o.Cookie.HttpOnly = true;
+            o.Cookie.Partitioned = true;
             o.Cookie.Extensions.Add("extension0");
             o.Cookie.Extensions.Add("extension1=value1");
         }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
@@ -378,6 +379,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Contains(" secure", setCookie1);
         Assert.Contains(" samesite=none", setCookie1);
         Assert.Contains(" httponly", setCookie1);
+        Assert.Contains(" partitioned", setCookie1);
         Assert.Contains(" extension0", setCookie1);
         Assert.Contains(" extension1=value1", setCookie1);
 
@@ -400,6 +402,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.DoesNotContain(" domain=", setCookie2);
         Assert.DoesNotContain(" secure", setCookie2);
         Assert.DoesNotContain(" httponly", setCookie2);
+        Assert.DoesNotContain(" partitioned", setCookie2);
         Assert.DoesNotContain(" extension", setCookie2);
     }
 
