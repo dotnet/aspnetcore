@@ -197,7 +197,6 @@ internal class RouteTableFactory
             UnusedRouteParameterNames = GetUnusedParameterNames(result.AllRouteParameterNames, routeParameterNames!),
         };
     }
-
     private static void DetectAmbiguousRoutes(TreeRouteBuilder builder)
     {
         var seen = new HashSet<InboundRouteEntry>(new InboundRouteEntryAmbiguityEqualityComparer());
@@ -207,9 +206,10 @@ internal class RouteTableFactory
         {
             var current = builder.InboundEntries[i];
 
-            if (seen.TryGetValue(current, out var existing))
+            if (!seen.Add(current))
             {
-                var existingText = existing.RoutePattern.RawText!.Trim('/');
+                seen.TryGetValue(current, out var existing);
+                var existingText = existing!.RoutePattern.RawText!.Trim('/');
                 var currentText = current.RoutePattern.RawText!.Trim('/');
                 throw new InvalidOperationException($"""
                     The following routes are ambiguous:
@@ -218,8 +218,6 @@ internal class RouteTableFactory
 
                     """);
             }
-
-            seen.Add(current);
         }
     }
 
