@@ -1055,11 +1055,6 @@ public class RouteTableFactoryTests
     [InlineData("/{parameter}", "/{{parameter}}")]
     public void DetectsAmbiguousRoutesNoFalsePositives(string left, string right)
     {
-        // Arrange
-        var expectedMessage = $@"The following routes are ambiguous:
-'{left.Trim('/')}' in '{typeof(object).FullName}'
-'{right.Trim('/')}' in '{typeof(object).FullName}'
-";
         // Act
 
         new TestRouteTableBuilder()
