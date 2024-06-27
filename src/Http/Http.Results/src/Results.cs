@@ -770,6 +770,8 @@ public static partial class Results
         string? type,
         IDictionary<string, object?>? extensions)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
         var problemDetails = new HttpValidationProblemDetails(errors)
         {
@@ -809,8 +811,10 @@ public static partial class Results
         string? type = null,
         IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
-        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
+        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>(errors, StringComparer.Ordinal))
         {
             Detail = detail,
             Instance = instance,
