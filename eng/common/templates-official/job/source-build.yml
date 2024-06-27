@@ -31,6 +31,12 @@ parameters:
   #   container and pool.
   platform: {}
 
+  # If set to true and running on a non-public project,
+  # Internal blob storage locations will be enabled.
+  # This is not enabled by default because many repositories do not need internal sources
+  # and do not need to have the required service connections approved in the pipeline.
+  enableInternalSources: false
+
 jobs:
 - job: ${{ parameters.jobNamePrefix }}_${{ parameters.platform.name }}
   displayName: Source-Build (${{ parameters.platform.name }})
@@ -59,6 +65,8 @@ jobs:
     clean: all
 
   steps:
+  - ${{ if eq(parameters.enableInternalSources, true) }}:
+    - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
   - template: /eng/common/templates-official/steps/source-build.yml
     parameters:
       platform: ${{ parameters.platform }}
