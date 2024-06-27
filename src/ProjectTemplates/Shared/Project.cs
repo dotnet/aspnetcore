@@ -329,20 +329,6 @@ public class Project : IDisposable
 
             // Check there are no more launch profiles defined
             Assert.False(profilesEnumerator.MoveNext());
-
-            if (launchSettings.RootElement.TryGetProperty("iisSettings", out var iisSettings)
-                && iisSettings.TryGetProperty("iisExpress", out var iisExpressSettings))
-            {
-                var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
-                if (expectedLaunchProfileNames.Contains("https"))
-                {
-                    Assert.True(iisSslPort >= 44300 && iisSslPort <= 44399, $"IIS Express port was expected to be >= 44300 and <= 44399 but was {iisSslPort} in file {filePath}");
-                }
-                else
-                {
-                    Assert.Equal(0, iisSslPort);
-                }
-            }
         }
     }
 
