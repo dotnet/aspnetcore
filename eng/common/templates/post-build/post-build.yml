@@ -268,14 +268,16 @@ stages:
 
         - task: NuGetAuthenticate@1
 
-        - task: PowerShell@2
+        - task: AzureCLI@2
           displayName: Publish Using Darc
           inputs:
-            filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+            azureSubscription: "Darc: Maestro Production"
+            scriptType: ps
+            scriptLocation: scriptPath
+            scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
             arguments: -BuildId $(BARBuildId)
               -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
               -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
-              -MaestroToken '$(MaestroApiAccessToken)'
               -WaitPublishingFinish true
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
