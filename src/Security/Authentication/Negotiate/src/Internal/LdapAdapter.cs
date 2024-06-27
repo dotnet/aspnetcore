@@ -65,29 +65,32 @@ internal static partial class LdapAdapter
             var memberof = userFound.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
 
             // Get the user SID
-            var userSID = userFound.Attributes["objectsid"];
-            if (userSID is { Count: 1 })
+            if (settings.EnableLdapSIDClaimResolution)
             {
-                var usid = ParseSID((byte[])userSID[0]);
-                if (usid is string)
+                var userSID = userFound.Attributes["objectsid"];
+                if (userSID is { Count: 1 })
                 {
-                    retrievedClaims.Add(new(ClaimTypes.PrimarySid, usid));
-
-                    // Add the primaryGroupID as claim
-                    var primaryGID = userFound.Attributes["primarygroupid"];
-                    if (primaryGID is { Count: 1 })
+                    var usid = ParseSID((byte[])userSID[0]);
+                    if (usid is string)
                     {
-                        if (primaryGID[0] is string)
+                        retrievedClaims.Add(new(ClaimTypes.PrimarySid, usid));
+
+                        // Add the primaryGroupID as claim
+                        var primaryGID = userFound.Attributes["primarygroupid"];
+                        if (primaryGID is { Count: 1 })
                         {
-                            if (((string)primaryGID[0]).All(Char.IsDigit))
+                            if (primaryGID[0] is string)
                             {
-                                // The primaryGroupID attribute is a relative ID (RID).
-                                // To construct the SID the authority part needs to be
-                                // copied from the user SID.
-                                int lastIndex = usid.LastIndexOf('-');
-                                if (lastIndex > 0)
+                                if (((string)primaryGID[0]).All(Char.IsDigit))
                                 {
-                                    retrievedClaims.Add(new(ClaimTypes.PrimaryGroupSid, string.Concat(usid.Substring(0,lastIndex + 1), (string)primaryGID[0])));
+                                    // The primaryGroupID attribute is a relative ID (RID).
+                                    // To construct the SID the authority part needs to be
+                                    // copied from the user SID.
+                                    int lastIndex = usid.LastIndexOf('-');
+                                    if (lastIndex > 0)
+                                    {
+                                        retrievedClaims.Add(new(ClaimTypes.PrimaryGroupSid, string.Concat(usid.Substring(0,lastIndex + 1), (string)primaryGID[0])));
+                                    }
                                 }
                             }
                         }
@@ -107,15 +110,18 @@ internal static partial class LdapAdapter
                     if (!settings.IgnoreNestedGroups)
                     {
                         // Due to the instantiation condition of uniqueGroups it will not be null here
-                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, uniqueGroups!);
+                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, uniqueGroups!, settings.EnableLdapSIDClaimResolution);
                     }
                     else
                     {
                         retrievedClaims.Add(new(identity.RoleClaimType, groupCN));
-                        var groupSID = GetGroupSID(settings.LdapConnection, distinguishedName, groupCN, logger);
-                        if (groupSID is not null)
+                        if (settings.EnableLdapSIDClaimResolution)
                         {
-                            retrievedClaims.Add(new(ClaimTypes.GroupSid, groupSID));
+                            var groupSID = GetGroupSID(settings.LdapConnection, distinguishedName, groupCN, logger);
+                            if (groupSID is not null)
+                            {
+                                retrievedClaims.Add(new(ClaimTypes.GroupSid, groupSID));
+                            }
                         }
                     }
                 }
@@ -142,7 +148,7 @@ internal static partial class LdapAdapter
         }
     }
 
-    private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<KeyValuePair<string, string>> retrievedClaims, HashSet<string> processedGroups)
+    private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<KeyValuePair<string, string>> retrievedClaims, HashSet<string> processedGroups, bool resolveSIDs)
     {
         var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
         var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
@@ -167,42 +173,45 @@ internal static partial class LdapAdapter
             retrievedClaims.Add(new(principal.RoleClaimType, groupCN));
             processedGroups.Add(groupDN);
 
-            // Get the group SID
-            var groupSID = group.Attributes["objectsid"];
-            if (groupSID is { Count: 1 })
+            if (resolveSIDs)
             {
-                // For some reason it is sometimes string and sometimes byte[] when it is returned as a string, then every byte is converted to a char and simply put together as a string
-                switch (groupSID[0])
+                // Get the group SID
+                var groupSID = group.Attributes["objectsid"];
+                if (groupSID is { Count: 1 })
                 {
-                    case string groupSIDstr:
-                        // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
-                        // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
-                        // slice method will be used here. The maximum size will be rounded up to the
-                        // next power of two to increase allocation speed.
-                        // Because this is a recursive function the stack allocation may need to be replaced
-                        // by a slower heap allocation.
-                        int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
-                        if (groupSIDstr.Length <= allocSize)
-                        {
-                            Span<byte> lgroupSIDba = stackalloc byte[allocSize];
-                            for (int i = 0; i < groupSIDstr.Length; ++i)
+                    // For some reason it is sometimes string and sometimes byte[] when it is returned as a string, then every byte is converted to a char and simply put together as a string
+                    switch (groupSID[0])
+                    {
+                        case string groupSIDstr:
+                            // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                            // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                            // slice method will be used here. The maximum size will be rounded up to the
+                            // next power of two to increase allocation speed.
+                            // Because this is a recursive function the stack allocation may need to be replaced
+                            // by a slower heap allocation.
+                            int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                            if (groupSIDstr.Length <= allocSize)
                             {
-                                lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                                Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                                for (int i = 0; i < groupSIDstr.Length; ++i)
+                                {
+                                    lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                                }
+                                var lgsid = ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
+                                if (lgsid is not null)
+                                {
+                                    retrievedClaims.Add(new(ClaimTypes.GroupSid, lgsid));
+                                }
                             }
-                            var lgsid = ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
-                            if (lgsid is not null)
+                            break;
+                        case byte[] groupSIDba:
+                            var gsid = ParseSID(groupSIDba);
+                            if (gsid is not null)
                             {
-                                retrievedClaims.Add(new(ClaimTypes.GroupSid, lgsid));
+                                retrievedClaims.Add(new(ClaimTypes.GroupSid, gsid));
                             }
-                        }
-                        break;
-                    case byte[] groupSIDba:
-                        var gsid = ParseSID(groupSIDba);
-                        if (gsid is not null)
-                        {
-                            retrievedClaims.Add(new(ClaimTypes.GroupSid, gsid));
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
 
@@ -220,7 +229,7 @@ internal static partial class LdapAdapter
                         continue;
                     }
 
-                    GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims, processedGroups);
+                    GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims, processedGroups, resolveSIDs);
                 }
             }
         }
