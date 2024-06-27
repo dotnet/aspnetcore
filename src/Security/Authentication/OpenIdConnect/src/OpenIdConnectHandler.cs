@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -485,6 +486,14 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
+        var parRequired = ConfigFlagEnabled("require_pushed_authorization_requests");
+        GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
+
+        if ((Options.UsePushedAuthorization && !string.IsNullOrEmpty(parEndpoint)) || parRequired)
+        {
+            await PushAuthorizationRequest(message, properties);
+        }
+
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
         {
             var redirectUri = message.CreateAuthenticationRequestUrl();
@@ -514,6 +523,116 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
+    }
+
+    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
+    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
+    private bool GetConfigString(string name, [NotNullWhen(true)] out string? value)
+    {
+        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
+        {
+            if (configValue is string v)
+            {
+                value = v;
+                return true;
+            }
+        }
+        value = null;
+        return false;
+    }
+
+    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
+    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
+    private bool ConfigFlagEnabled(string name)
+    {
+        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
+        {
+            if (configValue is bool v)
+            {
+                return v;
+            }
+        }
+        return false;
+    }
+
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
+    {
+        // Build context and run event
+        var parRequest = authorizeRequest.Clone();
+        var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
+        await Events.PushAuthorization(context);
+
+        // If the event handled client authentication, skip the default auth behavior
+        if (context.HandledClientAuthentication)
+        {
+            Logger.PushAuthorizationHandledClientAuthentication();
+        }
+        // Otherwise, add the client secret to the parameters (if available)
+        else
+        {
+            if (!string.IsNullOrEmpty(Options.ClientSecret))
+            {
+                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+            }
+        }
+
+        string requestUri;
+
+        // The event can either entirely skip pushing to the par endpoint...
+        if (context.SkippedPush)
+        {
+            Logger.PushAuthorizationSkippedPush();
+            return;
+        }
+        // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
+        else if (context.HandledPush)
+        {
+            Logger.PushAuthorizationHandledPush();
+            requestUri = context.RequestUri;
+        }
+        else
+        {
+            GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
+            if (string.IsNullOrEmpty(parEndpoint))
+            {
+                new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
+            }
+
+            // TODO - If we get support for PAR in wilson, we can replace GetConfigString with something like this:
+            // var requestMessage = new HttpRequestMessage(HttpMethod.Post, parRequest.ParEndpoint ?? _configuration?.ParEndpoint);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
+            requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
+            var parResponseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
+        }
+
+        authorizeRequest.Parameters.Clear();
+        authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+        authorizeRequest.Parameters.Add("request_uri", requestUri);
+    }
+
+    // TODO Compare with similar use case in RedeemAuthorizationCodeAsync
+    private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
+    {
+        // Check content type
+        var contentType = parResponseMessage.Content.Headers.ContentType;
+        if (!(contentType?.MediaType?.Equals("application/json", StringComparison.OrdinalIgnoreCase) ?? false))
+        {
+            throw new InvalidOperationException("Invalid response from pushed authorization: content type is not application/json.");
+        }
+
+        // Parse response
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync();
+        var message = new OpenIdConnectMessage(parResponseString);
+
+        var requestUri = message.GetParameter("request_uri");
+        if (requestUri == null)
+        {
+            throw CreateOpenIdConnectProtocolException(message, parResponseMessage);
+        }
+        return requestUri;
     }
 
     /// <summary>
