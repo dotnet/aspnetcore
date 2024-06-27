@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <TestConsoleAppSourceFiles Include="TestTypedClients.cs">
-      <DisabledFeatureSwitches>Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport</DisabledFeatureSwitches>
+      <DisabledFeatureSwitches>Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported</DisabledFeatureSwitches>
     </TestConsoleAppSourceFiles>
   </ItemGroup>
 

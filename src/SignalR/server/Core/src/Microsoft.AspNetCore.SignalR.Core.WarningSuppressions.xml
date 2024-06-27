@@ -6,7 +6,7 @@
       <argument>IL2026</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.DiscoverHubMethods(System.Boolean)</property>
-      <property name="Justification">This warning is left in the product so developers get an ILLink warning when trimming an app when Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport=true.</property>
+      <property name="Justification">This warning is left in the product so developers get an ILLink warning when trimming an app when Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true.</property>
     </attribute>
   </assembly>
 </linker>

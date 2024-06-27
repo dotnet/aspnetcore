@@ -32,11 +32,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
 
-    [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport")]
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
     [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
     [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
-    private static bool CustomAwaitableSupport { get; } =
-        AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport", out bool customAwaitableSupport) ? customAwaitableSupport : true;
+    private static bool IsCustomAwaitableSupported { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported", out bool customAwaitableSupport) ? customAwaitableSupport : true;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
         bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
@@ -768,7 +768,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
             }
 
-            var executor = CustomAwaitableSupport
+            var executor = IsCustomAwaitableSupported
                 ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
@@ -780,8 +780,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
-    [RequiresUnreferencedCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport=true' is not trim compatible.")]
-    [RequiresDynamicCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport=true' is not native AOT compatible.")]
+    [RequiresUnreferencedCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not trim compatible.")]
+    [RequiresDynamicCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not native AOT compatible.")]
     private static ObjectMethodExecutor CreateObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetType)
        => ObjectMethodExecutor.Create(methodInfo, targetType);
 

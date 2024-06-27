@@ -120,7 +120,7 @@ public partial class NativeAotTests : FunctionalTestBase
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", "false");
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport", "false");
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported", "false");
         options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", "false");
 
         using var remoteHandle = RemoteExecutor.Invoke(test, options);
