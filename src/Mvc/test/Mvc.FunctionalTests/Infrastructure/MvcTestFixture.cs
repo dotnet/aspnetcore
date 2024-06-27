@@ -17,6 +17,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.DataProtection.KeyManagement.DisableAsyncKeyRingUpdate", true);
         builder
             .UseRequestCulture<TStartup>("en-GB", "en-US")
             .UseEnvironment("Production")
