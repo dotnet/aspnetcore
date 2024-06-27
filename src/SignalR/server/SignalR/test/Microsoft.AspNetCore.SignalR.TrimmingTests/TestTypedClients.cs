@@ -78,7 +78,7 @@ internal sealed partial class AppJsonSerializerContext : JsonSerializerContext
     {
         services.Configure<JsonHubProtocolOptions>(o =>
         {
-            o.PayloadSerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+            o.PayloadSerializerOptions.TypeInfoResolverChain.Insert(0, Default);
         });
     }
 }

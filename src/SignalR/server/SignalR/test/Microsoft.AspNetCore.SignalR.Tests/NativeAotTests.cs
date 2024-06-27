@@ -29,10 +29,7 @@ public partial class NativeAotTests : FunctionalTestBase
             {
                 var hubConnectionBuilder = new HubConnectionBuilder()
                     .WithUrl(server.Url + "/hub");
-                hubConnectionBuilder.Services.Configure<JsonHubProtocolOptions>(o =>
-                {
-                    o.PayloadSerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-                });
+                AppJsonSerializerContext.AddToJsonHubProtocol(hubConnectionBuilder.Services);
                 var connection = hubConnectionBuilder.Build();
 
                 await connection.StartAsync().DefaultTimeout();
@@ -138,10 +135,7 @@ public partial class NativeAotTests : FunctionalTestBase
             {
                 options.EnableDetailedErrors = true;
             });
-            services.Configure<JsonHubProtocolOptions>(o =>
-            {
-                o.PayloadSerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-            });
+            AppJsonSerializerContext.AddToJsonHubProtocol(services);
         }
 
         public void Configure(IApplicationBuilder app)
@@ -335,5 +329,12 @@ public partial class NativeAotTests : FunctionalTestBase
     [JsonSerializable(typeof(int))]
     internal partial class AppJsonSerializerContext : JsonSerializerContext
     {
+        public static void AddToJsonHubProtocol(IServiceCollection services)
+        {
+            services.Configure<JsonHubProtocolOptions>(o =>
+            {
+                o.PayloadSerializerOptions.TypeInfoResolverChain.Insert(0, Default);
+            });
+        }
     }
 }
