@@ -812,16 +812,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                 break;
             case RequestRejectionReason.TlsOverHttpError:
-            case RequestRejectionReason.UnexpectedEndOfRequestContent:
-            case RequestRejectionReason.BadChunkSuffix:
-            case RequestRejectionReason.BadChunkSizeData:
-            case RequestRejectionReason.ChunkedRequestIncomplete:
-            case RequestRejectionReason.RequestBodyTooLarge:
-            case RequestRejectionReason.RequestHeadersTimeout:
-            case RequestRejectionReason.RequestBodyTimeout:
-            case RequestRejectionReason.FinalTransferCodingNotChunked:
-            case RequestRejectionReason.RequestBodyExceedsContentLength:
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.TlsOverHttp);
+                break;
             default:
+                // In some scenarios the end reason might already be set to a more specific error
+                // and attempting to set the reason again has no impact.
                 KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
                 break;
         }

@@ -46,5 +46,8 @@ internal enum ConnectionEndReason
     AppShutdown,
     GracefulAppShutdown,
     TransportCompleted,
-    TlsHandshakeFailed
+    TlsHandshakeFailed,
+    TlsOverHttp,
+    MaxRequestBodySizeExceeded,
+    UnexpectedEndOfRequestContent
 }
