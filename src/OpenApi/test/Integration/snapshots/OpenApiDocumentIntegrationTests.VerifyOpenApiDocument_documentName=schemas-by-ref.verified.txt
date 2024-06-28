@@ -303,25 +303,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "required": [
-                  "$type"
-                ],
-                "type": "object",
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/ShapeTriangle"
-                  },
-                  {
-                    "$ref": "#/components/schemas/ShapeSquare"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "$type",
-                  "mapping": {
-                    "triangle": "#/components/schemas/ShapeTriangle",
-                    "square": "#/components/schemas/ShapeSquare"
-                  }
-                }
+                "$ref": "#/components/schemas/Shape"
               }
             }
           },
@@ -343,29 +325,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "required": [
-                  "$type"
-                ],
-                "type": "object",
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity"
-                  },
-                  {
-                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries"
-                  },
-                  {
-                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "$type",
-                  "mapping": {
-                    "0": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity",
-                    "1": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries",
-                    "2": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
-                  }
-                }
+                "$ref": "#/components/schemas/WeatherForecastBase"
               }
             }
           },
@@ -387,25 +347,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "required": [
-                  "discriminator"
-                ],
-                "type": "object",
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/PersonStudent"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PersonTeacher"
-                  }
-                ],
-                "discriminator": {
-                  "propertyName": "discriminator",
-                  "mapping": {
-                    "student": "#/components/schemas/PersonStudent",
-                    "teacher": "#/components/schemas/PersonTeacher"
-                  }
-                }
+                "$ref": "#/components/schemas/Person"
               }
             }
           },
@@ -447,6 +389,27 @@
           "format": "int32"
         }
       },
+      "Person": {
+        "required": [
+          "discriminator"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PersonStudent"
+          },
+          {
+            "$ref": "#/components/schemas/PersonTeacher"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "discriminator",
+          "mapping": {
+            "student": "#/components/schemas/PersonStudent",
+            "teacher": "#/components/schemas/PersonTeacher"
+          }
+        }
+      },
       "PersonStudent": {
         "properties": {
           "discriminator": {
@@ -486,6 +449,27 @@
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "Shape": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ShapeTriangle"
+          },
+          {
+            "$ref": "#/components/schemas/ShapeSquare"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "triangle": "#/components/schemas/ShapeTriangle",
+            "square": "#/components/schemas/ShapeSquare"
           }
         }
       },
@@ -544,6 +528,31 @@
           "sides": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "WeatherForecastBase": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity"
+          },
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries"
+          },
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "0": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity",
+            "1": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries",
+            "2": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
           }
         }
       },

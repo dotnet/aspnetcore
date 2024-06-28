@@ -130,11 +130,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         {
             var operation = document.Paths["/api"].Operations[OperationType.Post];
             var requestBody = operation.RequestBody.Content["application/json"];
-            var requestBodySchema = requestBody.Schema;
+            var requestBodySchema = requestBody.Schema.GetEffective(document);
 
             var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
             var requestBody2 = operation2.RequestBody.Content["application/json"];
-            var requestBodySchema2 = requestBody2.Schema;
+            var requestBodySchema2 = requestBody2.Schema.GetEffective(document);
 
             // {
             //   "type": "array",
@@ -281,16 +281,12 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var path = Assert.Single(document.Paths.Values);
             var postOperation = path.Operations[OperationType.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            // Schemas are distinct because of applied transformer so no reference is used.
-            Assert.Null(requestSchema.Reference);
-            Assert.Equal("todo", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
             // Schemas are distinct because of applied transformer so no reference is used.
-            Assert.Null(responseSchema.Reference);
-            // No schemas get componentized here
-            Assert.Empty(document.Components.Schemas);
+            Assert.NotEqual(requestSchema.Reference.Id, responseSchema.Reference.Id);
+            Assert.Equal("todo", ((OpenApiString)requestSchema.GetEffective(document).Extensions["x-my-extension"]).Value);
+            Assert.False(responseSchema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var _));
         });
     }
 }
