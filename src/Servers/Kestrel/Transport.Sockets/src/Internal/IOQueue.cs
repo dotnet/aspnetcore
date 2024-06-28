@@ -81,6 +81,9 @@ internal sealed class IOQueue : PipeScheduler, IThreadPoolWorkItem
         // Since each IOQueue schedules one work item to process its work, the number of IOQueues determines the maximum
         // parallelism of processing work queued to IOQueues. The default number below is based on the processor count and tries
         // to use a high-enough number for that to not be a significant limiting factor for throughput.
+        //
+        // On Windows, the default number is limited due to some other perf issues. Once those are fixed, the same heuristic
+        // could apply there as well.
 
         int processorCount = Environment.ProcessorCount;
         if (OperatingSystem.IsWindows() || processorCount <= 32)
@@ -88,6 +91,6 @@ internal sealed class IOQueue : PipeScheduler, IThreadPoolWorkItem
             return Math.Min(processorCount, 16);
         }
 
-        return (processorCount + 1) / 2;
+        return processorCount / 2;
     }
 }
