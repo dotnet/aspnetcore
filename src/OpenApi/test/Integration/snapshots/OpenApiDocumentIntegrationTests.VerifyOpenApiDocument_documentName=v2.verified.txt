@@ -23,10 +23,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                  "$ref": "#/components/schemas/ArrayOfstring"
                 }
               }
             }
@@ -45,7 +42,16 @@
       }
     }
   },
-  "components": { },
+  "components": {
+    "schemas": {
+      "ArrayOfstring": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "tags": [
     {
       "name": "users"

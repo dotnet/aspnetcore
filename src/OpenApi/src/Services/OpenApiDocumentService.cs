@@ -228,7 +228,7 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(type, null, cancellationToken) : new OpenApiSchema();
+            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(type, null, cancellationToken, captureSchemaByRef: true) : new OpenApiSchema();
             response.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
@@ -465,7 +465,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestForm in supportedRequestFormats)
         {
             var contentType = requestForm.MediaType;
-            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(bodyParameter.Type, bodyParameter, cancellationToken) };
+            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(bodyParameter.Type, bodyParameter, cancellationToken, captureSchemaByRef: true) };
         }
 
         return requestBody;
