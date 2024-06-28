@@ -762,18 +762,7 @@ public static class TypedResults
         string? type,
         IDictionary<string, object?>? extensions)
     {
-        var problemDetails = new ProblemDetails
-        {
-            Detail = detail,
-            Instance = instance,
-            Status = statusCode,
-            Title = title,
-            Type = type,
-        };
-
-        CopyExtensions(extensions, problemDetails);
-
-        return new(problemDetails);
+        return Problem(detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
     }
 
     /// <summary>
@@ -840,20 +829,7 @@ public static class TypedResults
         string? type,
         IDictionary<string, object?>? extensions)
     {
-        ArgumentNullException.ThrowIfNull(errors);
-
-        var problemDetails = new HttpValidationProblemDetails(errors)
-        {
-            Detail = detail,
-            Instance = instance,
-            Type = type,
-        };
-
-        problemDetails.Title = title ?? problemDetails.Title;
-
-        CopyExtensions(extensions, problemDetails);
-
-        return new(problemDetails);
+        return ValidationProblem(errors, detail, instance, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
     }
 
     /// <summary>

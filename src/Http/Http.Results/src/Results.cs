@@ -770,22 +770,7 @@ public static partial class Results
         string? type,
         IDictionary<string, object?>? extensions)
     {
-        ArgumentNullException.ThrowIfNull(errors);
-
-        // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
-        var problemDetails = new HttpValidationProblemDetails(errors)
-        {
-            Detail = detail,
-            Instance = instance,
-            Type = type,
-            Status = statusCode,
-        };
-
-        problemDetails.Title = title ?? problemDetails.Title;
-
-        CopyExtensions(extensions, problemDetails);
-
-        return TypedResults.Problem(problemDetails);
+        return ValidationProblem(errors, detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
     }
 
     /// <summary>
