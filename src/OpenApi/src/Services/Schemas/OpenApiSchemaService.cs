@@ -96,7 +96,7 @@ internal sealed class OpenApiSchemaService(
                 // Short-circuit STJ's handling of nested properties, which uses a reference to the
                 // properties type schema with a schema that uses a document level reference.
                 // For example, if the property is a `public NestedTyped Nested { get; set; }` property,
-                // "nested": "#/properties/nested" because "nested": "#/components/schemas/NestedType"
+                // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
                 if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
                 {
                     return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
@@ -120,7 +120,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default, bool captureSchemaByRef = false)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
