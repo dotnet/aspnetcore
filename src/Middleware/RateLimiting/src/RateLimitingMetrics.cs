@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -40,7 +41,8 @@ internal sealed class RateLimitingMetrics : IDisposable
         _queuedRequestDurationCounter = _meter.CreateHistogram<double>(
             "aspnetcore.rate_limiting.request.time_in_queue",
             unit: "s",
-            description: "The duration of HTTP requests in a queue, waiting to acquire a rate limiting lease.");
+            description: "The duration of HTTP requests in a queue, waiting to acquire a rate limiting lease.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _requestsCounter = _meter.CreateCounter<long>(
             "aspnetcore.rate_limiting.requests",
