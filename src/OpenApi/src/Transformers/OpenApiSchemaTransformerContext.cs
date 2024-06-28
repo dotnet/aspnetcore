@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 
@@ -26,6 +27,17 @@ public sealed class OpenApiSchemaTransformerContext
     /// Null when processing an OpenAPI schema for a response type.
     /// </summary>
     public required ApiParameterDescription? ParameterDescription { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="JsonTypeInfo"/> associated with the target schema.
+    /// </summary>
+    public required JsonTypeInfo JsonTypeInfo { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="JsonPropertyInfo"/> associated with the target schema if the
+    /// target schema is a property of a parent schema.
+    /// </summary>
+    public required JsonPropertyInfo? JsonPropertyInfo { get; init; }
 
     /// <summary>
     /// Gets the application services associated with the current document the target schema is in.

@@ -132,16 +132,34 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
             Type = type,
+            JsonTypeInfo = jsonTypeInfo,
+            JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
             ApplicationServices = serviceProvider
         };
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
             var transformer = _openApiOptions.SchemaTransformers[i];
+            for (var j = 0; j < schema.Properties.Count; j++)
+            {
+                var property = schema.Properties.ElementAt(j);
+                var propertyInfo = _jsonSerializerOptions.GetTypeInfo(type).Properties[j];
+                var propertyContext = new OpenApiSchemaTransformerContext
+                {
+                    DocumentName = documentName,
+                    Type = propertyInfo.PropertyType,
+                    JsonTypeInfo = jsonTypeInfo,
+                    JsonPropertyInfo = propertyInfo,
+                    ParameterDescription = parameterDescription,
+                    ApplicationServices = serviceProvider
+                };
+                await transformer(property.Value, propertyContext, cancellationToken);
+            }
             await transformer(schema, context, cancellationToken);
         }
     }

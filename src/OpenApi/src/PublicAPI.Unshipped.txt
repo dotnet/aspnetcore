@@ -20,6 +20,10 @@ Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ApplicationServices
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ApplicationServices.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.DocumentName.get -> string!
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.DocumentName.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.JsonPropertyInfo.get -> System.Text.Json.Serialization.Metadata.JsonPropertyInfo?
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.JsonPropertyInfo.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.JsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo!
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.JsonTypeInfo.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.OpenApiSchemaTransformerContext() -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ParameterDescription.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription?
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ParameterDescription.init -> void

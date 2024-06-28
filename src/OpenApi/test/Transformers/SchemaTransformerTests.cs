@@ -19,8 +19,27 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.UseSchemaTransformer((schema, context, cancellationToken) =>
         {
-            Assert.Equal(typeof(Todo), context.Type);
-            Assert.Equal("todo", context.ParameterDescription.Name);
+            if (context.JsonPropertyInfo == null)
+            {
+                Assert.Equal(typeof(Todo), context.Type);
+                Assert.Equal("todo", context.ParameterDescription.Name);
+            }
+            if (context.JsonPropertyInfo?.Name == "id")
+            {
+                Assert.Equal(typeof(int), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "name")
+            {
+                Assert.Equal(typeof(string), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "isComplete")
+            {
+                Assert.Equal(typeof(bool), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "dueDate")
+            {
+                Assert.Equal(typeof(DateTime), context.Type);
+            }
             return Task.CompletedTask;
         });
 
@@ -37,7 +56,26 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.UseSchemaTransformer((schema, context, cancellationToken) =>
         {
-            Assert.Equal(typeof(Todo), context.Type);
+            if (context.JsonPropertyInfo == null)
+            {
+                Assert.Equal(typeof(Todo), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "id")
+            {
+                Assert.Equal(typeof(int), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "name")
+            {
+                Assert.Equal(typeof(string), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "isComplete")
+            {
+                Assert.Equal(typeof(bool), context.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "dueDate")
+            {
+                Assert.Equal(typeof(DateTime), context.Type);
+            }
             Assert.Null(context.ParameterDescription);
             return Task.CompletedTask;
         });
@@ -169,6 +207,37 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyAllTypesInADocument()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/todo", (Todo todo) => { });
+        builder.MapGet("/todo", (int id) => {});
+
+        var options = new OpenApiOptions();
+        options.UseSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.Type == typeof(int))
+            {
+                schema.Format = "modified-number-format";
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var path = Assert.Single(document.Paths.Values);
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Parameters[0].Schema;
+            Assert.Equal("modified-number-format", responseSchema.Format);
+
+            var postOperation = path.Operations[OperationType.Post];
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("modified-number-format", requestSchema.Properties["id"].Format);
         });
     }
 }
