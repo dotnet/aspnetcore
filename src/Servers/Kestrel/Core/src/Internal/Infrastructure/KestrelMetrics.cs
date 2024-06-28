@@ -506,6 +506,9 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.AppShutdown => "app_shutdown",
             ConnectionEndReason.TlsHandshakeFailed => "tls_handshake_failed",
             ConnectionEndReason.InvalidRequestLine => "invalid_request_line",
+            ConnectionEndReason.TlsOverHttp => "tls_over_http",
+            ConnectionEndReason.MaxRequestBodySizeExceeded => "max_request_body_size_exceeded",
+            ConnectionEndReason.UnexpectedEndOfRequestContent => "unexpected_end_of_request_content",
             _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
         };
 

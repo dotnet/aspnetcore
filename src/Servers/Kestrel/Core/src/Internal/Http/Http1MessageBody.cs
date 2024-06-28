@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -112,6 +113,13 @@ internal abstract class Http1MessageBody : MessageBody
         {
             _context.TimeoutControl.CancelTimeout();
         }
+    }
+
+    protected override void OnOnbservedBytesExceedMaxRequestBodySize(long? maxRequestBodySize)
+    {
+        _context.DisableHttp1KeepAlive();
+        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.MaxRequestBodySizeExceeded);
+        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
     }
 
     public static MessageBody For(
@@ -226,6 +234,7 @@ internal abstract class Http1MessageBody : MessageBody
         // closing the connection without a response as expected.
         ((IHttpOutputAborter)_context).OnInputOrOutputCompleted();
 
+        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
     }
 }
