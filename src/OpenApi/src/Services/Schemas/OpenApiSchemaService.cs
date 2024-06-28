@@ -144,17 +144,58 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
-            Type = type,
+            JsonTypeInfo = jsonTypeInfo,
+            JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
             ApplicationServices = serviceProvider
         };
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
             var transformer = _openApiOptions.SchemaTransformers[i];
-            await transformer.TransformAsync(schema, context, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, transformer, cancellationToken);
+        }
+    }
+
+    private async Task InnerApplySchemaTransformersAsync(OpenApiSchema schema,
+        JsonTypeInfo jsonTypeInfo,
+        OpenApiSchemaTransformerContext context,
+        IOpenApiSchemaTransformer transformer,
+        CancellationToken cancellationToken = default)
+    {
+        await transformer.TransformAsync(schema, context, cancellationToken);
+
+        // Only apply transformers on polymorphic schemas where we can resolve the derived
+        // types associated with the base type.
+        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            var anyOfIndex = 0;
+            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
+                context.UpdateJsonTypeInfo(derivedJsonTypeInfo, null);
+                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, context, transformer, cancellationToken);
+                anyOfIndex++;
+            }
+        }
+
+        if (schema.Items is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
+            context.UpdateJsonTypeInfo(elementTypeInfo, null);
+            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, context, transformer, cancellationToken);
+        }
+
+        if (schema.Properties is { Count: > 0 })
+        {
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                context.UpdateJsonTypeInfo(_jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo);
+                await InnerApplySchemaTransformersAsync(schema.Properties[propertyInfo.Name], jsonTypeInfo, context, transformer, cancellationToken);
+            }
         }
     }
 

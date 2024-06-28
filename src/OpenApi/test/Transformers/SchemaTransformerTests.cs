@@ -3,10 +3,12 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Xunit.Sdk;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -20,8 +22,27 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            Assert.Equal(typeof(Todo), context.Type);
-            Assert.Equal("todo", context.ParameterDescription.Name);
+            if (context.JsonPropertyInfo == null)
+            {
+                Assert.Equal(typeof(Todo), context.JsonTypeInfo.Type);
+                Assert.Equal("todo", context.ParameterDescription.Name);
+            }
+            if (context.JsonPropertyInfo?.Name == "id")
+            {
+                Assert.Equal(typeof(int), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "name")
+            {
+                Assert.Equal(typeof(string), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "isComplete")
+            {
+                Assert.Equal(typeof(bool), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "dueDate")
+            {
+                Assert.Equal(typeof(DateTime), context.JsonTypeInfo.Type);
+            }
             return Task.CompletedTask;
         });
 
@@ -38,7 +59,26 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            Assert.Equal(typeof(Todo), context.Type);
+            if (context.JsonPropertyInfo == null)
+            {
+                Assert.Equal(typeof(Todo), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "id")
+            {
+                Assert.Equal(typeof(int), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "name")
+            {
+                Assert.Equal(typeof(string), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "isComplete")
+            {
+                Assert.Equal(typeof(bool), context.JsonTypeInfo.Type);
+            }
+            if (context.JsonPropertyInfo?.Name == "dueDate")
+            {
+                Assert.Equal(typeof(DateTime), context.JsonTypeInfo.Type);
+            }
             Assert.Null(context.ParameterDescription);
             return Task.CompletedTask;
         });
@@ -124,7 +164,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            if (context.Type == typeof(Todo))
+            if (context.JsonTypeInfo.Type == typeof(Todo))
             {
                 schema.Extensions["x-my-extension"] = new OpenApiString("1");
             }
@@ -154,7 +194,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            if (context.Type == typeof(Todo) && context.ParameterDescription is not null)
+            if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription is not null)
             {
                 schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
             }
@@ -270,7 +310,9 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         options.AddSchemaTransformer<ActivatedTransformerWithDependency>();
 
         // Assert that transient dependency is instantiated once for each
-        // request to the OpenAPI document for each created schema.
+        // request to the OpenAPI document for each created schema and its
+        // sub-schemas. In this case, it's instantiated 4 times for each top-level
+        // schema, 16 times for each property within each schema.
         var countBefore = Dependency.InstantiationCount;
         await VerifyOpenApiDocument(builder, options, document =>
         {
@@ -293,7 +335,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.True(responseSchema.Extensions.ContainsKey("x-my-extension"));
         });
         var countAfter = Dependency.InstantiationCount;
-        Assert.Equal(countBefore + 4, countAfter);
+        Assert.Equal(countBefore + 20, countAfter);
     }
 
     [Fact]
@@ -318,7 +360,9 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("Schema Description", responseSchema.Description);
         });
-        Assert.Equal(2, DisposableTransformer.DisposeCount);
+        // Assert that the transformer is disposed for each top-level schema
+        // and the four properties within that schema.
+        Assert.Equal(10, DisposableTransformer.DisposeCount);
     }
 
     [Fact]
@@ -343,14 +387,230 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("Schema Description", responseSchema.Description);
         });
-        Assert.Equal(2, AsyncDisposableTransformer.DisposeCount);
+        // Assert that the transformer is disposed after the top-level
+        // schema and each sub-property within the schema.
+        Assert.Equal(10, AsyncDisposableTransformer.DisposeCount);
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyAllTypesInADocument()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/todo", (Todo todo) => { });
+        builder.MapGet("/todo", (int id) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                schema.Format = "modified-number-format";
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that parameter schema has been update
+            var path = Assert.Single(document.Paths.Values);
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Parameters[0].Schema;
+            Assert.Equal("modified-number-format", responseSchema.Format);
+
+            // Assert that property in request body schema has been updated
+            var postOperation = path.Operations[OperationType.Post];
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("modified-number-format", requestSchema.GetEffective(document).Properties["id"].Format);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyItemTypesInADocument()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/list", () => new List<int> { 1, 2, 3, 4 });
+        builder.MapGet("/single", () => 1);
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                schema.Format = "modified-number-format";
+            }
+            schema = new OpenApiSchema { Type = "array", Items = schema };
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the schema represent list elements has been modified
+            var path = document.Paths["/list"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
+            Assert.Equal("modified-number-format", responseSchema.Items.Format);
+
+            // Assert that top-level schema associated with the standalone integer has been updated
+            path = document.Paths["/single"];
+            getOperation = path.Operations[OperationType.Get];
+            responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
+            Assert.Equal("modified-number-format", responseSchema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyPolymorphicChildSchemas()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/shape", (Shape todo) => { });
+        builder.MapPost("/triangle", (Triangle todo) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Triangle))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-triangle");
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the polymorphic sub-type `Triangle` has been updated
+            var path = document.Paths["/shape"];
+            var postOperation = path.Operations[OperationType.Post];
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
+            var triangleSubschema = Assert.Single(requestSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var _));
+
+            // Assert that the standalone `Triangle` type has been updated
+            path = document.Paths["/triangle"];
+            postOperation = path.Operations[OperationType.Post];
+            requestSchema = postOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
+            Assert.Equal("this-is-a-triangle", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyPropertiesInAnItemsType()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/list-of-todo", () => new List<Todo> { new Todo(1, "Item1", false, DateTime.Now) });
+        builder.MapGet("/list-of-int", () => new List<int> { 1, 2, 3, 4 });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                schema.Format = "modified-number-format";
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the `id` property in the `Todo` within the array has been updated
+            var path = document.Paths["/list-of-todo"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var itemSchema = responseSchema.GetEffective(document).Items;
+            Assert.Equal("modified-number-format", itemSchema.Properties["id"].Format);
+
+            // Assert that the integer type within the list has been updated
+            var otherPath = document.Paths["/list-of-int"];
+            var otherGetOperation = otherPath.Operations[OperationType.Get];
+            var otherResponseSchema = otherGetOperation.Responses["200"].Content["application/json"].Schema;
+            var otherItemSchema = otherResponseSchema.GetEffective(document).Items;
+            Assert.Equal("modified-number-format", otherItemSchema.Format);
+        });
+    }
+
+    [Fact(Skip = "Depends on https://github.com/dotnet/runtime/issues/104046")]
+    public async Task SchemaTransformer_CanModifyListOfPolymorphicTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/list", () => new List<Shape> { new Triangle { Hypotenuse = 12, Color = "blue", Sides = 3 }, new Square { Area = 24, Color = "red ", Sides = 4 } });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Triangle))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-triangle");
+            }
+            if (context.JsonTypeInfo.Type == typeof(Square))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-square");
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the `Triangle` type within the list has been updated
+            var path = document.Paths["/list"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var itemSchema = responseSchema.GetEffective(document).Items.GetEffective(document);
+            var triangleSubschema = Assert.Single(itemSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            // Assert that the x-my-extension type is set to this-is-a-triangle
+            Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var triangleExtension));
+            Assert.Equal("this-is-a-triangle", ((OpenApiString)triangleExtension).Value);
+
+            // Assert that the `Square` type within the polymorphic type list has been updated
+            var squareSubschema = Assert.Single(itemSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            // Assert that the x-my-extension type is set to this-is-a-square
+            Assert.True(squareSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var squareExtension));
+            Assert.Equal("this-is-a-square", ((OpenApiString)squareExtension).Value);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformers_CanModifyMultipleFormParameters()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/todo", ([FromForm] Todo todo, [FromForm] Error error) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                schema.Format = "modified-number-format";
+            }
+            return Task.CompletedTask;
+        });
+
+        // We use `allOf` for multiple form parameters to ensure that they should be aggregated
+        // appropriately in the request body schema. Although we don't handle `AllOf` when we apply
+        // schema transformers, these modifications still work because the wrapping of these schemas into
+        // allOf definitions happens after all transformers have been applied.
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var path = document.Paths["/todo"];
+            var postOperation = path.Operations[OperationType.Post];
+            var requestSchema = postOperation.RequestBody.Content["application/x-www-form-urlencoded"].Schema;
+            Assert.Equal(2, requestSchema.AllOf.Count);
+            var todoSchema = requestSchema.AllOf[0];
+            var errorSchema = requestSchema.AllOf[1];
+            Assert.Equal("modified-number-format", todoSchema.Properties["id"].Format);
+            Assert.Equal("modified-number-format", errorSchema.Properties["code"].Format);
+        });
     }
 
     private class ActivatedTransformer : IOpenApiSchemaTransformer
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.Type == typeof(Todo))
+            if (context.JsonTypeInfo.Type == typeof(Todo))
             {
                 schema.Extensions["x-my-extension"] = new OpenApiString("1");
             }
