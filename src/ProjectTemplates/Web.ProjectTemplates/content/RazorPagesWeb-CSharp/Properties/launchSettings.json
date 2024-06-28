@@ -10,7 +10,11 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    //#if (HasHttpsProfile)
     },
+    //#else
+    }
+    //#endif
     //#endif
     //#if (HasHttpsProfile)
     "https": {
