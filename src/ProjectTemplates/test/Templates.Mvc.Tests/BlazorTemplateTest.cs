@@ -57,8 +57,8 @@ public class BlazorTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("blazor", args: args);
 
         var expectedLaunchProfileNames = args.Contains(ArgConstants.NoHttps)
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = await ReadProjectFileAsync(project);
