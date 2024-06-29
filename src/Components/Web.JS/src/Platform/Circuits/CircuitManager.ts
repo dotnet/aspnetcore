@@ -204,7 +204,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async disconnect(): Promise<void> {
+    if (!this._circuitId || this.isDisposedOrDisposing()) {
+      return;
+    }
+
     await this._connection?.stop();
+
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitClosed) {
+        handler.onCircuitClosed();
+      }
+    }
   }
 
   public async reconnect(): Promise<boolean> {
