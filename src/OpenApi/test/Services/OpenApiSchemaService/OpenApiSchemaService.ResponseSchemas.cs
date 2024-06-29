@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBase
+public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
     public static object[][] ResponsesWithPrimitiveTypes =>
     [

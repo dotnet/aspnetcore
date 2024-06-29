@@ -99,9 +99,15 @@ internal sealed class OpenApiSchemaStore
         }
         if (schema.AnyOf is not null)
         {
+            // AnyOf schemas in a polymorphic type should contain a reference to the parent schema
+            // ID to support disambiguating between a derived type on its own and a derived type
+            // as part of a polymorphic schema.
+            var baseTypeSchemaId = schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var schemaId)
+                ? ((OpenApiString)schemaId).Value
+                : null;
             foreach (var anyOfSchema in schema.AnyOf)
             {
-                AddOrUpdateSchemaByReference(anyOfSchema);
+                AddOrUpdateSchemaByReference(anyOfSchema, baseTypeSchemaId);
             }
         }
         if (schema.Properties is not null)
@@ -113,8 +119,9 @@ internal sealed class OpenApiSchemaStore
         }
     }
 
-    private void AddOrUpdateSchemaByReference(OpenApiSchema schema)
+    private void AddOrUpdateSchemaByReference(OpenApiSchema schema, string? baseTypeSchemaId = null)
     {
+        var targetReferenceId = baseTypeSchemaId is not null ? $"{baseTypeSchemaId}{GetSchemaReferenceId(schema)}" : GetSchemaReferenceId(schema);
         if (SchemasByReference.TryGetValue(schema, out var referenceId))
         {
             // If we've already used this reference ID else where in the document, increment a counter value to the reference
@@ -144,7 +151,7 @@ internal sealed class OpenApiSchemaStore
             // }
             // In this case, although the reference ID  based on the .NET type we would use is `string`, the
             // two schemas are distinct.
-            if (referenceId == null && GetSchemaReferenceId(schema) is { } targetReferenceId)
+            if (referenceId == null && targetReferenceId is not null)
             {
                 if (_referenceIdCounter.TryGetValue(targetReferenceId, out var counter))
                 {
@@ -161,7 +168,7 @@ internal sealed class OpenApiSchemaStore
         }
         else
         {
-            SchemasByReference[schema] = null;
+            SchemasByReference[schema] = baseTypeSchemaId is not null ? targetReferenceId : null;
         }
     }
 

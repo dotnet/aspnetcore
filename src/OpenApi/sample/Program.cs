@@ -91,7 +91,7 @@ responses.MapGet("/200-only-xml", () => new TodoWithDueDate(1, "Test todo", fals
     .Produces<Todo>(contentType: "text/xml");
 
 responses.MapGet("/triangle", () => new Triangle { Color = "red", Sides = 3, Hypotenuse = 5.0 });
-responses.MapGet("/shape", () => new Shape { Color = "blue", Sides = 4 });
+responses.MapGet("/shape", Shape () => new Triangle { Color = "blue", Sides = 4 });
 
 schemas.MapGet("/typed-results", () => TypedResults.Ok(new Triangle { Color = "red", Sides = 3, Hypotenuse = 5.0 }));
 schemas.MapGet("/multiple-results", Results<Ok<Triangle>, NotFound<string>> () => Random.Shared.Next(0, 2) == 0
@@ -108,6 +108,9 @@ schemas.MapPost("/list-of-ints", (List<int> values) => values.Count);
 schemas.MapPost("/ienumerable-of-ints", (IEnumerable<int> values) => values.Count());
 schemas.MapGet("/dictionary-of-ints", () => new Dictionary<string, int> { { "one", 1 }, { "two", 2 } });
 schemas.MapGet("/frozen-dictionary-of-ints", () => ImmutableDictionary.CreateRange(new Dictionary<string, int> { { "one", 1 }, { "two", 2 } }));
+schemas.MapPost("/shape", (Shape shape) => { });
+schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
+schemas.MapPost("/person", (Person person) => { });
 
 app.MapControllers();
 

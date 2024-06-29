@@ -324,17 +324,23 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
     internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context)
     {
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions)
+        // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
+        // to the top-level schema and not to any nested schemas that are generated.
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.Path.Length == 0)
         {
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
-                if (derivedType.TypeDiscriminator is null)
+                if (derivedType.TypeDiscriminator is { } discriminator)
                 {
-                    continue;
+                    var jsonDerivedType = context.TypeInfo.Options.GetTypeInfo(derivedType.DerivedType);
+                    // Discriminator mappings are only supported in OpenAPI v3+ so we can safely assume that
+                    // the generated reference mappings will support the OpenAPI v3 schema reference format
+                    // that we hardcode here. We could use `OpenApiReference` to construct the reference and
+                    // serialize it but we use a hardcoded string here to avoid allocating a new object and
+                    // working around Microsoft.OpenApi's serialization libraries.
+                    mappings[$"{discriminator}"] = $"#/components/schemas/{context.TypeInfo.GetSchemaReferenceId()}{jsonDerivedType.GetSchemaReferenceId()}";
                 }
-                // TODO: Use the actual reference ID instead of the empty string.
-                mappings[derivedType.TypeDiscriminator.ToString()!] = string.Empty;
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
