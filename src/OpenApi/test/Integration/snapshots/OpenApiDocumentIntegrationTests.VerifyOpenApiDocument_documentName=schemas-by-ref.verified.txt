@@ -45,7 +45,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/string"
+                  "type": "string"
                 }
               }
             }
@@ -96,7 +96,8 @@
             "description": "The ID associated with the Todo item.",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/int"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -105,7 +106,8 @@
             "description": "The number of Todos to fetch",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/int"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -195,7 +197,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/int"
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -224,7 +227,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/int"
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -243,7 +247,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/int"
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -288,6 +293,130 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/shape": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "$type"
+                ],
+                "type": "object",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ShapeTriangle"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ShapeSquare"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "$type",
+                  "mapping": {
+                    "triangle": "#/components/schemas/ShapeTriangle",
+                    "square": "#/components/schemas/ShapeSquare"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/weatherforecastbase": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "$type"
+                ],
+                "type": "object",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "$type",
+                  "mapping": {
+                    "0": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity",
+                    "1": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries",
+                    "2": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/person": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "discriminator"
+                ],
+                "type": "object",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PersonStudent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PersonTeacher"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "discriminator",
+                  "mapping": {
+                    "student": "#/components/schemas/PersonStudent",
+                    "teacher": "#/components/schemas/PersonTeacher"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -296,45 +425,183 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/int"
+            "type": "integer",
+            "format": "int32"
           },
           "name": {
-            "$ref": "#/components/schemas/string"
+            "type": "string"
           }
         }
       },
       "ArrayOfint": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/int"
+          "type": "integer",
+          "format": "int32"
         }
       },
       "DictionaryOfstringAndint": {
         "type": "object",
         "additionalProperties": {
-          "$ref": "#/components/schemas/int"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "int": {
-        "type": "integer",
-        "format": "int32"
+      "PersonStudent": {
+        "properties": {
+          "discriminator": {
+            "enum": [
+              "student"
+            ],
+            "type": "string"
+          },
+          "gpa": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "PersonTeacher": {
+        "required": [
+          "subject"
+        ],
+        "properties": {
+          "discriminator": {
+            "enum": [
+              "teacher"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        }
       },
       "Product": {
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/int"
+            "type": "integer",
+            "format": "int32"
           },
           "name": {
-            "$ref": "#/components/schemas/string"
+            "type": "string"
           }
         }
       },
-      "string": {
-        "type": "string"
+      "ShapeSquare": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "square"
+            ],
+            "type": "string"
+          },
+          "area": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ShapeTriangle": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "triangle"
+            ],
+            "type": "string"
+          },
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "Triangle": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithCity": {
+        "required": [
+          "city"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              0
+            ],
+            "type": "integer"
+          },
+          "city": {
+            "type": "string"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithLocalNews": {
+        "required": [
+          "news"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              2
+            ],
+            "type": "integer"
+          },
+          "news": {
+            "type": "string"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithTimeSeries": {
+        "required": [
+          "summary"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              1
+            ],
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
       }
     }
   },

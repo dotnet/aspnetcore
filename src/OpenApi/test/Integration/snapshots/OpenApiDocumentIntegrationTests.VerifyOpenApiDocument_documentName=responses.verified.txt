@@ -59,7 +59,20 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "hypotenuse": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "color": {
+                      "type": "string"
+                    },
+                    "sides": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
                 }
               }
             }
@@ -78,7 +91,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "required": [
+                    "$type"
+                  ],
+                  "type": "object",
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ShapeTriangle"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ShapeSquare"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "$type",
+                    "mapping": {
+                      "triangle": "#/components/schemas/ShapeTriangle",
+                      "square": "#/components/schemas/ShapeSquare"
+                    }
+                  }
                 }
               }
             }
@@ -89,19 +120,47 @@
   },
   "components": {
     "schemas": {
-      "boolean": {
-        "type": "boolean"
+      "ShapeSquare": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "square"
+            ],
+            "type": "string"
+          },
+          "area": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
-      "DateTime": {
-        "type": "string",
-        "format": "date-time"
-      },
-      "int": {
-        "type": "integer",
-        "format": "int32"
-      },
-      "string": {
-        "type": "string"
+      "ShapeTriangle": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "triangle"
+            ],
+            "type": "string"
+          },
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "Todo": {
         "required": [
@@ -113,16 +172,18 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/int"
+            "type": "integer",
+            "format": "int32"
           },
           "title": {
-            "$ref": "#/components/schemas/string"
+            "type": "string"
           },
           "completed": {
-            "$ref": "#/components/schemas/boolean"
+            "type": "boolean"
           },
           "createdAt": {
-            "$ref": "#/components/schemas/DateTime"
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

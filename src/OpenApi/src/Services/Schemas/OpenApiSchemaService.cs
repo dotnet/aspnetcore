@@ -81,11 +81,19 @@ internal sealed class OpenApiSchemaService(
                     }
                 };
             }
+            // STJ uses `true` in place of an empty object to represent a schema that matches
+            // anything. We override this default behavior here to match the style traditionally
+            // expected in OpenAPI documents.
+            if (type == typeof(object))
+            {
+                schema = new JsonObject();
+            }
             schema.ApplyPrimitiveTypesAndFormats(context);
             schema.ApplySchemaReferenceId(context);
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            schema.ApplyPolymorphismOptions(context);
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider } jsonPropertyInfo)
             {
-                schema.ApplyNullabilityContextInfo(attributeProvider);
+                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);

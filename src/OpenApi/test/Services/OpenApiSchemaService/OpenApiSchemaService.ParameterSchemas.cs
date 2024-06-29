@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBase
+public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
 #nullable enable
     public static object?[][] RouteParametersWithPrimitiveTypes =>
