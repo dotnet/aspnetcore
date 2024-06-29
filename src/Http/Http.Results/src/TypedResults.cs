@@ -854,7 +854,7 @@ public static class TypedResults
     {
         ArgumentNullException.ThrowIfNull(errors);
 
-        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>(errors))
+        var problemDetails = new HttpValidationProblemDetails(errors)
         {
             Detail = detail,
             Instance = instance,

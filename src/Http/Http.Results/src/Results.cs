@@ -799,7 +799,7 @@ public static partial class Results
         ArgumentNullException.ThrowIfNull(errors);
 
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
-        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>(errors, StringComparer.Ordinal))
+        var problemDetails = new HttpValidationProblemDetails(errors)
         {
             Detail = detail,
             Instance = instance,
