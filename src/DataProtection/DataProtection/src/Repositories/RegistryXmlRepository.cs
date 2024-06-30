@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
@@ -154,5 +155,68 @@ public class RegistryXmlRepository : IXmlRepository
         // data corruption if power is lost while the registry file is being flushed to the file system,
         // but the window for that should be small enough that we shouldn't have to worry about it.
         RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
+    }
+
+    /// <inheritdoc/>
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc/>
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
+
+        var deletableElements = new List<DeletableElement>();
+
+        foreach (var valueName in RegistryKey.GetValueNames())
+        {
+            var element = ReadElementFromRegKey(RegistryKey, valueName);
+            if (element is not null)
+            {
+                deletableElements.Add(new DeletableElement(valueName, element));
+            }
+        }
+
+        chooseElements(deletableElements);
+
+        var allSucceeded = true;
+
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        foreach (var deletableElement in elementsToDelete)
+        {
+            var valueName = deletableElement.ValueName;
+            _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
+            try
+            {
+                RegistryKey.DeleteValue(valueName);
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                allSucceeded = false;
+            }
+        }
+
+        return allSucceeded;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(string valueName, XElement element)
+        {
+            ValueName = valueName;
+            Element = element;
+        }
+
+        /// <inheritdoc/>
+        public XElement Element { get; }
+
+        /// <summary>The name of the registry value from which <see cref="Element"/> was read.</summary>
+        public string ValueName { get; }
+
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }
