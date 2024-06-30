@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -22,7 +24,10 @@ public class KeepAliveTimeoutTests : LoggedTest
     [Fact]
     public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -44,12 +49,20 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
     public async Task ConnectionKeptAliveBetweenRequests()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -72,12 +85,20 @@ public class KeepAliveTimeoutTests : LoggedTest
                 }
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     [Fact]
     public async Task ConnectionNotTimedOutWhileRequestBeingSent()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -112,12 +133,20 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     [Fact]
     private async Task ConnectionNotTimedOutWhileAppIsRunning()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, longRunningCt: cts.Token))
@@ -152,12 +181,20 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     [Fact]
     private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -172,12 +209,20 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
     private async Task KeepAliveTimeoutDoesNotApplyToUpgradedConnections()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, upgradeCt: cts.Token))
@@ -210,6 +255,11 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.Receive("hello, world");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default)
