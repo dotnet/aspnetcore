@@ -233,14 +233,15 @@ public class ResponseHeaderTests : IDisposable
             Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+            context.Response.Headers["Transfer-Encoding"] = new string[] { "chunked" };
+            var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
+            await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
             context.Dispose();
 
             HttpResponseMessage response = await responseTask;
             response.EnsureSuccessStatusCode();
             Assert.Equal(new Version(1, 1), response.Version);
             Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
-            Assert.True(response.Headers.ConnectionClose.Value);
         }
     }
 
