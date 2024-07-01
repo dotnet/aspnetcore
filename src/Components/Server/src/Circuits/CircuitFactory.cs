@@ -101,6 +101,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             components,
             jsRuntime,
             navigationManager,
+            TimeProvider.System,
             circuitHandlers,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);

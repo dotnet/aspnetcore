@@ -233,6 +233,7 @@ window.jsInteropTests = {
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
   receiveDotNetStreamReference: receiveDotNetStreamReference,
   receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
+  receiveDisposedDotNetStreamReference: receiveDisposedDotNetStreamReference,
 };
 
 function returnUndefined() {
@@ -437,4 +438,19 @@ async function receiveDotNetStreamReference(streamRef) {
 
 async function receiveDotNetStreamWrapperReference(wrapper) {
   return await validateDotNetStreamWrapperReference(wrapper);
+}
+
+async function receiveDisposedDotNetStreamReference(streamRef, shouldRead) {
+  try {
+    const stream = await streamRef.stream();
+    const reader = stream.getReader();
+    if (shouldRead) {
+      while (!(await reader.read()).done) {
+        // Don't need to do anything with the data.
+      }
+    }
+    return "Success";
+  } catch (error) {
+    return `Error reading stream: ${error}`;
+  }
 }

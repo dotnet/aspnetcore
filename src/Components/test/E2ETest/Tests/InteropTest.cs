@@ -92,6 +92,8 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
             ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
             ["disposeJSObjectReferenceAsync"] = "Success",
+            ["dotNetToJSReceiveDisposedDotNetStreamReferenceAsync"] = "Success",
+            ["dotNetToJSReadDisposedDotNetStreamReferenceExceptionAsync"] = "Error reading stream",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
