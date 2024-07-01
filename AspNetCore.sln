@@ -1102,7 +1102,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{5095E70C-6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "src\SignalR\perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{A6A95BEF-7E21-4D3D-921B-F77267219D27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specification.Tests", "Specification.Tests", "{245939DA-D68D-4B5C-A95E-D3B6923614FF}"
 EndProject

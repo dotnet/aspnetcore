@@ -92,6 +92,8 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections" />
     <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Common" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR" />
     <TrimmableProject Include="Microsoft.AspNetCore.StaticAssets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
