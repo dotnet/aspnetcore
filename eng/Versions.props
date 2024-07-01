@@ -176,7 +176,7 @@
     <!-- Packages from dotnet/symreader -->
     <MicrosoftSourceBuildIntermediatesymreaderVersion>2.1.0-beta.24321.1</MicrosoftSourceBuildIntermediatesymreaderVersion>
     <!-- Packages from dotnet/winforms -->
-    <SystemDrawingCommonVersion>9.0.0-preview.7.24321.4</SystemDrawingCommonVersion>
+    <SystemDrawingCommonVersion>9.0.0-preview.7.24329.1</SystemDrawingCommonVersion>
     <!-- Packages from dotnet/xdt -->
     <MicrosoftWebXdtVersion>9.0.0-preview.24317.2</MicrosoftWebXdtVersion>
     <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24317.2</MicrosoftSourceBuildIntermediatexdtVersion>
