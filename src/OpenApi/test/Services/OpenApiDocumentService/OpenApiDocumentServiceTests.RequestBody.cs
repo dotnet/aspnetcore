@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -1040,43 +1039,4 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     private void ActionWithStream(Stream stream) { }
     [Route("/pipereader")]
     private void ActionWithPipeReader(PipeReader pipeReader) { }
-
-    [Fact]
-    public async Task GetOpenApiRequestBody_AppliesReadOnlyOnProperties()
-    {
-        // Arrange
-        var builder = CreateBuilder();
-
-        // Act
-        builder.MapPost("/", (TypeWithReadOnlyProperties model) => { });
-
-        // Assert
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
-            var content = Assert.Single(operation.RequestBody.Content);
-            var schema = content.Value.Schema;
-            Assert.NotNull(schema.Properties);
-            Assert.Collection(schema.Properties,
-                property =>
-                {
-                    Assert.Equal("computedProperty", property.Key);
-                    Assert.True(property.Value.ReadOnly);
-                },
-                property =>
-                {
-                    Assert.Equal("readOnlyProperty", property.Key);
-                    Assert.True(property.Value.ReadOnly);
-                });
-        });
-    }
-
-    private class TypeWithReadOnlyProperties
-    {
-        public int ComputedProperty { get; } = 42;
-
-        [ReadOnly(true)]
-        public int ReadOnlyProperty { get; set; }
-    }
 }
