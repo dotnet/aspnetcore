@@ -15,7 +15,7 @@
   <ItemGroup>
     <JavaFiles Include="src\**\*.java" />
     <JavaFiles Include="*.javaproj" />
-    <JavaFiles Include="build.gradle" />
+    <JavaFiles Include="src\**\*.gradle" />
 
     <BuildOutputFiles Include="$(BaseIntermediateOutputPath)build-sentinel" />
   </ItemGroup>
