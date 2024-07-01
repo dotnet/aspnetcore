@@ -104,6 +104,7 @@ public class ConnectionLimitTests : LoggedTest
     {
         var testMeterFactory = new TestMeterFactory();
         using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.rejected_connections");
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
         const int max = 10;
         var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -148,6 +149,30 @@ public class ConnectionLimitTests : LoggedTest
                 requestTcs.TrySetResult();
             }
         }
+
+        var measurements = connectionDuration.GetMeasurementSnapshot();
+
+        Assert.Collection(measurements,
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded), m.Tags[KestrelMetrics.ErrorType]),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys),
+            m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys));
 
         static void AssertCounter(CollectedMeasurement<long> measurement) => Assert.Equal(1, measurement.Value);
     }

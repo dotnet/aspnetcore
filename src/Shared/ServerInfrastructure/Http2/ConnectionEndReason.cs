@@ -49,5 +49,6 @@ internal enum ConnectionEndReason
     TlsHandshakeFailed,
     TlsOverHttp,
     MaxRequestBodySizeExceeded,
-    UnexpectedEndOfRequestContent
+    UnexpectedEndOfRequestContent,
+    MaxConcurrentConnectionsExceeded
 }

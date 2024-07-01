@@ -157,6 +157,8 @@ internal sealed class KestrelMetrics
 
     public void ConnectionRejected(in ConnectionMetricsContext metricsContext)
     {
+        AddConnectionEndReason(metricsContext, ConnectionEndReason.MaxConcurrentConnectionsExceeded);
+
         // Check live rather than cached state because this is just a counter, it's not a start/stop event like the other metrics.
         if (_rejectedConnectionsCounter.Enabled)
         {
@@ -509,6 +511,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.TlsOverHttp => "tls_over_http",
             ConnectionEndReason.MaxRequestBodySizeExceeded => "max_request_body_size_exceeded",
             ConnectionEndReason.UnexpectedEndOfRequestContent => "unexpected_end_of_request_content",
+            ConnectionEndReason.MaxConcurrentConnectionsExceeded => "max_concurrent_connections_exceeded",
             _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
         };
 
