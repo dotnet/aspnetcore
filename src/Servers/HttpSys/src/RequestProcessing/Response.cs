@@ -389,11 +389,9 @@ internal sealed class Response
         // Gather everything from the request that affects the response:
         var requestVersion = Request.ProtocolVersion;
         var requestConnectionString = Request.Headers[HeaderNames.Connection];
-        var requestKeepAliveString = Request.Headers[HeaderNames.KeepAlive];
         var isHeadRequest = Request.IsHeadMethod;
         var requestCloseSet = Matches(Constants.Close, requestConnectionString);
         var requestConnectionKeepAliveSet = Matches(Constants.KeepAlive, requestConnectionString);
-        var requestKeepAliveSet = Matches(bool.TrueString, requestKeepAliveString);
 
         // Gather everything the app may have set on the response:
         // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
@@ -406,7 +404,12 @@ internal sealed class Response
 
         // Determine if the connection will be kept alive or closed.
         var keepConnectionAlive = true;
-        if ((requestVersion <= Constants.V1_0 && !(requestConnectionKeepAliveSet || requestKeepAliveSet))
+
+        // An HTTP/1.1 server may also establish persistent connections with
+        // HTTP / 1.0 clients upon receipt of a Keep-Alive connection token.
+        // However, a persistent connection with an HTTP/1.0 client cannot make
+        // use of the chunked transfer-coding. From: https://www.rfc-editor.org/rfc/rfc2068#section-19.7.1
+        if ((requestVersion <= Constants.V1_0 && (!requestConnectionKeepAliveSet || responseChunkedSet))
             || (requestVersion == Constants.V1_1 && requestCloseSet)
             || responseCloseSet)
         {

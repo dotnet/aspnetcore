@@ -207,7 +207,7 @@ public class ResponseHeaderTests : IDisposable
     }
 
     [ConditionalFact]
-    public async Task ResponseHeaders_HTTP10KeepAliveRequest_Gets11NoClose()
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_KeepAliveHeader_Gets11NoClose()
     {
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
@@ -221,6 +221,26 @@ public class ResponseHeaderTests : IDisposable
             response.EnsureSuccessStatusCode();
             Assert.Equal(new Version(1, 1), response.Version);
             Assert.Null(response.Headers.ConnectionClose);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_ChunkedTransferEncoding_Gets11Close()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
+        {
+            Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+            context.Dispose();
+
+            HttpResponseMessage response = await responseTask;
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(new Version(1, 1), response.Version);
+            Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+            Assert.True(response.Headers.ConnectionClose.Value);
         }
     }
 
