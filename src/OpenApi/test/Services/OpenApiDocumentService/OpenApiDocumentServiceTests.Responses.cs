@@ -231,7 +231,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Empty(response.Value.Description);
             var mediaTypeEntry = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", mediaTypeEntry.Key);
-            var schema = mediaTypeEntry.Value.Schema;
+            var schema = mediaTypeEntry.Value.Schema.GetEffective(document);
             Assert.Equal("object", schema.Type);
             Assert.Collection(schema.Properties, property =>
             {
@@ -264,7 +264,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(defaultResponse);
             Assert.Empty(defaultResponse.Description);
             var defaultContent = Assert.Single(defaultResponse.Content.Values);
-            Assert.Collection(defaultContent.Schema.Properties,
+            var defaultSchema = defaultContent.Schema.GetEffective(document);
+            Assert.Collection(defaultSchema.Properties,
             property =>
             {
                 Assert.Equal("code", property.Key);
@@ -281,7 +282,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("OK", okResponse.Description);
             var okContent = Assert.Single(okResponse.Content);
             Assert.Equal("application/json", okContent.Key);
-            var schema = okContent.Value.Schema;
+            var schema = okContent.Value.Schema.GetEffective(document);
             Assert.Equal("object", schema.Type);
             Assert.Collection(schema.Properties, property =>
             {

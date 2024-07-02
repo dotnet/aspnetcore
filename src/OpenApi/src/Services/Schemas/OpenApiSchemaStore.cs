@@ -79,9 +79,12 @@ internal sealed class OpenApiSchemaStore
     /// schemas into the top-level document.
     /// </summary>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
-    public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema)
+    /// <param name="captureSchemaByRef"><see langword="true"/> if schema should always be referenced instead of inlined.</param>
+    public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema, bool captureSchemaByRef)
     {
-        AddOrUpdateSchemaByReference(schema);
+        // Only capture top-level schemas by ref. Nested schemas will follow the
+        // reference by duplicate rules.
+        AddOrUpdateSchemaByReference(schema, captureSchemaByRef: captureSchemaByRef);
         if (schema.AdditionalProperties is not null)
         {
             AddOrUpdateSchemaByReference(schema.AdditionalProperties);
@@ -119,10 +122,10 @@ internal sealed class OpenApiSchemaStore
         }
     }
 
-    private void AddOrUpdateSchemaByReference(OpenApiSchema schema, string? baseTypeSchemaId = null)
+    private void AddOrUpdateSchemaByReference(OpenApiSchema schema, string? baseTypeSchemaId = null, bool captureSchemaByRef = false)
     {
         var targetReferenceId = baseTypeSchemaId is not null ? $"{baseTypeSchemaId}{GetSchemaReferenceId(schema)}" : GetSchemaReferenceId(schema);
-        if (SchemasByReference.TryGetValue(schema, out var referenceId))
+        if (SchemasByReference.TryGetValue(schema, out var referenceId) || captureSchemaByRef)
         {
             // If we've already used this reference ID else where in the document, increment a counter value to the reference
             // ID to avoid name collisions. These collisions are most likely to occur when the same .NET type produces a different

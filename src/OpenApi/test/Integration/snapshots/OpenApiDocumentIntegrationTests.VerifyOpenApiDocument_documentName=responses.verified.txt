@@ -59,20 +59,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "hypotenuse": {
-                      "type": "number",
-                      "format": "double"
-                    },
-                    "color": {
-                      "type": "string"
-                    },
-                    "sides": {
-                      "type": "integer",
-                      "format": "int32"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Triangle"
                 }
               }
             }
@@ -91,25 +78,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": [
-                    "$type"
-                  ],
-                  "type": "object",
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/ShapeTriangle"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ShapeSquare"
-                    }
-                  ],
-                  "discriminator": {
-                    "propertyName": "$type",
-                    "mapping": {
-                      "triangle": "#/components/schemas/ShapeTriangle",
-                      "square": "#/components/schemas/ShapeSquare"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Shape"
                 }
               }
             }
@@ -120,6 +89,27 @@
   },
   "components": {
     "schemas": {
+      "Shape": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ShapeTriangle"
+          },
+          {
+            "$ref": "#/components/schemas/ShapeSquare"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "triangle": "#/components/schemas/ShapeTriangle",
+            "square": "#/components/schemas/ShapeSquare"
+          }
+        }
+      },
       "ShapeSquare": {
         "properties": {
           "$type": {
@@ -184,6 +174,22 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "Triangle": {
+        "type": "object",
+        "properties": {
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }
