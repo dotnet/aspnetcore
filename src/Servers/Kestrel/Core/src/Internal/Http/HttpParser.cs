@@ -54,7 +54,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const byte ByteQuestionMark = (byte)'?';
     private const byte BytePercentage = (byte)'%';
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
-    private static ReadOnlySpan<byte> RequestLineDelimeters => new byte[] { ByteLF, 0 };
+    private static ReadOnlySpan<byte> RequestLineDelimiters => new byte[] { ByteLF, 0 };
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
@@ -62,8 +62,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
-        // Find the next delimeter.
-        if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, RequestLineDelimeters, advancePastDelimiter: false))
+        // Find the next delimiter.
+        if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, RequestLineDelimiters, advancePastDelimiter: false))
         {
             return false;
         }
@@ -71,8 +71,10 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // Consume the delimiter.
         var foundDelimiter = reader.TryRead(out var next);
         Debug.Assert(foundDelimiter);
+        // If null character found, or request line is empty
         if (next == 0 || requestLine.Length == 0)
         {
+            // Rewind and re-read to format error message correctly
             reader.Rewind(requestLine.Length + 1);
             var readResult = reader.TryReadExact(requestLine.Length + 1, out var requestLineSequence);
             Debug.Assert(readResult);

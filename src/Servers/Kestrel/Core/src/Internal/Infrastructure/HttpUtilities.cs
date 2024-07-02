@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -30,6 +28,8 @@ internal static partial class HttpUtilities
     private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
     private static readonly UTF8Encoding DefaultRequestHeaderEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+    private static readonly SearchValues<char> _nullAndNewLineSearchValues = SearchValues.Create(['\r', '\n', '\0']);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -84,16 +84,16 @@ internal static partial class HttpUtilities
 
     // The same as GetAsciiStringNonNullCharacters but throws BadRequest
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
+    public static string GetHeaderName(this ReadOnlySpan<byte> span)
     {
         if (span.IsEmpty)
         {
             return string.Empty;
         }
 
-        var str = string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
+        var str = string.Create(span.Length, span, (destination, spanPtr) =>
         {
-            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
             }
@@ -128,7 +128,7 @@ internal static partial class HttpUtilities
         // New Line characters (CR, LF) are considered invalid at this point.
         // Null characters are also not allowed.
         var invalidCharIndex = checkForNewlineChars ?
-            ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n', '\0')
+            ((ReadOnlySpan<char>)result).IndexOfAny(_nullAndNewLineSearchValues)
             : ((ReadOnlySpan<char>)result).IndexOf('\0');
 
         if (invalidCharIndex >= 0)

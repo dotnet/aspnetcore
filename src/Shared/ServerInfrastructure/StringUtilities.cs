@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -11,25 +10,22 @@ using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 #nullable enable
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal static class StringUtilities
 {
-    private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
-
     // Null checks must be done independently of this method (if required)
-    public static unsafe string GetAsciiOrUTF8String(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
+    public static string GetAsciiOrUTF8String(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
     {
         if (span.IsEmpty)
         {
             return string.Empty;
         }
 
-        var resultString = string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
+        var resultString = string.Create(span.Length, span, (destination, spanPtr) =>
         {
-            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
             {
                 // Mark resultString for UTF-8 encoding
                 destination[0] = '\0';
@@ -53,19 +49,19 @@ internal static class StringUtilities
     }
 
     // Null checks must be done independently of this method (if required)
-    public static unsafe string GetAsciiString(this ReadOnlySpan<byte> span)
+    public static string GetAsciiString(this ReadOnlySpan<byte> span)
     {
-        return string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
+        return string.Create(span.Length, span, (destination, spanPtr) =>
         {
-            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
             {
                 throw new InvalidOperationException();
             }
         });
-    };
+    }
 
     // Null checks must be done independently of this method (if required)
-    public static unsafe string GetLatin1String(this ReadOnlySpan<byte> span)
+    public static string GetLatin1String(this ReadOnlySpan<byte> span)
     {
         if (span.IsEmpty)
         {
@@ -196,11 +192,4 @@ internal static class StringUtilities
             buffer[0] = (char)hexEncodeMap[(number >> 28) & 0xF];
         }
     };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesInAsciiRange(Vector<sbyte> check)
-    {
-        // Vectorized byte range check, signed byte > 0 for 1-127
-        return Vector.GreaterThanAll(check, Vector<sbyte>.Zero);
-    }
 }
