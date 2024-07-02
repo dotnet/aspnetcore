@@ -53,7 +53,8 @@ internal static class JsonTypeInfoExtensions
     internal static string? GetSchemaReferenceId(this JsonTypeInfo jsonTypeInfo, bool isTopLevel = true)
     {
         var type = jsonTypeInfo.Type;
-        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(type))
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(underlyingType ?? type))
         {
             return null;
         }

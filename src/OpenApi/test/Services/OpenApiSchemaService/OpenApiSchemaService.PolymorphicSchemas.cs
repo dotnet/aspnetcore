@@ -23,7 +23,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var schema = mediaType.Schema.GetEffective(document);
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -60,7 +60,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var schema = mediaType.Schema.GetEffective(document);
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -105,7 +105,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var schema = mediaType.Schema.GetEffective(document);
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("discriminator", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -144,7 +144,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var schema = mediaType.Schema.GetEffective(document);
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Collection(schema.Discriminator.Mapping,
