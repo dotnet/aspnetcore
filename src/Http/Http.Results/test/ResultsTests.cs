@@ -1277,6 +1277,30 @@ public partial class ResultsTests
         var statusCode = StatusCodes.Status409Conflict;
         var title = "test title";
         var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value") };
+
+        // Act
+        var result = Results.Problem(detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Problem_WithReadOnlyDictionary_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
         var extensions = (IReadOnlyDictionary<string, object>)new Dictionary<string, object> { ["test"] = "value" };
 
         // Act
@@ -1297,9 +1321,9 @@ public partial class ResultsTests
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
     [InlineData(498, null, null)]
     public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
-        int statusCode,
-        string title,
-        string type)
+            int statusCode,
+            string title,
+            string type)
     {
         // Act
         var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
