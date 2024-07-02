@@ -8,11 +8,10 @@ using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
-using Serilog.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
