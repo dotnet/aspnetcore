@@ -83,7 +83,7 @@ public sealed class NamedPipeTransportOptions
     /// <see cref="CreateNamedPipeServerStreamContext"/> that can be used by a connection listener
     /// to listen for inbound requests.
     /// </summary>
-    /// <param name="context">An <see cref="CreateNamedPipeServerStreamContext"/>.</param>
+    /// <param name="context">A <see cref="CreateNamedPipeServerStreamContext"/>.</param>
     /// <returns>
     /// A <see cref="NamedPipeServerStream"/> instance.
     /// </returns>
