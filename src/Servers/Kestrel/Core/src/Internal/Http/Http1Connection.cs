@@ -290,6 +290,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
     {
+        // Null characters are not allowed and should have been checked by HttpParser before calling this method
         Debug.Assert(startLine.IndexOf((byte)0) == -1);
 
         var targetStart = targetPath.Offset;
