@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
+using Serilog.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
@@ -579,7 +580,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         const int StreamsSent = 101;
         for (var i = 0; i < StreamsSent; i++)
         {
-            streamTasks.Add(SendStream(requestState));
+            streamTasks.Add(SendStream(Logger, streamIndex: i, requestState));
         }
 
         await allConnectionsOnServerTcs.Task.DefaultTimeout();
@@ -591,39 +592,58 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Up to 100 streams are pooled.
         Assert.Equal(100, quicConnectionContext.StreamPool.Count);
 
-        static async Task SendStream(RequestState requestState)
+        static async Task SendStream(ILogger logger, int streamIndex, RequestState requestState)
         {
-            var clientStream = await requestState.QuicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
-            await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
-            var serverStream = await requestState.ServerConnection.AcceptAsync().DefaultTimeout();
-            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
-            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
-
-            // Input should be completed.
-            readResult = await serverStream.Transport.Input.ReadAsync();
-            Assert.True(readResult.IsCompleted);
-
-            lock (requestState)
+            try
             {
-                requestState.ActiveConcurrentConnections++;
-                if (requestState.ActiveConcurrentConnections == StreamsSent)
+                logger.LogInformation($"{streamIndex}: Client opening outbound stream.");
+                var clientStream = await requestState.QuicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+                logger.LogInformation($"{streamIndex}: Client writing to stream.");
+                await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
+
+                logger.LogInformation($"{streamIndex}: Server accepting incoming stream.");
+                var serverStream = await requestState.ServerConnection.AcceptAsync().DefaultTimeout();
+                logger.LogInformation($"{streamIndex}: Server reading data.");
+                var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+                serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+                // Input should be completed.
+                logger.LogInformation($"{streamIndex}: Server verifying all data received.");
+                readResult = await serverStream.Transport.Input.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+
+                lock (requestState)
                 {
-                    requestState.AllConnectionsOnServerTcs.SetResult();
+                    requestState.ActiveConcurrentConnections++;
+
+                    logger.LogInformation($"{streamIndex}: Increasing active concurrent connections to {requestState.ActiveConcurrentConnections}.");
+                    if (requestState.ActiveConcurrentConnections == StreamsSent)
+                    {
+                        logger.LogInformation($"{streamIndex}: All connections on server.");
+                        requestState.AllConnectionsOnServerTcs.SetResult();
+                    }
                 }
+
+                await requestState.PauseCompleteTask;
+
+                // Complete reading and writing.
+                logger.LogInformation($"{streamIndex}: Server completing reading and writing.");
+                await serverStream.Transport.Input.CompleteAsync();
+                await serverStream.Transport.Output.CompleteAsync();
+
+                logger.LogInformation($"{streamIndex}: Diposing {nameof(QuicStreamContext)}.");
+                var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+                // Both send and receive loops have exited.
+                await quicStreamContext._processingTask.DefaultTimeout();
+                await quicStreamContext.DisposeAsync();
+                quicStreamContext.Dispose();
             }
-
-            await requestState.PauseCompleteTask;
-
-            // Complete reading and writing.
-            await serverStream.Transport.Input.CompleteAsync();
-            await serverStream.Transport.Output.CompleteAsync();
-
-            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
-
-            // Both send and receive loops have exited.
-            await quicStreamContext._processingTask.DefaultTimeout();
-            await quicStreamContext.DisposeAsync();
-            quicStreamContext.Dispose();
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"{streamIndex}: Error.");
+                throw;
+            }
         }
     }
 
