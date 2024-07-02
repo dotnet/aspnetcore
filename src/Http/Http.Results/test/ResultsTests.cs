@@ -1277,7 +1277,7 @@ public partial class ResultsTests
         var statusCode = StatusCodes.Status409Conflict;
         var title = "test title";
         var type = "test type";
-        var extensions = new List<KeyValuePair<string, object>> { new("test", "value") };
+        var extensions = (IReadOnlyDictionary<string, object>)new Dictionary<string, object> { ["test"] = "value" };
 
         // Act
         var result = Results.Problem(detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
