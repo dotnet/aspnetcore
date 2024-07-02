@@ -23,7 +23,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     // Internal for unit testing
     internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
     internal readonly Dictionary<long, IHttp3Stream> _streams = new();
-    internal readonly Dictionary<long, Http3PendingStream> _unidentifiedStreams = new();
 
     internal readonly MultiplexedConnectionContext _multiplexedContext;
     internal readonly Http3PeerSettings _serverSettings = new();
@@ -77,7 +76,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private void UpdateHighestOpenedRequestStreamId(long streamId)
     {
         // Only one thread will update the highest stream ID value at a time.
-        // Additional thread safty not required.
+        // Additional thread safety not required.
 
         if (_highestOpenedRequestStreamId >= streamId)
         {
@@ -207,7 +206,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private void ValidateOpenControlStreams(long timestamp)
     {
-        // This method validates that a connnection's control streams are open.
+        // This method validates that a connection's control streams are open.
         //
         // They're checked on a delayed timer because when a connection is aborted or timed out, notifications are sent to open streams
         // and the connection simultaneously. This is a problem because when a control stream is closed the connection should be aborted
@@ -252,24 +251,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         var serviceContext = _context.ServiceContext;
         var requestHeadersTimeout = serviceContext.ServerOptions.Limits.RequestHeadersTimeout.ToTicks(
                         serviceContext.TimeProvider);
-
-        lock (_unidentifiedStreams)
-        {
-            foreach (var stream in _unidentifiedStreams.Values)
-            {
-                if (stream.StreamTimeoutTimestamp == default)
-                {
-                    // On expiration overflow, use max value.
-                    var expiration = timestamp + requestHeadersTimeout;
-                    stream.StreamTimeoutTimestamp = expiration >= 0 ? expiration : long.MaxValue;
-                }
-
-                if (stream.StreamTimeoutTimestamp < timestamp)
-                {
-                    stream.Abort(new("Stream timed out before its type was determined."));
-                }
-            }
-        }
 
         lock (_streams)
         {
@@ -382,69 +363,15 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     {
                         var context = CreateHttpStreamContext(streamContext);
 
-                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
-                        {
-                            var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
-
-                            _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
-
-                            // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
-                            var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, null);
-
-                            _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
-
-                            if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
-                            {
-                                await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
-                            }
-                            else
-                            {
-                                var controlStream = new Http3ControlStream<TContext>(application, context, streamType);
-                                _streamLifetimeHandler.OnStreamCreated(controlStream);
-                                ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
-                            }
-                        }
-                        else
-                        {
-                            var controlStream = new Http3ControlStream<TContext>(application, context, null);
-                            _streamLifetimeHandler.OnStreamCreated(controlStream);
-                            ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
-                        }
+                        var controlStream = new Http3ControlStream<TContext>(application, context, null);
+                        _streamLifetimeHandler.OnStreamCreated(controlStream);
+                        ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
                     }
                     // bidirectional stream
                     else
                     {
-                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
-                        {
-                            var context = CreateHttpStreamContext(streamContext);
-                            var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
-
-                            _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
-
-                            // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
-                            var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, Http3StreamType.WebTransportBidirectional);
-
-                            _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
-
-                            if (streamType == (long)Http3StreamType.WebTransportBidirectional)
-                            {
-                                await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
-                            }
-                            else
-                            {
-                                await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
-                            }
-                        }
-                        else
-                        {
-                            await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
-                        }
+                        await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
                     }
-                }
-                catch (Http3PendingStreamException ex)
-                {
-                    _unidentifiedStreams.Remove(ex.StreamId, out var stream);
-                    Log.Http3StreamAbort(CoreStrings.FormatUnidentifiedStream(ex.StreamId), Http3ErrorCode.StreamCreationError, new(ex.Message));
                 }
                 finally
                 {
@@ -505,14 +432,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
-                lock (_unidentifiedStreams)
-                {
-                    foreach (var stream in _unidentifiedStreams.Values)
-                    {
-                        stream.Abort(CreateConnectionAbortError(error, clientAbort));
-                    }
-                }
-
                 if (_webtransportSessions is not null)
                 {
                     foreach (var session in _webtransportSessions.Values)
@@ -524,7 +443,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 if (outboundControlStream != null)
                 {
                     // Don't gracefully close the outbound control stream. If the peer detects
-                    // the control stream closes it will close with a procotol error.
+                    // the control stream closes it will close with a protocol error.
                     // Instead, allow control stream to be automatically aborted when the
                     // connection is aborted.
                     await outboundControlStreamTask;
@@ -600,23 +519,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
     }
 
-    private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
+    public void OnWebTransportStreamCreation(IHttp3Stream stream, Http3StreamContext context, long correspondingSessionId, WebTransportStreamType type)
     {
-        Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
-
-        // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
-        var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
-
         lock (_webtransportSessions!)
         {
-            if (!_webtransportSessions.TryGetValue(correspondingSession, out var session))
+            if (!_webtransportSessions.TryGetValue(correspondingSessionId, out var session))
             {
-                stream.Abort(new ConnectionAbortedException(CoreStrings.ReceivedLooseWebTransportStream));
+                stream.Abort(new ConnectionAbortedException(CoreStrings.ReceivedLooseWebTransportStream), Http3ErrorCode.StreamCreationError);
                 throw new Http3StreamErrorException(CoreStrings.ReceivedLooseWebTransportStream, Http3ErrorCode.StreamCreationError);
             }
 
-            stream.Context.WebTransportSession = session;
-            var webtransportStream = new WebTransportStream(stream.Context, type);
+            context.WebTransportSession = session;
+            var webtransportStream = new WebTransportStream(context, type);
             session.AddStream(webtransportStream);
         }
     }
@@ -782,15 +696,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 return true;
             }
             return false;
-        }
-    }
-
-    void IHttp3StreamLifetimeHandler.OnUnidentifiedStreamReceived(Http3PendingStream stream)
-    {
-        lock (_unidentifiedStreams)
-        {
-            // place in a pending stream dictionary so we can track it (and timeout if necessary) as we don't have a proper stream instance yet
-            _unidentifiedStreams.Add(stream.StreamId, stream);
         }
     }
 

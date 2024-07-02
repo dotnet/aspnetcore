@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Time.Testing;
@@ -339,14 +340,9 @@ internal class Http3InMemory
             }
         }
 
-        public void OnUnidentifiedStreamReceived(Http3PendingStream stream)
+        public void OnWebTransportStreamCreation(IHttp3Stream stream, Http3StreamContext context, long correspondingSessionId, WebTransportStreamType type)
         {
-            _inner.OnUnidentifiedStreamReceived(stream);
-
-            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
-            {
-                testStream.OnUnidentifiedStreamCreatedTcs.TrySetResult();
-            }
+            _inner.OnWebTransportStreamCreation(stream, context, correspondingSessionId, type);
         }
     }
 

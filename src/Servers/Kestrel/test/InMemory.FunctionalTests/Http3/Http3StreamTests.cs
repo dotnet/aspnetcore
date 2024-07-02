@@ -1950,16 +1950,12 @@ public class Http3StreamTests : Http3TestBase
         await appTcs.Task;
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task DataBeforeHeaders_UnexpectedFrameError(bool pendingStreamsEnabled)
+    [Fact]
+    public async Task DataBeforeHeaders_UnexpectedFrameError()
     {
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamsEnabled;
-
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, null);
 
-        await (pendingStreamsEnabled ? requestStream.OnUnidentifiedStreamCreatedTask : requestStream.OnStreamCreatedTask);
+        await requestStream.OnStreamCreatedTask;
 
         await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
 
@@ -2078,21 +2074,16 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Theory]
-    [InlineData(nameof(Http3FrameType.MaxPushId), true)]
-    [InlineData(nameof(Http3FrameType.Settings), true)]
-    [InlineData(nameof(Http3FrameType.CancelPush), true)]
-    [InlineData(nameof(Http3FrameType.GoAway), true)]
-    [InlineData(nameof(Http3FrameType.MaxPushId), false)]
-    [InlineData(nameof(Http3FrameType.Settings), false)]
-    [InlineData(nameof(Http3FrameType.CancelPush), false)]
-    [InlineData(nameof(Http3FrameType.GoAway), false)]
-    public async Task UnexpectedRequestFrame(string frameType, bool pendingStreamsEnabled)
+    [InlineData(nameof(Http3FrameType.MaxPushId))]
+    [InlineData(nameof(Http3FrameType.Settings))]
+    [InlineData(nameof(Http3FrameType.CancelPush))]
+    [InlineData(nameof(Http3FrameType.GoAway))]
+    public async Task UnexpectedRequestFrame(string frameType)
     {
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamsEnabled;
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, null);
 
-        await (pendingStreamsEnabled ? requestStream.OnUnidentifiedStreamCreatedTask : requestStream.OnStreamCreatedTask);
+        await requestStream.OnStreamCreatedTask;
 
         var f = Enum.Parse<Http3FrameType>(frameType);
         await requestStream.SendFrameAsync(f, Memory<byte>.Empty);

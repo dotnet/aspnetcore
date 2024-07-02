@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
@@ -15,9 +16,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 {
-    private const int ControlStreamTypeId = 0;
-    private const int EncoderStreamTypeId = 2;
-    private const int DecoderStreamTypeId = 3;
+    private const int ControlStreamTypeId = (int)Http3StreamType.Control;
+    private const int EncoderStreamTypeId = (int)Http3StreamType.QPackEncoder;
+    private const int DecoderStreamTypeId = (int)Http3StreamType.QPackDecoder;
+    private const int WebTransportUnidirectionalTypeId = (int)Http3StreamType.WebTransportUnidirectional;
 
     private readonly Http3FrameWriter _frameWriter;
     private readonly Http3StreamContext _context;
@@ -224,6 +226,13 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                     }
                     await HandleEncodingDecodingTask();
                     break;
+                case WebTransportUnidirectionalTypeId:
+                    if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                    {
+                        throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
+                    }
+                    await HandleWebTransportUnidirectionalStream();
+                    break;
                 default:
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
                     throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
@@ -243,6 +252,48 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             ApplyCompletionFlag(StreamCompletionFlags.Completed);
             _context.StreamLifetimeHandler.OnStreamCompleted(this);
         }
+    }
+
+    private async ValueTask<long> TryReadWebTransportStreamSessionIdAsync()
+    {
+        // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#section-4.1-1
+        while (_isClosed == 0)
+        {
+            var result = await Input.ReadAsync();
+            var readableBuffer = result.Buffer;
+            var consumed = readableBuffer.Start;
+            var examined = readableBuffer.End;
+
+            try
+            {
+                if (!readableBuffer.IsEmpty)
+                {
+                    var id = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    if (id != -1)
+                    {
+                        return id;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1;
+                }
+            }
+            finally
+            {
+                Input.AdvanceTo(consumed, examined);
+            }
+        }
+
+        return -1;
+    }
+    private async Task HandleWebTransportUnidirectionalStream()
+    {
+        Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
+
+        var correspondingSessionId = await TryReadWebTransportStreamSessionIdAsync();
+        _context.Connection.OnWebTransportStreamCreation(this, _context, correspondingSessionId, Core.WebTransport.WebTransportStreamType.Input);
     }
 
     private async Task HandleControlStream()
