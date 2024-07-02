@@ -73,6 +73,8 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
     <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
   </ItemGroup>
 
 </Project>

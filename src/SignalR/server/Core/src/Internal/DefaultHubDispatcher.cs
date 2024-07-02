@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -16,7 +17,7 @@ using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : HubDispatcher<THub> where THub : Hub
 {
     private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
 
@@ -30,6 +31,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
     private readonly Func<HubLifetimeContext, Task>? _onConnectedMiddleware;
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
+
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
+    [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+    [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+    private static bool IsCustomAwaitableSupported { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported", out bool customAwaitableSupport) ? customAwaitableSupport : true;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
         bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
@@ -761,7 +768,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
             }
 
-            var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
+            var executor = IsCustomAwaitableSupported
+                ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
+                : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
+
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
             _cachedMethodNames.Add(methodName);
@@ -769,6 +779,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             Log.HubMethodBound(_logger, hubName, methodName);
         }
     }
+
+    [RequiresUnreferencedCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not trim compatible.")]
+    [RequiresDynamicCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not native AOT compatible.")]
+    private static ObjectMethodExecutor CreateObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetType)
+       => ObjectMethodExecutor.Create(methodInfo, targetType);
 
     public override IReadOnlyList<Type> GetParameterTypes(string methodName)
     {
