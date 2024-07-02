@@ -242,6 +242,7 @@ public class ResponseHeaderTests : IDisposable
             response.EnsureSuccessStatusCode();
             Assert.Equal(new Version(1, 1), response.Version);
             Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+            Assert.True(response.Headers.ConnectionClose.Value);
         }
     }
 
