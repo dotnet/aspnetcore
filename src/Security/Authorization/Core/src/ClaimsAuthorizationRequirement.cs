@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
 
@@ -33,15 +34,33 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     }
 
     /// <summary>
+    /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/>.
+    /// </summary>
+    /// <param name="match">The predicate to evaluate the claims.</param>
+    public ClaimsAuthorizationRequirement(Predicate<Claim> match)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(match);
+
+        Match = match;
+        _emptyAllowedValues = true;
+    }
+
+    /// <summary>
     /// Gets the claim type that must be present.
     /// </summary>
-    public string ClaimType { get; }
+    public string? ClaimType { get; }
 
     /// <summary>
     /// Gets the optional list of claim values, which, if present,
     /// the claim must match.
     /// </summary>
     public IEnumerable<string>? AllowedValues { get; }
+
+    /// <summary>
+    /// A predicate to evaluate the claims.
+    /// Used if specified instead of <see cref="ClaimType"/> and <see cref="AllowedValues"/>.
+    /// </summary>
+    public Predicate<Claim>? Match { get; }
 
     /// <summary>
     /// Makes a decision if authorization is allowed based on the claims requirements specified.
@@ -53,7 +72,12 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
         if (context.User != null)
         {
             var found = false;
-            if (requirement._emptyAllowedValues)
+
+            if (requirement.Match != null)
+            {
+                found = context.User.HasClaim(requirement.Match);
+            }
+            else if (requirement._emptyAllowedValues)
             {
                 foreach (var claim in context.User.Claims)
                 {
@@ -76,17 +100,24 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
                     }
                 }
             }
+
             if (found)
             {
                 context.Succeed(requirement);
             }
         }
+
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override string ToString()
     {
+        if (Match != null)
+        {
+            return $"{nameof(ClaimsAuthorizationRequirement)}:Evaluates using a custom predicate";
+        }
+
         var value = (_emptyAllowedValues)
             ? string.Empty
             : $" and Claim.Value is one of the following values: ({string.Join("|", AllowedValues!)})";
