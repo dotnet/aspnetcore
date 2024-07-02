@@ -194,7 +194,7 @@ public class KestrelConfigurationLoader
     /// <summary>
     /// Bind to given named pipe.
     /// </summary>
-    public KestrelConfigurationLoader NamedPipeEndpoint(string socketPath) => NamedPipeEndpoint(socketPath, _ => { });
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName) => NamedPipeEndpoint(pipeName, _ => { });
 
     /// <summary>
     /// Bind to given named pipe.
