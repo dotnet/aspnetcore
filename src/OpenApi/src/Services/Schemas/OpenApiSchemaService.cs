@@ -81,11 +81,27 @@ internal sealed class OpenApiSchemaService(
                     }
                 };
             }
+            // STJ uses `true` in place of an empty object to represent a schema that matches
+            // anything. We override this default behavior here to match the style traditionally
+            // expected in OpenAPI documents.
+            if (type == typeof(object))
+            {
+                schema = new JsonObject();
+            }
             schema.ApplyPrimitiveTypesAndFormats(context);
             schema.ApplySchemaReferenceId(context);
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            schema.ApplyPolymorphismOptions(context);
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider } jsonPropertyInfo)
             {
-                schema.ApplyNullabilityContextInfo(attributeProvider);
+                // Short-circuit STJ's handling of nested properties, which uses a reference to the
+                // properties type schema with a schema that uses a document level reference.
+                // For example, if the property is a `public NestedTyped Nested { get; set; }` property,
+                // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
+                if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
+                {
+                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
+                }
+                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
@@ -104,7 +120,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -118,7 +134,7 @@ internal sealed class OpenApiSchemaService(
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
-        _schemaStore.PopulateSchemaIntoReferenceCache(schema);
+        _schemaStore.PopulateSchemaIntoReferenceCache(schema, captureSchemaByRef);
         return schema;
     }
 

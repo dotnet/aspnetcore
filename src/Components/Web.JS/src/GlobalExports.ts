@@ -89,7 +89,7 @@ export interface IBlazor {
     }
 
     // APIs invoked by hot reload
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => void;
     getApplyUpdateCapabilities?: () => string;
     hotReloadApplied?: () => void;
   }

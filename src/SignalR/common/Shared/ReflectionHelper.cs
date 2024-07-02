@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Channels;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -17,7 +15,7 @@ internal static class ReflectionHelper
     // and 'stream' types from the client are allowed to inherit from accepted 'stream' types
     public static bool IsStreamingType(Type type, bool mustBeDirectType = false)
     {
-        // TODO #2594 - add Streams here, to make sending files easy
+        // TODO https://github.com/dotnet/aspnetcore/issues/5316 - add Streams here, to make sending files easy
 
         if (IsIAsyncEnumerable(type))
         {

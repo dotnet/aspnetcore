@@ -27,7 +27,7 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
     internal SequencePosition _examined;
     internal Mock<ITimeoutControl> _timeoutControl;
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 

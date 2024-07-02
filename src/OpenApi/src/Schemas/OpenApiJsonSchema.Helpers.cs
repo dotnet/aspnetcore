@@ -83,7 +83,11 @@ internal sealed partial class OpenApiJsonSchema
     }
 
     internal static IOpenApiAny? ReadOpenApiAny(ref Utf8JsonReader reader)
+        => ReadOpenApiAny(ref reader, out _);
+
+    internal static IOpenApiAny? ReadOpenApiAny(ref Utf8JsonReader reader, out string? type)
     {
+        type = null;
         if (reader.TokenType == JsonTokenType.Null)
         {
             return new OpenApiNull();
@@ -91,6 +95,7 @@ internal sealed partial class OpenApiJsonSchema
 
         if (reader.TokenType == JsonTokenType.True || reader.TokenType == JsonTokenType.False)
         {
+            type = "boolean";
             return new OpenApiBoolean(reader.GetBoolean());
         }
 
@@ -98,32 +103,38 @@ internal sealed partial class OpenApiJsonSchema
         {
             if (reader.TryGetInt32(out var intValue))
             {
+                type = "integer";
                 return new OpenApiInteger(intValue);
             }
 
             if (reader.TryGetInt64(out var longValue))
             {
+                type = "integer";
                 return new OpenApiLong(longValue);
             }
 
             if (reader.TryGetSingle(out var floatValue) && !float.IsInfinity(floatValue))
             {
+                type = "number";
                 return new OpenApiFloat(floatValue);
             }
 
             if (reader.TryGetDouble(out var doubleValue))
             {
+                type = "number";
                 return new OpenApiDouble(doubleValue);
             }
         }
 
         if (reader.TokenType == JsonTokenType.String)
         {
+            type = "string";
             return new OpenApiString(reader.GetString());
         }
 
         if (reader.TokenType == JsonTokenType.StartArray)
         {
+            type = "array";
             var array = new OpenApiArray();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
@@ -135,6 +146,7 @@ internal sealed partial class OpenApiJsonSchema
 
         if (reader.TokenType == JsonTokenType.StartObject)
         {
+            type = "object";
             var obj = new OpenApiObject();
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndObject)
@@ -293,6 +305,17 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiConstants.SchemaId:
                 reader.Read();
                 schema.Extensions.Add(OpenApiConstants.SchemaId, new OpenApiString(reader.GetString()));
+                break;
+            // OpenAPI does not support the `const` keyword in its schema implementation, so
+            // we map it to its closest approximation, an enum with a single value, here.
+            case OpenApiSchemaKeywords.ConstKeyword:
+                reader.Read();
+                schema.Enum = [ReadOpenApiAny(ref reader, out var constType)];
+                schema.Type = constType;
+                break;
+            case OpenApiSchemaKeywords.RefKeyword:
+                reader.Read();
+                schema.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = reader.GetString() };
                 break;
             default:
                 reader.Skip();

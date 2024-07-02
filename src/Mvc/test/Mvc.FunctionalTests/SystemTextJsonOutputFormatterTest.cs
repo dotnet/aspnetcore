@@ -10,11 +10,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase<FormatterWebSite.StartupWithJsonFormatter>
 {
-    public SystemTextJsonOutputFormatterTest(MvcTestFixture<FormatterWebSite.StartupWithJsonFormatter> fixture)
-        : base(fixture)
-    {
-    }
-
     [Fact]
     public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 

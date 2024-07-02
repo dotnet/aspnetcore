@@ -29,7 +29,8 @@ internal sealed class HostingMetrics : IDisposable
         _requestDuration = _meter.CreateHistogram<double>(
             "http.server.request.duration",
             unit: "s",
-            description: "Duration of HTTP server requests.");
+            description: "Duration of HTTP server requests.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
     }
 
     // Note: Calling code checks whether counter is enabled.

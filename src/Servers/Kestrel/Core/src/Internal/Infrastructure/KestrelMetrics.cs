@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -43,7 +44,8 @@ internal sealed class KestrelMetrics
         _connectionDuration = _meter.CreateHistogram<double>(
             "kestrel.connection.duration",
             unit: "s",
-            description: "The duration of connections on the server.");
+            description: "The duration of connections on the server.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.LongSecondsBucketBoundaries });
 
         _rejectedConnectionsCounter = _meter.CreateCounter<long>(
            "kestrel.rejected_connections",
@@ -68,7 +70,8 @@ internal sealed class KestrelMetrics
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
             "kestrel.tls_handshake.duration",
             unit: "s",
-            description: "The duration of TLS handshakes on the server.");
+            description: "The duration of TLS handshakes on the server.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _activeTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.active_tls_handshakes",

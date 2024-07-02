@@ -430,28 +430,33 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
+        // The trace id was successfully extracted, so we can set the trace state
+        // https://www.w3.org/TR/trace-context/#tracestate-header
         if (!string.IsNullOrEmpty(requestId))
         {
             if (!string.IsNullOrEmpty(traceState))
             {
                 activity.TraceStateString = traceState;
             }
-            var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
-            {
-                fieldValues = default;
-                var headers = (IHeaderDictionary)carrier!;
-                fieldValue = headers[fieldName];
-            });
+        }
 
-            // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-            // By contract, the propagator has already reversed the order of items so we need not reverse it again
-            // Order could be important if baggage has two items with the same key (that is allowed by the contract)
-            if (baggage is not null)
+        // Baggage can be used regardless of whether a distributed trace id was present on the inbound request.
+        // https://www.w3.org/TR/baggage/#abstract
+        var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+        {
+            fieldValues = default;
+            var headers = (IHeaderDictionary)carrier!;
+            fieldValue = headers[fieldName];
+        });
+
+        // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+        // By contract, the propagator has already reversed the order of items so we need not reverse it again
+        // Order could be important if baggage has two items with the same key (that is allowed by the contract)
+        if (baggage is not null)
+        {
+            foreach (var baggageItem in baggage)
             {
-                foreach (var baggageItem in baggage)
-                {
-                    activity.AddBaggage(baggageItem.Key, baggageItem.Value);
-                }
+                activity.AddBaggage(baggageItem.Key, baggageItem.Value);
             }
         }
 

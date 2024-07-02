@@ -43,7 +43,7 @@ public static partial class WebAssemblyHotReload
     /// For framework use only.
     /// </summary>
     [JSInvokable(nameof(ApplyHotReloadDelta))]
-    public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
+    public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes, int[]? updatedTypes)
     {
         // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
 #pragma warning disable IDE0200 // Remove unnecessary lambda expression
@@ -56,6 +56,7 @@ public static partial class WebAssemblyHotReload
         _updateDeltas[0].MetadataDelta = metadataDelta;
         _updateDeltas[0].ILDelta = ilDelta;
         _updateDeltas[0].PdbBytes = pdbBytes;
+        _updateDeltas[0].UpdatedTypes = updatedTypes;
 
         _hotReloadAgent.ApplyDeltas(_updateDeltas);
     }
