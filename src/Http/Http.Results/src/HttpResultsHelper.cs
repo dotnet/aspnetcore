@@ -17,7 +17,13 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static partial class HttpResultsHelper
 {
+    internal const string BinaryContentType = "application/octet-stream";
     internal const string DefaultContentType = "text/plain; charset=utf-8";
+    internal const string ProblemDetailsContentType = "application/problem+json";
+
+    internal static IEnumerable<string> ApplicationJsonContentTypes { get; } = ["application/json"];
+    internal static IEnumerable<string> ProblemDetailsContentTypes { get; } = [ProblemDetailsContentType];
+
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",

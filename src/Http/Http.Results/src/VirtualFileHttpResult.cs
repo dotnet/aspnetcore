@@ -63,7 +63,7 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult, IContentTy
         EntityTagHeaderValue? entityTag = null)
     {
         FileName = fileName;
-        ContentType = contentType ?? "application/octet-stream";
+        ContentType = contentType ?? HttpResultsHelper.BinaryContentType;
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
         LastModified = lastModified;
