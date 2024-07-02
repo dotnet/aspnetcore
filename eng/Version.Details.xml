@@ -435,9 +435,9 @@
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.24321.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.24327.2">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>200bba3d3695c902b740931b8d9c2ba09d037f24</Sha>
+      <Sha>0710a7892d89999956e8808c28e9dd0512bd53f3</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
