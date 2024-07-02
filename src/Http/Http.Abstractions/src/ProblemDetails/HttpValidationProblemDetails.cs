@@ -24,6 +24,15 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// </summary>
     /// <param name="errors">The validation errors.</param>
     public HttpValidationProblemDetails(IDictionary<string, string[]> errors)
+        : this((IEnumerable<KeyValuePair<string, string[]>>)errors)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpValidationProblemDetails"/> using the specified <paramref name="errors"/>.
+    /// </summary>
+    /// <param name="errors">The validation errors.</param>
+    public HttpValidationProblemDetails(IEnumerable<KeyValuePair<string, string[]>> errors)
         : this(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
     {
     }

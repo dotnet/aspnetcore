@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
