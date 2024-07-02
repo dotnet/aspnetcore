@@ -37,17 +37,26 @@ internal static class JsonConverterHelper
         // For streaming to work, indenting must be disabled when streaming.
         var writeIndented = !isStreamingOptions ? context.Settings.WriteIndented : false;
 
-        var typeInfoResolver = JsonTypeInfoResolver.Combine(
-            new MessageTypeInfoResolver(context),
-            new DefaultJsonTypeInfoResolver());
-
         var options = new JsonSerializerOptions
         {
             WriteIndented = writeIndented,
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            TypeInfoResolver = typeInfoResolver
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
+
+        ApplyConverterAndTypeInfoSerializerOptions(options, context);
+
+        return options;
+    }
+
+    internal static void ApplyConverterAndTypeInfoSerializerOptions(JsonSerializerOptions options, JsonContext context)
+    {
+        var typeInfoResolver = JsonTypeInfoResolver.Combine(
+            new MessageTypeInfoResolver(context),
+            options.TypeInfoResolver ?? new DefaultJsonTypeInfoResolver());
+
+        options.TypeInfoResolver = typeInfoResolver;
+
         options.Converters.Add(new NullValueConverter());
         options.Converters.Add(new ByteStringConverter());
         options.Converters.Add(new Int64Converter(context));
@@ -56,8 +65,6 @@ internal static class JsonConverterHelper
         options.Converters.Add(new JsonConverterFactoryForEnum(context));
         options.Converters.Add(new JsonConverterFactoryForWrappers(context));
         options.Converters.Add(new JsonConverterFactoryForWellKnownTypes(context));
-
-        return options;
     }
 
     internal static Type GetFieldType(FieldDescriptor descriptor)
