@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
+
 namespace Microsoft.AspNetCore.WebUtilities;
 
 /// <summary>
@@ -10,7 +12,7 @@ namespace Microsoft.AspNetCore.WebUtilities;
 public static class ReasonPhrases
 {
     // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-    private static readonly Dictionary<int, string> Phrases = new()
+    private static readonly FrozenDictionary<int, string> Phrases = new Dictionary<int,string>()
     {
         { 100, "Continue" },
         { 101, "Switching Protocols" },
@@ -79,7 +81,7 @@ public static class ReasonPhrases
         { 508, "Loop Detected" },
         { 510, "Not Extended" },
         { 511, "Network Authentication Required" },
-    };
+    }.ToFrozenDictionary();
 
     /// <summary>
     /// Gets the reason phrase for the specified status code.
