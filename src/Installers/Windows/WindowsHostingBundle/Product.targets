@@ -23,19 +23,13 @@
       <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
     <RuntimeHostInstaller Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-      <ProductVersionProperty>DotNetRedistLtsInstallerProductVersionx64</ProductVersionProperty>
       <ProductCodeProperty>DotNetRedistLtsInstallerProductCodex64</ProductCodeProperty>
-      <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCodex64</UpgradeCodeProperty>
     </RuntimeHostInstaller>
     <RuntimeHostInstaller Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
-      <ProductVersionProperty>DotNetRedistLtsInstallerProductVersionx86</ProductVersionProperty>
       <ProductCodeProperty>DotNetRedistLtsInstallerProductCodex86</ProductCodeProperty>
-      <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCodex86</UpgradeCodeProperty>
     </RuntimeHostInstaller>
     <RuntimeHostInstaller Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
-      <ProductVersionProperty>DotNetRedistLtsInstallerProductVersionarm64</ProductVersionProperty>
       <ProductCodeProperty>DotNetRedistLtsInstallerProductCodearm64</ProductCodeProperty>
-      <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCodearm64</UpgradeCodeProperty>
     </RuntimeHostInstaller>
   </ItemGroup>
 
@@ -98,29 +92,17 @@
     </CreateProperty>
 
     <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(RuntimeHostInstaller.Identity)" Property="ProductVersion">
-      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
-    </GetMsiProperty>
     <GetMsiProperty InstallPackage="%(RuntimeHostInstaller.Identity)" Property="ProductCode">
       <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
-    </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(RuntimeHostInstaller.Identity)" Property="UpgradeCode">
-      <Output TaskParameter="Value" PropertyName="%(UpgradeCodeProperty)" />
     </GetMsiProperty>
 
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx64=$(DotNetRedistLtsInstallerx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx64=$(DotNetRedistLtsInstallerProductVersionx64)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex64=$(DotNetRedistLtsInstallerProductCodex64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex64=$(DotNetRedistLtsInstallerUpgradeCodex64)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx86=$(DotNetRedistLtsInstallerx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx86=$(DotNetRedistLtsInstallerProductVersionx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex86=$(DotNetRedistLtsInstallerProductCodex86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex86=$(DotNetRedistLtsInstallerUpgradeCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerarm64=$(DotNetRedistLtsInstallerarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionarm64=$(DotNetRedistLtsInstallerProductVersionarm64)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodearm64=$(DotNetRedistLtsInstallerProductCodearm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodearm64=$(DotNetRedistLtsInstallerUpgradeCodearm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>
