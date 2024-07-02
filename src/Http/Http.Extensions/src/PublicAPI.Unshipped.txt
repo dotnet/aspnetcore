@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.DisableHttpMetricsAttribute() -> void
+static Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions.DisableHttpMetrics<TBuilder>(this TBuilder builder) -> TBuilder
