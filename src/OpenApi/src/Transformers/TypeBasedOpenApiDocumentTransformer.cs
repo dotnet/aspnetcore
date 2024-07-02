@@ -22,11 +22,20 @@ internal sealed class TypeBasedOpenApiDocumentTransformer : IOpenApiDocumentTran
 
     public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiDocumentTransformer;
-        Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiDocumentTransformer)}.");
+        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []);
+        Debug.Assert(transformer is IOpenApiDocumentTransformer or IOpenApiOperationTransformer, $"The type {_transformerType} does not implement one of {nameof(IOpenApiDocumentTransformer)} or {nameof(IOpenApiOperationTransformer)}.");
+
         try
         {
-            await transformer.TransformAsync(document, context, cancellationToken);
+            if (transformer is IOpenApiDocumentTransformer documentTransformer)
+            {
+                await documentTransformer.TransformAsync(document, context, cancellationToken);
+            }
+            else if (transformer is IOpenApiOperationTransformer operationTransformer)
+            {
+                var documentService = context.ApplicationServices.GetRequiredKeyedService<OpenApiDocumentService>(context.DocumentName);
+                await documentService.ForEachOperationAsync(document, operationTransformer.TransformAsync, cancellationToken);
+            }
         }
         finally
         {
