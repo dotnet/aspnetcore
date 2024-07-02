@@ -1,0 +1,28 @@
+parameters:
+- name: federatedServiceConnection
+  type: string
+- name: outputVariableName
+  type: string
+# Resource to get a token for. Common values include:
+# - '499b84ac-1321-427f-aa17-267ca6975798' for Azure DevOps
+# - 'https://storage.azure.com/' for storage
+# Defaults to Azure DevOps
+- name: resource
+  type: string
+  default: '499b84ac-1321-427f-aa17-267ca6975798'
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Getting federated access token for feeds'
+  inputs:
+    azureSubscription: ${{ parameters.federatedServiceConnection }}
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      $accessToken = az account get-access-token --query accessToken --resource ${{ parameters.resource }} --output tsv
+      if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to get access token for resource '${{ parameters.resource }}'"
+        exit 1
+      }
+      Write-Host "Setting '${{ parameters.outputVariableName }}' with the access token value"
+      Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariableName }};issecret=true]$accessToken"
