@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -17,6 +18,8 @@ internal sealed class KestrelMetrics
 {
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
+
+    public const string ErrorType = "error.type";
 
     public const string Http11 = "1.1";
     public const string Http2 = "2";
@@ -99,12 +102,18 @@ internal sealed class KestrelMetrics
     {
         if (metricsContext.CurrentConnectionsCounterEnabled || metricsContext.ConnectionDurationEnabled)
         {
-            ConnectionStopCore(metricsContext, exception, customTags, startTimestamp, currentTimestamp);
+            // Add protocol error code if feature is available and it's not the unset value (-1).
+            long? errorCode = null;
+            if (metricsContext.ConnectionContext.Features.Get<IProtocolErrorCodeFeature>() is IProtocolErrorCodeFeature errorCodeFeature && errorCodeFeature.Error != -1)
+            {
+                errorCode = errorCodeFeature.Error;
+            }
+            ConnectionStopCore(metricsContext, exception, errorCode, customTags, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, long? protocolErrorCode, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
@@ -117,9 +126,19 @@ internal sealed class KestrelMetrics
 
         if (metricsContext.ConnectionDurationEnabled)
         {
-            if (exception != null)
+            if (protocolErrorCode != null)
             {
-                tags.Add("error.type", exception.GetType().FullName);
+                tags.Add("http.connection.protocol_code", protocolErrorCode);
+            }
+
+            // Check if there is an end reason on the context. For example, the connection could have been aborted by shutdown.
+            if (metricsContext.ConnectionEndReason is { } reason && TryGetErrorType(reason, out var errorValue))
+            {
+                tags.TryAddTag(ErrorType, errorValue);
+            }
+            else if (exception != null)
+            {
+                tags.TryAddTag(ErrorType, exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -138,6 +157,8 @@ internal sealed class KestrelMetrics
 
     public void ConnectionRejected(in ConnectionMetricsContext metricsContext)
     {
+        AddConnectionEndReason(metricsContext, ConnectionEndReason.MaxConcurrentConnectionsExceeded);
+
         // Check live rather than cached state because this is just a counter, it's not a start/stop event like the other metrics.
         if (_rejectedConnectionsCounter.Enabled)
         {
@@ -301,7 +322,7 @@ internal sealed class KestrelMetrics
         }
         if (exception != null)
         {
-            tags.Add("error.type", exception.GetType().FullName);
+            tags.TryAddTag("error.type", exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -352,9 +373,16 @@ internal sealed class KestrelMetrics
     public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)
     {
         // Cache the state at the start of the connection so we produce consistent start/stop events.
-        return new ConnectionMetricsContext(connection,
-            _activeConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
-            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _activeTlsHandshakesCounter.Enabled);
+        return new ConnectionMetricsContext
+        {
+            ConnectionContext = connection,
+            CurrentConnectionsCounterEnabled = _activeConnectionsCounter.Enabled,
+            ConnectionDurationEnabled = _connectionDuration.Enabled,
+            QueuedConnectionsCounterEnabled = _queuedConnectionsCounter.Enabled,
+            QueuedRequestsCounterEnabled = _queuedRequestsCounter.Enabled,
+            CurrentUpgradedRequestsCounterEnabled = _currentUpgradedRequestsCounter.Enabled,
+            CurrentTlsHandshakesCounterEnabled = _activeTlsHandshakesCounter.Enabled
+        };
     }
 
     public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
@@ -397,5 +425,96 @@ internal sealed class KestrelMetrics
         name = null;
         version = null;
         return false;
+    }
+
+    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
+    {
+        Debug.Assert(reason != ConnectionEndReason.Unset);
+
+        if (feature != null)
+        {
+            if (TryGetErrorType(reason, out var errorTypeValue))
+            {
+                feature.TryAddTag(ErrorType, errorTypeValue);
+            }
+        }
+    }
+
+    public static void AddConnectionEndReason(ConnectionMetricsContext? context, ConnectionEndReason reason, bool overwrite = false)
+    {
+        Debug.Assert(reason != ConnectionEndReason.Unset);
+
+        if (context != null)
+        {
+            if (TryGetErrorType(reason, out _))
+            {
+                if (context.ConnectionEndReason == null || overwrite)
+                {
+                    context.ConnectionEndReason = reason;
+                }
+            }
+        }
+    }
+
+    internal static string? GetErrorType(ConnectionEndReason reason)
+    {
+        TryGetErrorType(reason, out var errorTypeValue);
+        return errorTypeValue;
+    }
+
+    internal static bool TryGetErrorType(ConnectionEndReason reason, [NotNullWhen(true)]out string? errorTypeValue)
+    {
+        errorTypeValue = reason switch
+        {
+            ConnectionEndReason.Unset => null, // Not an error
+            ConnectionEndReason.ClientGoAway => null, // Not an error
+            ConnectionEndReason.TransportCompleted => null, // Not an error
+            ConnectionEndReason.GracefulAppShutdown => null, // Not an error
+            ConnectionEndReason.ConnectionReset => "connection_reset",
+            ConnectionEndReason.FlowControlWindowExceeded => "flow_control_window_exceeded",
+            ConnectionEndReason.KeepAliveTimeout => "keep_alive_timeout",
+            ConnectionEndReason.InsufficientTlsVersion => "insufficient_tls_version",
+            ConnectionEndReason.InvalidHandshake => "invalid_handshake",
+            ConnectionEndReason.InvalidStreamId => "invalid_stream_id",
+            ConnectionEndReason.FrameAfterStreamClose => "frame_after_stream_close",
+            ConnectionEndReason.UnknownStream => "unknown_stream",
+            ConnectionEndReason.UnsupportedFrame => "unsupported_frame",
+            ConnectionEndReason.UnexpectedFrame => "unexpected_frame",
+            ConnectionEndReason.InvalidFrameLength => "invalid_frame_length",
+            ConnectionEndReason.InvalidDataPadding => "invalid_data_padding",
+            ConnectionEndReason.InvalidRequestHeaders => "invalid_request_headers",
+            ConnectionEndReason.StreamResetLimitExceeded => "stream_reset_limit_exceeded",
+            ConnectionEndReason.WindowUpdateSizeInvalid => "window_update_size_invalid",
+            ConnectionEndReason.StreamSelfDependency => "stream_self_dependency",
+            ConnectionEndReason.InvalidSettings => "invalid_settings",
+            ConnectionEndReason.MissingStreamEnd => "missing_stream_end",
+            ConnectionEndReason.MaxFrameLengthExceeded => "max_frame_length_exceeded",
+            ConnectionEndReason.ErrorReadingHeaders => "error_reading_headers",
+            ConnectionEndReason.ErrorWritingHeaders => "error_writing_headers",
+            ConnectionEndReason.OtherError => "other_error",
+            ConnectionEndReason.InvalidHttpVersion => "invalid_http_version",
+            ConnectionEndReason.RequestHeadersTimeout => "request_headers_timeout",
+            ConnectionEndReason.MinRequestBodyDataRate => "min_request_body_data_rate",
+            ConnectionEndReason.MinResponseDataRate => "min_response_data_rate",
+            ConnectionEndReason.FlowControlQueueSizeExceeded => "flow_control_queue_size_exceeded",
+            ConnectionEndReason.OutputQueueSizeExceeded => "output_queue_size_exceeded",
+            ConnectionEndReason.ClosedCriticalStream => "closed_critical_stream",
+            ConnectionEndReason.AbortedByApp => "aborted_by_app",
+            ConnectionEndReason.WriteCanceled => "write_canceled",
+            ConnectionEndReason.BodyReaderInvalidState => "body_reader_invalid_state",
+            ConnectionEndReason.ServerTimeout => "server_timeout",
+            ConnectionEndReason.StreamCreationError => "stream_creation_error",
+            ConnectionEndReason.IOError => "io_error",
+            ConnectionEndReason.AppShutdown => "app_shutdown",
+            ConnectionEndReason.TlsHandshakeFailed => "tls_handshake_failed",
+            ConnectionEndReason.InvalidRequestLine => "invalid_request_line",
+            ConnectionEndReason.TlsOverHttp => "tls_over_http",
+            ConnectionEndReason.MaxRequestBodySizeExceeded => "max_request_body_size_exceeded",
+            ConnectionEndReason.UnexpectedEndOfRequestContent => "unexpected_end_of_request_content",
+            ConnectionEndReason.MaxConcurrentConnectionsExceeded => "max_concurrent_connections_exceeded",
+            _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
+        };
+
+        return errorTypeValue != null;
     }
 }

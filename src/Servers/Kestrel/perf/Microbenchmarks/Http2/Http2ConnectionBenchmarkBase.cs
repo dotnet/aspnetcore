@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Http2HeadersEnumerator = Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2HeadersEnumerator;
+using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -75,6 +76,8 @@ public abstract class Http2ConnectionBenchmarkBase
 
         var featureCollection = new FeatureCollection();
         featureCollection.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
+        featureCollection.Set<IConnectionMetricsTagsFeature>(new TestConnectionMetricsTagsFeature());
+        featureCollection.Set<IProtocolErrorCodeFeature>(new TestProtocolErrorCodeFeature());
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: null,
@@ -190,5 +193,15 @@ public abstract class Http2ConnectionBenchmarkBase
     private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
     {
         public ConnectionMetricsContext MetricsContext { get; }
+    }
+
+    private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; }
+    }
+
+    private sealed class TestProtocolErrorCodeFeature : IProtocolErrorCodeFeature
+    {
+        public long Error { get; set; } = -1;
     }
 }

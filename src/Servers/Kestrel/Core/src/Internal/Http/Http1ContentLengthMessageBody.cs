@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -247,6 +248,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         if (_contentLength > maxRequestBodySize)
         {
             _context.DisableHttp1KeepAlive();
+            KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.MaxRequestBodySizeExceeded);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
     }
@@ -269,6 +271,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         {
             if (_readResult.IsCompleted)
             {
+                KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
             }
 

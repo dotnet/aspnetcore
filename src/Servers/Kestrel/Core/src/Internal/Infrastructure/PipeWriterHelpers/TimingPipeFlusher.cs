@@ -92,7 +92,7 @@ internal sealed class TimingPipeFlusher
         }
         catch (OperationCanceledException ex) when (outputAborter is object)
         {
-            outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
+            outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex), ConnectionEndReason.WriteCanceled);
         }
         catch (Exception ex)
         {

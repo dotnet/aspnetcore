@@ -29,6 +29,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private readonly MemoryPool<byte> _memoryPool;
     private readonly KestrelTrace _log;
     private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
+    private readonly ConnectionMetricsContext _connectionMetricsContext;
     private readonly IHttpOutputAborter _outputAborter;
     private readonly TimingPipeFlusher _flusher;
 
@@ -74,6 +75,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         KestrelTrace log,
         ITimeoutControl timeoutControl,
         IHttpMinResponseDataRateFeature minResponseDataRateFeature,
+        ConnectionMetricsContext connectionMetricsContext,
         IHttpOutputAborter outputAborter)
     {
         // Allow appending more data to the PipeWriter when a flush is pending.
@@ -83,6 +85,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         _memoryPool = memoryPool;
         _log = log;
         _minResponseDataRateFeature = minResponseDataRateFeature;
+        _connectionMetricsContext = connectionMetricsContext;
         _outputAborter = outputAborter;
 
         _flusher = new TimingPipeFlusher(timeoutControl, log);
@@ -444,7 +447,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
-    public void Abort(ConnectionAbortedException error)
+    public void Abort(ConnectionAbortedException error, ConnectionEndReason reason)
     {
         // Abort can be called after Dispose if there's a flush timeout.
         // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -454,6 +457,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return;
             }
+
+            KestrelMetrics.AddConnectionEndReason(_connectionMetricsContext, reason);
 
             _aborted = true;
             _connectionContext.Abort(error);
