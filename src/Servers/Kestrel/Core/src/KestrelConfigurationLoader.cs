@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -186,6 +187,27 @@ public class KestrelConfigurationLoader
         EndpointsToAdd.Add(() =>
         {
             Options.ListenUnixSocket(socketPath, configure);
+        });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string socketPath) => NamedPipeEndpoint(socketPath, _ => { });
+
+    /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        EndpointsToAdd.Add(() =>
+        {
+            Options.ListenNamedPipe(pipeName, configure);
         });
 
         return this;
