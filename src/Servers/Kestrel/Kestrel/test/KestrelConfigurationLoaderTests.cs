@@ -1844,6 +1844,23 @@ public class KestrelConfigurationLoaderTests
         _ = serverOptions.ConfigurationLoader.Reload();
     }
 
+    [Fact]
+    public void AddNamedPipeEndpoint()
+    {
+        var serverOptions = CreateServerOptions();
+        var builder = serverOptions.Configure()
+            .NamedPipeEndpoint("abc");
+
+        Assert.Empty(serverOptions.GetListenOptions());
+        Assert.Equal(builder, serverOptions.ConfigurationLoader);
+
+        builder.Load();
+
+        Assert.Single(serverOptions.GetListenOptions());
+        Assert.Equal("abc", serverOptions.CodeBackedListenOptions[0].PipeName);
+        Assert.NotNull(serverOptions.ConfigurationLoader);
+    }
+
     private static string GetCertificatePath()
     {
         var appData = Environment.GetEnvironmentVariable("APPDATA");
