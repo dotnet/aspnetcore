@@ -65,7 +65,7 @@ public class UrlDecoderTests
     }
 
     [Fact]
-    public void StringDestinationLargerThanSourceDecodeRequestLineReturnsCorrenctLenght()
+    public void StringDestinationLargerThanSourceDecodeRequestLineReturnsCorrectLength()
     {
         var source = "/a%20b".ToCharArray();
         var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new char[source.Length + 10]);
@@ -73,7 +73,7 @@ public class UrlDecoderTests
     }
 
     [Fact]
-    public void ByteDestinationLargerThanSourceDecodeRequestLineReturnsCorrenctLenght()
+    public void ByteDestinationLargerThanSourceDecodeRequestLineReturnsCorrectLength()
     {
         var source = Encoding.UTF8.GetBytes("/a%20b".ToCharArray());
         var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new byte[source.Length + 10], false);
