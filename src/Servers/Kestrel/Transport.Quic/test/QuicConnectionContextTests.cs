@@ -583,10 +583,13 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
             streamTasks.Add(SendStream(Logger, streamIndex: i, requestState));
         }
 
+        Logger.LogInformation("Waiting for all connections to be received by the server.");
         await allConnectionsOnServerTcs.Task.DefaultTimeout();
         pauseCompleteTcs.SetResult();
 
+        Logger.LogInformation("Waiting for all stream tasks.");
         await Task.WhenAll(streamTasks).DefaultTimeout();
+        Logger.LogInformation("Stream tasks finished.");
 
         // Assert
         // Up to 100 streams are pooled.
