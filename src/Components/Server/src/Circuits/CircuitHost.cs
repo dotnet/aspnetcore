@@ -18,9 +18,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class CircuitHost : IAsyncDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
+    public const int TransmitStreamFailedTimeoutSeconds = 10;
+
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger _logger;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
@@ -45,6 +48,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
+        TimeProvider timeProvider,
         CircuitHandler[] circuitHandlers,
         ILogger logger)
     {
@@ -62,6 +66,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -479,7 +484,26 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
+            return await Renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                if (dotNetStreamReference.Stream.CanRead)
+                {
+                    return await dotNetStreamReference.Stream.ReadAsync(buffer);
+                }
+
+                // The stream could not be read, likely because it was disposed.
+                // Wait until the client acknowledges the failure before we return
+                // from this method. This ensures that the client gets notified of
+                // the failure before getting notified that the stream is complete.
+                // We use a short timeout here to ensure that the client doesn't cause
+                // the server to wait indefinitely.
+                // We use InvokeAsync<bool> here because we must specify a result type,
+                // even though we don't use it.
+                var timeout = TimeSpan.FromSeconds(TransmitStreamFailedTimeoutSeconds);
+                using var cts = new CancellationTokenSource(timeout, _timeProvider);
+                await Client.InvokeAsync<bool>("JS.TransmitStreamFailed", streamId, cts.Token);
+                return 0;
+            });
         }
         catch (Exception ex)
         {

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.JSInterop;
 using Moq;
 
@@ -584,6 +585,48 @@ public class CircuitHostTest
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
     }
 
+    [Fact]
+    public async Task SendDotNetStreamAsync_ReportsUnhandledException_IfClientDoesNotAcknowledgeTransmissionFailure()
+    {
+        // Arrange
+        var timeProvider = new FakeTimeProvider();
+        var invokeCoreAsyncTcs = new TaskCompletionSource<bool>();
+        var clientProxyMock = new Mock<ISingleClientProxy>();
+        clientProxyMock
+            .Setup(c => c.InvokeCoreAsync<bool>(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns<string, object[], CancellationToken>((s, a, t) => invokeCoreAsyncTcs.Task.WaitAsync(t));
+
+        var circuitClientProxy = new CircuitClientProxy(clientProxyMock.Object, Guid.NewGuid().ToString());
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            timeProvider: timeProvider,
+            clientProxy: circuitClientProxy,
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        var circuitUnhandledExceptions = new List<UnhandledExceptionEventArgs>();
+        circuitHost.UnhandledException += (sender, eventArgs) =>
+        {
+            circuitUnhandledExceptions.Add(eventArgs);
+        };
+
+        var stream = new MemoryStream();
+        var dotNetStreamReference = new DotNetStreamReference(stream, leaveOpen: true);
+        stream.Dispose();
+
+        // Act
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+            CancellationToken.None);
+
+        var sendDotNetStreamTask = circuitHost.SendDotNetStreamAsync(dotNetStreamReference, streamId: 1, buffer: []);
+        timeProvider.Advance(TimeSpan.FromSeconds(CircuitHost.TransmitStreamFailedTimeoutSeconds + 1));
+        await sendDotNetStreamTask;
+
+        // Assert
+        var exceptionArgs = Assert.Single(circuitUnhandledExceptions);
+        Assert.IsAssignableFrom<OperationCanceledException>(exceptionArgs.ExceptionObject);
+    }
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -645,7 +688,7 @@ public class CircuitHostTest
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
-            Mock.Of<IClientProxy>());
+            Mock.Of<ISingleClientProxy>());
     }
 
     private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
@@ -704,7 +747,7 @@ public class CircuitHostTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client)
             : base(
                   serviceProvider,
                   NullLoggerFactory.Instance,

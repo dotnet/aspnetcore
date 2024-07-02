@@ -166,7 +166,7 @@ internal partial class CircuitRegistry
     // 1. If the circuit is not found return null
     // 2. If the circuit is found, but fails to connect, we need to dispose it here and return null
     // 3. If everything goes well, return the circuit.
-    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
+    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
     {
         Log.CircuitConnectStarted(_logger, circuitId);
 
@@ -225,7 +225,7 @@ internal partial class CircuitRegistry
         }
     }
 
-    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId)
+    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
     {
         if (ConnectedCircuits.TryGetValue(circuitId, out var connectedCircuitHost))
         {

@@ -131,18 +131,37 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
+    const failedStreamIds = new Set<number>();
+
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => controller.close(),
-            error: (err) => controller.error(err),
+            complete: () => {
+              if (failedStreamIds.delete(streamId)) {
+                controller.error(new Error('Stream transmission failed. The stream may have been disposed.'));
+              } else {
+                controller.close();
+              }
+            },
+            error: (error) => {
+              failedStreamIds.delete(streamId);
+              controller.error(error);
+            },
           });
         },
       });
 
       this._dispatcher.supplyDotNetStream(streamId, readableStream);
+    });
+
+    connection.on('JS.TransmitStreamFailed', (streamId: number) => {
+      failedStreamIds.add(streamId);
+
+      // We need to return a result because the server uses that as a signal
+      // that the error was received and the stream can be closed.
+      return true;
     });
 
     connection.on('JS.RenderBatch', async (batchId: number, batchData: Uint8Array) => {

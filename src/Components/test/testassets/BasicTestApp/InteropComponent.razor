@@ -280,6 +280,9 @@
         var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
         ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
 
+        ReturnValues["dotNetToJSReceiveDisposedDotNetStreamReferenceAsync"] = await SendDisposedStreamToJSAsync(shouldRead: false);
+        ReturnValues["dotNetToJSReadDisposedDotNetStreamReferenceExceptionAsync"] = await SendDisposedStreamToJSAsync(shouldRead: true);
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -307,6 +310,15 @@
 
         // Mark the test as successful if we haven't already set a failure above
         ReturnValues.TryAdd(testName, "Success");
+    }
+
+    private async Task<string> SendDisposedStreamToJSAsync(bool shouldRead)
+    {
+        var stream = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        var task = JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDisposedDotNetStreamReference", stream, shouldRead);
+        stream.Dispose();
+
+        return await task;
     }
 
     public void InvokeInProcessInterop()
