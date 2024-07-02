@@ -16,6 +16,7 @@ internal interface IHttpOutputProducer
     Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
     ValueTask<FlushResult> WriteStreamSuffixAsync();
     void Advance(int bytes);
+    long UnflushedBytes { get; }
     Span<byte> GetSpan(int sizeHint = 0);
     Memory<byte> GetMemory(int sizeHint = 0);
     void CancelPendingFlush();

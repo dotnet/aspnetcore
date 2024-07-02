@@ -469,6 +469,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
+
     public Span<byte> GetSpan(int sizeHint = 0)
     {
         lock (_dataWriterLock)

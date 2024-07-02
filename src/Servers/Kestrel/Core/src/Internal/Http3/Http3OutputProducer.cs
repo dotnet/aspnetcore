@@ -122,6 +122,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
+
     public void CancelPendingFlush()
     {
         lock (_dataWriterLock)

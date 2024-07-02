@@ -61,6 +61,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     // Fields needed to store writes before calling either startAsync or Write/FlushAsync
     // These should be cleared by the end of the request
     private List<CompletedBuffer>? _completedSegments;
+    private int _completedSegmentsByteCount;
     private Memory<byte> _currentSegment;
     private IMemoryOwner<byte>? _currentSegmentOwner;
     private int _position;
@@ -273,6 +274,15 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
+    public long UnflushedBytes
+    {
+        get
+        {
+            var bytes = _position + _advancedBytesForChunk + _pipeWriter.UnflushedBytes + _completedSegmentsByteCount;
+            return bytes;
+        }
+    }
+
     public void CancelPendingFlush()
     {
         _pipeWriter.CancelPendingFlush();
@@ -372,6 +382,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 segment.Return();
             }
 
+            _completedSegmentsByteCount = 0;
             _completedSegments.Clear();
         }
 
@@ -730,6 +741,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
             // ignore any empty space in it.
             _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+            _completedSegmentsByteCount += _position;
         }
 
         if (sizeHint <= _memoryPool.MaxBufferSize)

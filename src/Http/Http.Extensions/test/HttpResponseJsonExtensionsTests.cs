@@ -494,10 +494,7 @@ public class HttpResponseJsonExtensionsTests
         public override long Length { get; }
         public override long Position { get; set; }
 
-        public override void Flush()
-        {
-            throw new NotImplementedException();
-        }
+        public override void Flush() { }
 
         public override int Read(byte[] buffer, int offset, int count)
         {

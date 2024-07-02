@@ -4527,6 +4527,112 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    [Fact]
+    public async Task WriteBeforeFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var server = new TestServer(async context =>
+        {
+            try
+            {
+                var length = 0;
+                var memory = context.Response.BodyWriter.GetMemory();
+                context.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, context.Response.BodyWriter.UnflushedBytes);
+
+                memory = context.Response.BodyWriter.GetMemory();
+                context.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                Assert.Equal(length, context.Response.BodyWriter.UnflushedBytes);
+
+                await context.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, context.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "");
+
+            await tcs.Task;
+        }
+    }
+
+    [Fact]
+    public async Task WriteAfterFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var server = new TestServer(async context =>
+        {
+            try
+            {
+                await context.Response.StartAsync();
+                // StartAsync doesn't actually flush, it just commits bytes to Pipe
+                // going to flush here so we have 0 unflushed bytes to make asserts below easier
+                await context.Response.BodyWriter.FlushAsync();
+
+                var length = 0;
+                var memory = context.Response.BodyWriter.GetMemory();
+                context.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, context.Response.BodyWriter.UnflushedBytes);
+
+                memory = context.Response.BodyWriter.GetMemory();
+                context.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                // + 7 for first chunked framing (ff9\r\n<data>\r\n)
+                Assert.Equal(length + 7, context.Response.BodyWriter.UnflushedBytes);
+
+                await context.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, context.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "");
+
+            await tcs.Task;
+        }
+    }
+
     private static async Task ResponseStatusCodeSetBeforeHttpContextDispose(
         ITestSink testSink,
         ILoggerFactory loggerFactory,

@@ -64,6 +64,10 @@ internal sealed class CompletionPipeWriter : PipeWriter
         return _inner.GetSpan(sizeHint);
     }
 
+    public override bool CanGetUnflushedBytes => _inner.CanGetUnflushedBytes;
+
+    public override long UnflushedBytes => _inner.UnflushedBytes;
+
     public void Reset()
     {
         IsCompleted = false;

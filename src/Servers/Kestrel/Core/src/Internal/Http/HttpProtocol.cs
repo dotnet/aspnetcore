@@ -1482,6 +1482,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
     }
 
+    public long UnflushedBytes => Output.UnflushedBytes;
+
     public Memory<byte> GetMemory(int sizeHint = 0)
     {
         _isLeasedMemoryInvalid = false;

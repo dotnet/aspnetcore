@@ -209,6 +209,15 @@ internal sealed class ConcurrentPipeWriter : PipeWriter
         }
     }
 
+    public override bool CanGetUnflushedBytes => _innerPipeWriter.CanGetUnflushedBytes;
+    public override long UnflushedBytes
+    {
+        get
+        {
+            return _innerPipeWriter.UnflushedBytes + _bytesBuffered;
+        }
+    }
+
     public void Abort()
     {
         _aborted = true;
