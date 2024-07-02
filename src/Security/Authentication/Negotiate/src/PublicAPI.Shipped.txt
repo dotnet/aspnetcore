@@ -24,6 +24,8 @@ Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.Domain.get -> string!
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.Domain.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapClaimResolution.get -> bool
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapClaimResolution.set -> void
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapSIDClaimResolution.get -> bool
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapSIDClaimResolution.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.IgnoreNestedGroups.get -> bool
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.IgnoreNestedGroups.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.LdapConnection.get -> System.DirectoryServices.Protocols.LdapConnection?
