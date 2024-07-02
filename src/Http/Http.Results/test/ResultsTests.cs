@@ -1321,9 +1321,9 @@ public partial class ResultsTests
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
     [InlineData(498, null, null)]
     public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
-            int statusCode,
-            string title,
-            string type)
+        int statusCode,
+        string title,
+        string type)
     {
         // Act
         var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
