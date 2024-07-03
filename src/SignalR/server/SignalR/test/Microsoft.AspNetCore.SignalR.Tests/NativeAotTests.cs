@@ -295,11 +295,12 @@ public partial class NativeAotTests : FunctionalTestBase
             return output.Reader;
         }
 
+        // using 'object' as the streaming parameter type because streaming ValueTypes is not supported on the server
         public async Task<string> EnumerableIntParameter(IAsyncEnumerable<object> source)
         {
             var result = new StringBuilder();
             var first = true;
-            // These get deserialized as JsonElement since the parameter is 'ChannelReader<object>'
+            // These get deserialized as JsonElement since the streaming parameter is 'object'
             await foreach (JsonElement item in source)
             {
                 if (first)
@@ -316,11 +317,12 @@ public partial class NativeAotTests : FunctionalTestBase
             return result.ToString();
         }
 
+        // using 'object' as the streaming parameter type because streaming ValueTypes is not supported on the server
         public async Task<string> ChannelShortParameter(ChannelReader<object> source)
         {
             var result = new StringBuilder();
             var first = true;
-            // These get deserialized as JsonElement since the parameter is 'ChannelReader<object>'
+            // These get deserialized as JsonElement since the streaming parameter is 'object'
             await foreach (JsonElement item in source.ReadAllAsync())
             {
                 if (first)

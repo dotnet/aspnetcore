@@ -49,10 +49,10 @@ internal static class AsyncEnumerableAdapters
                 return new ValueTask<bool>(true);
             }
 
-            return new ValueTask<bool>(MoveNextAsyncAwaited());
+            return MoveNextAsyncAwaited();
         }
 
-        private async Task<bool> MoveNextAsyncAwaited()
+        private async ValueTask<bool> MoveNextAsyncAwaited()
         {
             while (await _channel.WaitToReadAsync(_cancellationToken).ConfigureAwait(false))
             {
@@ -184,7 +184,7 @@ internal static class AsyncEnumerableAdapters
         {
             _enumerator = enumerator;
 
-            var type = ReflectionHelper.GetIAsyncEnumeratorInterface(enumerator.GetType())!;
+            var type = ReflectionHelper.GetIAsyncEnumeratorInterface(enumerator.GetType());
             _moveNextAsyncMethodInfo = (MethodInfo)type.GetMemberWithSameMetadataDefinitionAs(_asyncEnumeratorMoveNextAsyncMethodInfo)!;
             _getCurrentMethodInfo = (MethodInfo)type.GetMemberWithSameMetadataDefinitionAs(_asyncEnumeratorGetCurrentMethodInfo)!;
         }
@@ -227,10 +227,10 @@ internal static class AsyncEnumerableAdapters
                 return new ValueTask<bool>(true);
             }
 
-            return new ValueTask<bool>(MoveNextAsyncAwaited());
+            return MoveNextAsyncAwaited();
         }
 
-        private async Task<bool> MoveNextAsyncAwaited()
+        private async ValueTask<bool> MoveNextAsyncAwaited()
         {
             while (await ((ValueTask<bool>)_waitToReadAsyncMethodInfo.Invoke(_channelReader, _waitToReadArgs)!).ConfigureAwait(false))
             {

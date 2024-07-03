@@ -75,7 +75,7 @@ internal static class ReflectionHelper
             "It also kept it on any type which implements it. The below call to GetInterfaces " +
             "may return fewer results when trimmed but it will return 'IAsyncEnumerator<>' " +
             "if the type implemented it, even after trimming.")]
-    public static Type? GetIAsyncEnumeratorInterface(Type type)
+    public static Type GetIAsyncEnumeratorInterface(Type type)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>))
         {
@@ -90,6 +90,6 @@ internal static class ReflectionHelper
             }
         }
 
-        return null;
+        throw new InvalidOperationException($"Type '{type}' does not implement IAsyncEnumerator<>");
     }
 }

@@ -891,8 +891,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (await enumerator.MoveNextAsync().ConfigureAwait(false))
                 {
-                    await SendWithLock(connectionState, new StreamItemMessage(streamId, enumerator.Current), tokenSource.Token).ConfigureAwait(false);
-                    Log.SendingStreamItem(_logger, streamId);
+                    await SendStreamItemAsync(connectionState, streamId, enumerator.Current, tokenSource).ConfigureAwait(false);
                 }
             }
             finally
@@ -928,8 +927,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (!tokenSource.Token.IsCancellationRequested && reader.TryRead(out var item))
                 {
-                    await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token).ConfigureAwait(false);
-                    Log.SendingStreamItem(_logger, streamId);
+                    await SendStreamItemAsync(connectionState, streamId, item, tokenSource).ConfigureAwait(false);
                 }
             }
         }
@@ -944,12 +942,17 @@ public partial class HubConnection : IAsyncDisposable
         {
             await foreach (var streamValue in stream.WithCancellation(tokenSource.Token).ConfigureAwait(false))
             {
-                await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token).ConfigureAwait(false);
-                Log.SendingStreamItem(_logger, streamId);
+                await SendStreamItemAsync(connectionState, streamId, streamValue, tokenSource).ConfigureAwait(false);
             }
         }
 
         return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream, tokenSource);
+    }
+
+    private async Task SendStreamItemAsync(ConnectionState connectionState, string streamId, object? item, CancellationTokenSource tokenSource)
+    {
+        await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token).ConfigureAwait(false);
+        Log.SendingStreamItem(_logger, streamId);
     }
 
     private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream, CancellationTokenSource cts)
