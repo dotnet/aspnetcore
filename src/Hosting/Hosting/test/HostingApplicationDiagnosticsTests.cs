@@ -156,17 +156,61 @@ public class HostingApplicationDiagnosticsTests
     }
 
     [Fact]
+    public void Metrics_RequestDuration_RecordedWithHttpActivity()
+    {
+        // Arrange
+        using var activityListener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => activitySource.Name == "Microsoft.AspNetCore",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
+        };
+        ActivitySource.AddActivityListener(activityListener);
+
+        var testMeterFactory = new TestMeterFactory();
+
+        var meterListener = new MeterListener();
+        meterListener.InstrumentPublished = (i, l) =>
+        {
+            if (i.Meter.Scope == testMeterFactory && i.Meter.Name == HostingMetrics.MeterName && i.Name == "http.server.request.duration")
+            {
+                l.EnableMeasurementEvents(i);
+            }
+        };
+
+        Activity measurementActivity = null;
+        var measureCount = 0;
+        meterListener.SetMeasurementEventCallback<double>((i, m, t, s) =>
+        {
+            if (Interlocked.Increment(ref measureCount) > 1)
+            {
+                throw new Exception("Unexpected measurement count.");
+            }
+
+            measurementActivity = Activity.Current;
+        });
+        meterListener.Start();
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, meterFactory: testMeterFactory);
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        Assert.Equal(1, measureCount);
+        Assert.NotNull(measurementActivity);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, measurementActivity.OperationName);
+    }
+
+    [Fact]
     public void MetricsEnabled()
     {
         // Arrange
-        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
-
         var testMeterFactory = new TestMeterFactory();
         using var activeRequestsCollector = new MetricCollector<long>(testMeterFactory, HostingMetrics.MeterName, "http.server.active_requests");
         using var requestDurationCollector = new MetricCollector<double>(testMeterFactory, HostingMetrics.MeterName, "http.server.request.duration");
 
         // Act
-        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory);
+        var hostingApplication = CreateApplication(out var features, meterFactory: testMeterFactory);
         var context = hostingApplication.CreateContext(features);
 
         // Assert
