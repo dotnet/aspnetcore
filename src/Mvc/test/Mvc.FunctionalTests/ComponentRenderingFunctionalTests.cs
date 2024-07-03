@@ -7,6 +7,7 @@ using System.Reflection;
 using AngleSharp.Parser.Html;
 using BasicWebSite;
 using BasicWebSite.Services;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
