@@ -162,7 +162,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         {
             try
             {
-                var existingCert = X509Certificate2.CreateFromPemFile(certPath);
+                var existingCert = new X509Certificate2(certPath);
                 if (!existingCert.RawDataMemory.Span.SequenceEqual(certificate.RawDataMemory.Span))
                 {
                     Log.UnixCertificateAlreadyExists(certPath);
