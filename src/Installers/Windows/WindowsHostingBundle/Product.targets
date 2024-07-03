@@ -62,13 +62,13 @@
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
       <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
       <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
       <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 
