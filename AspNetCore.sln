@@ -1102,7 +1102,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{5095E70C-6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "src\SignalR\perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{A6A95BEF-7E21-4D3D-921B-F77267219D27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specification.Tests", "Specification.Tests", "{245939DA-D68D-4B5C-A95E-D3B6923614FF}"
 EndProject
@@ -1815,6 +1815,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentInsider.Tests", "src\Tools\GetDocumentInsider\tests\GetDocumentInsider.Tests.csproj", "{6A19D94D-2BC6-4198-BE2E-342688FDBA4B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentSample", "src\Tools\GetDocumentInsider\sample\GetDocumentSample.csproj", "{D8F7091E-A2D1-4E81-BA7C-97EAE392D683}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp.Client", "src\Components\Samples\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj", "{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10977,6 +10979,22 @@ Global
 		{D8F7091E-A2D1-4E81-BA7C-97EAE392D683}.Release|x64.Build.0 = Release|Any CPU
 		{D8F7091E-A2D1-4E81-BA7C-97EAE392D683}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8F7091E-A2D1-4E81-BA7C-97EAE392D683}.Release|x86.Build.0 = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|arm64.Build.0 = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|x64.Build.0 = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Debug|x86.Build.0 = Debug|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|arm64.ActiveCfg = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|arm64.Build.0 = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|x64.ActiveCfg = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|x64.Build.0 = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|x86.ActiveCfg = Release|Any CPU
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11874,6 +11892,7 @@ Global
 		{9536C284-65B4-4884-BB50-06D629095C3E} = {274100A5-5B2D-4EA2-AC42-A62257FC6BDC}
 		{6A19D94D-2BC6-4198-BE2E-342688FDBA4B} = {A1B75FC7-A777-4412-A635-D0C9ED8FE7A0}
 		{D8F7091E-A2D1-4E81-BA7C-97EAE392D683} = {A1B75FC7-A777-4412-A635-D0C9ED8FE7A0}
+		{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63} = {5FE1FBC1-8CE3-4355-9866-44FE1307C5F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

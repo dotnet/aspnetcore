@@ -5,15 +5,15 @@ __NDK_Version=r21
 usage()
 {
     echo "Creates a toolchain and sysroot used for cross-compiling for Android."
-    echo.
+    echo
     echo "Usage: $0 [BuildArch] [ApiLevel]"
-    echo.
+    echo
     echo "BuildArch is the target architecture of Android. Currently only arm64 is supported."
     echo "ApiLevel is the target Android API level. API levels usually match to Android releases. See https://source.android.com/source/build-numbers.html"
-    echo.
+    echo
     echo "By default, the toolchain and sysroot will be generated in cross/android-rootfs/toolchain/[BuildArch]. You can change this behavior"
     echo "by setting the TOOLCHAIN_DIR environment variable"
-    echo.
+    echo
     echo "By default, the NDK will be downloaded into the cross/android-rootfs/android-ndk-$__NDK_Version directory. If you already have an NDK installation,"
     echo "you can set the NDK_DIR environment variable to have this script use that installation of the NDK."
     echo "By default, this script will generate a file, android_platform, in the root of the ROOTFS_DIR directory that contains the RID for the supported and tested Android build: android.28-arm64. This file is to replace '/etc/os-release', which is not available for Android."

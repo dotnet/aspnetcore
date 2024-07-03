@@ -520,7 +520,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 #       Two part minimal VS version, e.g. "15.9", "16.0", etc.
 #   "components": ["componentId1", "componentId2", ...]
 #       Array of ids of workload components that must be available in the VS instance.
-#       See e.g. https://learn.microsoft.com/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2017
+#       See e.g. https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2017
 #
 # Returns JSON describing the located VS instance (same format as returned by vswhere),
 # or $null if no instance meeting the requirements is found on the machine.
@@ -653,7 +653,7 @@ function GetNuGetPackageCachePath() {
       $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
       $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
-      $env:RESTORENOCACHE = $true
+      $env:RESTORENOHTTPCACHE = $true
     }
   }
 

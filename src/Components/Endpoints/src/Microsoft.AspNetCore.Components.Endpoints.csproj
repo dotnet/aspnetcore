@@ -30,11 +30,13 @@
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ResourceCollectionResolver.cs" LinkBase="Assets" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 
@@ -54,6 +56,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 

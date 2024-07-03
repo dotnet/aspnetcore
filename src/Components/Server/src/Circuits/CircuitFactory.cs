@@ -39,7 +39,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         string baseUri,
         string uri,
         ClaimsPrincipal user,
-        IPersistentComponentStateStore store)
+        IPersistentComponentStateStore store,
+        ResourceAssetCollection resourceCollection)
     {
         var scope = _scopeFactory.CreateAsyncScope();
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -80,7 +81,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             serverComponentDeserializer,
             _loggerFactory.CreateLogger<RemoteRenderer>(),
             jsRuntime,
-            jsComponentInterop);
+            jsComponentInterop,
+            resourceCollection);
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to

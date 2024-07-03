@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -756,5 +758,34 @@ app.MapPost("/", ([FromForm] Todo todo, [FromForm] int[] ids) => { });
             Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
             Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
         });
+    }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/55840
+    [Fact]
+    public async Task RequestDelegatePopulatesFromOptionalFormParameterStringArray()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
+{
+    httpContext.Items["message"] = message;
+});
+""";
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["message"] = new(["hello", "bye"])
+        });
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
 }

@@ -195,7 +195,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 {
                     Assert.NotNull(allOfItem.Properties);
                     Assert.Contains("formFile1", allOfItem.Properties);
-                    var formFile1Property = allOfItem.Properties["formFile1"];
+                    var formFile1Property = allOfItem.Properties["formFile1"].GetEffective(document);
                     Assert.Equal("string", formFile1Property.Type);
                     Assert.Equal("binary", formFile1Property.Format);
                 },
@@ -203,7 +203,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 {
                     Assert.NotNull(allOfItem.Properties);
                     Assert.Contains("formFile2", allOfItem.Properties);
-                    var formFile2Property = allOfItem.Properties["formFile2"];
+                    var formFile2Property = allOfItem.Properties["formFile2"].GetEffective(document);
                     Assert.Equal("string", formFile2Property.Type);
                     Assert.Equal("binary", formFile2Property.Format);
                 });
@@ -536,12 +536,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("id", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
                                 Assert.Equal("title", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("string", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
@@ -561,12 +561,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                             property =>
                             {
                                 Assert.Equal("code", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
                                 Assert.Equal("message", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("string", property.Value.GetEffective(document).Type);
                             });
                     });
             }
@@ -601,12 +601,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("Id", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
                                 Assert.Equal("Title", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("string", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
@@ -626,12 +626,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                             property =>
                             {
                                 Assert.Equal("Code", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
                             },
                             property =>
                             {
                                 Assert.Equal("Message", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("string", property.Value.GetEffective(document).Type);
                             });
                     });
             }
@@ -701,18 +701,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 property =>
                 {
                     Assert.Equal("Name", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("string", property.Value.GetEffective(document).Type);
                 },
                 property =>
                 {
                     Assert.Equal("Description", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("string", property.Value.GetEffective(document).Type);
                 },
                 property =>
                 {
                     Assert.Equal("Resume", property.Key);
-                    Assert.Equal("string", property.Value.Type);
-                    Assert.Equal("binary", property.Value.Format);
+                    Assert.Equal("string", property.Value.GetEffective(document).Type);
+                    Assert.Equal("binary", property.Value.GetEffective(document).Format);
                 });
         });
     }
@@ -744,12 +744,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     property =>
                     {
                         Assert.Equal("name", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal("string", property.Value.GetEffective(document).Type);
                     },
                     property =>
                     {
                         Assert.Equal("description", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal("string", property.Value.GetEffective(document).Type);
                     },
                     property =>
                     {
@@ -1005,8 +1005,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 var content = Assert.Single(operation.RequestBody.Content);
                 Assert.Equal("application/octet-stream", content.Key);
                 Assert.NotNull(content.Value.Schema);
-                Assert.Equal("string", content.Value.Schema.Type);
-                Assert.Equal("binary", content.Value.Schema.Format);
+                Assert.Equal("string", content.Value.Schema.GetEffective(document).Type);
+                Assert.Equal("binary", content.Value.Schema.GetEffective(document).Format);
             }
         });
     }

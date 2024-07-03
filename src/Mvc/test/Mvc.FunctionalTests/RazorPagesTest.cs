@@ -10,23 +10,34 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
+public class RazorPagesTest : LoggedTest
 {
     private static readonly Assembly _resourcesAssembly = typeof(RazorPagesTest).GetTypeInfo().Assembly;
-
-    public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RazorPagesWebSite.StartupWithoutEndpointRouting> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task Page_SimpleForms_RenderAntiforgery()

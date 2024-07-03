@@ -107,7 +107,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var operation = Assert.Single(document.Paths.Values).Operations.Values.Single();
-            var schema = operation.RequestBody.Content["application/json"].Schema;
+            var schema = operation.RequestBody.Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("2", ((OpenApiString)schema.Extensions["x-my-extension"]).Value);
         });
     }
@@ -134,10 +134,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             var path = Assert.Single(document.Paths.Values);
             var postOperation = path.Operations[OperationType.Post];
-            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("1", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
             var getOperation = path.Operations[OperationType.Get];
-            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("1", ((OpenApiString)responseSchema.Extensions["x-my-extension"]).Value);
         });
     }
@@ -164,10 +164,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             var path = Assert.Single(document.Paths.Values);
             var postOperation = path.Operations[OperationType.Post];
-            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
+            var requestSchema = postOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("todo", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
             var getOperation = path.Operations[OperationType.Get];
-            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
         });
     }

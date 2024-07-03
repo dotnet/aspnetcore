@@ -94,6 +94,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
+        AddMapping(contentTypeProvider, ".mjs", MediaTypeNames.Text.JavaScript);
 
         options.ContentTypeProvider = contentTypeProvider;
 
