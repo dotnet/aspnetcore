@@ -384,7 +384,7 @@ public class KestrelServerOptions
                 return null;
             }
 
-            var status = CertificateManager.Instance.CheckCertificateState(cert, interactive: false);
+            var status = CertificateManager.Instance.CheckCertificateState(cert);
             if (!status.Success)
             {
                 // Display a warning indicating to the user that a prompt might appear and provide instructions on what to do in that

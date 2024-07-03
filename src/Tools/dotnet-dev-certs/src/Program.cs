@@ -289,7 +289,7 @@ internal sealed class Program
                 // We never want check to require interaction.
                 // When IDEs run dotnet dev-certs https after calling --check, we will try to access the key and
                 // that will trigger a prompt if necessary.
-                var status = certificateManager.CheckCertificateState(certificate, interactive: false);
+                var status = certificateManager.CheckCertificateState(certificate);
                 if (!status.Success)
                 {
                     reporter.Warn(status.FailureMessage);
@@ -344,7 +344,7 @@ internal sealed class Program
             var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, exportPath.HasValue());
             foreach (var certificate in certificates)
             {
-                var status = manager.CheckCertificateState(certificate, interactive: true);
+                var status = manager.CheckCertificateState(certificate);
                 if (!status.Success)
                 {
                     reporter.Warn("One or more certificates might be in an invalid state. We will try to access the certificate key " +

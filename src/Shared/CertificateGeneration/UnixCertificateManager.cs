@@ -127,7 +127,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         return certificate;
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate)
     {
         // Return true as we don't perform any check.
         // This is about checking storage, not trust.

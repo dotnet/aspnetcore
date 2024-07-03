@@ -208,7 +208,7 @@ internal abstract class CertificateManager
                 // as we don't want to prompt on first run experience.
                 foreach (var candidate in currentUserCertificates)
                 {
-                    var status = CheckCertificateState(candidate, true);
+                    var status = CheckCertificateState(candidate);
                     if (!status.Success)
                     {
                         try
@@ -735,7 +735,7 @@ internal abstract class CertificateManager
         }
     }
 
-    internal abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive);
+    internal abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate);
 
     internal abstract void CorrectCertificateState(X509Certificate2 candidate);
 

@@ -71,11 +71,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
         "and create a new untrusted developer certificate. " +
         "Use 'dotnet dev-certs https --trust' to trust the new certificate.";
 
-    public const string KeyNotAccessibleWithoutUserInteraction =
-        "The application is trying to access the ASP.NET Core developer certificate key. " +
-        "A prompt might appear to ask for permission to access the key. " +
-        "When that happens, select 'Always Allow' to grant 'dotnet' access to the certificate key in the future.";
-
     public MacOSCertificateManager()
     {
     }
@@ -128,7 +123,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate)
     {
         return File.Exists(GetCertificateFilePath(candidate)) ?
             new CheckCertificateStateResult(true, null) :
