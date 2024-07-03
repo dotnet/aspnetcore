@@ -41,6 +41,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 ### Required changes
 
 * In [eng/Versions.props](/eng/Versions.props), increment `DefaultNetCoreTargetFramework` by 1.
+* In [eng/Versions.props](/eng/Versions.props), **if and only if** the new TFM is LTS, update `CurrentLtsTargetFramework` to match `DefaultNetCoreTargetFramework`
 * In [eng/SourceBuild.props](/eng/SourceBuild.props), update `SourceBuildTargetFrameworkFilter` to include the current TFM.
 * Do a global repo search for the current version string, and update almost everything by 1 (e.g. find `net8`, replace with `net9`). See the PR linked above for examples - this shouldn't be done blindly, but on a case-by-case basis. Most things should be updated, and most choices should be obvious.
   * Exceptions to this are [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj) and [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks). These build without the workarounds from [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in), and need to be kept at the previous TFM until we get an SDK containing a runtime with the new TFM. Generally this means we have to hard-code the previous TFM for these files, rather than using `DefaultNetCoreTargetFramework`.

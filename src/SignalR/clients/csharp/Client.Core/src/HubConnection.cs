@@ -899,9 +899,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         async Task ReadAsyncEnumerableStream()
         {
-            var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
-
-            await foreach (var streamValue in streamValues.ConfigureAwait(false))
+            await foreach (var streamValue in stream.WithCancellation(tokenSource.Token).ConfigureAwait(false))
             {
                 await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token).ConfigureAwait(false);
                 Log.SendingStreamItem(_logger, streamId);

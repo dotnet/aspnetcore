@@ -22,7 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../test/SharedTypes.cs" />
+    <Compile Include="../test/Shared/SharedTypes.cs" />
+    <Compile Include="../test/Shared/SharedTypes.Polymorphism.cs" />
   </ItemGroup>
 
   <!-- Required to generated trimmable Map-invocations. -->

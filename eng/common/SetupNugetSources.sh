@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script adds internal feeds required to build commits that depend on intenral package sources. For instance,
+# This script adds internal feeds required to build commits that depend on internal package sources. For instance,
 # dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. In addition also enables
 # disabled internal Maestro (darc-int*) feeds.
 # 

@@ -8,8 +8,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
-using JsonSchemaMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -53,42 +53,74 @@ internal sealed class OpenApiSchemaService(
         })
     };
 
-    private readonly JsonSchemaMapperConfiguration _configuration = new()
+    private readonly JsonSchemaExporterOptions _configuration = new()
     {
-        OnSchemaGenerated = (context, schema) =>
+        TreatNullObliviousAsNonNullable = true,
+        TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
             // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
             // that appear as properties within complex types.
             if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
             {
-                schema.Clear();
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
-                schema[OpenApiSchemaKeywords.FormatKeyword] = "binary";
-            }
-            else if (type == typeof(IFormFileCollection))
-            {
-                schema.Clear();
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "array";
-                schema[OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary"
                 };
             }
-            schema.ApplyPrimitiveTypesAndFormats(type);
-            if (context.GetCustomAttributes(typeof(ValidationAttribute)) is { } validationAttributes)
+            else if (type == typeof(IFormFileCollection))
             {
-                schema.ApplyValidationAttributes(validationAttributes);
+                schema = new JsonObject
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "array",
+                    [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                    {
+                        [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                        [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                    }
+                };
             }
-            if (context.GetCustomAttributes(typeof(DefaultValueAttribute)).LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+            // STJ uses `true` in place of an empty object to represent a schema that matches
+            // anything. We override this default behavior here to match the style traditionally
+            // expected in OpenAPI documents.
+            if (type == typeof(object))
             {
-                schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                schema = new JsonObject();
             }
+            schema.ApplyPrimitiveTypesAndFormats(context);
+            schema.ApplySchemaReferenceId(context);
+            schema.ApplyPolymorphismOptions(context);
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider } jsonPropertyInfo)
+            {
+                // Short-circuit STJ's handling of nested properties, which uses a reference to the
+                // properties type schema with a schema that uses a document level reference.
+                // For example, if the property is a `public NestedTyped Nested { get; set; }` property,
+                // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
+                if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
+                {
+                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
+                }
+                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
+                {
+                    schema.ApplyValidationAttributes(validationAttributes);
+                }
+                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DefaultValueAttribute>().LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+                {
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                }
+                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute descriptionAttribute)
+                {
+                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                }
+            }
+
+            return schema;
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -102,6 +134,7 @@ internal sealed class OpenApiSchemaService(
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
+        _schemaStore.PopulateSchemaIntoReferenceCache(schema, captureSchemaByRef);
         return schema;
     }
 
@@ -121,8 +154,6 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    private JsonObject CreateSchema(OpenApiSchemaKey key)
-        => key.ParameterInfo is not null
-            ? JsonSchemaMapper.JsonSchemaMapper.GetJsonSchema(_jsonSerializerOptions, key.ParameterInfo, _configuration)
-            : JsonSchemaMapper.JsonSchemaMapper.GetJsonSchema(_jsonSerializerOptions, key.Type, _configuration);
+    private JsonNode CreateSchema(OpenApiSchemaKey key)
+        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
 }

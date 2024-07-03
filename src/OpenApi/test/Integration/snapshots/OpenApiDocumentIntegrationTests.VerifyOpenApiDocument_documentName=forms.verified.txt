@@ -17,8 +17,7 @@
                 "type": "object",
                 "properties": {
                   "resume": {
-                    "type": "string",
-                    "format": "binary"
+                    "$ref": "#/components/schemas/IFormFile"
                   }
                 }
               },
@@ -51,11 +50,7 @@
                 "type": "object",
                 "properties": {
                   "files": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    }
+                    "$ref": "#/components/schemas/IFormFileCollection"
                   }
                 }
               },
@@ -91,8 +86,7 @@
                     "type": "object",
                     "properties": {
                       "resume": {
-                        "type": "string",
-                        "format": "binary"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   },
@@ -100,11 +94,7 @@
                     "type": "object",
                     "properties": {
                       "files": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "format": "binary"
-                        }
+                        "$ref": "#/components/schemas/IFormFileCollection"
                       }
                     }
                   }
@@ -136,29 +126,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "required": [
-                  "id",
-                  "title",
-                  "completed",
-                  "createdAt"
-                ],
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "completed": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
-                }
+                "$ref": "#/components/schemas/Todo"
               },
               "encoding": {
                 "multipart/form-data": {
@@ -169,29 +137,7 @@
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "required": [
-                  "id",
-                  "title",
-                  "completed",
-                  "createdAt"
-                ],
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "completed": {
-                    "type": "boolean"
-                  },
-                  "createdAt": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
-                }
+                "$ref": "#/components/schemas/Todo"
               },
               "encoding": {
                 "application/x-www-form-urlencoded": {
@@ -222,36 +168,13 @@
                 "type": "object",
                 "allOf": [
                   {
-                    "required": [
-                      "id",
-                      "title",
-                      "completed",
-                      "createdAt"
-                    ],
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer",
-                        "format": "int32"
-                      },
-                      "title": {
-                        "type": "string"
-                      },
-                      "completed": {
-                        "type": "boolean"
-                      },
-                      "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    }
+                    "$ref": "#/components/schemas/Todo"
                   },
                   {
                     "type": "object",
                     "properties": {
                       "file": {
-                        "type": "string",
-                        "format": "binary"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   }
@@ -273,92 +196,42 @@
           }
         }
       }
-    },
-    "/getbyidandname/{id}/{name}": {
-      "get": {
-        "tags": [
-          "Test"
-        ],
-        "parameters": [
-          {
-            "name": "Id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "Name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "minLength": 5,
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "IFormFileCollection": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/IFormFile"
         }
-      }
-    },
-    "/forms": {
-      "post": {
-        "tags": [
-          "Test"
+      },
+      "Todo": {
+        "required": [
+          "id",
+          "title",
+          "completed",
+          "createdAt"
         ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "Title": {
-                    "minLength": 5,
-                    "type": "string"
-                  },
-                  "Description": {
-                    "minLength": 5,
-                    "type": "string"
-                  },
-                  "IsCompleted": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "encoding": {
-                "application/x-www-form-urlencoded": {
-                  "style": "form",
-                  "explode": true
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
@@ -367,9 +240,6 @@
   "tags": [
     {
       "name": "Sample"
-    },
-    {
-      "name": "Test"
     }
   ]
 }
