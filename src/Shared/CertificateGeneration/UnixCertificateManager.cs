@@ -155,9 +155,36 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         var nickname = GetCertificateNickname(certificate);
         var certPath = Path.Combine(certDir, nickname) + ".pem";
 
-        // Security: we don't need the private key for trust, so we don't export it.
-        // Note that this will create directories as needed.
-        ExportCertificate(certificate, certPath, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
+        var needToExport = true;
+
+        // We do our own check for file collisions since ExportCertificate silently overwrites.
+        if (File.Exists(certPath))
+        {
+            try
+            {
+                var existingCert = X509Certificate2.CreateFromPemFile(certPath);
+                if (!existingCert.RawDataMemory.Span.SequenceEqual(certificate.RawDataMemory.Span))
+                {
+                    Log.UnixCertificateAlreadyExists(certPath);
+                    return TrustLevel.None;
+                }
+
+                needToExport = false; // If the bits are on disk, we don't need to re-export
+            }
+            catch
+            {
+                // If we couldn't load the file, then we also can't safely overwite it.
+                Log.UnixCertificateAlreadyExists(certPath);
+                return TrustLevel.None;
+            }
+        }
+
+        if (needToExport)
+        {
+            // Security: we don't need the private key for trust, so we don't export it.
+            // Note that this will create directories as needed.
+            ExportCertificate(certificate, certPath, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
+        }
 
         // Once the certificate is on disk, we prefer not to throw - some subsequent trust step might succeed.
 

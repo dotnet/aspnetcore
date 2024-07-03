@@ -1195,14 +1195,17 @@ internal abstract class CertificateManager
         [Event(105, Level = EventLevel.Warning, Message = "Failed to delete certificate file '{0}': {1}.")]
         internal void UnixCertificateFileDeletionException(string certPath, string exceptionMessage) => WriteEvent(105, certPath, exceptionMessage);
 
-        [Event(106, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
-            "For example, `export SSL_CERT_DIR={0}:{1}`. " +
-            "See https://aka.ms/dev-certs-trust for more information.")]
-        internal void UnixSuggestSettingEnvironmentVariable(string certDir, string openSslDir, string envVarName) => WriteEvent(106, certDir, openSslDir, envVarName);
+        [Event(106, Level = EventLevel.Error, Message = "Unable to export the certificate since '{0}' already exists. Please remove it.")]
+        internal void UnixCertificateAlreadyExists(string certPath) => WriteEvent(106, certPath);
 
         [Event(107, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
+            "For example, `export SSL_CERT_DIR={0}:{1}`. " +
             "See https://aka.ms/dev-certs-trust for more information.")]
-        internal void UnixSuggestSettingEnvironmentVariableWithoutExample(string certDir, string envVarName) => WriteEvent(107, certDir, envVarName);
+        internal void UnixSuggestSettingEnvironmentVariable(string certDir, string openSslDir, string envVarName) => WriteEvent(107, certDir, openSslDir, envVarName);
+
+        [Event(108, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
+            "See https://aka.ms/dev-certs-trust for more information.")]
+        internal void UnixSuggestSettingEnvironmentVariableWithoutExample(string certDir, string envVarName) => WriteEvent(108, certDir, envVarName);
     }
 
     internal sealed class UserCancelledTrustException : Exception
