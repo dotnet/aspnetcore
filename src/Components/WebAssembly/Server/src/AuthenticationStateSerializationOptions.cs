@@ -51,19 +51,19 @@ public class AuthenticationStateSerializationOptions
             {
                 foreach (var claim in authenticationState.User.Claims)
                 {
-                    data.Claims.Add(new(claim.Type, claim.Value));
+                    data.Claims.Add(new(claim));
                 }
             }
             else
             {
                 if (authenticationState.User.FindFirst(data.NameClaimType) is { } nameClaim)
                 {
-                    data.Claims.Add(new(nameClaim.Type, nameClaim.Value));
+                    data.Claims.Add(new(nameClaim));
                 }
 
                 foreach (var roleClaim in authenticationState.User.FindAll(data.RoleClaimType))
                 {
-                    data.Claims.Add(new(roleClaim.Type, roleClaim.Value));
+                    data.Claims.Add(new(roleClaim));
                 }
             }
         }
