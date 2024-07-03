@@ -23,13 +23,15 @@ internal static class StringUtilities
             return string.Empty;
         }
 
-        var resultString = string.Create(span.Length, span, (destination, spanPtr) =>
+        var resultString = string.Create(span.Length, span, static (destination, source) =>
         {
-            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(source, destination, out var written) != OperationStatus.Done)
             {
                 // Mark resultString for UTF-8 encoding
                 destination[0] = '\0';
             }
+
+            Debug.Assert(destination[0] == '\0' || written == destination.Length);
         });
 
         // If resultString is marked, perform UTF-8 encoding
@@ -51,12 +53,14 @@ internal static class StringUtilities
     // Null checks must be done independently of this method (if required)
     public static string GetAsciiString(this ReadOnlySpan<byte> span)
     {
-        return string.Create(span.Length, span, (destination, spanPtr) =>
+        return string.Create(span.Length, span, static (destination, source) =>
         {
-            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(source, destination, out var written) != OperationStatus.Done)
             {
                 throw new InvalidOperationException();
             }
+
+            Debug.Assert(written == destination.Length);
         });
     }
 

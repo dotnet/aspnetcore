@@ -54,7 +54,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const byte ByteQuestionMark = (byte)'?';
     private const byte BytePercentage = (byte)'%';
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
-    private static ReadOnlySpan<byte> RequestLineDelimiters => new byte[] { ByteLF, 0 };
+    private static ReadOnlySpan<byte> RequestLineDelimiters => [ByteLF, 0];
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used

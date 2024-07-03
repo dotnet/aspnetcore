@@ -91,18 +91,17 @@ internal static partial class HttpUtilities
             return string.Empty;
         }
 
-        var str = string.Create(span.Length, span, (destination, spanPtr) =>
+        var str = string.Create(span.Length, span, static (destination, source) =>
         {
-            if (Ascii.ToUtf16(spanPtr, destination, out _) != OperationStatus.Done)
+            if (Ascii.ToUtf16(source, destination, out var written) != OperationStatus.Done
+                || destination.Contains('\0'))
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
             }
+
+            Debug.Assert(written == destination.Length);
         });
 
-        if (str.Contains('\0'))
-        {
-            KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
-        }
         return str;
     }
 
@@ -133,17 +132,23 @@ internal static partial class HttpUtilities
 
         if (invalidCharIndex >= 0)
         {
-            if (result[invalidCharIndex] == 0)
-            {
-                throw new InvalidOperationException("Null characters are not allowed in request headers.");
-            }
-            else
-            {
-                throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
-            }
+            ThrowForInvalidCharacter(result[invalidCharIndex]);
         }
 
         return result;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowForInvalidCharacter(char invalidCharacter)
+    {
+        if (invalidCharacter == 0)
+        {
+            throw new InvalidOperationException("Null characters are not allowed in request headers.");
+        }
+        else
+        {
+            throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+        }
     }
 
     private static string GetRequestHeaderStringWithoutDefaultEncodingCore(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
