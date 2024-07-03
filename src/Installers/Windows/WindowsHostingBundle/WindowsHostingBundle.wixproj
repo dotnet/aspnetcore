@@ -106,19 +106,16 @@
     <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
-      <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
     <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
-      <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
     <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
       <TargetPlatform>arm64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
-      <ProductCodeProperty>SharedFxInstallerProductCodearm64</ProductCodeProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
   </ItemGroup>
@@ -142,18 +139,10 @@
       <Output TaskParameter="Value" PropertyName="%(SharedFxInstallers.BundleNameProperty)"/>
     </CreateProperty>
 
-    <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(SharedFxInstallers.Identity)" Property="ProductCode">
-      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
-    </GetMsiProperty>
-
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx64=$(SharedFxRedistInstallerx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex64=$(SharedFxInstallerProductCodex64)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex86=$(SharedFxInstallerProductCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerarm64=$(SharedFxRedistInstallerarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodearm64=$(SharedFxInstallerProductCodearm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>
