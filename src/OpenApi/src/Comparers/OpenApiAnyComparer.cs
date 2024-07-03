@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
+internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>, IEqualityComparer<IOpenApiExtension>
 {
     public static OpenApiAnyComparer Instance { get; } = new OpenApiAnyComparer();
 
@@ -29,9 +29,9 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
             (x switch
             {
                 OpenApiNull _ => y is OpenApiNull,
-                OpenApiArray arrayX => y is OpenApiArray arrayY && arrayX.SequenceEqual(arrayY, Instance),
-                OpenApiObject objectX => y is OpenApiObject objectY && objectX.Keys.Count == objectY.Keys.Count && objectX.Keys.All(key => objectY.ContainsKey(key) && Equals(objectX[key], objectY[key])),
-                OpenApiBinary binaryX => y is OpenApiBinary binaryY && binaryX.Value.SequenceEqual(binaryY.Value),
+                OpenApiArray arrayX => y is OpenApiArray arrayY && ComparerHelpers.ListEquals(arrayX, arrayY, Instance),
+                OpenApiObject objectX => y is OpenApiObject objectY && ComparerHelpers.DictionaryEquals(objectX, objectY, Instance),
+                OpenApiBinary binaryX => y is OpenApiBinary binaryY && ComparerHelpers.ByteArrayEquals(binaryX.Value, binaryY.Value),
                 OpenApiInteger integerX => y is OpenApiInteger integerY && integerX.Value == integerY.Value,
                 OpenApiLong longX => y is OpenApiLong longY && longX.Value == longY.Value,
                 OpenApiDouble doubleX => y is OpenApiDouble doubleY && doubleX.Value == doubleY.Value,
@@ -39,11 +39,36 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
                 OpenApiBoolean booleanX => y is OpenApiBoolean booleanY && booleanX.Value == booleanY.Value,
                 OpenApiString stringX => y is OpenApiString stringY && stringX.Value == stringY.Value,
                 OpenApiPassword passwordX => y is OpenApiPassword passwordY && passwordX.Value == passwordY.Value,
-                OpenApiByte byteX => y is OpenApiByte byteY && byteX.Value.SequenceEqual(byteY.Value),
+                OpenApiByte byteX => y is OpenApiByte byteY && ComparerHelpers.ByteArrayEquals(byteX.Value, byteY.Value),
                 OpenApiDate dateX => y is OpenApiDate dateY && dateX.Value == dateY.Value,
                 OpenApiDateTime dateTimeX => y is OpenApiDateTime dateTimeY && dateTimeX.Value == dateTimeY.Value,
                 _ => x.Equals(y)
             });
+    }
+
+    public bool Equals(IOpenApiExtension? x, IOpenApiExtension? y)
+    {
+        if (x is null && y is null)
+        {
+            return true;
+        }
+
+        if (x is null || y is null)
+        {
+            return false;
+        }
+
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
+        }
+
+        if (x is IOpenApiAny openApiAnyX && y is IOpenApiAny openApiAnyY)
+        {
+            return Equals(openApiAnyX, openApiAnyY);
+        }
+
+        return false;
     }
 
     public int GetHashCode(IOpenApiAny obj)
@@ -77,5 +102,15 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
         });
 
         return hashCode.ToHashCode();
+    }
+
+    public int GetHashCode(IOpenApiExtension obj)
+    {
+        if (obj is IOpenApiAny any)
+        {
+            return GetHashCode(any);
+        }
+
+        return obj.GetHashCode();
     }
 }
