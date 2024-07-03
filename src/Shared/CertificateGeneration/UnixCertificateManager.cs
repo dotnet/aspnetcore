@@ -445,7 +445,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
     private static string GetCertificateNickname(X509Certificate2 certificate)
     {
-        return $"aspnetcore-localhost-{certificate.Thumbprint[0..6]}";
+        return $"aspnetcore-localhost-{certificate.Thumbprint}";
     }
 
     /// <remarks>
