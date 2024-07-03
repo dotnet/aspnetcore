@@ -7,7 +7,6 @@ using System.Reflection;
 using AngleSharp.Parser.Html;
 using BasicWebSite;
 using BasicWebSite.Services;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -45,7 +44,6 @@ public class ComponentRenderingFunctionalTests : LoggedTest
         AssertComponent("<p>Hello world!</p>", "Greetings", content);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55928")]
     [Fact]
     public async Task Renders_RoutingComponent()
     {

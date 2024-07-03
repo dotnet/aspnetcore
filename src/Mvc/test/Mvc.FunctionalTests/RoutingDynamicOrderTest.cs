@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
 using Xunit.Abstractions;
@@ -52,7 +51,6 @@ public class RoutingDynamicOrderTest : LoggedTest
         Assert.Equal("AttributeRouteSlug", content.RouteName);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55934")]
     [Fact]
     public async Task DynamicRoutesAreMatchedInDefinitionOrderOverPrecedence()
     {

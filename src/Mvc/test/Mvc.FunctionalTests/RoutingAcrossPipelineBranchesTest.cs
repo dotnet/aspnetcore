@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
 using Xunit.Abstractions;
@@ -33,7 +32,6 @@ public class RoutingAcrossPipelineBranchesTests : LoggedTest
     public WebApplicationFactory<RoutingWebSite.StartupRoutingDifferentBranches> Factory { get; private set; }
     public HttpClient Client { get; private set; }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55933")]
     [Fact]
     public async Task MatchesConventionalRoutesInTheirBranches()
     {
