@@ -29,6 +29,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private int _visibleItemCapacity;
 
+        // If the client reports a viewport so large that it could show more than MaxItemCount items,
+        // we keep track of the "unused" capacity, which is the amount of blank space we want to leave
+        // at the bottom of the viewport (as a number of items). If we didn't leave this blank space,
+        // then the bottom spacer would always stay visible and the client would request more items in an
+        // infinite (but asynchronous) loop, as it would believe there are more items to render and
+        // enough space to render them into.
+        private int _unusedItemCapacity;
+
         private int _itemCount;
 
         private int _loadedItemsStartIndex;
@@ -240,18 +248,23 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
             builder.OpenElement(6, "div");
-            builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter));
+            builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
             builder.AddElementReferenceCapture(8, elementReference => _spacerAfter = elementReference);
 
             builder.CloseElement();
         }
+
+        private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
+            => numItemsGapAbove == 0
+            ? GetSpacerStyle(itemsInSpacer)
+            : $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; transform: translateY({(numItemsGapAbove * _itemSize).ToString(CultureInfo.InvariantCulture)}px);";
 
         private string GetSpacerStyle(int itemsInSpacer)
             => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;";
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
             // Since we know the before spacer is now visible, we absolutely have to slide the window up
             // by at least one element. If we're not doing that, the previous item size info we had must
@@ -262,12 +275,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 itemsBefore--;
             }
 
-            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
         }
 
         void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
@@ -280,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 itemsBefore++;
             }
 
-            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
         }
 
         private void CalcualteItemDistribution(
@@ -288,7 +301,8 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             float spacerSeparation,
             float containerSize,
             out int itemsInSpacer,
-            out int visibleItemCapacity)
+            out int visibleItemCapacity,
+            out int unusedItemCapacity)
         {
             if (_lastRenderedItemCount > 0)
             {
@@ -302,11 +316,21 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 _itemSize = ItemSize;
             }
 
+            // This AppContext data exists as a stopgap for .NET 8 and earlier, since this is being added in a patch
+            // where we can't add new public API.
+            var maxItemCount = AppContext.GetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount") switch
+            {
+                int val => val, // In .NET 9, this will be Math.Min(val, MaxItemCount)
+                _ => 1000       // In .NET 9, this will be MaxItemCount
+            };
+
             itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
             visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+            unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+            visibleItemCapacity -= unusedItemCapacity;
         }
 
-        private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
+        private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
         {
             // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
             // reduced set of items, clamp the scroll position to the new maximum
@@ -316,10 +340,11 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             }
 
             // If anything about the offset changed, re-render
-            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
+            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity || unusedItemCapacity != _unusedItemCapacity)
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
+                _unusedItemCapacity = unusedItemCapacity;
                 var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
                 if (!refreshTask.IsCompleted)
