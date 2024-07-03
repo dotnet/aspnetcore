@@ -117,8 +117,7 @@ internal abstract class Http1MessageBody : MessageBody
 
     protected override void OnOnbservedBytesExceedMaxRequestBodySize(long? maxRequestBodySize)
     {
-        _context.DisableHttp1KeepAlive();
-        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.MaxRequestBodySizeExceeded);
+        _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
     }
 
@@ -208,6 +207,7 @@ internal abstract class Http1MessageBody : MessageBody
         // Reject with Length Required for HTTP 1.0.
         if (httpVersion == HttpVersion.Http10 && (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put))
         {
+            KestrelMetrics.AddConnectionEndReason(context.MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.LengthRequiredHttp10, context.Method);
         }
 

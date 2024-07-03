@@ -134,10 +134,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// </summary>
     public void StopProcessingNextRequest(ConnectionEndReason reason)
     {
-        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
-
-        _keepAlive = false;
+        DisableKeepAlive(reason);
         Input.CancelPendingRead();
+    }
+
+    internal override void DisableKeepAlive(ConnectionEndReason reason)
+    {
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
+        _keepAlive = false;
     }
 
     public void SendTimeoutResponse()
@@ -225,6 +229,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader))
             {
                 // We read the maximum allowed but didn't complete the start line.
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestLine);
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
             }
 
@@ -268,6 +273,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 if (!_parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader))
                 {
                     // We read the maximum allowed but didn't complete the headers.
+                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
                 }
 
@@ -602,10 +608,12 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 return;
             }
 
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
         }
         else if (hostCount > 1)
         {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
         }
         else if (_requestTargetForm != HttpRequestTarget.OriginForm)
@@ -615,6 +623,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
         else if (!HttpUtilities.IsHostHeaderValid(hostText))
         {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
         }
     }
@@ -625,6 +634,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             if (hostText != RawTarget)
             {
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
         }
@@ -649,6 +659,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     }
                     else
                     {
+                        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                         KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                     }
                 }
@@ -657,6 +668,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         if (!HttpUtilities.IsHostHeaderValid(hostText))
         {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
         }
     }
@@ -792,6 +804,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 break;
             case RequestRejectionReason.InvalidRequestLine:
             case RequestRejectionReason.RequestLineTooLong:
+            case RequestRejectionReason.InvalidRequestTarget:
                 KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestLine);
                 break;
             case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
@@ -801,7 +814,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             case RequestRejectionReason.TooManyHeaders:
             case RequestRejectionReason.MultipleContentLengths:
             case RequestRejectionReason.MalformedRequestInvalidHeaders:
-            case RequestRejectionReason.InvalidRequestTarget:
             case RequestRejectionReason.InvalidCharactersInHeaderName:
             case RequestRejectionReason.LengthRequiredHttp10:
             case RequestRejectionReason.OptionsMethodRequired:

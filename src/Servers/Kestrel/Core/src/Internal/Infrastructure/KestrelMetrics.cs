@@ -446,6 +446,16 @@ internal sealed class KestrelMetrics
 
         if (context != null)
         {
+            if (reason == ConnectionEndReason.Unexpected)
+            {
+                if (context.ConnectionEndReason == null)
+                {
+                    Debugger.Launch();
+                }
+
+                return;
+            }
+
             if (TryGetErrorType(reason, out _))
             {
                 if (context.ConnectionEndReason == null || overwrite)
@@ -512,6 +522,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.MaxRequestBodySizeExceeded => "max_request_body_size_exceeded",
             ConnectionEndReason.UnexpectedEndOfRequestContent => "unexpected_end_of_request_content",
             ConnectionEndReason.MaxConcurrentConnectionsExceeded => "max_concurrent_connections_exceeded",
+            ConnectionEndReason.ResponseContentLengthMismatch => "response_content_length_mismatch",
             _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
         };
 

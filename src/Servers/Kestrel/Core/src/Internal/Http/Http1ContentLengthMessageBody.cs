@@ -247,8 +247,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         var maxRequestBodySize = _context.MaxRequestBodySize;
         if (_contentLength > maxRequestBodySize)
         {
-            _context.DisableHttp1KeepAlive();
-            KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.MaxRequestBodySizeExceeded);
+            _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
     }

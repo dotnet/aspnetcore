@@ -50,5 +50,7 @@ internal enum ConnectionEndReason
     TlsOverHttp,
     MaxRequestBodySizeExceeded,
     UnexpectedEndOfRequestContent,
-    MaxConcurrentConnectionsExceeded
+    MaxConcurrentConnectionsExceeded,
+    ResponseContentLengthMismatch,
+    Unexpected
 }
