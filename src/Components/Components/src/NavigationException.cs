@@ -17,6 +17,14 @@ public class NavigationException : Exception
     }
 
     /// <summary>
+    /// Initializes a new <see cref="NavigationException"/> instance with a custom message.
+    /// </summary>
+    public NavigationException(string uri, string message) : base(message)
+    {
+        Location = uri;
+    }
+
+    /// <summary>
     /// Gets the uri to which navigation was attempted.
     /// </summary>
     public string Location { get; }
