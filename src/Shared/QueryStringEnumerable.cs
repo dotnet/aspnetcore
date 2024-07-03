@@ -56,6 +56,8 @@ internal
     /// </summary>
     public readonly struct EncodedNameValuePair
     {
+        private static readonly SearchValues<char> DecodingChars = SearchValues.Create("%+");
+
         /// <summary>
         /// Gets the name from this name/value pair in its original encoded form.
         /// To get the decoded string, call <see cref="DecodeName"/>.
@@ -88,21 +90,16 @@ internal
         public ReadOnlyMemory<char> DecodeValue()
             => Decode(EncodedValue);
 
-        private static unsafe ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
+        private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
             // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
             // then we can save some allocations.
-            if (chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0)
+            ReadOnlySpan<char> source = chars.Span;
+            if (source.Length < 16 && source.IndexOfAny(DecodingChars) < 0)
             {
                 return chars;
             }
-
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            ReadOnlySpan<char> span = chars.Span;
-            return Uri.UnescapeDataString(
-                string.Create(span.Length,
-                    (IntPtr)(&span), static (dest, ptr) => ((ReadOnlySpan<char>*)ptr)->Replace(dest, '+', ' '))).AsMemory();
-#pragma warning restore CS8500
+            return Uri.UnescapeDataString(string.Create(source.Length, source, static (dest, source) => source.Replace(dest, '+', ' '))).AsMemory();
         }
     }
 

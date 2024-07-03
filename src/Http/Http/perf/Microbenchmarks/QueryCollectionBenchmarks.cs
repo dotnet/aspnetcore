@@ -18,7 +18,7 @@ public class QueryCollectionBenchmarks
     private string _singleValueWithPlus;
     private string _encoded;
 
-    [IterationSetup]
+    [GlobalSetup]
     public void Setup()
     {
         _queryString = "?key1=value1&key2=value2&key3=value3&key4=&key5=";
