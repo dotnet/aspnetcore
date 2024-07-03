@@ -600,19 +600,19 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         {
             try
             {
-                logger.LogInformation($"{streamIndex}: Client opening outbound stream.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Client opening outbound stream.");
                 await using var clientStream = await requestState.QuicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
-                logger.LogInformation($"{streamIndex}: Client writing to stream.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Client writing to stream.");
                 await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
 
-                logger.LogInformation($"{streamIndex}: Server accepting incoming stream.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Server accepting incoming stream.");
                 var serverStream = await requestState.ServerConnection.AcceptAsync().DefaultTimeout();
-                logger.LogInformation($"{streamIndex}: Server reading data.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Server reading data.");
                 var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
                 serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
                 // Input should be completed.
-                logger.LogInformation($"{streamIndex}: Server verifying all data received.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Server verifying all data received.");
                 readResult = await serverStream.Transport.Input.ReadAsync();
                 Assert.True(readResult.IsCompleted);
 
@@ -620,10 +620,10 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
                 {
                     requestState.ActiveConcurrentConnections++;
 
-                    logger.LogInformation($"{streamIndex}: Increasing active concurrent connections to {requestState.ActiveConcurrentConnections}.");
+                    logger.LogInformation($"{StreamId(streamIndex)}: Increasing active concurrent connections to {requestState.ActiveConcurrentConnections}.");
                     if (requestState.ActiveConcurrentConnections == StreamsSent)
                     {
-                        logger.LogInformation($"{streamIndex}: All connections on server.");
+                        logger.LogInformation($"{StreamId(streamIndex)}: All connections on server.");
                         requestState.AllConnectionsOnServerTcs.SetResult();
                     }
                 }
@@ -631,15 +631,15 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
                 await requestState.PauseCompleteTask;
 
                 // Complete reading and writing.
-                logger.LogInformation($"{streamIndex}: Server completing reading and writing.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Server completing reading and writing.");
                 await serverStream.Transport.Input.CompleteAsync();
                 await serverStream.Transport.Output.CompleteAsync();
 
-                logger.LogInformation($"{streamIndex}: Client completing reading.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Client verifying all data received.");
                 var count = await clientStream.ReadAsync(new byte[1024]);
                 Assert.Equal(0, count);
 
-                logger.LogInformation($"{streamIndex}: Diposing {nameof(QuicStreamContext)}.");
+                logger.LogInformation($"{StreamId(streamIndex)}: Diposing {nameof(QuicStreamContext)}.");
                 var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
                 // Both send and receive loops have exited.
@@ -649,10 +649,12 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"{streamIndex}: Error.");
+                logger.LogError(ex, $"{StreamId(streamIndex)}: Error.");
                 throw;
             }
         }
+
+        static string StreamId(int index) => $"Stream-{index}";
     }
 
     [ConditionalFact]
