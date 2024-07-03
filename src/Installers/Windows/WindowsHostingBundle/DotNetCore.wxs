@@ -70,7 +70,7 @@
             </MsiPackage>
 
             <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="DotNetRedistLts_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostfxrInstallerx86)"
+            <MsiPackage Id="DotNetRedistHostfxr_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostfxrInstallerx86)"
                         Name="$(var.DotNetRedistHostfxrInstallerx86)"
                         Compressed="yes"
                         Vital="yes"
