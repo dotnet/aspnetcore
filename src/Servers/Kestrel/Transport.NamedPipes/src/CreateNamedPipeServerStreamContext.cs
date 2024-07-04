@@ -18,7 +18,7 @@ public sealed class CreateNamedPipeServerStreamContext
     /// <summary>
     /// Gets the pipe options.
     /// </summary>
-    public PipeOptions PipeOptions { get; init; }
+    public required PipeOptions PipeOptions { get; init; }
     /// <summary>
     /// Gets the default access control and audit security.
     /// </summary>
