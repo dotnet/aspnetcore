@@ -446,16 +446,6 @@ internal sealed class KestrelMetrics
 
         if (context != null)
         {
-            if (reason == ConnectionEndReason.Unexpected)
-            {
-                if (context.ConnectionEndReason == null)
-                {
-                    Debugger.Launch();
-                }
-
-                return;
-            }
-
             if (TryGetErrorType(reason, out _))
             {
                 if (context.ConnectionEndReason == null || overwrite)
@@ -480,6 +470,9 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.ClientGoAway => null, // Not an error
             ConnectionEndReason.TransportCompleted => null, // Not an error
             ConnectionEndReason.GracefulAppShutdown => null, // Not an error
+            ConnectionEndReason.RequestNoKeepAlive => null, // Not an error
+            ConnectionEndReason.ResponseNoKeepAlive => null, // Not an error
+            ConnectionEndReason.ErrorAfterStartingResponse => "error_after_headers",
             ConnectionEndReason.ConnectionReset => "connection_reset",
             ConnectionEndReason.FlowControlWindowExceeded => "flow_control_window_exceeded",
             ConnectionEndReason.KeepAliveTimeout => "keep_alive_timeout",

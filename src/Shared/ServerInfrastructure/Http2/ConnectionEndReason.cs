@@ -52,5 +52,7 @@ internal enum ConnectionEndReason
     UnexpectedEndOfRequestContent,
     MaxConcurrentConnectionsExceeded,
     ResponseContentLengthMismatch,
-    Unexpected
+    RequestNoKeepAlive,
+    ResponseNoKeepAlive,
+    ErrorAfterStartingResponse
 }

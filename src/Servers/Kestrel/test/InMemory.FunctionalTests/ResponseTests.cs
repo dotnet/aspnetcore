@@ -672,6 +672,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
     private async Task AttemptingToWriteNonzeroContentLengthFails(int statusCode, HttpMethod method)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
@@ -690,7 +693,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
 
             responseWriteTcs.TrySetResult();
-        }, new TestServiceContext(LoggerFactory)))
+        }, new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))))
         {
             using (var connection = server.CreateConnection())
             {
@@ -704,6 +707,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 Assert.Equal(CoreStrings.FormatHeaderNotAllowedOnResponse("Content-Length", statusCode), ex.Message);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     private async Task AttemptingToWriteZeroContentLength_ContentLengthRemoved(int statusCode, HttpMethod method)
@@ -944,7 +952,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ThrowsAndClosesConnectionWhenAppWritesMoreThanContentLengthWrite()
     {
-        var serviceContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions = { AllowSynchronousIO = true }
         };
@@ -979,12 +990,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(
             $"Response Content-Length mismatch: too many bytes written (12 of 11).",
             logMessage.Exception.Message);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ResponseContentLengthMismatch), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
     public async Task ThrowsAndClosesConnectionWhenAppWritesMoreThanContentLengthWriteAsync()
     {
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = new TestServer(async httpContext =>
         {
@@ -1013,6 +1031,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(
             $"Response Content-Length mismatch: too many bytes written (12 of 11).",
             logMessage.Exception.Message);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ResponseContentLengthMismatch), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
@@ -2404,7 +2427,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ThrowingResultsIn500Response()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         bool onStartingCalled = false;
 
@@ -2449,6 +2474,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.False(onStartingCalled);
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     [Fact]
@@ -2603,7 +2633,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ThrowingInOnCompletedIsLogged()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         var onCompletedCalled1 = false;
         var onCompletedCalled2 = false;
@@ -2647,12 +2679,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
         Assert.True(onCompletedCalled1);
         Assert.True(onCompletedCalled2);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
+        });
     }
 
     [Fact]
     public async Task ThrowingAfterWritingKillsConnection()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         bool onStartingCalled = false;
 
@@ -2688,12 +2727,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorAfterStartingResponse), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
     public async Task ThrowingAfterPartialWriteKillsConnection()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         bool onStartingCalled = false;
 
@@ -2729,6 +2775,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorAfterStartingResponse), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
@@ -2788,7 +2839,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task AppAbortIsLogged()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = new TestServer(httpContext =>
         {
@@ -2808,6 +2861,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
 
         Assert.Single(LogMessages.Where(m => m.Message.Contains(CoreStrings.ConnectionAbortedByApplication)));
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp), m.Tags[KestrelMetrics.ErrorType]);
+        });
     }
 
     [Fact]
