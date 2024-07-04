@@ -72,3 +72,22 @@ internal class FabricColor : Color
 {
     public required string Dye { get; set; }
 }
+
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "shapeType")]
+[JsonDerivedType(typeof(AnotherTriangle), typeDiscriminator: "triangle")]
+[JsonDerivedType(typeof(AnotherSquare), typeDiscriminator: "square")]
+internal abstract class AnotherShape
+{
+    public required string ShapeType { get; set; }
+    public string Color { get; set; } = string.Empty;
+    public int Sides { get; set; }
+}
+
+internal class AnotherTriangle : AnotherShape
+{
+    public double Hypotenuse { get; set; }
+}
+internal class AnotherSquare : AnotherShape
+{
+    public double Area { get; set; }
+}

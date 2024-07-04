@@ -174,4 +174,41 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("fabric", ((OpenApiString)fabricSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
         });
     }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypeWithDiscriminatorProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (AnotherShape shape) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema.GetEffective(document);
+            // Assert discriminator mappings have been configured correctly
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("triangle", item.Key),
+                item => Assert.Equal("square", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/AnotherShapeAnotherTriangle", item.Value),
+                item => Assert.Equal("#/components/schemas/AnotherShapeAnotherSquare", item.Value)
+            );
+            // Assert the schemas with the discriminator have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("AnotherShapeAnotherTriangle", out var triangleSchema));
+            Assert.Contains(schema.Discriminator.PropertyName, triangleSchema.Properties.Keys);
+            Assert.Equal("triangle", ((OpenApiString)triangleSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.True(document.Components.Schemas.TryGetValue("AnotherShapeAnotherSquare", out var squareSchema));
+            Assert.Equal("square", ((OpenApiString)squareSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+        });
+    }
 }
