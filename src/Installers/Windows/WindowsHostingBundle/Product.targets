@@ -27,11 +27,14 @@
     </RuntimeInstallers>
   </ItemGroup>
 
-  <!--
-    Runs before FetchDependencies but can't be depended up because this sets up the item group that target
-    uses for batching.
-  -->
-  <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
+  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences">
+    <PropertyGroup>
+      <DotNetAssetRootUrl Condition=" '$(DotNetAssetRootUrl)' == '' ">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
+      <DotNetAssetRootUrl Condition=" ! $(DotNetAssetRootUrl.EndsWith('/'))">$(DotNetAssetRootUrl)/</DotNetAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" '$(DotNetPrivateAssetRootUrl)' == '' ">https://dotnetclimsrc.azureedge.net/dotnet/</DotNetPrivateAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" ! $(DotNetPrivateAssetRootUrl.EndsWith('/'))">$(DotNetPrivateAssetRootUrl)/</DotNetPrivateAssetRootUrl>
+    </PropertyGroup>
+
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
       <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
@@ -55,27 +58,12 @@
     </ItemGroup>
 
     <MakeDir Directories="$(DepsPath)" />
-  </Target>
 
-  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
-      Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-    <!--
-      Try various places to find the runtime. It's either released (use official version), public but
-      unreleased (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal).
-    -->
-    <ItemGroup>
-      <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/Runtime/%(RemoteAsset.Identity)"
-          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
-    </ItemGroup>
-
-    <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "
-                  Uris="@(UrisToDownload)"
-                  DestinationPath="$(DepsPath)%(RemoteAsset.TargetFilename)" />
+    <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
+                  Uri="$(DotNetAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUri="$(DotNetPrivateAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
+                  DestinationPath="$(DepsPath)%(RemoteAsset.TargetFileName)" />
   </Target>
 
   <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="CollectDependencies;FetchDependencies" BeforeTargets="BeforeBuild">
