@@ -565,7 +565,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             return @override;
         }
 
-        return Path.Combine(homeDirectory, ".dotnet", "corefx", "cryptography", "trusted");
+        return Path.Combine(homeDirectory, ".aspnet", "dev-certs", "trust");
     }
 
     private static bool TryDeleteCertificateFile(string certPath)
