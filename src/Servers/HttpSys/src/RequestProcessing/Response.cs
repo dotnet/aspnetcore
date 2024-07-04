@@ -406,7 +406,7 @@ internal sealed class Response
         var keepConnectionAlive = true;
 
         // An HTTP/1.1 server may also establish persistent connections with
-        // HTTP / 1.0 clients upon receipt of a Keep-Alive connection token.
+        // HTTP/1.0 clients upon receipt of a Keep-Alive connection token.
         // However, a persistent connection with an HTTP/1.0 client cannot make
         // use of the chunked transfer-coding. From: https://www.rfc-editor.org/rfc/rfc2068#section-19.7.1
         if ((requestVersion <= Constants.V1_0 && (!requestConnectionKeepAliveSet || responseChunkedSet))
