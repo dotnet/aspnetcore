@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -352,7 +353,7 @@ internal sealed partial class HttpSysListener : IDisposable
         }
 
         httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
-        var statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
+        var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
         uint dataWritten = 0;
         uint statusCode;
 
