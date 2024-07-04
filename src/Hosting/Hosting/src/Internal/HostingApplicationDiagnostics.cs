@@ -208,7 +208,10 @@ internal sealed class HostingApplicationDiagnostics
         }
 
         var activity = context.Activity;
-        // Always stop activity if it was started
+        // Always stop activity if it was started.
+        // The HTTP activity must be stopped after the HTTP request duration metric is recorded.
+        // This order means the activity is ongoing while the metric is recorded and libraries like OTEL
+        // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
             StopActivity(httpContext, activity, context.HasDiagnosticListener);

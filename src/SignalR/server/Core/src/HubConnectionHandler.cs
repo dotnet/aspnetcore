@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// Handles incoming connections and implements the SignalR Hub Protocol.
 /// </summary>
-public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
+public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : ConnectionHandler where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly ILoggerFactory _loggerFactory;

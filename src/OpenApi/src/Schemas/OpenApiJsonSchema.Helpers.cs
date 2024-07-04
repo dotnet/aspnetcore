@@ -313,6 +313,10 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Enum = [ReadOpenApiAny(ref reader, out var constType)];
                 schema.Type = constType;
                 break;
+            case OpenApiSchemaKeywords.RefKeyword:
+                reader.Read();
+                schema.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = reader.GetString() };
+                break;
             default:
                 reader.Skip();
                 break;
