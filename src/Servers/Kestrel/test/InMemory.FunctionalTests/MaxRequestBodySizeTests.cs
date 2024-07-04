@@ -152,10 +152,7 @@ public class MaxRequestBodySizeTests : LoggedTest
                 "");
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxRequestBodySizeExceeded), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestBodySizeExceeded, m.Tags));
     }
 
     [Fact]
@@ -409,10 +406,7 @@ public class MaxRequestBodySizeTests : LoggedTest
         Assert.Equal(CoreStrings.FormatBadRequest_RequestBodyTooLarge(0), requestRejectedEx1.Message);
         Assert.Equal(CoreStrings.FormatBadRequest_RequestBodyTooLarge(0), requestRejectedEx2.Message);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MaxRequestBodySizeExceeded), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestBodySizeExceeded, m.Tags));
     }
 
     [Fact]

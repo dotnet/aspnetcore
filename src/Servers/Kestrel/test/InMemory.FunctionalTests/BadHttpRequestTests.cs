@@ -183,10 +183,7 @@ public class BadHttpRequestTests : LoggedTest
 
         Assert.Equal("www.foo.com:80", receivedHost);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -249,10 +246,8 @@ public class BadHttpRequestTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestLine), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(),
+            m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestLine, m.Tags));
     }
 
     [Fact]
@@ -274,10 +269,8 @@ public class BadHttpRequestTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidHttpVersion), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(),
+            m => MetricsAssert.Equal(ConnectionEndReason.InvalidHttpVersion, m.Tags));
     }
 
     [Fact]
@@ -364,10 +357,7 @@ public class BadHttpRequestTests : LoggedTest
         Assert.Equal("Microsoft.AspNetCore.Server.Kestrel.BadRequest", eventProviderName);
         Assert.Contains(expectedExceptionMessage, exceptionString);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(reason), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(reason, m.Tags));
     }
 
     [Theory]
@@ -440,10 +430,7 @@ public class BadHttpRequestTests : LoggedTest
         // Verify DiagnosticSource event for bad request
         Assert.False(badRequestEventListener.EventFired);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -512,10 +499,7 @@ public class BadHttpRequestTests : LoggedTest
         // Verify DiagnosticSource event for bad request
         Assert.False(badRequestEventListener.EventFired);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -573,10 +557,7 @@ public class BadHttpRequestTests : LoggedTest
         // Verify DiagnosticSource event for bad request
         Assert.False(badRequestEventListener.EventFired);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private async Task ReceiveBadRequestResponse(InMemoryConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)

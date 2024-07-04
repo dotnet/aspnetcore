@@ -93,7 +93,7 @@ internal class Http3InMemory
 
     internal TestMultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
 
-    internal IDictionary<string, object> ConnectionTags => MultiplexedConnectionContext.Tags.ToDictionary(t => t.Key, t => t.Value);
+    internal Dictionary<string, object> ConnectionTags => MultiplexedConnectionContext.Tags.ToDictionary(t => t.Key, t => t.Value);
 
     internal long GetStreamId(long mask)
     {

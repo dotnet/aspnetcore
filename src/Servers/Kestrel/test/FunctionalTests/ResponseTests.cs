@@ -253,10 +253,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             await requestAbortedWh.Task.DefaultTimeout();
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -463,7 +460,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         var measurement = connectionDuration.GetMeasurementSnapshot().First();
-        Assert.DoesNotContain(KestrelMetrics.ErrorType, measurement.Tags.Keys);
+        MetricsAssert.NoError(measurement.Tags);
     }
 
     [Theory]
@@ -599,10 +596,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, m.Tags));
     }
 
     [Theory]
@@ -850,10 +844,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, m.Tags));
     }
 
     [ConditionalFact]
@@ -1094,10 +1085,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
         Assert.False(requestAborted);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private async Task AssertStreamAborted(Stream stream, int totalBytes)

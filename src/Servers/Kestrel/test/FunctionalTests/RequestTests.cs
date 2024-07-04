@@ -624,10 +624,7 @@ public class RequestTests : LoggedTest
             await host.StopAsync();
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -727,10 +724,7 @@ public class RequestTests : LoggedTest
             await host.StopAsync();
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp), (string)m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.AbortedByApp, m.Tags));
     }
 
     [Theory]

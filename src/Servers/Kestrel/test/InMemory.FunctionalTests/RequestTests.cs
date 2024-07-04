@@ -1226,10 +1226,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnexpectedEndOfRequestContent), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]
@@ -2282,10 +2279,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.TlsOverHttp), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsOverHttp, m.Tags));
     }
 
     [Fact]

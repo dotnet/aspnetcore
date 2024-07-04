@@ -49,7 +49,7 @@ public class MaxRequestLineSizeTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -77,10 +77,7 @@ public class MaxRequestLineSizeTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestLine), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestLine, m.Tags));
     }
 
     private TestServer CreateServer(int maxRequestLineSize, IMeterFactory meterFactory)

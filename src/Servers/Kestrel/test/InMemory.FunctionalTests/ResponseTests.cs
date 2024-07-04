@@ -207,10 +207,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.WriteCanceled), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.WriteCanceled, m.Tags));
     }
 
     [Fact]
@@ -708,10 +705,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private async Task AttemptingToWriteZeroContentLength_ContentLengthRemoved(int statusCode, HttpMethod method)
@@ -991,10 +985,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             $"Response Content-Length mismatch: too many bytes written (12 of 11).",
             logMessage.Exception.Message);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ResponseContentLengthMismatch), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ResponseContentLengthMismatch, m.Tags));
     }
 
     [Fact]
@@ -1032,10 +1023,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             $"Response Content-Length mismatch: too many bytes written (12 of 11).",
             logMessage.Exception.Message);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ResponseContentLengthMismatch), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ResponseContentLengthMismatch, m.Tags));
     }
 
     [Fact]
@@ -2475,10 +2463,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.False(onStartingCalled);
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -2680,10 +2665,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(onCompletedCalled1);
         Assert.True(onCompletedCalled2);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -2728,10 +2710,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorAfterStartingResponse), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ErrorAfterStartingResponse, m.Tags));
     }
 
     [Fact]
@@ -2776,10 +2755,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ErrorAfterStartingResponse), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ErrorAfterStartingResponse, m.Tags));
     }
 
     [Fact]
@@ -2862,10 +2838,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Single(LogMessages.Where(m => m.Message.Contains(CoreStrings.ConnectionAbortedByApplication)));
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.AbortedByApp, m.Tags));
     }
 
     [Fact]

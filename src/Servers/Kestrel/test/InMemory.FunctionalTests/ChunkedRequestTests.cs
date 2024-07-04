@@ -899,10 +899,7 @@ public class ChunkedRequestTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnexpectedEndOfRequestContent), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]

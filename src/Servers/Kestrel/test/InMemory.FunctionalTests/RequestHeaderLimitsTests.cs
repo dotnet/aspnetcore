@@ -47,7 +47,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -84,7 +84,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -112,10 +112,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestHeaders), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestHeaders, m.Tags));
     }
 
     [Theory]
@@ -144,10 +141,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidRequestHeaders), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestHeaders, m.Tags));
     }
 
     private static string MakeHeaders(int count)

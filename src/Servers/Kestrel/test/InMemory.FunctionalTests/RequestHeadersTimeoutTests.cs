@@ -46,10 +46,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.RequestHeadersTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     [Fact]
@@ -84,7 +81,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys));
+        
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -113,10 +111,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.RequestHeadersTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     [Fact]
@@ -150,10 +145,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.RequestHeadersTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     private TestServer CreateServer(TestServiceContext context)

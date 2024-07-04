@@ -102,18 +102,12 @@ internal sealed class KestrelMetrics
     {
         if (metricsContext.CurrentConnectionsCounterEnabled || metricsContext.ConnectionDurationEnabled)
         {
-            // Add protocol error code if feature is available and it's not the unset value (-1).
-            long? errorCode = null;
-            if (metricsContext.ConnectionContext.Features.Get<IProtocolErrorCodeFeature>() is IProtocolErrorCodeFeature errorCodeFeature && errorCodeFeature.Error != -1)
-            {
-                errorCode = errorCodeFeature.Error;
-            }
-            ConnectionStopCore(metricsContext, exception, errorCode, customTags, startTimestamp, currentTimestamp);
+            ConnectionStopCore(metricsContext, exception, customTags, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, long? protocolErrorCode, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
@@ -126,11 +120,6 @@ internal sealed class KestrelMetrics
 
         if (metricsContext.ConnectionDurationEnabled)
         {
-            if (protocolErrorCode != null)
-            {
-                tags.Add("http.connection.protocol_code", protocolErrorCode);
-            }
-
             // Check if there is an end reason on the context. For example, the connection could have been aborted by shutdown.
             if (metricsContext.ConnectionEndReason is { } reason && TryGetErrorType(reason, out var errorValue))
             {

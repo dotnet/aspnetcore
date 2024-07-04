@@ -87,7 +87,6 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private readonly HttpConnectionContext _context;
     private readonly ConnectionMetricsContext _metricsContext;
-    private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly IConnectionMetricsTagsFeature? _metricsTagsFeature;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
@@ -142,7 +141,6 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         _context = context;
         _streamLifetimeHandler = this;
         _metricsContext = context.MetricsContext;
-        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _metricsTagsFeature = context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
 
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
@@ -221,9 +219,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private void SetConnectionErrorCode(ConnectionEndReason reason, Http2ErrorCode errorCode)
     {
         Debug.Assert(_isClosed == 1, "Should only be set when connection is closed.");
-        Debug.Assert(_errorCodeFeature.Error == -1, "Error code feature should only be set once.");
 
-        _errorCodeFeature.Error = (long)errorCode;
         KestrelMetrics.AddConnectionEndReason(_metricsContext, reason);
     }
 

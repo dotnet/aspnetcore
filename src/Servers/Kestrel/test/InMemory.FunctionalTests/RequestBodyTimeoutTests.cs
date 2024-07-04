@@ -90,10 +90,7 @@ public class RequestBodyTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, m.Tags));
     }
 
     [Fact]
@@ -146,10 +143,7 @@ public class RequestBodyTimeoutTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ServerTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ServerTimeout, m.Tags));
     }
 
     [Fact]
@@ -223,9 +217,6 @@ public class RequestBodyTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, m.Tags));
     }
 }

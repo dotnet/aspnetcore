@@ -5760,7 +5760,6 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.NotNull(Http2Connection.InvalidHttp1xErrorResponseBytes);
         Assert.Equal(Http2Connection.InvalidHttp1xErrorResponseBytes, data);
         AssertConnectionEndReason(ConnectionEndReason.InvalidHttpVersion);
-        Assert.Equal(Http2ErrorCode.PROTOCOL_ERROR, (Http2ErrorCode)_errorCodeFeature.Error);
     }
 
     [Fact]

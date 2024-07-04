@@ -23,6 +23,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\LifetimeNotImplemented.cs" Link="shared\LifetimeNotImplemented.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\PassThroughConnectionMiddleware.cs" Link="shared\PassThroughConnectionMiddleware.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApp.cs" Link="shared\TestApp.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\MetricsAssert.cs" Link="shared\MetricsAssert.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />

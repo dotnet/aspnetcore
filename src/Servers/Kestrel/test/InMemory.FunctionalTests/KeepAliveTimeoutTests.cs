@@ -50,10 +50,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, m.Tags));
     }
 
     [Fact]
@@ -86,10 +83,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -134,10 +128,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -182,10 +173,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
@@ -210,10 +198,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), m.Tags[KestrelMetrics.ErrorType]);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, m.Tags));
     }
 
     [Fact]
@@ -256,10 +241,7 @@ public class KeepAliveTimeoutTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
-        {
-            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
-        });
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default)

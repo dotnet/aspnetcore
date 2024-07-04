@@ -68,7 +68,6 @@ internal sealed class HttpConnection : ITimeoutHandler
                     // _http2Connection must be initialized before yielding control to the transport thread,
                     // to prevent a race condition where _http2Connection.Abort() is called just as
                     // _http2Connection is about to be initialized.
-                    _context.ConnectionFeatures.Set<IProtocolErrorCodeFeature>(new ProtocolErrorCodeFeature());
                     requestProcessor = new Http2Connection((HttpConnectionContext)_context);
                     _protocolSelectionState = ProtocolSelectionState.Selected;
                     AddMetricsHttpProtocolTag(KestrelMetrics.Http2);
@@ -119,16 +118,12 @@ internal sealed class HttpConnection : ITimeoutHandler
         }
         finally
         {
+            // Before exiting HTTP layer, set the end reason on the context as a connection metrics tag.
             if (_context.MetricsContext.ConnectionEndReason is { } connectionEndReason)
             {
                 KestrelMetrics.AddConnectionEndReason(connectionMetricsTagsFeature, connectionEndReason);
             }
         }
-    }
-
-    private sealed class ProtocolErrorCodeFeature : IProtocolErrorCodeFeature
-    {
-        public long Error { get; set; } = -1;
     }
 
     private void AddMetricsHttpProtocolTag(string httpVersion)
