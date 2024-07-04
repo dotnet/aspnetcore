@@ -1408,8 +1408,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             WriteDiagnosticEvent(ServiceContext.DiagnosticSource, badRequestEventName, this);
         }
 
-        // TODO: A specific error should be set. Pass unset here
-        DisableKeepAlive(ConnectionEndReason.Unexpected);
+        DisableKeepAlive(Http1Connection.GetConnectionEndReason(ex));
     }
 
     internal virtual void DisableKeepAlive(ConnectionEndReason reason)

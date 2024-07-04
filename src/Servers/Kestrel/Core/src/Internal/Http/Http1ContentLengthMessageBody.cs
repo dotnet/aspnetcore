@@ -270,7 +270,6 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         {
             if (_readResult.IsCompleted)
             {
-                KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
             }
 

@@ -229,7 +229,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader))
             {
                 // We read the maximum allowed but didn't complete the start line.
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestLine);
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
             }
 
@@ -273,7 +272,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 if (!_parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader))
                 {
                     // We read the maximum allowed but didn't complete the headers.
-                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
                 }
 
@@ -608,12 +606,10 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 return;
             }
 
-            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
         }
         else if (hostCount > 1)
         {
-            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
         }
         else if (_requestTargetForm != HttpRequestTarget.OriginForm)
@@ -722,7 +718,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
         catch (InvalidOperationException) when (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
         {
-            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
             throw;
         }
@@ -751,11 +746,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     endConnection = true;
                     return true;
                 case RequestProcessingStatus.ParsingRequestLine:
-                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
                     break;
                 case RequestProcessingStatus.ParsingHeaders:
-                    KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
                     break;
             }
@@ -771,7 +764,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
             // a 408 response.
-            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.RequestHeadersTimeout);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestHeadersTimeout);
         }
 
@@ -787,26 +779,20 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-    private void OnBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+    internal static ConnectionEndReason GetConnectionEndReason(Microsoft.AspNetCore.Http.BadHttpRequestException ex)
     {
-        var reason = ex.Reason;
+#pragma warning disable CS0618 // Type or member is obsolete
+        var kestrelEx = ex as BadHttpRequestException;
+#pragma warning restore CS0618 // Type or member is obsolete
 
-        // Some code shared between HTTP versions throws errors. For example, HttpRequestHeaders collection
-        // throws when an invalid content length is set.
-        // Only want to set a reasons for HTTP/1.1 connection, so set end reason by catching the exception here.
-        switch (reason)
+        switch (kestrelEx?.Reason)
         {
             case RequestRejectionReason.UnrecognizedHTTPVersion:
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidHttpVersion);
-                DetectHttp2Preface(requestData);
-                break;
+                return ConnectionEndReason.InvalidHttpVersion;
             case RequestRejectionReason.InvalidRequestLine:
             case RequestRejectionReason.RequestLineTooLong:
             case RequestRejectionReason.InvalidRequestTarget:
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestLine);
-                break;
+                return ConnectionEndReason.InvalidRequestLine;
             case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
             case RequestRejectionReason.InvalidRequestHeader:
             case RequestRejectionReason.InvalidContentLength:
@@ -821,16 +807,31 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             case RequestRejectionReason.MissingHostHeader:
             case RequestRejectionReason.MultipleHostHeaders:
             case RequestRejectionReason.InvalidHostHeader:
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
-                break;
+                return ConnectionEndReason.InvalidRequestHeaders;
             case RequestRejectionReason.TlsOverHttpError:
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.TlsOverHttp);
-                break;
+                return ConnectionEndReason.TlsOverHttp;
+            case RequestRejectionReason.UnexpectedEndOfRequestContent:
+                return ConnectionEndReason.UnexpectedEndOfRequestContent;
             default:
                 // In some scenarios the end reason might already be set to a more specific error
                 // and attempting to set the reason again has no impact.
-                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
-                break;
+                return ConnectionEndReason.OtherError;
+        }
+    }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    private void OnBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+        // Some code shared between HTTP versions throws errors. For example, HttpRequestHeaders collection
+        // throws when an invalid content length is set.
+        // Only want to set a reasons for HTTP/1.1 connection, so set end reason by catching the exception here.
+        var reason = GetConnectionEndReason(ex);
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
+
+        if (ex.Reason == RequestRejectionReason.UnrecognizedHTTPVersion)
+        {
+            DetectHttp2Preface(requestData);
         }
     }
 
