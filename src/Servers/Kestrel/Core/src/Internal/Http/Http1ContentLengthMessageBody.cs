@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
