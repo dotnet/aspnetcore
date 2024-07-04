@@ -159,15 +159,20 @@ public class HostingApplicationDiagnosticsTests
     public void Metrics_RequestDuration_RecordedWithHttpActivity()
     {
         // Arrange
+        Activity measurementActivity = null;
+        var measureCount = 0;
+
+        // Listen to hosting activity source.
+        var testSource = new ActivitySource(Path.GetRandomFileName());
         using var activityListener = new ActivityListener
         {
-            ShouldListenTo = activitySource => activitySource.Name == "Microsoft.AspNetCore",
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
         };
         ActivitySource.AddActivityListener(activityListener);
 
+        // Listen to http.server.request.duration.
         var testMeterFactory = new TestMeterFactory();
-
         var meterListener = new MeterListener();
         meterListener.InstrumentPublished = (i, l) =>
         {
@@ -176,9 +181,6 @@ public class HostingApplicationDiagnosticsTests
                 l.EnableMeasurementEvents(i);
             }
         };
-
-        Activity measurementActivity = null;
-        var measureCount = 0;
         meterListener.SetMeasurementEventCallback<double>((i, m, t, s) =>
         {
             if (Interlocked.Increment(ref measureCount) > 1)
@@ -191,7 +193,7 @@ public class HostingApplicationDiagnosticsTests
         meterListener.Start();
 
         // Act
-        var hostingApplication = CreateApplication(out var features, meterFactory: testMeterFactory);
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, meterFactory: testMeterFactory);
         var context = hostingApplication.CreateContext(features);
         hostingApplication.DisposeContext(context, null);
 
