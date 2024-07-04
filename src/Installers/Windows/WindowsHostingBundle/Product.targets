@@ -66,7 +66,7 @@
                   DestinationPath="$(DepsPath)%(RemoteAsset.TargetFileName)" />
   </Target>
 
-  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="CollectDependencies;FetchDependencies" BeforeTargets="BeforeBuild">
+  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
     <CreateProperty Value="%(RuntimeInstallers.Filename)%(Extension)">
