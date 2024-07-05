@@ -307,5 +307,4 @@ public class HubClientProxyGeneratorTests
         mockConn.VerifyAll();
         Assert.False(noArgReg.IsDisposed);
     }
-
 }
