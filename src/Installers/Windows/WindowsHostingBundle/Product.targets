@@ -37,22 +37,22 @@
 
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
