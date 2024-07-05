@@ -56,7 +56,7 @@ internal static class ChecksumValidator
         }
 
         var sourceDocumentChecksum = ComputeChecksum(projectItem, primaryChecksum.ChecksumAlgorithm);
-        if (!string.Equals(sourceDocumentChecksum.algorithm, primaryChecksum.ChecksumAlgorithm) ||
+        if (!string.Equals(sourceDocumentChecksum.algorithm, primaryChecksum.ChecksumAlgorithm, StringComparison.OrdinalIgnoreCase) ||
             !ChecksumsEqual(primaryChecksum.Checksum, sourceDocumentChecksum.checksum))
         {
             // Main file exists, but checksums not equal.
@@ -80,7 +80,7 @@ internal static class ChecksumValidator
             }
 
             sourceDocumentChecksum = ComputeChecksum(importItem, checksum.ChecksumAlgorithm);
-            if (!string.Equals(sourceDocumentChecksum.algorithm, checksum.ChecksumAlgorithm) ||
+            if (!string.Equals(sourceDocumentChecksum.algorithm, checksum.ChecksumAlgorithm, StringComparison.OrdinalIgnoreCase) ||
                 !ChecksumsEqual(checksum.Checksum, sourceDocumentChecksum.checksum))
             {
                 // Import file exists, but checksums not equal.
@@ -99,16 +99,15 @@ internal static class ChecksumValidator
         string algorithmName;
 
         //only SHA1 and SHA256 are supported.  Default to SHA1
-        switch (checksumAlgorithm)
+        if (nameof(SHA256).Equals(checksumAlgorithm, StringComparison.OrdinalIgnoreCase))
         {
-            case nameof(SHA256):
-                hashData = SHA256.HashData;
-                algorithmName = nameof(SHA256);
-                break;
-            default:
-                hashData = SHA1.HashData;
-                algorithmName = nameof(SHA1);
-                break;
+            hashData = SHA256.HashData;
+            algorithmName = nameof(SHA256);
+        }
+        else
+        {
+            hashData = SHA1.HashData;
+            algorithmName = nameof(SHA1);
         }
 
         using (var stream = projectItem.Read())
