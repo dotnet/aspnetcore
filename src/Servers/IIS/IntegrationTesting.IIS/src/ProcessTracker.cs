@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 // Uses Windows Job Objects to ensure external processes are killed if the current process is terminated non-gracefully.
 internal static partial class ProcessTracker
 {
-    private static readonly IntPtr _jobHandle = IntiailizeProcessTracker();
+    private static readonly IntPtr s_jobHandle = IntiailizeProcessTracker();
 
     private static IntPtr IntiailizeProcessTracker()
     {
@@ -53,9 +53,9 @@ internal static partial class ProcessTracker
 
     public static void Add(Process process)
     {
-        if (_jobHandle != IntPtr.Zero)
+        if (s_jobHandle != IntPtr.Zero)
         {
-            var success = AssignProcessToJobObject(_jobHandle, process.Handle);
+            var success = AssignProcessToJobObject(s_jobHandle, process.Handle);
             if (!success && !process.HasExited)
             {
                 throw new Win32Exception();

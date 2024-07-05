@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 internal sealed class RouteTable(TreeRouter treeRouter)
 {
     private readonly TreeRouter _router = treeRouter;
-    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = new();
+    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> s_routeEntryCache = new();
 
     public TreeRouter? TreeRouter => _router;
 
@@ -23,7 +23,7 @@ internal sealed class RouteTable(TreeRouter treeRouter)
     {
         if (endpointRouteData.Template != null)
         {
-            var entry = _routeEntryCache.GetOrAdd(
+            var entry = s_routeEntryCache.GetOrAdd(
                 (endpointRouteData.PageType, endpointRouteData.Template),
                 ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template));
 

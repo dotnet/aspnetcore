@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// </summary>
 public struct HealthReportEntry
 {
-    private static readonly IReadOnlyDictionary<string, object> _emptyReadOnlyDictionary = new Dictionary<string, object>();
+    private static readonly IReadOnlyDictionary<string, object> s_emptyReadOnlyDictionary = new Dictionary<string, object>();
 
     /// <summary>
     /// Creates a new <see cref="HealthReportEntry"/> with the specified values for <paramref name="status"/>, <paramref name="exception"/>,
@@ -44,7 +44,7 @@ public struct HealthReportEntry
         Description = description;
         Duration = duration;
         Exception = exception;
-        Data = data ?? _emptyReadOnlyDictionary;
+        Data = data ?? s_emptyReadOnlyDictionary;
         Tags = tags ?? Enumerable.Empty<string>();
     }
 

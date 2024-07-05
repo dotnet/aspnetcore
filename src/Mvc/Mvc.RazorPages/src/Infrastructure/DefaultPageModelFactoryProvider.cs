@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
 {
-    private static readonly Func<PropertyInfo, PropertyActivator<PageContext>> _createActivateInfo =
+    private static readonly Func<PropertyInfo, PropertyActivator<PageContext>> s_createActivateInfo =
         CreateActivateInfo;
     private readonly IPageModelActivatorProvider _modelActivator;
 
@@ -30,7 +30,7 @@ internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvide
         var propertyActivator = PropertyActivator<PageContext>.GetPropertiesToActivate(
                 descriptor.ModelTypeInfo.AsType(),
                 typeof(PageContextAttribute),
-                _createActivateInfo,
+                s_createActivateInfo,
                 includeNonPublic: false);
 
         return pageContext =>

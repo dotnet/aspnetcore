@@ -13,12 +13,12 @@ internal sealed class DefaultHttpRequest : HttpRequest
     private const string Https = "https";
 
     // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-    private static readonly Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
-    private static readonly Func<IFeatureCollection, IQueryFeature?> _newQueryFeature = f => new QueryFeature(f);
-    private static readonly Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default, r._context.GetEndpoint());
-    private static readonly Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
-    private static readonly Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
-    private static readonly Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
+    private static readonly Func<IFeatureCollection, IHttpRequestFeature?> s_nullRequestFeature = f => null;
+    private static readonly Func<IFeatureCollection, IQueryFeature?> s_newQueryFeature = f => new QueryFeature(f);
+    private static readonly Func<DefaultHttpRequest, IFormFeature> s_newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default, r._context.GetEndpoint());
+    private static readonly Func<IFeatureCollection, IRequestCookiesFeature> s_newRequestCookiesFeature = f => new RequestCookiesFeature(f);
+    private static readonly Func<IFeatureCollection, IRouteValuesFeature> s_newRouteValuesFeature = f => new RouteValuesFeature();
+    private static readonly Func<HttpContext, IRequestBodyPipeFeature> s_newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
     private readonly DefaultHttpContext _context;
     private FeatureReferences<FeatureInterfaces> _features;
@@ -47,22 +47,22 @@ internal sealed class DefaultHttpRequest : HttpRequest
     public override HttpContext HttpContext => _context;
 
     private IHttpRequestFeature HttpRequestFeature =>
-        _features.Fetch(ref _features.Cache.Request, _nullRequestFeature)!;
+        _features.Fetch(ref _features.Cache.Request, s_nullRequestFeature)!;
 
     private IQueryFeature QueryFeature =>
-        _features.Fetch(ref _features.Cache.Query, _newQueryFeature)!;
+        _features.Fetch(ref _features.Cache.Query, s_newQueryFeature)!;
 
     private IFormFeature FormFeature =>
-        _features.Fetch(ref _features.Cache.Form, this, _newFormFeature)!;
+        _features.Fetch(ref _features.Cache.Form, this, s_newFormFeature)!;
 
     private IRequestCookiesFeature RequestCookiesFeature =>
-        _features.Fetch(ref _features.Cache.Cookies, _newRequestCookiesFeature)!;
+        _features.Fetch(ref _features.Cache.Cookies, s_newRequestCookiesFeature)!;
 
     private IRouteValuesFeature RouteValuesFeature =>
-        _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature)!;
+        _features.Fetch(ref _features.Cache.RouteValues, s_newRouteValuesFeature)!;
 
     private IRequestBodyPipeFeature RequestBodyPipeFeature =>
-        _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newRequestBodyPipeFeature)!;
+        _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, s_newRequestBodyPipeFeature)!;
 
     public override PathString PathBase
     {

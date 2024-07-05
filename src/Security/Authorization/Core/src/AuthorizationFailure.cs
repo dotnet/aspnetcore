@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationFailure
 {
-    private static readonly AuthorizationFailure _explicitFailure = new() { FailCalled = true };
+    private static readonly AuthorizationFailure s_explicitFailure = new() { FailCalled = true };
 
     private AuthorizationFailure() { }
 
@@ -35,7 +35,7 @@ public class AuthorizationFailure
     /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail()"/> being called.
     /// </summary>
     /// <returns>The failure.</returns>
-    public static AuthorizationFailure ExplicitFail() => _explicitFailure;
+    public static AuthorizationFailure ExplicitFail() => s_explicitFailure;
 
     /// <summary>
     /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail(AuthorizationFailureReason)"/> being called.

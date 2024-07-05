@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authentication;
 /// </summary>
 public class AuthenticateResult
 {
-    private static readonly AuthenticateResult _noResult = new() { None = true };
+    private static readonly AuthenticateResult s_noResult = new() { None = true };
 
     /// <summary>
     /// Creates a new <see cref="AuthenticateResult"/> instance.
@@ -88,7 +88,7 @@ public class AuthenticateResult
     /// <returns>The result.</returns>
     public static AuthenticateResult NoResult()
     {
-        return _noResult;
+        return s_noResult;
     }
 
     /// <summary>

@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.Controllers;
 /// </summary>
 public class ControllerActivatorProvider : IControllerActivatorProvider
 {
-    private static readonly Action<ControllerContext, object> _dispose = Dispose;
-    private static readonly Func<ControllerContext, object, ValueTask> _disposeAsync = DisposeAsync;
-    private static readonly Func<ControllerContext, object, ValueTask> _syncDisposeAsync = SyncDisposeAsync;
+    private static readonly Action<ControllerContext, object> s_dispose = Dispose;
+    private static readonly Func<ControllerContext, object, ValueTask> s_disposeAsync = DisposeAsync;
+    private static readonly Func<ControllerContext, object, ValueTask> s_syncDisposeAsync = SyncDisposeAsync;
     private readonly Func<ControllerContext, object>? _controllerActivatorCreate;
     private readonly Action<ControllerContext, object>? _controllerActivatorRelease;
     private readonly Func<ControllerContext, object, ValueTask>? _controllerActivatorReleaseAsync;
@@ -71,7 +71,7 @@ public class ControllerActivatorProvider : IControllerActivatorProvider
 
         if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(descriptor.ControllerTypeInfo))
         {
-            return _dispose;
+            return s_dispose;
         }
 
         return null;
@@ -89,12 +89,12 @@ public class ControllerActivatorProvider : IControllerActivatorProvider
 
         if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(descriptor.ControllerTypeInfo))
         {
-            return _disposeAsync;
+            return s_disposeAsync;
         }
 
         if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(descriptor.ControllerTypeInfo))
         {
-            return _syncDisposeAsync;
+            return s_syncDisposeAsync;
         }
 
         return null;

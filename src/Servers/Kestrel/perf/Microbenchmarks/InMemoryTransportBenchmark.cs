@@ -31,7 +31,7 @@ public class InMemoryTransportBenchmark
         "\r\n" +
         "Hello, World!";
 
-    private static readonly string _plaintextPipelinedExpectedResponse =
+    private static readonly string s_plaintextPipelinedExpectedResponse =
         string.Concat(Enumerable.Repeat(_plaintextExpectedResponse, RequestParsingData.Pipelining));
 
     private IHost _host;
@@ -62,7 +62,7 @@ public class InMemoryTransportBenchmark
         _connection = transportFactory.Connections.Values.Single().Single();
 
         ValidateResponseAsync(RequestParsingData.PlaintextTechEmpowerRequest, _plaintextExpectedResponse).Wait();
-        ValidateResponseAsync(RequestParsingData.PlaintextTechEmpowerPipelinedRequests, _plaintextPipelinedExpectedResponse).Wait();
+        ValidateResponseAsync(RequestParsingData.PlaintextTechEmpowerPipelinedRequests, s_plaintextPipelinedExpectedResponse).Wait();
     }
 
     private async Task ValidateResponseAsync(byte[] request, string expectedResponse)
@@ -98,7 +98,7 @@ public class InMemoryTransportBenchmark
     public async Task PlaintextPipelined()
     {
         await _connection.SendRequestAsync(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
-        await _connection.ReadResponseAsync(_plaintextPipelinedExpectedResponse.Length);
+        await _connection.ReadResponseAsync(s_plaintextPipelinedExpectedResponse.Length);
     }
 
     internal sealed class InMemoryTransportFactory : IConnectionListenerFactory
@@ -236,8 +236,8 @@ public class InMemoryTransportBenchmark
     // Copied from https://github.com/aspnet/benchmarks/blob/dev/src/Benchmarks/Middleware/PlaintextMiddleware.cs
     public class PlaintextMiddleware
     {
-        private static readonly PathString _path = new PathString("/plaintext");
-        private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+        private static readonly PathString s_path = new PathString("/plaintext");
+        private static readonly byte[] s_helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         private readonly RequestDelegate _next;
 
@@ -248,7 +248,7 @@ public class InMemoryTransportBenchmark
 
         public Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
+            if (httpContext.Request.Path.StartsWithSegments(s_path, StringComparison.Ordinal))
             {
                 return WriteResponse(httpContext.Response);
             }
@@ -258,11 +258,11 @@ public class InMemoryTransportBenchmark
 
         public static Task WriteResponse(HttpResponse response)
         {
-            var payloadLength = _helloWorldPayload.Length;
+            var payloadLength = s_helloWorldPayload.Length;
             response.StatusCode = 200;
             response.ContentType = "text/plain";
             response.ContentLength = payloadLength;
-            return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
+            return response.Body.WriteAsync(s_helloWorldPayload, 0, payloadLength);
         }
     }
 }

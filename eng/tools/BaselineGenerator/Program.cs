@@ -35,7 +35,7 @@ class Program : CommandLineApplication
     private readonly CommandOption _output;
     private readonly CommandOption _update;
 
-    private static readonly string[] _defaultSources = new string[] { "https://api.nuget.org/v3/index.json" };
+    private static readonly string[] s_defaultSources = new string[] { "https://api.nuget.org/v3/index.json" };
 
     public Program()
     {
@@ -59,7 +59,7 @@ class Program : CommandLineApplication
 
         var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
         var input = XDocument.Load(inputPath);
-        var sources = _sources.HasValue() ? _sources.Values.Select(s => s.TrimEnd('/')) : _defaultSources;
+        var sources = _sources.HasValue() ? _sources.Values.Select(s => s.TrimEnd('/')) : s_defaultSources;
         var packageSources = sources.Select(s => new PackageSource(s));
         var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
         var sourceRepositories = packageSources.Select(ps => new SourceRepository(ps, providers));

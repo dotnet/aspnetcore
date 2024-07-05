@@ -25,15 +25,15 @@ public class DiagnosticProject
     /// </summary>
     public static string TestProjectName = "TestProject";
 
-    private static readonly ICompilationAssemblyResolver _assemblyResolver = new AppBaseCompilationAssemblyResolver();
-    private static readonly Dictionary<Assembly, Solution> _solutionCache = new Dictionary<Assembly, Solution>();
+    private static readonly ICompilationAssemblyResolver s_assemblyResolver = new AppBaseCompilationAssemblyResolver();
+    private static readonly Dictionary<Assembly, Solution> s_solutionCache = new Dictionary<Assembly, Solution>();
 
     public static Project Create(Assembly testAssembly, string[] sources, Func<Workspace> workspaceFactory = null, Type analyzerReference = null)
     {
         Solution solution;
-        lock (_solutionCache)
+        lock (s_solutionCache)
         {
-            if (!_solutionCache.TryGetValue(testAssembly, out solution))
+            if (!s_solutionCache.TryGetValue(testAssembly, out solution))
             {
                 workspaceFactory ??= CreateWorkspace;
 
@@ -44,7 +44,7 @@ public class DiagnosticProject
 
                 foreach (var defaultCompileLibrary in DependencyContext.Load(testAssembly).CompileLibraries)
                 {
-                    foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(_assemblyResolver))
+                    foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(s_assemblyResolver))
                     {
                         solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
                     }
@@ -57,7 +57,7 @@ public class DiagnosticProject
                         new AnalyzerFileReference(analyzerReference.Assembly.Location, AssemblyLoader.Instance));
                 }
 
-                _solutionCache.Add(testAssembly, solution);
+                s_solutionCache.Add(testAssembly, solution);
             }
         }
 

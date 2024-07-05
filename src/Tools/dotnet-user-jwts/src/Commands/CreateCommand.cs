@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal sealed class CreateCommand
 {
-    private static readonly string[] _dateTimeFormats = new[] {
+    private static readonly string[] s_dateTimeFormats = new[] {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy/MM/dd", "yyyy/MM/dd HH:mm", "yyyy-MM-ddTHH:mm:ss.fffffffzzz"  };
-    private static readonly string[] _timeSpanFormats = new[] {
+    private static readonly string[] s_timeSpanFormats = new[] {
         @"d\dh\hm\ms\s", @"d\dh\hm\m", @"d\dh\h", @"d\d",
         @"h\hm\ms\s", @"h\hm\m", @"h\h",
         @"m\ms\s", @"m\m",
@@ -175,7 +175,7 @@ internal sealed class CreateCommand
 
         if (validForOption.HasValue())
         {
-            if (!TimeSpan.TryParseExact(validForOption.Value(), _timeSpanFormats, CultureInfo.InvariantCulture, out var validForValue))
+            if (!TimeSpan.TryParseExact(validForOption.Value(), s_timeSpanFormats, CultureInfo.InvariantCulture, out var validForValue))
             {
                 reporter.Error(Resources.FormatCreateCommand_InvalidPeriod_Error("--valid-for"));
             }
@@ -215,7 +215,7 @@ internal sealed class CreateCommand
             optionsString);
 
         static bool ParseDate(string datetime, out DateTime parsedDateTime) =>
-            DateTime.TryParseExact(datetime, _dateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsedDateTime);
+            DateTime.TryParseExact(datetime, s_dateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsedDateTime);
     }
 
     private static int Execute(

@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Http;
 [RequiresDynamicCode("This API performs reflection on types that can't be statically analyzed.")]
 internal static class EndpointMetadataPopulator
 {
-    private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo s_PopulateMetadataForParameterMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo s_PopulateMetadataForEndpointMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     public static void PopulateMetadata(MethodInfo methodInfo, EndpointBuilder builder, IEnumerable<ParameterInfo>? parameters = null)
     {
@@ -32,7 +32,7 @@ internal static class EndpointMetadataPopulator
                 invokeArgs ??= new object[2];
                 invokeArgs[0] = parameter;
                 invokeArgs[1] = builder;
-                PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+                s_PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
             }
 
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
@@ -41,7 +41,7 @@ internal static class EndpointMetadataPopulator
                 invokeArgs ??= new object[2];
                 invokeArgs[0] = methodInfo;
                 invokeArgs[1] = builder;
-                PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+                s_PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
             }
         }
 
@@ -58,7 +58,7 @@ internal static class EndpointMetadataPopulator
             invokeArgs ??= new object[2];
             invokeArgs[0] = methodInfo;
             invokeArgs[1] = builder;
-            PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
+            s_PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
         }
     }
 

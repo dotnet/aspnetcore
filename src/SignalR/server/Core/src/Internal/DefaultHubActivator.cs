@@ -10,12 +10,12 @@ internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub
 {
     // Object factory for THub instances
     private static readonly Lazy<ObjectFactory> _objectFactory = new Lazy<ObjectFactory>(() => ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes));
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider s_serviceProvider;
     private bool? _created;
 
     public DefaultHubActivator(IServiceProvider serviceProvider)
     {
-        _serviceProvider = serviceProvider;
+        s_serviceProvider = serviceProvider;
     }
 
     public THub Create()
@@ -23,10 +23,10 @@ internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub
         Debug.Assert(!_created.HasValue, "hub activators must not be reused.");
 
         _created = false;
-        var hub = _serviceProvider.GetService<THub>();
+        var hub = s_serviceProvider.GetService<THub>();
         if (hub == null)
         {
-            hub = (THub)_objectFactory.Value(_serviceProvider, Array.Empty<object>());
+            hub = (THub)_objectFactory.Value(s_serviceProvider, Array.Empty<object>());
             _created = true;
         }
 

@@ -22,7 +22,7 @@ public class TagBuilder : IHtmlContent
 {
     // Note '.' is valid according to the HTML 4.01 specification. Disallowed here
     // to avoid confusion with CSS class selectors or when using jQuery.
-    private static readonly SearchValues<char> _html401IdChars =
+    private static readonly SearchValues<char> s_html401IdChars =
         SearchValues.Create("-0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz");
 
     private AttributeDictionary? _attributes;
@@ -160,7 +160,7 @@ public class TagBuilder : IHtmlContent
         }
 
         // If there are no invalid characters in the string, then we don't have to create the buffer.
-        var indexOfInvalidCharacter = name.AsSpan(1).IndexOfAnyExcept(_html401IdChars);
+        var indexOfInvalidCharacter = name.AsSpan(1).IndexOfAnyExcept(s_html401IdChars);
         var firstChar = name[0];
         var startsWithAsciiLetter = char.IsAsciiLetter(firstChar);
         if (startsWithAsciiLetter && indexOfInvalidCharacter < 0)
@@ -191,7 +191,7 @@ public class TagBuilder : IHtmlContent
             stringBuffer.Append(remainingName.Slice(0, indexOfInvalidCharacter));
             stringBuffer.Append(invalidCharReplacement);
             remainingName = remainingName.Slice(indexOfInvalidCharacter + 1);
-            indexOfInvalidCharacter = remainingName.IndexOfAnyExcept(_html401IdChars);
+            indexOfInvalidCharacter = remainingName.IndexOfAnyExcept(s_html401IdChars);
         }
         return stringBuffer.ToString();
     }

@@ -7,13 +7,13 @@ namespace Microsoft.AspNetCore.InternalTesting;
 
 public static class TestResources
 {
-    private static readonly string _baseDir = Path.Combine(Directory.GetCurrentDirectory(), "shared", "TestCertificates");
+    private static readonly string s_baseDir = Path.Combine(Directory.GetCurrentDirectory(), "shared", "TestCertificates");
 
-    public static string TestCertificatePath { get; } = Path.Combine(_baseDir, "testCert.pfx");
-    public static string GetCertPath(string name) => Path.Combine(_baseDir, name);
+    public static string TestCertificatePath { get; } = Path.Combine(s_baseDir, "testCert.pfx");
+    public static string GetCertPath(string name) => Path.Combine(s_baseDir, name);
 
     private const int MutexTimeout = 120 * 1000;
-    private static readonly Mutex importPfxMutex = OperatingSystem.IsWindows() ?
+    private static readonly Mutex s_importPfxMutex = OperatingSystem.IsWindows() ?
         new Mutex(initiallyOwned: false, "Global\\KestrelTests.Certificates.LoadPfxCertificate") :
         null;
 
@@ -21,7 +21,7 @@ public static class TestResources
     {
         // On Windows, applications should not import PFX files in parallel to avoid a known system-level
         // race condition bug in native code which can cause crashes/corruption of the certificate state.
-        if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
+        if (s_importPfxMutex != null && !s_importPfxMutex.WaitOne(MutexTimeout))
         {
             throw new InvalidOperationException("Cannot acquire the global certificate mutex.");
         }
@@ -32,7 +32,7 @@ public static class TestResources
         }
         finally
         {
-            importPfxMutex?.ReleaseMutex();
+            s_importPfxMutex?.ReleaseMutex();
         }
     }
 
@@ -58,7 +58,7 @@ public static class TestResources
     {
         // On Windows, applications should not import PFX files in parallel to avoid a known system-level
         // race condition bug in native code which can cause crashes/corruption of the certificate state.
-        if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
+        if (s_importPfxMutex != null && !s_importPfxMutex.WaitOne(MutexTimeout))
         {
             throw new InvalidOperationException("Cannot acquire the global certificate mutex.");
         }
@@ -71,7 +71,7 @@ public static class TestResources
         }
         finally
         {
-            importPfxMutex?.ReleaseMutex();
+            s_importPfxMutex?.ReleaseMutex();
         }
     }
 }

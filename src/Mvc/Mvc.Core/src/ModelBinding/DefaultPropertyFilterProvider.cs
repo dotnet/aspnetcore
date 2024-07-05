@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
     where TModel : class
 {
-    private static readonly Func<ModelMetadata, bool> _default = (m) => true;
+    private static readonly Func<ModelMetadata, bool> s_default = (m) => true;
 
     /// <summary>
     /// The prefix which is used while generating the property filter.
@@ -36,7 +36,7 @@ public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
         {
             if (PropertyIncludeExpressions == null)
             {
-                return _default;
+                return s_default;
             }
 
             // We do not cache by default.

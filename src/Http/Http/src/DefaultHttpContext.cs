@@ -25,13 +25,13 @@ public sealed class DefaultHttpContext : HttpContext
     private const int DefaultFeatureCollectionSize = 10;
 
     // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-    private static readonly Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
-    private static readonly Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
-    private static readonly Func<IFeatureCollection, IHttpAuthenticationFeature> _newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
-    private static readonly Func<IFeatureCollection, IHttpRequestLifetimeFeature> _newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
-    private static readonly Func<IFeatureCollection, ISessionFeature> _newSessionFeature = f => new DefaultSessionFeature();
-    private static readonly Func<IFeatureCollection, ISessionFeature?> _nullSessionFeature = f => null;
-    private static readonly Func<IFeatureCollection, IHttpRequestIdentifierFeature> _newHttpRequestIdentifierFeature = f => new HttpRequestIdentifierFeature();
+    private static readonly Func<IFeatureCollection, IItemsFeature> s_newItemsFeature = f => new ItemsFeature();
+    private static readonly Func<DefaultHttpContext, IServiceProvidersFeature> s_newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
+    private static readonly Func<IFeatureCollection, IHttpAuthenticationFeature> s_newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
+    private static readonly Func<IFeatureCollection, IHttpRequestLifetimeFeature> s_newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
+    private static readonly Func<IFeatureCollection, ISessionFeature> s_newSessionFeature = f => new DefaultSessionFeature();
+    private static readonly Func<IFeatureCollection, ISessionFeature?> s_nullSessionFeature = f => null;
+    private static readonly Func<IFeatureCollection, IHttpRequestIdentifierFeature> s_newHttpRequestIdentifierFeature = f => new HttpRequestIdentifierFeature();
 
     private FeatureReferences<FeatureInterfaces> _features;
 
@@ -115,25 +115,25 @@ public sealed class DefaultHttpContext : HttpContext
     public IServiceScopeFactory ServiceScopeFactory { get; set; } = default!;
 
     private IItemsFeature ItemsFeature =>
-        _features.Fetch(ref _features.Cache.Items, _newItemsFeature)!;
+        _features.Fetch(ref _features.Cache.Items, s_newItemsFeature)!;
 
     private IServiceProvidersFeature ServiceProvidersFeature =>
-        _features.Fetch(ref _features.Cache.ServiceProviders, this, _newServiceProvidersFeature)!;
+        _features.Fetch(ref _features.Cache.ServiceProviders, this, s_newServiceProvidersFeature)!;
 
     private IHttpAuthenticationFeature HttpAuthenticationFeature =>
-        _features.Fetch(ref _features.Cache.Authentication, _newHttpAuthenticationFeature)!;
+        _features.Fetch(ref _features.Cache.Authentication, s_newHttpAuthenticationFeature)!;
 
     private IHttpRequestLifetimeFeature LifetimeFeature =>
-        _features.Fetch(ref _features.Cache.Lifetime, _newHttpRequestLifetimeFeature)!;
+        _features.Fetch(ref _features.Cache.Lifetime, s_newHttpRequestLifetimeFeature)!;
 
     private ISessionFeature SessionFeature =>
-        _features.Fetch(ref _features.Cache.Session, _newSessionFeature)!;
+        _features.Fetch(ref _features.Cache.Session, s_newSessionFeature)!;
 
     private ISessionFeature? SessionFeatureOrNull =>
-        _features.Fetch(ref _features.Cache.Session, _nullSessionFeature);
+        _features.Fetch(ref _features.Cache.Session, s_nullSessionFeature);
 
     private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
-        _features.Fetch(ref _features.Cache.RequestIdentifier, _newHttpRequestIdentifierFeature)!;
+        _features.Fetch(ref _features.Cache.RequestIdentifier, s_newHttpRequestIdentifierFeature)!;
 
     /// <inheritdoc/>
     public override IFeatureCollection Features => _features.Collection ?? ContextDisposed();

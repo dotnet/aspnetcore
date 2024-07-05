@@ -12,7 +12,7 @@ public class CultureReplacer : IDisposable
 {
     private const string _defaultCultureName = "en-GB";
     private const string _defaultUICultureName = "en-US";
-    private static readonly CultureInfo _defaultCulture = new CultureInfo(_defaultCultureName);
+    private static readonly CultureInfo s_defaultCulture = new CultureInfo(_defaultCultureName);
     private readonly CultureInfo _originalCulture;
     private readonly CultureInfo _originalUICulture;
     private readonly long _threadId;
@@ -57,7 +57,7 @@ public class CultureReplacer : IDisposable
     /// </summary>
     public static CultureInfo DefaultCulture
     {
-        get { return _defaultCulture; }
+        get { return s_defaultCulture; }
     }
 
     public void Dispose()

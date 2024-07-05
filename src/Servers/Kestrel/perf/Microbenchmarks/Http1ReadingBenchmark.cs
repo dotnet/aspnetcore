@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 public class Http1ReadingBenchmark
 {
     // Standard completed task
-    private static readonly Func<object, Task> _syncTaskFunc = (obj) => Task.CompletedTask;
+    private static readonly Func<object, Task> s_syncTaskFunc = (obj) => Task.CompletedTask;
     // Non-standard completed task
-    private static readonly Task _pseudoAsyncTask = Task.FromResult(27);
-    private static readonly Func<object, Task> _pseudoAsyncTaskFunc = (obj) => _pseudoAsyncTask;
+    private static readonly Task s_pseudoAsyncTask = Task.FromResult(27);
+    private static readonly Func<object, Task> s_pseudoAsyncTaskFunc = (obj) => s_pseudoAsyncTask;
 
     private TestHttp1Connection _http1Connection;
     private DuplexPipe.DuplexPipePair _pair;
@@ -74,10 +74,10 @@ public class Http1ReadingBenchmark
             switch (OnStarting)
             {
                 case Startup.Sync:
-                    _http1Connection.OnStarting(_syncTaskFunc, null);
+                    _http1Connection.OnStarting(s_syncTaskFunc, null);
                     break;
                 case Startup.Async:
-                    _http1Connection.OnStarting(_pseudoAsyncTaskFunc, null);
+                    _http1Connection.OnStarting(s_pseudoAsyncTaskFunc, null);
                     break;
             }
         }

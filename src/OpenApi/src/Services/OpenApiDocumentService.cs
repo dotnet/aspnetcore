@@ -33,7 +33,7 @@ internal sealed class OpenApiDocumentService(
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
     private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
 
-    private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
+    private static readonly OpenApiEncoding s_defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
 
     /// <summary>
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
@@ -42,7 +42,7 @@ internal sealed class OpenApiDocumentService(
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
-    private static readonly ApiResponseType _defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
+    private static readonly ApiResponseType s_defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
@@ -186,7 +186,7 @@ internal sealed class OpenApiDocumentService(
         {
             return new OpenApiResponses
             {
-                ["200"] = await GetResponseAsync(description, StatusCodes.Status200OK, _defaultApiResponseType, cancellationToken)
+                ["200"] = await GetResponseAsync(description, StatusCodes.Status200OK, s_defaultApiResponseType, cancellationToken)
             };
         }
 
@@ -408,7 +408,7 @@ internal sealed class OpenApiDocumentService(
             requestBody.Content[contentType] = new OpenApiMediaType
             {
                 Schema = schema,
-                Encoding = new Dictionary<string, OpenApiEncoding>() { [contentType] = _defaultFormEncoding }
+                Encoding = new Dictionary<string, OpenApiEncoding>() { [contentType] = s_defaultFormEncoding }
             };
         }
 

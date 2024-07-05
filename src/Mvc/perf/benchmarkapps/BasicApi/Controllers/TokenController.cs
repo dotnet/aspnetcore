@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -16,22 +16,22 @@ namespace BasicApi.Controllers
 {
     public class TokenController : ControllerBase
     {
-        private static readonly Dictionary<string, ClaimsIdentity> _identities;
+        private static readonly Dictionary<string, ClaimsIdentity> s_identities;
 
         static TokenController()
         {
-            _identities = new Dictionary<string, ClaimsIdentity>(StringComparer.Ordinal);
+            s_identities = new Dictionary<string, ClaimsIdentity>(StringComparer.Ordinal);
 
             var reader = new ClaimsIdentity();
             reader.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, "reader@example.com"));
             reader.AddClaim(new Claim("scope", "pet-store-reader"));
-            _identities.Add("reader@example.com", reader);
+            s_identities.Add("reader@example.com", reader);
 
             var writer = new ClaimsIdentity();
             writer.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, "writer@example.com"));
             writer.AddClaim(new Claim("scope", "pet-store-reader"));
             writer.AddClaim(new Claim("scope", "pet-store-writer"));
-            _identities.Add("writer@example.com", writer);
+            s_identities.Add("writer@example.com", writer);
         }
 
         private readonly SigningCredentials _credentials;
@@ -50,7 +50,7 @@ namespace BasicApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public IActionResult GetToken(string username)
         {
-            if (username == null || !_identities.TryGetValue(username, out var identity))
+            if (username == null || !s_identities.TryGetValue(username, out var identity))
             {
                 return new StatusCodeResult(StatusCodes.Status403Forbidden);
             }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
 {
-    private static readonly string _stepAttributeValue = GetStepAttributeValue();
+    private static readonly string s_stepAttributeValue = GetStepAttributeValue();
 
     private static string GetStepAttributeValue()
     {
@@ -52,7 +52,7 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "input");
-        builder.AddAttribute(1, "step", _stepAttributeValue);
+        builder.AddAttribute(1, "step", s_stepAttributeValue);
         builder.AddMultipleAttributes(2, AdditionalAttributes);
         builder.AddAttribute(3, "type", "number");
         builder.AddAttributeIfNotNullOrEmpty(4, "name", NameAttributeValue);

@@ -10,8 +10,8 @@ internal sealed class RoutingMetrics
     public const string MeterName = "Microsoft.AspNetCore.Routing";
 
      // Reuse boxed object for common values
-    private static readonly object BoxedTrue = true;
-    private static readonly object BoxedFalse = false;
+    private static readonly object s_BoxedTrue = true;
+    private static readonly object s_BoxedFalse = false;
 
     private readonly Meter _meter;
     private readonly Counter<long> _matchAttemptsCounter;
@@ -33,7 +33,7 @@ internal sealed class RoutingMetrics
         _matchAttemptsCounter.Add(1,
             new KeyValuePair<string, object?>("http.route", route),
             new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "success"),
-            new KeyValuePair<string, object?>("aspnetcore.routing.is_fallback", isFallback ? BoxedTrue : BoxedFalse));
+            new KeyValuePair<string, object?>("aspnetcore.routing.is_fallback", isFallback ? s_BoxedTrue : s_BoxedFalse));
     }
 
     public void MatchFailure()

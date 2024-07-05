@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Internal;
 
 internal sealed class Utf8BufferTextWriter : TextWriter
 {
-    private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    private static readonly UTF8Encoding s_utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
     private const int MaximumBytesPerUtf8Char = 4;
 
     [ThreadStatic]
@@ -28,11 +28,11 @@ internal sealed class Utf8BufferTextWriter : TextWriter
     private bool _inUse;
 #endif
 
-    public override Encoding Encoding => _utf8NoBom;
+    public override Encoding Encoding => s_utf8NoBom;
 
     public Utf8BufferTextWriter()
     {
-        _encoder = _utf8NoBom.GetEncoder();
+        _encoder = s_utf8NoBom.GetEncoder();
     }
 
     public static Utf8BufferTextWriter Get(IBufferWriter<byte> bufferWriter)

@@ -11,18 +11,18 @@ namespace Microsoft.AspNetCore.Http;
 [DebuggerDisplay("HttpContext = {HttpContext}")]
 public class HttpContextAccessor : IHttpContextAccessor
 {
-    private static readonly AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
+    private static readonly AsyncLocal<HttpContextHolder> s_httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
     /// <inheritdoc/>
     public HttpContext? HttpContext
     {
         get
         {
-            return _httpContextCurrent.Value?.Context;
+            return s_httpContextCurrent.Value?.Context;
         }
         set
         {
-            var holder = _httpContextCurrent.Value;
+            var holder = s_httpContextCurrent.Value;
             if (holder != null)
             {
                 // Clear current HttpContext trapped in the AsyncLocals, as its done.
@@ -33,7 +33,7 @@ public class HttpContextAccessor : IHttpContextAccessor
             {
                 // Use an object indirection to hold the HttpContext in the AsyncLocal,
                 // so it can be cleared in all ExecutionContexts when its cleared.
-                _httpContextCurrent.Value = new HttpContextHolder { Context = value };
+                s_httpContextCurrent.Value = new HttpContextHolder { Context = value };
             }
         }
     }

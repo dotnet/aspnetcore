@@ -121,7 +121,7 @@ public class RedisProtocolBenchmark
 
     private sealed class DummyProtocol : IHubProtocol
     {
-        private static readonly byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
+        private static readonly byte[] s_fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
 
         public string Name { get; }
 
@@ -144,7 +144,7 @@ public class RedisProtocolBenchmark
 
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
-            output.Write(_fixedOutput);
+            output.Write(s_fixedOutput);
         }
 
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)

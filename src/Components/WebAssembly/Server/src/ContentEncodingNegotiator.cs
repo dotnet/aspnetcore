@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 internal sealed class ContentEncodingNegotiator
 {
     // List of encodings by preference order with their associated extension so that we can easily handle "*".
-    private static readonly StringSegment[] _preferredEncodings =
+    private static readonly StringSegment[] s_preferredEncodings =
         new StringSegment[] { "br", "gzip" };
 
-    private static readonly Dictionary<StringSegment, string> _encodingExtensionMap = new Dictionary<StringSegment, string>(StringSegmentComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<StringSegment, string> s_encodingExtensionMap = new Dictionary<StringSegment, string>(StringSegmentComparer.OrdinalIgnoreCase)
     {
         ["br"] = ".br",
         ["gzip"] = ".gz"
@@ -64,7 +64,7 @@ internal sealed class ContentEncodingNegotiator
                 {
                     selectedEncoding = PickPreferredEncoding(context, selectedEncoding, encoding);
                 }
-                else if (_encodingExtensionMap.TryGetValue(encodingName, out var encodingExtension) && ResourceExists(context, encodingExtension))
+                else if (s_encodingExtensionMap.TryGetValue(encodingName, out var encodingExtension) && ResourceExists(context, encodingExtension))
                 {
                     selectedEncoding = encodingName;
                     selectedEncodingQuality = quality;
@@ -85,7 +85,7 @@ internal sealed class ContentEncodingNegotiator
             }
         }
 
-        if (_encodingExtensionMap.TryGetValue(selectedEncoding, out var extension))
+        if (s_encodingExtensionMap.TryGetValue(selectedEncoding, out var extension))
         {
             context.Request.Path = context.Request.Path + extension;
             context.Response.Headers.ContentEncoding = selectedEncoding.Value;
@@ -96,14 +96,14 @@ internal sealed class ContentEncodingNegotiator
 
         StringSegment PickPreferredEncoding(HttpContext context, StringSegment selectedEncoding, StringWithQualityHeaderValue encoding)
         {
-            foreach (var preferredEncoding in _preferredEncodings)
+            foreach (var preferredEncoding in s_preferredEncodings)
             {
                 if (preferredEncoding == selectedEncoding)
                 {
                     return selectedEncoding;
                 }
 
-                if ((preferredEncoding == encoding.Value || encoding.Value == "*") && ResourceExists(context, _encodingExtensionMap[preferredEncoding]))
+                if ((preferredEncoding == encoding.Value || encoding.Value == "*") && ResourceExists(context, s_encodingExtensionMap[preferredEncoding]))
                 {
                     return preferredEncoding;
                 }

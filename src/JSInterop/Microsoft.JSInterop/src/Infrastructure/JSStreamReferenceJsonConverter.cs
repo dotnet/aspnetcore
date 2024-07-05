@@ -9,7 +9,7 @@ namespace Microsoft.JSInterop.Infrastructure;
 
 internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamReference>
 {
-    private static readonly JsonEncodedText _jsStreamReferenceLengthKey = JsonEncodedText.Encode("__jsStreamReferenceLength");
+    private static readonly JsonEncodedText s_jsStreamReferenceLengthKey = JsonEncodedText.Encode("__jsStreamReferenceLength");
 
     private readonly JSRuntime _jsRuntime;
 
@@ -35,7 +35,7 @@ internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamRe
                     reader.Read();
                     id = reader.GetInt64();
                 }
-                else if (length is null && reader.ValueTextEquals(_jsStreamReferenceLengthKey.EncodedUtf8Bytes))
+                else if (length is null && reader.ValueTextEquals(s_jsStreamReferenceLengthKey.EncodedUtf8Bytes))
                 {
                     reader.Read();
                     length = reader.GetInt64();
@@ -58,7 +58,7 @@ internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamRe
 
         if (!length.HasValue)
         {
-            throw new JsonException($"Required property {_jsStreamReferenceLengthKey} not found.");
+            throw new JsonException($"Required property {s_jsStreamReferenceLengthKey} not found.");
         }
 
         return new JSStreamReference(_jsRuntime, id.Value, length.Value);

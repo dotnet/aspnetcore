@@ -27,7 +27,7 @@ public class NamedPipesTransportBenchmark
         "Server: Kestrel\r\n" +
         "\r\n" +
         "Hello, World!";
-    private static readonly byte[] _responseBuffer = new byte[_plaintextExpectedResponse.Length];
+    private static readonly byte[] s_responseBuffer = new byte[_plaintextExpectedResponse.Length];
 
     private string _pipeName;
     private IHost _host;
@@ -67,10 +67,10 @@ public class NamedPipesTransportBenchmark
         var clientStream = CreateClientStream(_pipeName);
         await clientStream.ConnectAsync();
         await clientStream.WriteAsync(request);
-        await clientStream.ReadAtLeastAsync(_responseBuffer, _responseBuffer.Length);
+        await clientStream.ReadAtLeastAsync(s_responseBuffer, s_responseBuffer.Length);
         await clientStream.DisposeAsync();
 
-        var response = Encoding.ASCII.GetString(_responseBuffer);
+        var response = Encoding.ASCII.GetString(s_responseBuffer);
 
         // Exclude date header since the value changes on every request
         var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
@@ -105,7 +105,7 @@ public class NamedPipesTransportBenchmark
                         var namedPipeClient = CreateClientStream(_pipeName);
                         await namedPipeClient.ConnectAsync();
                         await namedPipeClient.WriteAsync(RequestParsingData.PlaintextTechEmpowerRequest);
-                        await namedPipeClient.ReadAtLeastAsync(_responseBuffer, _responseBuffer.Length);
+                        await namedPipeClient.ReadAtLeastAsync(s_responseBuffer, s_responseBuffer.Length);
                         namedPipeClient.Dispose();
 
                         clientStreamCount++;
@@ -134,8 +134,8 @@ public class NamedPipesTransportBenchmark
     // Copied from https://github.com/aspnet/benchmarks/blob/dev/src/Benchmarks/Middleware/PlaintextMiddleware.cs
     public class PlaintextMiddleware
     {
-        private static readonly PathString _path = new PathString("/plaintext");
-        private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+        private static readonly PathString s_path = new PathString("/plaintext");
+        private static readonly byte[] s_helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         private readonly RequestDelegate _next;
 
@@ -146,7 +146,7 @@ public class NamedPipesTransportBenchmark
 
         public Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
+            if (httpContext.Request.Path.StartsWithSegments(s_path, StringComparison.Ordinal))
             {
                 return WriteResponse(httpContext.Response);
             }
@@ -156,11 +156,11 @@ public class NamedPipesTransportBenchmark
 
         public static Task WriteResponse(HttpResponse response)
         {
-            var payloadLength = _helloWorldPayload.Length;
+            var payloadLength = s_helloWorldPayload.Length;
             response.StatusCode = 200;
             response.ContentType = "text/plain";
             response.ContentLength = payloadLength;
-            return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
+            return response.Body.WriteAsync(s_helloWorldPayload, 0, payloadLength);
         }
     }
 }

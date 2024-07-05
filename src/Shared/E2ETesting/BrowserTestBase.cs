@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.E2ETesting;
 [CaptureSeleniumLogs]
 public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 {
-    private static readonly AsyncLocal<IWebDriver> _asyncBrowser = new AsyncLocal<IWebDriver>();
-    private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
-    private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
+    private static readonly AsyncLocal<IWebDriver> s_asyncBrowser = new AsyncLocal<IWebDriver>();
+    private static readonly AsyncLocal<ILogs> s_logs = new AsyncLocal<ILogs>();
+    private static readonly AsyncLocal<ITestOutputHelper> s_output = new AsyncLocal<ITestOutputHelper>();
 
     private ExceptionDispatchInfo _exceptionDispatchInfo;
     private IWebDriver _browser;
@@ -20,7 +20,7 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
     {
         BrowserFixture = browserFixture;
-        _output.Value = output;
+        s_output.Value = output;
     }
 
     public IWebDriver Browser
@@ -41,11 +41,11 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
         }
     }
 
-    public static IWebDriver BrowserAccessor => _asyncBrowser.Value;
+    public static IWebDriver BrowserAccessor => s_asyncBrowser.Value;
 
-    public static ILogs Logs => _logs.Value;
+    public static ILogs Logs => s_logs.Value;
 
-    public static ITestOutputHelper Output => _output.Value;
+    public static ITestOutputHelper Output => s_output.Value;
 
     public BrowserFixture BrowserFixture { get; }
 
@@ -75,8 +75,8 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
         try
         {
             var (browser, logs) = BrowserFixture.GetOrCreateBrowser(Output, isolationContext);
-            _asyncBrowser.Value = browser;
-            _logs.Value = logs;
+            s_asyncBrowser.Value = browser;
+            s_logs.Value = logs;
 
             Browser = browser;
         }

@@ -19,11 +19,11 @@ public class FormCollection : IFormCollection
     /// An empty <see cref="FormCollection"/>.
     /// </summary>
     public static readonly FormCollection Empty = new FormCollection();
-    private static readonly string[] EmptyKeys = Array.Empty<string>();
+    private static readonly string[] s_EmptyKeys = Array.Empty<string>();
 
     // Pre-box
-    private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = default(Enumerator);
-    private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
+    private static readonly IEnumerator<KeyValuePair<string, StringValues>> s_EmptyIEnumeratorType = default(Enumerator);
+    private static readonly IEnumerator s_EmptyIEnumerator = default(Enumerator);
 
     private static readonly IFormFileCollection EmptyFiles = new FormFileCollection();
 
@@ -96,7 +96,7 @@ public class FormCollection : IFormCollection
         {
             if (Store == null)
             {
-                return EmptyKeys;
+                return s_EmptyKeys;
             }
             return Store.Keys;
         }
@@ -148,7 +148,7 @@ public class FormCollection : IFormCollection
         if (Store == null || Store.Count == 0)
         {
             // Non-boxed Enumerator
-            return EmptyIEnumeratorType;
+            return s_EmptyIEnumeratorType;
         }
         // Boxed Enumerator
         return Store.GetEnumerator();
@@ -163,7 +163,7 @@ public class FormCollection : IFormCollection
         if (Store == null || Store.Count == 0)
         {
             // Non-boxed Enumerator
-            return EmptyIEnumerator;
+            return s_EmptyIEnumerator;
         }
         // Boxed Enumerator
         return Store.GetEnumerator();

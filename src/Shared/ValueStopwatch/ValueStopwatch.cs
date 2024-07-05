@@ -12,13 +12,13 @@ internal struct ValueStopwatch
     private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 #endif
 
-    private readonly long _startTimestamp;
+    private readonly long s_startTimestamp;
 
-    public bool IsActive => _startTimestamp != 0;
+    public bool IsActive => s_startTimestamp != 0;
 
     private ValueStopwatch(long startTimestamp)
     {
-        _startTimestamp = startTimestamp;
+        s_startTimestamp = startTimestamp;
     }
 
     public static ValueStopwatch StartNew() => new ValueStopwatch(Stopwatch.GetTimestamp());
@@ -35,7 +35,7 @@ internal struct ValueStopwatch
         var end = Stopwatch.GetTimestamp();
 
 #if !NET7_0_OR_GREATER
-        var timestampDelta = end - _startTimestamp;
+        var timestampDelta = end - s_startTimestamp;
         var ticks = (long)(TimestampToTicks * timestampDelta);
         return new TimeSpan(ticks);
 #else

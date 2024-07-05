@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc;
 internal static partial class MvcCoreLoggerExtensions
 {
     public const string ActionFilter = "Action Filter";
-    private static readonly string[] _noFilters = new[] { "None" };
+    private static readonly string[] s_noFilters = new[] { "None" };
 
     public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
     {
@@ -248,7 +248,7 @@ internal static partial class MvcCoreLoggerExtensions
         string filterType,
         IEnumerable<IFilterMetadata> filters)
     {
-        var filterList = _noFilters;
+        var filterList = s_noFilters;
         if (filters.Any())
         {
             filterList = GetFilterList(filters);

@@ -34,7 +34,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     private const string ControllerKey = "controller";
     private const string PageKey = "page";
 
-    private static readonly TimeSpan _cacheExpirationDuration = TimeSpan.FromMinutes(20);
+    private static readonly TimeSpan s_cacheExpirationDuration = TimeSpan.FromMinutes(20);
 
     private readonly IRazorPageFactoryProvider _pageFactory;
     private readonly IRazorPageActivator _pageActivator;
@@ -192,7 +192,7 @@ public partial class RazorViewEngine : IRazorViewEngine
             cacheResult = CreateCacheResult(expirationTokens, applicationRelativePath, isMainPage);
 
             var cacheEntryOptions = new MemoryCacheEntryOptions();
-            cacheEntryOptions.SetSlidingExpiration(_cacheExpirationDuration);
+            cacheEntryOptions.SetSlidingExpiration(s_cacheExpirationDuration);
             foreach (var expirationToken in expirationTokens)
             {
                 cacheEntryOptions.AddExpirationToken(expirationToken);
@@ -378,7 +378,7 @@ public partial class RazorViewEngine : IRazorViewEngine
         }
 
         var cacheEntryOptions = new MemoryCacheEntryOptions();
-        cacheEntryOptions.SetSlidingExpiration(_cacheExpirationDuration);
+        cacheEntryOptions.SetSlidingExpiration(s_cacheExpirationDuration);
         foreach (var expirationToken in expirationTokens)
         {
             cacheEntryOptions.AddExpirationToken(expirationToken);

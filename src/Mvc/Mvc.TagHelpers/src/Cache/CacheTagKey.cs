@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 /// </summary>
 public class CacheTagKey : IEquatable<CacheTagKey>
 {
-    private static readonly char[] AttributeSeparator = new[] { ',' };
-    private static readonly Func<IRequestCookieCollection, string, string> CookieAccessor = (c, key) => c[key];
-    private static readonly Func<IHeaderDictionary, string, string> HeaderAccessor = (c, key) => c[key];
-    private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => c[key];
-    private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) =>
+    private static readonly char[] s_AttributeSeparator = new[] { ',' };
+    private static readonly Func<IRequestCookieCollection, string, string> s_CookieAccessor = (c, key) => c[key];
+    private static readonly Func<IHeaderDictionary, string, string> s_HeaderAccessor = (c, key) => c[key];
+    private static readonly Func<IQueryCollection, string, string> s_QueryAccessor = (c, key) => c[key];
+    private static readonly Func<RouteValueDictionary, string, string> s_RouteValueAccessor = (c, key) =>
         Convert.ToString(c[key], CultureInfo.InvariantCulture);
 
     private const string CacheKeyTokenSeparator = "||";
@@ -85,13 +85,13 @@ public class CacheTagKey : IEquatable<CacheTagKey>
         _expiresOn = tagHelper.ExpiresOn;
         _expiresSliding = tagHelper.ExpiresSliding;
         _varyBy = tagHelper.VaryBy;
-        _cookies = ExtractCollection(tagHelper.VaryByCookie, request.Cookies, CookieAccessor);
-        _headers = ExtractCollection(tagHelper.VaryByHeader, request.Headers, HeaderAccessor);
-        _queries = ExtractCollection(tagHelper.VaryByQuery, request.Query, QueryAccessor);
+        _cookies = ExtractCollection(tagHelper.VaryByCookie, request.Cookies, s_CookieAccessor);
+        _headers = ExtractCollection(tagHelper.VaryByHeader, request.Headers, s_HeaderAccessor);
+        _queries = ExtractCollection(tagHelper.VaryByQuery, request.Query, s_QueryAccessor);
         _routeValues = ExtractCollection(
             tagHelper.VaryByRoute,
             tagHelper.ViewContext.RouteData.Values,
-            RouteValueAccessor);
+            s_RouteValueAccessor);
         _varyByUser = tagHelper.VaryByUser;
         _varyByCulture = tagHelper.VaryByCulture;
 
@@ -272,7 +272,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
             return null;
         }
 
-        var tokenizer = new StringTokenizer(keys, AttributeSeparator);
+        var tokenizer = new StringTokenizer(keys, s_AttributeSeparator);
 
         var result = new List<KeyValuePair<string, string>>();
 

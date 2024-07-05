@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal sealed class Streams
 {
-    private static readonly ThrowingWasUpgradedWriteOnlyStreamInternal _throwingResponseStream
+    private static readonly ThrowingWasUpgradedWriteOnlyStreamInternal s_throwingResponseStream
         = new ThrowingWasUpgradedWriteOnlyStreamInternal();
 
     private readonly IISHttpContext _context;
@@ -30,7 +30,7 @@ internal sealed class Streams
         _upgradeStream = new HttpUpgradeStream(_request, _response);
 
         // causes writes to context.Response.Body to throw
-        _upgradeableResponse.SetInnerStream(_throwingResponseStream);
+        _upgradeableResponse.SetInnerStream(s_throwingResponseStream);
 
         _emptyRequest = new EmptyStream(_context);
 

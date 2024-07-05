@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.InternalTesting;
 
 public class RepeatContext
 {
-    private static readonly AsyncLocal<RepeatContext> _current = new AsyncLocal<RepeatContext>();
+    private static readonly AsyncLocal<RepeatContext> s_current = new AsyncLocal<RepeatContext>();
 
     public static RepeatContext Current
     {
-        get => _current.Value;
-        internal set => _current.Value = value;
+        get => s_current.Value;
+        internal set => s_current.Value = value;
     }
 
     public RepeatContext(int limit)
