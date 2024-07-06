@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Summary>Razor is a markup syntax for adding server-side logic to web pages. This package contains runtime components for rendering Razor pages and implementing tag helpers.</Summary>
+    <Summary>Razor is a markup syntax for embedding server-side code into web pages. This package includes runtime components for rendering Razor pages and implementing tag helpers.</Summary>
     <Description>$(Summary)
 
 Commonly used types:
