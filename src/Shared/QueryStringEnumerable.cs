@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -99,7 +100,11 @@ internal
             {
                 return chars;
             }
-            return Uri.UnescapeDataString(string.Create(source.Length, source, static (dest, source) => source.Replace(dest, '+', ' '))).AsMemory();
+            var buffer = new char[source.Length];
+            source.Replace(buffer, '+', ' ');
+            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
+            Debug.Assert(success);
+            return buffer.AsMemory(0, unescapedLength);
         }
     }
 
