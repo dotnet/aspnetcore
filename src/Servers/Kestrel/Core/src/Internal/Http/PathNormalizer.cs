@@ -53,20 +53,15 @@ internal static class PathNormalizer
     public static int RemoveDotSegments(Span<byte> src)
     {
         Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
-        ReadOnlySpan<byte> slashDot = "/."u8;
         ReadOnlySpan<byte> dotSlash = "./"u8;
-        if (!ContainsDotSegments(src))
-        {
-            return src.Length;
-        }
 
         var writtenLength = 0;
         var dst = src;
 
         while (src.Length > 0)
         {
-            var nextSlashDotIndex = src.IndexOf(slashDot);
-            if (nextSlashDotIndex < 0)
+            var nextDotSegmentIndex = FirstIndexOfDotSegment(src);
+            if (nextDotSegmentIndex < 0)
             {
                 // Copy the remianing src to dst, and return.
                 src.CopyTo(dst[writtenLength..]);
@@ -75,9 +70,9 @@ internal static class PathNormalizer
             }
             else
             {
-                src.Slice(0, nextSlashDotIndex).CopyTo(dst[writtenLength..]);
-                writtenLength += nextSlashDotIndex;
-                src = src[(nextSlashDotIndex + 2)..];
+                src.Slice(0, nextDotSegmentIndex).CopyTo(dst[writtenLength..]);
+                writtenLength += nextDotSegmentIndex;
+                src = src[(nextDotSegmentIndex + 2)..];
             }
 
             switch (src.Length)
@@ -88,25 +83,18 @@ internal static class PathNormalizer
                 case 1: // Ending with either /.. or /./
                     if (src[0] == ByteDot)
                     {
-                        // Backtrack
-                        if (writtenLength > 0)
-                        {
-                            var lastIndex = dst.Slice(0, writtenLength - 1).LastIndexOf(ByteSlash);
-                            if (lastIndex < 0)
-                            {
-                                writtenLength = 0;
-                            }
-                            else
-                            {
-                                writtenLength = lastIndex + 1;
-                            }
-                            return writtenLength;
-                        }
-                        else
+                        // Remove the last segment and replace the path with '/'
+                        var lastSlashIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
+                        if (lastSlashIndex < 0)
                         {
                             dst[0] = ByteSlash;
                             return 1;
                         }
+                        else
+                        {
+                            writtenLength = lastSlashIndex + 1;
+                        }
+                        return writtenLength;
                     }
                     else if (src[0] == ByteSlash)
                     {
@@ -117,25 +105,24 @@ internal static class PathNormalizer
                 default: // Case of /../ or /./
                     if (dotSlash.SequenceEqual(src.Slice(0, 2)))
                     {
-                        // Backtrack
-                        if (writtenLength > 0)
+                        // Remove the last segment and replace the path with '/'
+                        var lastIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
+                        if (lastIndex < 0)
                         {
-                            var lastIndex = dst.Slice(0, writtenLength - 1).LastIndexOf(ByteSlash);
-                            if (lastIndex < 0)
-                            {
-                                writtenLength = 0;
-                            }
-                            else
-                            {
-                                writtenLength = lastIndex;
-                            }
+                            dst[0] = ByteSlash;
+                            writtenLength = 1;
+                        }
+                        else
+                        {
+                            writtenLength = lastIndex;
                         }
                         src = src.Slice(1);
                     }
-                    else if (src[0] == ByteSlash && writtenLength > 0)
-                    {
-                        //dst[writtenLength++] = ByteSlash;
-                    }
+                    //else if (src[0] == ByteSlash)
+                    //{
+                    //    dst[writtenLength++] = ByteSlash;
+                    //    src = src.Slice(1);
+                    //}
                     break;
             }
         }
@@ -144,38 +131,45 @@ internal static class PathNormalizer
 
     public static bool ContainsDotSegments(Span<byte> src)
     {
+        return FirstIndexOfDotSegment(src) > -1;
+    }
+
+    private static int FirstIndexOfDotSegment(Span<byte> src)
+    {
         Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
         ReadOnlySpan<byte> slashDot = "/."u8;
         ReadOnlySpan<byte> dotSlash = "./"u8;
+        int totalLength = 0;
         while (src.Length > 0)
         {
             var nextSlashDotIndex = src.IndexOf(slashDot);
             if (nextSlashDotIndex < 0)
             {
-                return false;
+                return -1;
             }
             else
             {
                 src = src[(nextSlashDotIndex + 2)..];
+                totalLength += nextSlashDotIndex + 2;
             }
             switch (src.Length)
             {
                 case 0: // Case of /.
-                    return true;
+                    return totalLength - 2;
                 case 1: // Case of /.. or /./
                     if (src[0] == ByteDot || src[0] == ByteSlash)
                     {
-                        return true;
+                        return totalLength - 2;
                     }
                     break;
                 default: // Case of /../ or /./ 
                     if (dotSlash.SequenceEqual(src.Slice(0, 2)) || src[0] == ByteSlash)
                     {
-                        return true;
+                        return totalLength - 2;
                     }
                     break;
             }
         }
-        return false;
+        return -1;
     }
 }

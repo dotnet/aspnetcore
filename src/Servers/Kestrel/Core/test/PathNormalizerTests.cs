@@ -70,5 +70,6 @@ public class PathNormalizerTests
         var length = PathNormalizer.RemoveDotSegments(new Span<byte>(data));
         Assert.True(length >= 1);
         Assert.Equal(expected, Encoding.ASCII.GetString(data, 0, length));
+        Assert.Equal(input != expected, PathNormalizer.ContainsDotSegments(Encoding.ASCII.GetBytes(input)));
     }
 }
