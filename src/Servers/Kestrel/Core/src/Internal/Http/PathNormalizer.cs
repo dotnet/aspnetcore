@@ -50,193 +50,132 @@ internal static class PathNormalizer
     }
 
     // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
-    public static unsafe int RemoveDotSegments(Span<byte> input)
+    public static int RemoveDotSegments(Span<byte> src)
     {
-        fixed (byte* start = input)
+        Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
+        ReadOnlySpan<byte> slashDot = "/."u8;
+        ReadOnlySpan<byte> dotSlash = "./"u8;
+        if (!ContainsDotSegments(src))
         {
-            var end = start + input.Length;
-            return RemoveDotSegments(start, end);
-        }
-    }
-
-    public static unsafe int RemoveDotSegments(byte* start, byte* end)
-    {
-        if (!ContainsDotSegments(start, end))
-        {
-            return (int)(end - start);
+            return src.Length;
         }
 
-        var src = start;
-        var dst = start;
+        var writtenLength = 0;
+        var dst = src;
 
-        while (src < end)
+        while (src.Length > 0)
         {
-            var ch1 = *src;
-            Debug.Assert(ch1 == '/', "Path segment must always start with a '/'");
-
-            byte ch2, ch3, ch4;
-
-            switch (end - src)
+            var nextSlashDotIndex = src.IndexOf(slashDot);
+            if (nextSlashDotIndex < 0)
             {
-                case 1:
-                    break;
-                case 2:
-                    ch2 = *(src + 1);
-
-                    if (ch2 == ByteDot)
-                    {
-                        // B.  if the input buffer begins with a prefix of "/./" or "/.",
-                        //     where "." is a complete path segment, then replace that
-                        //     prefix with "/" in the input buffer; otherwise,
-                        src += 1;
-                        *src = ByteSlash;
-                        continue;
-                    }
-
-                    break;
-                case 3:
-                    ch2 = *(src + 1);
-                    ch3 = *(src + 2);
-
-                    if (ch2 == ByteDot && ch3 == ByteDot)
-                    {
-                        // C.  if the input buffer begins with a prefix of "/../" or "/..",
-                        //     where ".." is a complete path segment, then replace that
-                        //     prefix with "/" in the input buffer and remove the last
-                        //     segment and its preceding "/" (if any) from the output
-                        //     buffer; otherwise,
-                        src += 2;
-                        *src = ByteSlash;
-
-                        if (dst > start)
-                        {
-                            do
-                            {
-                                dst--;
-                            } while (dst > start && *dst != ByteSlash);
-                        }
-
-                        continue;
-                    }
-                    else if (ch2 == ByteDot && ch3 == ByteSlash)
-                    {
-                        // B.  if the input buffer begins with a prefix of "/./" or "/.",
-                        //     where "." is a complete path segment, then replace that
-                        //     prefix with "/" in the input buffer; otherwise,
-                        src += 2;
-                        continue;
-                    }
-
-                    break;
-                default:
-                    ch2 = *(src + 1);
-                    ch3 = *(src + 2);
-                    ch4 = *(src + 3);
-
-                    if (ch2 == ByteDot && ch3 == ByteDot && ch4 == ByteSlash)
-                    {
-                        // C.  if the input buffer begins with a prefix of "/../" or "/..",
-                        //     where ".." is a complete path segment, then replace that
-                        //     prefix with "/" in the input buffer and remove the last
-                        //     segment and its preceding "/" (if any) from the output
-                        //     buffer; otherwise,
-                        src += 3;
-
-                        if (dst > start)
-                        {
-                            do
-                            {
-                                dst--;
-                            } while (dst > start && *dst != ByteSlash);
-                        }
-
-                        continue;
-                    }
-                    else if (ch2 == ByteDot && ch3 == ByteSlash)
-                    {
-                        // B.  if the input buffer begins with a prefix of "/./" or "/.",
-                        //     where "." is a complete path segment, then replace that
-                        //     prefix with "/" in the input buffer; otherwise,
-                        src += 2;
-                        continue;
-                    }
-
-                    break;
+                // Copy the remianing src to dst, and return.
+                src.CopyTo(dst[writtenLength..]);
+                writtenLength += src.Length;
+                return writtenLength;
+            }
+            else
+            {
+                src.Slice(0, nextSlashDotIndex).CopyTo(dst[writtenLength..]);
+                writtenLength += nextSlashDotIndex;
+                src = src[(nextSlashDotIndex + 2)..];
             }
 
-            // E.  move the first path segment in the input buffer to the end of
-            //     the output buffer, including the initial "/" character (if
-            //     any) and any subsequent characters up to, but not including,
-            //     the next "/" character or the end of the input buffer.
-            do
+            switch (src.Length)
             {
-                *dst++ = ch1;
-                ch1 = *++src;
-            } while (src < end && ch1 != ByteSlash);
-        }
-
-        if (dst == start)
-        {
-            *dst++ = ByteSlash;
-        }
-
-        return (int)(dst - start);
-    }
-
-    public static unsafe bool ContainsDotSegments(byte* start, byte* end)
-    {
-        var src = start;
-        while (src < end)
-        {
-            var ch1 = *src;
-            Debug.Assert(ch1 == '/', "Path segment must always start with a '/'");
-
-            byte ch2, ch3, ch4;
-
-            switch (end - src)
-            {
-                case 1:
-                    break;
-                case 2:
-                    ch2 = *(src + 1);
-
-                    if (ch2 == ByteDot)
+                case 0: // Ending with /.
+                    dst[writtenLength++] = ByteSlash;
+                    return writtenLength;
+                case 1: // Ending with either /.. or /./
+                    if (src[0] == ByteDot)
                     {
-                        return true;
+                        // Backtrack
+                        if (writtenLength > 0)
+                        {
+                            var lastIndex = dst.Slice(0, writtenLength - 1).LastIndexOf(ByteSlash);
+                            if (lastIndex < 0)
+                            {
+                                writtenLength = 0;
+                            }
+                            else
+                            {
+                                writtenLength = lastIndex + 1;
+                            }
+                            return writtenLength;
+                        }
+                        else
+                        {
+                            dst[0] = ByteSlash;
+                            return 1;
+                        }
                     }
-
-                    break;
-                case 3:
-                    ch2 = *(src + 1);
-                    ch3 = *(src + 2);
-
-                    if ((ch2 == ByteDot && ch3 == ByteDot) ||
-                        (ch2 == ByteDot && ch3 == ByteSlash))
+                    else if (src[0] == ByteSlash)
                     {
-                        return true;
+                        dst[writtenLength++] = ByteSlash;
+                        return writtenLength;
                     }
-
                     break;
-                default:
-                    ch2 = *(src + 1);
-                    ch3 = *(src + 2);
-                    ch4 = *(src + 3);
-
-                    if ((ch2 == ByteDot && ch3 == ByteDot && ch4 == ByteSlash) ||
-                        (ch2 == ByteDot && ch3 == ByteSlash))
+                default: // Case of /../ or /./
+                    if (dotSlash.SequenceEqual(src.Slice(0, 2)))
                     {
-                        return true;
+                        // Backtrack
+                        if (writtenLength > 0)
+                        {
+                            var lastIndex = dst.Slice(0, writtenLength - 1).LastIndexOf(ByteSlash);
+                            if (lastIndex < 0)
+                            {
+                                writtenLength = 0;
+                            }
+                            else
+                            {
+                                writtenLength = lastIndex;
+                            }
+                        }
+                        src = src.Slice(1);
                     }
-
+                    else if (src[0] == ByteSlash && writtenLength > 0)
+                    {
+                        //dst[writtenLength++] = ByteSlash;
+                    }
                     break;
             }
-
-            do
-            {
-                ch1 = *++src;
-            } while (src < end && ch1 != ByteSlash);
         }
+        return writtenLength;
+    }
 
+    public static bool ContainsDotSegments(Span<byte> src)
+    {
+        Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
+        ReadOnlySpan<byte> slashDot = "/."u8;
+        ReadOnlySpan<byte> dotSlash = "./"u8;
+        while (src.Length > 0)
+        {
+            var nextSlashDotIndex = src.IndexOf(slashDot);
+            if (nextSlashDotIndex < 0)
+            {
+                return false;
+            }
+            else
+            {
+                src = src[(nextSlashDotIndex + 2)..];
+            }
+            switch (src.Length)
+            {
+                case 0: // Case of /.
+                    return true;
+                case 1: // Case of /.. or /./
+                    if (src[0] == ByteDot || src[0] == ByteSlash)
+                    {
+                        return true;
+                    }
+                    break;
+                default: // Case of /../ or /./ 
+                    if (dotSlash.SequenceEqual(src.Slice(0, 2)) || src[0] == ByteSlash)
+                    {
+                        return true;
+                    }
+                    break;
+            }
+        }
         return false;
     }
 }

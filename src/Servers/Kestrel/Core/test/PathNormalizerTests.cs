@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -54,6 +54,16 @@ public class PathNormalizerTests
     [InlineData("/", "/")]
     [InlineData("/no/segments", "/no/segments")]
     [InlineData("/no/segments/", "/no/segments/")]
+    [InlineData("/././", "/")]
+    [InlineData("/./.", "/")]
+    [InlineData("/../..", "/")]
+    [InlineData("/../../", "/")]
+    [InlineData("/../.", "/")]
+    [InlineData("/./..", "/")]
+    [InlineData("/.././", "/")]
+    [InlineData("/./../", "/")]
+    [InlineData("/..", "/")]
+    [InlineData("/.", "/")]
     public void RemovesDotSegments(string input, string expected)
     {
         var data = Encoding.ASCII.GetBytes(input);
