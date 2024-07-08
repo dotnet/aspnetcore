@@ -299,7 +299,7 @@ internal sealed class HubMethodDescriptor
             // NativeAOT apps are not able to stream IAsyncEnumerable and ChannelReader of ValueTypes as parameters
             // since we cannot create a concrete IAsyncEnumerable and ChannelReader of ValueType to pass into the Hub method.
             var methodInfo = MethodExecutor.MethodInfo;
-            throw new InvalidOperationException($"Method '{methodInfo.DeclaringType}.{methodInfo.Name}' is not supported with native AOT because it has a parameter of type '{parameterType}'. Streaming parameters of ValueTypes is not supported because the native code to support the ValueType will not be available with native AOT.");
+            throw new InvalidOperationException($"Method '{methodInfo.DeclaringType}.{methodInfo.Name}' is not supported with native AOT because it has a parameter of type '{parameterType}'. A ValueType streaming parameter is not supported because the native code to support the ValueType will not be available with native AOT.");
         }
 
         return streamType;
