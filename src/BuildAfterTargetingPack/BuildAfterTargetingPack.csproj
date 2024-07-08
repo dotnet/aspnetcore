@@ -38,20 +38,6 @@
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
-  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" BeforeTargets="Build;BuildDelayedProjects"
-      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
-    <ItemGroup>
-      <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
-                    Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.RemoveSharedFrameworkDependencies Condition="'@(_BuildOutput->Count())' != '0'"
-      Files="@(_BuildOutput)"
-      FrameworkOnlyPackages="@(AspNetCoreAppReference)"
-      SharedFrameworkTargetFramework="$(DefaultNetCoreTargetFramework)" />
-  </Target>
-
   <!-- Cannot build in source-build because that does not create an App.Ref layout. -->
   <Target Name="BuildDelayedProjects"
       BeforeTargets="Build"
