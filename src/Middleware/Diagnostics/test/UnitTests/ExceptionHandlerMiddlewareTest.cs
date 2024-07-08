@@ -319,6 +319,8 @@ public class ExceptionHandlerMiddlewareTest
     public async Task ExceptionFeatureSetOnDeveloperExceptionPage()
     {
         // Arrange
+        var tcs = new TaskCompletionSource<IExceptionHandlerPathFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
@@ -331,10 +333,7 @@ public class ExceptionHandlerMiddlewareTest
                         await next();
 
                         var exceptionHandlerFeature = context.Features.GetRequiredFeature<IExceptionHandlerPathFeature>();
-
-                        Assert.NotNull(exceptionHandlerFeature);
-                        Assert.Equal("Test exception", exceptionHandlerFeature.Error.Message);
-                        Assert.Equal(context.Request.Path, exceptionHandlerFeature.Path);
+                        tcs.SetResult(exceptionHandlerFeature);
                     });
                     app.UseExceptionHandler(exceptionApp =>
                     {
@@ -354,6 +353,11 @@ public class ExceptionHandlerMiddlewareTest
         var request = new HttpRequestMessage(HttpMethod.Get, "/path");
 
         var response = await server.CreateClient().SendAsync(request);
+
+        var feature = await tcs.Task;
+        Assert.NotNull(feature);
+        Assert.Equal("Test exception", feature.Error.Message);
+        Assert.Equal("/path", feature.Path);
     }
 
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
