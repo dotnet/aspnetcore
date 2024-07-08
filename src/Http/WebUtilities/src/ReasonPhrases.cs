@@ -182,7 +182,7 @@ public static class ReasonPhrases
     /// <returns>The reason phrase, or <see cref="string.Empty"/> if the status code is unknown.</returns>
     public static string GetReasonPhrase(int statusCode)
     {
-         if ((uint)(statusCode - 100) < 500)
+        if ((uint)(statusCode - 100) < 500)
         {
             var (i, j) = Math.DivRem((uint)statusCode, 100);
             string[] phrases = HttpReasonPhrases[i];
