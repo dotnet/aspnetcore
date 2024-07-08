@@ -49,6 +49,7 @@
   },
   "devDependencies": {},
   "resolutions": {
-    "node-fetch": ">=2.6.7"
+    "node-fetch": ">=2.6.7",
+    "ws": ">=7.5.10 <8"
   }
 }
