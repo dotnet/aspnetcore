@@ -29,8 +29,6 @@ internal static partial class HttpUtilities
 
     private static readonly UTF8Encoding DefaultRequestHeaderEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private static readonly SearchValues<char> _nullAndNewLineSearchValues = SearchValues.Create(['\r', '\n', '\0']);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
     {
@@ -127,7 +125,7 @@ internal static partial class HttpUtilities
         // New Line characters (CR, LF) are considered invalid at this point.
         // Null characters are also not allowed.
         var invalidCharIndex = checkForNewlineChars ?
-            ((ReadOnlySpan<char>)result).IndexOfAny(_nullAndNewLineSearchValues)
+            ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n', '\0')
             : ((ReadOnlySpan<char>)result).IndexOf('\0');
 
         if (invalidCharIndex >= 0)
