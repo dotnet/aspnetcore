@@ -1,3 +1,5 @@
+# This script needs to be run on PowerShell 7+ (for ConvertFrom-Json) on Windows (for vsts-npm-auth).
+
 param (
     [switch]$WhatIf,
     [switch]$SkipPullRequestCreation
