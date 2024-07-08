@@ -74,13 +74,16 @@ jobs:
 
     - task: NuGetAuthenticate@1
 
-    - task: PowerShell@2
+    - task: AzureCLI@2
       displayName: Publish Build Assets
       inputs:
-        filePath: eng\common\sdk-task.ps1
-        arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+        azureSubscription: "Darc: Maestro Production"
+        scriptType: ps
+        scriptLocation: scriptPath
+        scriptPath: $(Build.SourcesDirectory)/eng/common/sdk-task.ps1
+        arguments: >
+          -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
-          /p:BuildAssetRegistryToken=$(MaestroAccessToken)
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:OfficialBuildId=$(Build.BuildNumber)
@@ -140,7 +143,6 @@ jobs:
           arguments: -BuildId $(BARBuildId)
             -PublishingInfraVersion 3
             -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
-            -MaestroToken '$(MaestroApiAccessToken)'
             -WaitPublishingFinish true
             -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'

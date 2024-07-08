@@ -23,7 +23,7 @@ jobs:
     value: ${{ parameters.sourceIndexPackageSource }}
   - name: BinlogPath
     value: ${{ parameters.binlogPath }}
-  - template: /eng/common/templates/variables/pool-providers.yml
+  - template: /eng/common/templates-official/variables/pool-providers.yml
 
   ${{ if ne(parameters.pool, '') }}:
     pool: ${{ parameters.pool }}
@@ -34,7 +34,8 @@ jobs:
         demands: ImageOverride -equals windows.vs2019.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        demands: ImageOverride -equals windows.vs2019.amd64
+        image: windows.vs2022.amd64
+        os: windows
 
   steps:
   - ${{ each preStep in parameters.preSteps }}:
@@ -70,14 +71,11 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
-          echo "##vso[task.setvariable variable=ARM_ID_TOKEN]$env:idToken"
-          echo "##vso[task.setvariable variable=ARM_TENANT_ID]$env:tenantId"
+          echo "##vso[task.setvariable variable=ARM_CLIENT_ID;issecret=true]$env:servicePrincipalId"
+          echo "##vso[task.setvariable variable=ARM_ID_TOKEN;issecret=true]$env:idToken"
+          echo "##vso[task.setvariable variable=ARM_TENANT_ID;issecret=true]$env:tenantId"
 
     - script: |
-        echo "Client ID: $(ARM_CLIENT_ID)"
-        echo "ID Token: $(ARM_ID_TOKEN)"
-        echo "Tenant ID: $(ARM_TENANT_ID)"
         az login --service-principal -u $(ARM_CLIENT_ID) --tenant $(ARM_TENANT_ID) --allow-no-subscriptions --federated-token $(ARM_ID_TOKEN)
       displayName: "Login to Azure"
 
