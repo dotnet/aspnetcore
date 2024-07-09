@@ -207,17 +207,15 @@ namespace Microsoft.AspNetCore.BrowserTesting
             IgnoreAllDefaultArgs = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.IgnoreAllDefaultArgs)),
             SlowMo = configuration.GetValue<int?>(nameof(BrowserTypeLaunchOptions.SlowMo)),
             Env = configuration.GetValue<Dictionary<string, string>>(nameof(BrowserTypeLaunchOptions.Env)),
-            DumpIO = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.DumpIO)),
-            IgnoreHTTPSErrors = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.IgnoreHTTPSErrors)),
             DownloadsPath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.DownloadsPath)),
             ExecutablePath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.ExecutablePath)),
             Devtools = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.Devtools)),
             Args = BindMultiValueMap(
-                configuration.GetSection(nameof(BrowserTypeLaunchOptions.Args)),
-                argsMap => argsMap.SelectMany(argNameValue => argNameValue.Value.Prepend(argNameValue.Key)).ToArray()),
+            configuration.GetSection(nameof(BrowserTypeLaunchOptions.Args)),
+            argsMap => argsMap.SelectMany(argNameValue => argNameValue.Value.Prepend(argNameValue.Key)).ToArray()),
             Headless = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.Headless)),
             Timeout = configuration.GetValue<int?>(nameof(BrowserTypeLaunchOptions.Timeout)),
-            Proxy = configuration.GetValue<ProxySettings>(nameof(BrowserTypeLaunchOptions.Proxy))
+            Proxy = configuration.GetValue<Proxy>(nameof(BrowserTypeLaunchOptions.Proxy))
         };
 
         private T BindMultiValueMap<T>(IConfigurationSection processArgsMap, Func<Dictionary<string, HashSet<string>>, T> mapper)
