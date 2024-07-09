@@ -304,7 +304,7 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
-                schema.Extensions.Add(OpenApiConstants.SchemaId, new OpenApiString(reader.GetString()));
+                schema.Extensions.Add(OpenApiConstants.SchemaId, new ScrubbedOpenApiAny(reader.GetString()));
                 break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
