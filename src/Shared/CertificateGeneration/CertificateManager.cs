@@ -821,35 +821,30 @@ internal abstract class CertificateManager
     }
 
     /// <summary>
-    /// Given a certificate, presumably from the <see cref="StoreName.My"/> store, try to find the
-    /// corresponding certificate in the <see cref="StoreName.Root"/> store."/>
+    /// Given a certificate, usally from the <see cref="StoreName.My"/> store, try to find the
+    /// corresponding certificate in <paramref name="store"/> (usually the <see cref="StoreName.Root"/> store)."/>
     /// </summary>
-    /// <param name="store">An open <see cref="StoreName.Root"/> <see cref="X509Store"/>.</param>
+    /// <param name="store">An open <see cref="X509Store"/>.</param>
     /// <param name="certificate">A certificate to search for.</param>
     /// <param name="rootCertificate">The certificate, if any, corresponding to <paramref name="certificate"/> in <paramref name="store"/>.</param>
     /// <returns>True if a corresponding certificate was found.</returns>
     /// <remarks><see cref="ListCertificates"/> has richer filtering and a lot of debugging output that's unhelpful here.</remarks>
-    internal static bool TryFindCertificateInRootStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? rootCertificate)
+    internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? rootCertificate)
     {
-        Debug.Assert(store.Name == "Root");
-
-        // We're only interested in the public part of the certificate.
-        using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
-
         // We specifically don't search by thumbprint to avoid being flagged for using a SHA-1 hash.
-        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySubjectName, publicCertificate.SubjectName, validOnly: false);
+        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySubjectName, certificate.SubjectName, validOnly: false);
         if (certificatesWithSubjectName.Count > 0)
         {
-            var certsToDispose = new List<X509Certificate2>();
+            var certificatesToDispose = new List<X509Certificate2>();
             foreach (var candidate in certificatesWithSubjectName.OfType<X509Certificate2>())
             {
                 if (AreCertificatesEqual(candidate, certificate))
                 {
-                    DisposeCertificates(certsToDispose);
+                    DisposeCertificates(certificatesToDispose);
                     rootCertificate = candidate;
                     return true;
                 }
-                certsToDispose.Add(candidate);
+                certificatesToDispose.Add(candidate);
             }
         }
 

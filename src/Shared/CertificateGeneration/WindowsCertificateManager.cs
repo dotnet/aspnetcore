@@ -74,7 +74,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
         using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
 
-        if (TryFindCertificateInRootStore(store, certificate, out _))
+        if (TryFindCertificateInStore(store, certificate, out _))
         {
             Log.WindowsCertificateAlreadyTrusted();
             return;
@@ -102,7 +102,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
         using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
 
-        if (TryFindCertificateInRootStore(store, certificate, out var matching))
+        if (TryFindCertificateInStore(store, certificate, out var matching))
         {
             store.Remove(matching);
         }
