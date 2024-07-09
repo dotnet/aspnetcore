@@ -11,6 +11,13 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
+/// <remarks>
+/// On Unix, we trust the certificate in the following locations:
+///   1. dotnet (i.e. the CurrentUser/Root store)
+///   2. OpenSSL (i.e. adding it to a directory in $SSL_CERT_DIR)
+///   3. Firefox &amp; Chromium (i.e. adding it to an NSS DB for each browser)
+/// All of these locations are per-user.
+/// </remarks>
 internal sealed partial class UnixCertificateManager : CertificateManager
 {
     /// <summary>The name of an environment variable consumed by OpenSSL to locate certificates.</summary>
@@ -50,8 +57,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             Log.UnixOpenSslCertificateDirectoryOverrideIgnored(OpenSslCertDirectoryOverrideVariableName);
         }
 
-        // Building the chain will check whether openssl (which covers HttpClient) trusts the cert.
-        // An alternative approach would be to look for the file and link in the trust folder, but
+        // Building the chain will check whether dotnet trusts the cert.  We could, instead,
+        // enumerate the Root store and/or look for the file in the OpenSSL directory, but
         // this tests the real-world behavior.
         using var chain = new X509Chain();
         // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
@@ -64,14 +71,43 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         else
         {
             sawTrustFailure = true;
+            Log.UnixNotTrustedByDotnet();
+        }
 
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName)))
+        var nickname = GetCertificateNickname(certificate);
+
+        var sslCertDirString = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
+        if (string.IsNullOrEmpty(sslCertDirString))
+        {
+            sawTrustFailure = true;
+            Log.UnixNotTrustedByOpenSsl(OpenSslCertificateDirectoryVariableName);
+        }
+        else
+        {
+            var foundCert = false;
+            var sslCertDirs = sslCertDirString.Split(Path.PathSeparator);
+            foreach (var sslCertDir in sslCertDirs)
             {
-                Log.UnixNotTrustedByOpenSslVariableUnset(OpenSslCertificateDirectoryVariableName);
+                var certPath = Path.Combine(sslCertDir, nickname + ".pem");
+                if (File.Exists(certPath))
+                {
+                    var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                    if (AreCertificatesEqual(certificate, candidate))
+                    {
+                        foundCert = true;
+                        break;
+                    }
+                }
+            }
+
+            if (foundCert)
+            {
+                sawTrustSuccess = true;
             }
             else
             {
-                Log.UnixNotTrustedByOpenSsl();
+                sawTrustFailure = true;
+                Log.UnixNotTrustedByOpenSsl(OpenSslCertificateDirectoryVariableName);
             }
         }
 
@@ -87,7 +123,6 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
             else
             {
-                var nickname = GetCertificateNickname(certificate);
                 foreach (var nssDb in nssDbs)
                 {
                     if (IsCertificateInNssDb(nickname, nssDb))
@@ -144,6 +179,32 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
     protected override TrustLevel TrustCertificateCore(X509Certificate2 certificate)
     {
+        var sawTrustFailure = false;
+        var sawTrustSuccess = false;
+
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+
+        if (TryFindCertificateInStore(store, certificate, out _))
+        {
+            sawTrustSuccess = true;
+        }
+        else
+        {
+            try
+            {
+                using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+                // FriendlyName is Windows-only, so we don't set it here.
+                store.Add(publicCertificate);
+                sawTrustSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                sawTrustFailure = true;
+                Log.UnixDotnetTrustException(ex.Message);
+            }
+        }
+
         var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         // Rather than create a temporary file we'll have to clean up, we prefer to export the dev cert
@@ -162,10 +223,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         {
             try
             {
-                var existingCert = new X509Certificate2(certPath);
-                if (!existingCert.RawDataMemory.Span.SequenceEqual(certificate.RawDataMemory.Span))
+                using var existingCert = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                if (!AreCertificatesEqual(existingCert, certificate))
                 {
-                    Log.UnixCertificateAlreadyExists(certPath);
+                    Log.UnixNotOverwritingCertificate(certPath);
                     return TrustLevel.None;
                 }
 
@@ -174,7 +235,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             catch
             {
                 // If we couldn't load the file, then we also can't safely overwite it.
-                Log.UnixCertificateAlreadyExists(certPath);
+                Log.UnixNotOverwritingCertificate(certPath);
                 return TrustLevel.None;
             }
         }
@@ -187,9 +248,6 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         }
 
         // Once the certificate is on disk, we prefer not to throw - some subsequent trust step might succeed.
-
-        var sawTrustFailure = false;
-        var sawTrustSuccess = false;
 
         var openSslTrustSucceeded = false;
 
@@ -297,9 +355,25 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     {
         var sawUntrustFailure = false;
 
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+
+        if (TryFindCertificateInStore(store, certificate, out var matching))
+        {
+            try
+            {
+                store.Remove(matching);
+            }
+            catch (Exception ex)
+            {
+                Log.UnixDotnetUntrustException(ex.Message);
+                sawUntrustFailure = true;
+            }
+        }
+
         var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)!;
 
-        // We don't attempt to clean this up when it's empty - it's a standard location
+        // We don't attempt to remove the directory when it's empty - it's a standard location
         // and will almost certainly be used in the future.
         var certDir = GetOpenSslCertificateDirectory(homeDirectory); // May not exist
 
