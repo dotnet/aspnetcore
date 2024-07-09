@@ -128,23 +128,25 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         private BrowserNewContextOptions LoadContextOptions(IConfiguration configuration) => EnsureFoldersExist(new BrowserNewContextOptions
         {
-            Proxy = BindValue<ProxySettings>(configuration, nameof(BrowserNewContextOptions.Proxy)),
-            RecordVideo = BindValue<RecordVideoOptions>(configuration, nameof(BrowserNewContextOptions.RecordVideo)),
-            RecordHar = BindValue<RecordHarOptions>(configuration, nameof(BrowserNewContextOptions.RecordHar)),
+            Proxy = BindValue<Proxy>(configuration, nameof(BrowserNewContextOptions.Proxy)),
+            RecordVideoDir = configuration.GetValue<string>(nameof(BrowserNewContextOptions.RecordVideoDir)),
+            RecordVideoSize = BindValue<RecordVideoSize>(configuration, nameof(BrowserNewContextOptions.RecordVideoSize)),
+            RecordHarPath = configuration.GetValue<string>(nameof(BrowserNewContextOptions.RecordHarPath)),
+            RecordHarOmitContent = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.RecordHarOmitContent)),
             ExtraHTTPHeaders = BindMultiValueMap(
-                configuration.GetSection(nameof(BrowserNewContextOptions.ExtraHTTPHeaders)),
-                argsMap => argsMap.ToDictionary(kvp => kvp.Key, kvp => string.Join(", ", kvp.Value))),
+            configuration.GetSection(nameof(BrowserNewContextOptions.ExtraHTTPHeaders)),
+            argsMap => argsMap.ToDictionary(kvp => kvp.Key, kvp => string.Join(", ", kvp.Value))),
             Locale = configuration.GetValue<string>(nameof(BrowserNewContextOptions.Locale)),
             ColorScheme = configuration.GetValue<ColorScheme?>(nameof(BrowserNewContextOptions.ColorScheme)),
             AcceptDownloads = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.AcceptDownloads)),
             HasTouch = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.HasTouch)),
-            HttpCredentials = configuration.GetValue<Credentials>(nameof(BrowserNewContextOptions.HttpCredentials)),
+            HttpCredentials = configuration.GetValue<HttpCredentials>(nameof(BrowserNewContextOptions.HttpCredentials)),
             DeviceScaleFactor = configuration.GetValue<float?>(nameof(BrowserNewContextOptions.DeviceScaleFactor)),
             Offline = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.Offline)),
             IsMobile = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.IsMobile)),
 
             // TODO: Map this properly
-            Permissions = configuration.GetValue<ContextPermission[]>(nameof(BrowserNewContextOptions.Permissions)),
+            Permissions = configuration.GetValue<IEnumerable<string>>(nameof(BrowserNewContextOptions.Permissions)),
 
             Geolocation = BindValue<Geolocation>(configuration, nameof(BrowserNewContextOptions.Geolocation)),
             TimezoneId = configuration.GetValue<string>(nameof(BrowserNewContextOptions.TimezoneId)),
@@ -152,11 +154,9 @@ namespace Microsoft.AspNetCore.BrowserTesting
             JavaScriptEnabled = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.JavaScriptEnabled)),
             BypassCSP = configuration.GetValue<bool?>(nameof(BrowserNewContextOptions.BypassCSP)),
             UserAgent = configuration.GetValue<string>(nameof(BrowserNewContextOptions.UserAgent)),
-            Viewport = BindValue<ViewportSize>(configuration, nameof(BrowserNewContextOptions.Viewport)),
+            ViewportSize = BindValue<ViewportSize>(configuration, nameof(BrowserNewContextOptions.ViewportSize)),
             StorageStatePath = configuration.GetValue<string>(nameof(BrowserNewContextOptions.StorageStatePath)),
-
-            // TODO: Map this properly
-            StorageState = BindValue<StorageState>(configuration, nameof(BrowserNewContextOptions.StorageState))
+            StorageState = configuration.GetValue<string>(nameof(BrowserNewContextOptions.StorageState))
         });
 
         private static T BindValue<T>(IConfiguration configuration, string key) where T : new()
@@ -356,5 +356,5 @@ namespace Microsoft.AspNetCore.BrowserTesting
             };
     }
 
-    public record BrowserOptions(BrowserKind BrowserKind, BrowserTypeLaunchOptions BrowserBrowserTypeLaunchOptions, BrowserNewContextOptions DefaultContextOptions);
+    public record BrowserOptions(BrowserKind BrowserKind, BrowserTypeLaunchOptions BrowserLaunchOptions, BrowserNewContextOptions DefaultContextOptions);
 }

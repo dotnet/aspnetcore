@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 var messageText = message.Text.Replace(Environment.NewLine, $"{Environment.NewLine}      ");
                 var location = message.Location;
 
-                var logMessage = $"[{_page.Url}]{Environment.NewLine} {messageText}{Environment.NewLine} ({location.URL}:{location.LineNumber}:{location.ColumnNumber})";
+                var logMessage = $"[{_page.Url}]{Environment.NewLine} {messageText}{Environment.NewLine} ({location})";
 
                 _logger.Log(MapLogLevel(message.Type), logMessage);
 
