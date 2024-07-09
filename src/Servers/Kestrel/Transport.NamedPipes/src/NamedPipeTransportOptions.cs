@@ -89,6 +89,8 @@ public sealed class NamedPipeTransportOptions
     /// </returns>
     public static NamedPipeServerStream CreateDefaultNamedPipeServerStream(CreateNamedPipeServerStreamContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (context.PipeSecurity != null)
         {
             return NamedPipeServerStreamAcl.Create(
