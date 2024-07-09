@@ -91,10 +91,8 @@ internal
 
         private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
-            // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
-            // then we can save some allocations.
             ReadOnlySpan<char> source = chars.Span;
-            if (source.Length < 16 && source.IndexOfAny('%', '+') < 0)
+            if (!source.ContainsAny('%', '+'))
             {
                 return chars;
             }
