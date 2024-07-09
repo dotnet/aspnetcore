@@ -11,6 +11,7 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        NavigationRedirectHelper.ThrowNavigationExceptionForRedirect(this, uri);
+        var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
+        throw new NavigationException(absoluteUriString);
     }
 }

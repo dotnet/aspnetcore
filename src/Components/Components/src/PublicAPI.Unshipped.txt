@@ -4,8 +4,6 @@ Microsoft.AspNetCore.Components.ComponentBase.AssignedRenderMode.get -> Microsof
 Microsoft.AspNetCore.Components.ComponentBase.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
-Microsoft.AspNetCore.Components.NavigationException.NavigationException(string! uri, string! message) -> void
-Microsoft.AspNetCore.Components.NavigationRedirectHelper
 Microsoft.AspNetCore.Components.RendererInfo
 Microsoft.AspNetCore.Components.RendererInfo.IsInteractive.get -> bool
 Microsoft.AspNetCore.Components.RendererInfo.Name.get -> string!
@@ -25,7 +23,6 @@ Microsoft.AspNetCore.Components.ResourceAssetProperty
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Name.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetProperty.ResourceAssetProperty(string! name, string! value) -> void
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Value.get -> string!
-static Microsoft.AspNetCore.Components.NavigationRedirectHelper.ThrowNavigationExceptionForRedirect(Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! uri) -> void
 static readonly Microsoft.AspNetCore.Components.ResourceAssetCollection.Empty -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
