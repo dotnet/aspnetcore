@@ -63,6 +63,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
@@ -892,12 +893,20 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             InputRemaining -= payload.Length;
         }
 
-        foreach (var segment in payload)
+        lock (_completionLock)
         {
-            RequestBodyPipe.Writer.Write(segment.Span);
-        }
+            if (IsAborted || IsAbortedRead)
+            {
+                return Task.CompletedTask;
+            }
 
-        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+            foreach (var segment in payload)
+            {
+                RequestBodyPipe.Writer.Write(segment.Span);
+            }
+
+            return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+        }
     }
 
     protected override void OnReset()
