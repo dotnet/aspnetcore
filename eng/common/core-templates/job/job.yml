@@ -24,12 +24,11 @@ parameters:
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
   enableBuildRetry: false
-  disableComponentGovernance: ''
-  componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
   name: ''
+  componentGovernanceSteps: []
   preSteps: []
   artifactPublishSteps: []
   runAsPublic: false
@@ -170,17 +169,8 @@ jobs:
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
-  - template: /eng/common/core-templates/steps/component-governance.yml
-    parameters:
-      is1ESPipeline: ${{ parameters.is1ESPipeline }}
-      ${{ if eq(parameters.disableComponentGovernance, '') }}:
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
-          disableComponentGovernance: false
-        ${{ else }}:
-          disableComponentGovernance: true
-      ${{ else }}:
-        disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
-      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
+  - ${{ each step in parameters.componentGovernanceSteps }}:
+    - ${{ step }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -190,14 +180,6 @@ jobs:
         continueOnError: ${{ parameters.continueOnError }}
         env:
           TeamName: $(_TeamName)
-  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
-    - template: /eng/common/core-templates/steps/generate-sbom.yml
-      parameters:
-        is1ESPipeline: ${{ parameters.is1ESPipeline }}
-        PackageVersion: ${{ parameters.packageVersion}}
-        BuildDropPath: ${{ parameters.buildDropPath }}
-        IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
-        publishArtifacts: false
 
   # Publish test results
   - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:
