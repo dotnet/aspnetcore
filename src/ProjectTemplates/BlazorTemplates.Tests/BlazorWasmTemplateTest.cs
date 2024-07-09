@@ -441,12 +441,12 @@ namespace Templates.Test
             if (usesAuth)
             {
                 await Task.WhenAll(
-                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = LifecycleEvent.Networkidle }),
+                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Log in"));
 
                 await Task.WhenAll(
                     page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = LifecycleEvent.Networkidle }),
+                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Register as a new user"));
 
                 var userName = $"{Guid.NewGuid()}@example.com";
@@ -458,12 +458,12 @@ namespace Templates.Test
 
                 // We will be redirected to the RegisterConfirmation
                 await Task.WhenAll(
-                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = LifecycleEvent.Networkidle }),
+                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("#registerSubmit"));
 
                 // We will be redirected to the ConfirmEmail
                 await Task.WhenAll(
-                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = LifecycleEvent.Networkidle }),
+                    page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Click here to confirm your account"));
 
                 // Now we can login
