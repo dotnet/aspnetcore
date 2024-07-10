@@ -29,8 +29,7 @@ jobs:
           echo "JQUERY_VALIDATE_VERSION=$(npm ls jquery-validation --json | jq -r '.dependencies["jquery-validation"].version')" >> $GITHUB_ENV
 
       - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
+        uses: dotnet/actions-create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
