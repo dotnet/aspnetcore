@@ -1,0 +1,11 @@
+{
+  "name": "jquery-validation-dependency",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node copy-files.mjs"
+  },
+  "devDependencies": {
+    "jquery-validation": "^1.20.1"
+  }
+}
