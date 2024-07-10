@@ -196,6 +196,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
                 // FriendlyName is Windows-only, so we don't set it here.
                 store.Add(publicCertificate);
+                Log.UnixDotnetTrustSucceeded();
                 sawTrustSuccess = true;
             }
             catch (Exception ex)
