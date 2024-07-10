@@ -41,7 +41,6 @@ jobs:
           title: [Templates][Identity] Update jquery-validation to ${{ env.JQUERY_VALIDATE_VERSION }}
           body: |
             Updates the jquery-validation scripts to ${{ env.JQUERY_VALIDATE_VERSION }}
-          # The branch name is based on the date in the format YYYY-MM-DD
           branch: update-jquery-validate-to-${{ env.JQUERY_VALIDATE_VERSION }}
           base: main
           paths: |
