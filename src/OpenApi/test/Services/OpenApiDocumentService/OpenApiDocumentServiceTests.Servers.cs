@@ -35,6 +35,31 @@ public partial class OpenApiDocumentServiceTests
     }
 
     [Fact]
+    public void GetOpenApiServers_HandlesServerAddressFeatureWithMultipleValues()
+    {
+        // Arrange
+        var hostEnvironment = new HostingEnvironment
+        {
+            ApplicationName = "TestApplication",
+            EnvironmentName = "Development"
+        };
+        var docService = new OpenApiDocumentService(
+            "v1",
+            new Mock<IApiDescriptionGroupCollectionProvider>().Object,
+            hostEnvironment,
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            new Mock<IKeyedServiceProvider>().Object,
+            new OpenApiTestServer(["http://localhost:5000", "http://localhost:5002"]));
+
+        // Act
+        var servers = docService.GetOpenApiServers();
+
+        // Assert
+        Assert.Contains("http://localhost:5000", servers.Select(s => s.Url));
+        Assert.Contains("http://localhost:5002", servers.Select(s => s.Url));
+    }
+
+    [Fact]
     public void GetOpenApiServers_HandlesNonDevelopmentEnvironment()
     {
         // Arrange
