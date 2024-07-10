@@ -1,9 +1,11 @@
-name: Update jquery.validate
+name: Update jquery-validation
 
 on:
   schedule:
     - cron: '0 0 1 * *'  # Run on the first day of the month
   workflow_dispatch:  # Allow manual runs
+  pull_request:
+    branches: [main]
 
 jobs:
   update:
