@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="PlaywrightSharp" Condition="'$(TargetOsName)' != 'linux-musl'" />
-    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
+    <Reference Include="Microsoft.Playwright" Condition="'$(TargetOsName)' != 'linux-musl'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
     <Reference Include="Microsoft.AspNetCore.Testing" />
   </ItemGroup>
 

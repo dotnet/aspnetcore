@@ -16,7 +16,6 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set InstallPlaywright=%$installPlaywright%
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
-set PLAYWRIGHT_DRIVER_PATH=%CD%\.playwright\win-x64\native\playwright.cmd
 
 REM Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
 set ASPNETCORE_ENVIRONMENT=

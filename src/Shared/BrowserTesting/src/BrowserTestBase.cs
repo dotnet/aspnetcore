@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Xunit;
 using Xunit.Abstractions;
 
