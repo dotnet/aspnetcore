@@ -23,7 +23,8 @@ public partial class OpenApiDocumentServiceTests
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
             new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
-            new Mock<IKeyedServiceProvider>().Object);
+            new Mock<IKeyedServiceProvider>().Object,
+            new OpenApiTestServer());
 
         // Act
         var info = docService.GetOpenApiInfo();
@@ -45,7 +46,8 @@ public partial class OpenApiDocumentServiceTests
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
             new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
-            new Mock<IKeyedServiceProvider>().Object);
+            new Mock<IKeyedServiceProvider>().Object,
+            new OpenApiTestServer());
 
         // Act
         var info = docService.GetOpenApiInfo();
