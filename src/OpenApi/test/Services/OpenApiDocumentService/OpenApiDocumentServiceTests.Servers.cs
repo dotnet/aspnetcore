@@ -16,7 +16,8 @@ public partial class OpenApiDocumentServiceTests
         // Arrange
         var hostEnvironment = new HostingEnvironment
         {
-            ApplicationName = "TestApplication"
+            ApplicationName = "TestApplication",
+            EnvironmentName = "Development"
         };
         var docService = new OpenApiDocumentService(
             "v1",
@@ -34,12 +35,37 @@ public partial class OpenApiDocumentServiceTests
     }
 
     [Fact]
+    public void GetOpenApiServers_HandlesNonDevelopmentEnvironment()
+    {
+        // Arrange
+        var hostEnvironment = new HostingEnvironment
+        {
+            ApplicationName = "TestApplication",
+            EnvironmentName = "Production"
+        };
+        var docService = new OpenApiDocumentService(
+            "v1",
+            new Mock<IApiDescriptionGroupCollectionProvider>().Object,
+            hostEnvironment,
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            new Mock<IKeyedServiceProvider>().Object,
+            new OpenApiTestServer(["http://localhost:5000"]));
+
+        // Act
+        var servers = docService.GetOpenApiServers();
+
+        // Assert
+        Assert.Empty(servers);
+    }
+
+    [Fact]
     public void GetOpenApiServers_HandlesServerAddressFeatureWithNoValues()
     {
         // Arrange
         var hostEnvironment = new HostingEnvironment
         {
-            ApplicationName = "TestApplication"
+            ApplicationName = "TestApplication",
+            EnvironmentName = "Development"
         };
         var docService = new OpenApiDocumentService(
             "v2",

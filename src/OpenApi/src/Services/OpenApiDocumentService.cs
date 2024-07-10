@@ -98,7 +98,8 @@ internal sealed class OpenApiDocumentService(
 
     internal List<OpenApiServer> GetOpenApiServers()
     {
-        if (server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
+        if (hostEnvironment.IsDevelopment() &&
+            server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
         {
             return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
         }
