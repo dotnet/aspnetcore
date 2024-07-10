@@ -38,7 +38,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
-          title: [Templates][Identity] Update jquery-validation to ${{ env.JQUERY_VALIDATE_VERSION }}
+          title: '[Templates][Identity] Update jquery-validation to ${{ env.JQUERY_VALIDATE_VERSION }}'
           body: |
             Updates the jquery-validation scripts to ${{ env.JQUERY_VALIDATE_VERSION }}
           branch: update-jquery-validate-to-${{ env.JQUERY_VALIDATE_VERSION }}
