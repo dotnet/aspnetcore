@@ -12,7 +12,7 @@
     Mariner
     Redhat.7.Amd64.Open
     Ubuntu.2004.Amd64.Open
-    OSX.1100.Amd64.Open
+    OSX.1200.Amd64.Open
     Windows.10.Amd64.Server20H2.Open
     Windows.11.Amd64.Client.Open
     Windows.Amd64.Server2022.Open
