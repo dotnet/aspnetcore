@@ -33,7 +33,6 @@ public class ControllerEndpointFiltersTest : LoggedTest
 
     public WebApplicationFactory<StartupForEndpointFilters> Factory { get; private set; }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55929")]
     [Fact]
     public async Task CanApplyEndpointFilterToController()
     {
