@@ -38,7 +38,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
-          title: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
+          title: [Templates][Identity] Update jquery-validation to ${{ env.JQUERY_VALIDATE_VERSION }}
           body: |
             Update jquery.validate to the latest version.
           # The branch name is based on the date in the format YYYY-MM-DD
