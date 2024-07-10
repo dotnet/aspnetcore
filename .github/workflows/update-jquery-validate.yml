@@ -4,11 +4,9 @@ on:
   schedule:
     - cron: '0 0 1 * *'  # Run on the first day of the month
   workflow_dispatch:  # Allow manual runs
-  pull_request:
-    branches: [main]
 
 jobs:
-  update:
+  update-jquery-validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +37,7 @@ jobs:
           body: |
             Update jquery.validate to the latest version.
           # The branch name is based on the date in the format YYYY-MM-DD
-          branch: update-jquery-validate-$(date +'%Y-%m-%d')
+          branch: update-jquery-validate-to-${{ env.JQUERY_VALIDATE_VERSION }}
           base: main
           paths: |
             **/jquery.validate.js
