@@ -101,8 +101,9 @@ public abstract class OpenApiDocumentServiceTestBase
         provider.OnProvidersExecuted(context);
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
+        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions());
 
-        var schemaService = new OpenApiSchemaService("Test", Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()), builder.ServiceProvider, options.Object);
+        var schemaService = new OpenApiSchemaService("Test", jsonOptions, builder.ServiceProvider, options.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
