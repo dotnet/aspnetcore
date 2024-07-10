@@ -6,8 +6,7 @@ if (!repoRoot) {
   throw new Error('RepoRoot environment variable is not set')
 }
 
-// Search all the folders in the src directory for the files "jquery.validate.js" and "jquery.validate.min.js" but skip this
-// folder as well as the "node_modules" folder, the "bin" folder, and the "obj" folder. Recurse over subfolders.
+// Search recursively over all the folders in the src directory for the files "jquery.validate.js" and "jquery.validate.min.js" except for node_modules, bin, and obj
 
 const srcDir = path.join(repoRoot, 'src');
 const files = [];
@@ -24,9 +23,7 @@ const search = (dir) => {
 
 search(srcDir);
 
-// Replace the files found with the versions from <<current-folder>>/node_modules/jquery-validation/dist.
-// Note that <<current-folder>>/node_modules/jquery-validation/dist/jquery.validate.js needs to override the
-// jquery.validate.js file found in the files array and the same for jquery.validate.min.js.
+// Replace each found file with the file of the same name that we downloaded during install and that is located in node_modules/jquery-validation/dist/
 const nodeModulesDir = path.join(import.meta.dirname, 'node_modules', 'jquery-validation', 'dist');
 
 for (const file of files) {
