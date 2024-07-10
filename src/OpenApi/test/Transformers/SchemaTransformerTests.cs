@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Xunit.Sdk;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -604,6 +603,61 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal("modified-number-format", todoSchema.Properties["id"].Format);
             Assert.Equal("modified-number-format", errorSchema.Properties["code"].Format);
         });
+    }
+
+    [Fact]
+    public async Task SchemaTransformers_CanImplementNotSchemaIndependently()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+        builder.MapPost("/shape", (Shape shape) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo))
+            {
+                schema.Not = new OpenApiSchema { Type = "string" };
+            }
+            if (context.JsonTypeInfo.Type == typeof(Triangle))
+            {
+                schema.Not = new OpenApiSchema { Type = "string" };
+            }
+            return Task.CompletedTask;
+        });
+        UseNotSchemaTransformer(options, (schema, context, cancellationToken) =>
+        {
+            schema.Extensions["modified-by-not-schema-transformer"] = new OpenApiBoolean(true);
+            return Task.CompletedTask;
+        });
+
+        // Assert that not schemas have been modified for both `Todo` and `Triangle` types.
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var path = document.Paths["/todo"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
+            Assert.True(((OpenApiBoolean)responseSchema.Not.Extensions["modified-by-not-schema-transformer"]).Value);
+
+            var shapePath = document.Paths["/shape"];
+            var shapeOperation = shapePath.Operations[OperationType.Post];
+            var shapeRequestSchema = shapeOperation.RequestBody.Content["application/json"].Schema.GetEffective(document);
+            var triangleSchema = Assert.Single(shapeRequestSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle")).GetEffective(document);
+            Assert.True(((OpenApiBoolean)triangleSchema.Not.Extensions["modified-by-not-schema-transformer"]).Value);
+        });
+
+        static void UseNotSchemaTransformer(OpenApiOptions options, Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task> func)
+        {
+            options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+            {
+                if (schema.Not != null)
+                {
+                    await func(schema.Not, context, cancellationToken);
+                }
+                return;
+            });
+        }
     }
 
     private class ActivatedTransformer : IOpenApiSchemaTransformer
