@@ -832,7 +832,7 @@ internal abstract class CertificateManager
     internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? foundCertificate)
     {
         // We specifically don't search by thumbprint to avoid being flagged for using a SHA-1 hash.
-        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySubjectName, certificate.SubjectName.Name, validOnly: false);
+        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySerialNumber, certificate.SerialNumber, validOnly: false);
         if (certificatesWithSubjectName.Count > 0)
         {
             var certificatesToDispose = new List<X509Certificate2>();
