@@ -821,7 +821,7 @@ internal abstract class CertificateManager
     }
 
     /// <summary>
-    /// Given a certificate, usally from the <see cref="StoreName.My"/> store, try to find the
+    /// Given a certificate, usually from the <see cref="StoreName.My"/> store, try to find the
     /// corresponding certificate in <paramref name="store"/> (usually the <see cref="StoreName.Root"/> store)."/>
     /// </summary>
     /// <param name="store">An open <see cref="X509Store"/>.</param>
