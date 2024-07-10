@@ -1,3 +1,6 @@
+# This script needs to be run on PowerShell 7+ (for ConvertFrom-Json) on Windows (for vsts-npm-auth).
+# The GitHub CLI (gh) is required unless `-SkipPullRequestCreation` is passed.
+
 param (
     [switch]$WhatIf,
     [switch]$SkipPullRequestCreation
