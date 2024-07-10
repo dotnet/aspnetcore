@@ -826,13 +826,13 @@ internal abstract class CertificateManager
     /// </summary>
     /// <param name="store">An open <see cref="X509Store"/>.</param>
     /// <param name="certificate">A certificate to search for.</param>
-    /// <param name="rootCertificate">The certificate, if any, corresponding to <paramref name="certificate"/> in <paramref name="store"/>.</param>
+    /// <param name="foundCertificate">The certificate, if any, corresponding to <paramref name="certificate"/> in <paramref name="store"/>.</param>
     /// <returns>True if a corresponding certificate was found.</returns>
     /// <remarks><see cref="ListCertificates"/> has richer filtering and a lot of debugging output that's unhelpful here.</remarks>
-    internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? rootCertificate)
+    internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? foundCertificate)
     {
         // We specifically don't search by thumbprint to avoid being flagged for using a SHA-1 hash.
-        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySubjectName, certificate.SubjectName, validOnly: false);
+        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySubjectName, certificate.SubjectName.Name, validOnly: false);
         if (certificatesWithSubjectName.Count > 0)
         {
             var certificatesToDispose = new List<X509Certificate2>();
@@ -841,14 +841,14 @@ internal abstract class CertificateManager
                 if (AreCertificatesEqual(candidate, certificate))
                 {
                     DisposeCertificates(certificatesToDispose);
-                    rootCertificate = candidate;
+                    foundCertificate = candidate;
                     return true;
                 }
                 certificatesToDispose.Add(candidate);
             }
         }
 
-        rootCertificate = null;
+        foundCertificate = null;
         return false;
     }
 
