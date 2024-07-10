@@ -4,8 +4,10 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -442,6 +444,51 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         // Arrange
         var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (NestedType type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            Assert.Equal("NestedType", content.Value.Schema.Reference.Id);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("name", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("nested", property.Key);
+                    Assert.Equal("NestedType", property.Value.Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task SupportsNestedTypes_WithNoAttributeProvider()
+    {
+        // Arrange: this test ensures that we can correctly handle the scenario
+        // where the attribute provider is null and we need to patch the property mappings
+        // that are created by the underlying JsonSchemaExporter.
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.TypeInfoResolver = options.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
+            {
+                foreach (var propertyInfo in jsonTypeInfo.Properties)
+                {
+                    propertyInfo.AttributeProvider = null;
+                }
+
+            });
+        });
+        var builder = CreateBuilder(serviceCollection);
 
         // Act
         builder.MapPost("/api", (NestedType type) => { });
