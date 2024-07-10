@@ -1,0 +1,45 @@
+name: Update jquery.validate
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run on the first day of the month
+  workflow_dispatch:  # Allow manual runs
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Set RepoRoot
+        run: echo "RepoRoot=$(pwd)" >> $GITHUB_ENV
+
+      - name: Update dependencies
+        working-directory: ${{ env.RepoRoot }}/src/Mvc/build
+        run: |
+          npm install --no-lockfile
+          npm run build
+          echo "JQUERY_VALIDATE_VERSION=$(npm ls jquery-validation --json | jq -r '.dependencies["jquery-validation"].version')" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
+          title: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
+          body: |
+            Update jquery.validate to the latest version.
+          # The branch name is based on the date in the format YYYY-MM-DD
+          branch: update-jquery-validate-$(date +'%Y-%m-%d')
+          base: main
+          paths: |
+            **/jquery.validate.js
+            **/jquery.validate.min.js
