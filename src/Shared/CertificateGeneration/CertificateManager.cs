@@ -782,7 +782,7 @@ internal abstract class CertificateManager
         }
     }
 
-    protected virtual void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+    protected void RemoveCertificateFromUserStore(X509Certificate2 certificate)
     {
         try
         {
