@@ -126,7 +126,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
-        // Per RFC 7231, section 4.3.2, the Content-Lenght header can be omitted on HEAD requests.
+        // Per RFC 7231, section 4.3.2, the Content-Length header can be omitted on HEAD requests.
         CheckResponseCompressed(response, expectedBodyLength: null, expectedEncoding: "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
