@@ -80,7 +80,7 @@ internal static partial class HttpUtilities
         return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
     }
 
-    // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+    // The same as GetAsciiString but throws BadRequest for null character
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetHeaderName(this ReadOnlySpan<byte> span)
     {
@@ -107,6 +107,7 @@ internal static partial class HttpUtilities
     public static string GetAsciiString(this Span<byte> span)
         => StringUtilities.GetAsciiString(span);
 
+    // Null checks must be done independently of this method (if required)
     public static string GetAsciiOrUTF8String(this ReadOnlySpan<byte> span)
         => StringUtilities.GetAsciiOrUTF8String(span, DefaultRequestHeaderEncoding);
 
