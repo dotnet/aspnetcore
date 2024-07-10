@@ -2,7 +2,7 @@
 
 Helix is the distributed test platform that we use to run tests.  We build a helix payload that contains the publish directory of every test project that we want to test
 send a job with with this payload to a set of queues for the various combinations of OS that we want to test
-for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1100.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
+for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1200.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
 
 For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
 
