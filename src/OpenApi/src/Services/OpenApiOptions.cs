@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
@@ -15,6 +16,13 @@ public sealed class OpenApiOptions
 {
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task>> SchemaTransformers = [];
+
+    /// <summary>
+    /// A default implementation for creating a schema reference ID for a given <see cref="JsonTypeInfo"/>.
+    /// </summary>
+    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the schema we are generating a reference ID for.</param>
+    /// <returns>The reference ID to use for the schema or <c>null</c>  if the schema should always be inlined.</returns>
+    public static string? CreateDefaultSchemaReferenceId(JsonTypeInfo jsonTypeInfo) => jsonTypeInfo.GetSchemaReferenceId();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiOptions"/> class
@@ -39,6 +47,15 @@ public sealed class OpenApiOptions
     /// A delegate to determine whether a given <see cref="ApiDescription"/> should be included in the given OpenAPI document.
     /// </summary>
     public Func<ApiDescription, bool> ShouldInclude { get; set; }
+
+    /// <summary>
+    /// A delegate to determine how reference IDs should be created for schemas associated with types in the given OpenAPI document.
+    /// </summary>
+    /// <remarks>
+    /// The default implementation uses the <see cref="CreateDefaultSchemaReferenceId"/> method to generate reference IDs. When
+    /// the provided delegate returns <c>null</c>, the schema associated with the <see cref="JsonTypeInfo"/>  will always be inlined.
+    /// </remarks>
+    public Func<JsonTypeInfo, string?> CreateSchemaReferenceId { get; set; } = CreateDefaultSchemaReferenceId;
 
     /// <summary>
     /// Registers a new document transformer on the current <see cref="OpenApiOptions"/> instance.

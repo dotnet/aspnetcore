@@ -168,7 +168,8 @@ internal static class JsonNodeSchemaExtensions
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
         var type = context.TypeInfo.Type;
         var underlyingType = Nullable.GetUnderlyingType(type);
@@ -177,7 +178,7 @@ internal static class JsonNodeSchemaExtensions
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
-            schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+            schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
             schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
             // Clear out patterns that the underlying JSON schema generator uses to represent
             // validations for DateTime, DateTimeOffset, and integers.
@@ -323,7 +324,8 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
         // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
         // to the top-level schema and not to any nested schemas that are generated.
@@ -340,7 +342,7 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"#/components/schemas/{context.TypeInfo.GetSchemaReferenceId()}{jsonDerivedType.GetSchemaReferenceId()}";
+                    mappings[$"{discriminator}"] = $"#/components/schemas/{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
@@ -353,9 +355,10 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        if (context.TypeInfo.GetSchemaReferenceId() is { } schemaReferenceId)
+        if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }

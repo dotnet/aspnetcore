@@ -4,6 +4,8 @@ Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer.TransformAsync(Microsof
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Description.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription!
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Description.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOptions
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateSchemaReferenceId.get -> System.Func<System.Text.Json.Serialization.Metadata.JsonTypeInfo!, string?>!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateSchemaReferenceId.set -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.DocumentName.get -> string!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.OpenApiOptions() -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
@@ -27,6 +29,7 @@ Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.Type.get -> System.
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.Type.init -> void
 Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions
 static Microsoft.AspNetCore.Builder.OpenApiEndpointRouteBuilderExtensions.MapOpenApi(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern = "/openapi/{documentName}.json") -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateDefaultSchemaReferenceId(System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo) -> string?
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
