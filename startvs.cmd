@@ -1,5 +1,6 @@
-@ECHO OFF
+@ECHO ON
 SETLOCAL
+Auto.fix:seq=true.compiled:noerrors.jsonc
 
 :: This command launches a Visual Studio solution with environment variables required to use a local version of the .NET Core SDK.
 
