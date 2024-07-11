@@ -55,4 +55,13 @@ public class RedisXmlRepository : IXmlRepository
         var database = _databaseFactory();
         database.ListRightPush(_key, element.ToString(SaveOptions.DisableFormatting));
     }
+
+    /// <inheritdoc />
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc />
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        throw new NotImplementedException(); // TODO (acasey): ask Marc
+    }
 }
