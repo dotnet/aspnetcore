@@ -47,3 +47,5 @@ jobs:
           paths: |
             **/jquery.validate.js
             **/jquery.validate.min.js
+            **/*.cshtml
+            src/Identity/UI/jquery-validate-versions.json
