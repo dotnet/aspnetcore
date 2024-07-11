@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +31,8 @@ internal sealed class OpenApiDocumentService(
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IServer? server = null)
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
@@ -58,6 +61,7 @@ internal sealed class OpenApiDocumentService(
         {
             Info = GetOpenApiInfo(),
             Paths = await GetOpenApiPathsAsync(capturedTags, cancellationToken),
+            Servers = GetOpenApiServers(),
             Tags = [.. capturedTags]
         };
         await ApplyTransformersAsync(document, cancellationToken);
@@ -90,6 +94,16 @@ internal sealed class OpenApiDocumentService(
             Title = $"{hostEnvironment.ApplicationName} | {documentName}",
             Version = OpenApiConstants.DefaultOpenApiVersion
         };
+    }
+
+    internal List<OpenApiServer> GetOpenApiServers()
+    {
+        if (hostEnvironment.IsDevelopment() &&
+            server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
+        {
+            return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
+        }
+        return [];
     }
 
     /// <summary>

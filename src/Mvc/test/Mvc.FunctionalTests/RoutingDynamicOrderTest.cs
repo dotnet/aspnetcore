@@ -52,7 +52,6 @@ public class RoutingDynamicOrderTest : LoggedTest
         Assert.Equal("AttributeRouteSlug", content.RouteName);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55934")]
     [Fact]
     public async Task DynamicRoutesAreMatchedInDefinitionOrderOverPrecedence()
     {
