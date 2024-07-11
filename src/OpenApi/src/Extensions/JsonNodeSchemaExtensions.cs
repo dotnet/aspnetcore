@@ -27,7 +27,8 @@ internal static class JsonNodeSchemaExtensions
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
-        [typeof(byte)] = new() { Type = "string", Format = "byte" },
+        [typeof(byte)] = new() { Type = "integer", Format = "uint8" },
+        [typeof(byte[])] = new() { Type = "string", Format = "byte" },
         [typeof(int)] = new() { Type = "integer", Format = "int32" },
         [typeof(uint)] = new() { Type = "integer", Format = "uint32" },
         [typeof(long)] = new() { Type = "integer", Format = "int64" },
@@ -40,7 +41,7 @@ internal static class JsonNodeSchemaExtensions
         [typeof(DateTime)] = new() { Type = "string", Format = "date-time" },
         [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
         [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
-        [typeof(char)] = new() { Type = "string" },
+        [typeof(char)] = new() { Type = "string", Format = "char" },
         [typeof(Uri)] = new() { Type = "string", Format = "uri" },
         [typeof(string)] = new() { Type = "string" },
         [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
