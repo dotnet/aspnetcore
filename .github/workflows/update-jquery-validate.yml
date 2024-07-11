@@ -47,7 +47,6 @@ jobs:
           body: |
             Updates the jquery-validation scripts to ${{ env.JQUERY_VALIDATE_VERSION }}
           branch: update-jquery-validate-to-${{ env.JQUERY_VALIDATE_VERSION }}
-          base: main
           paths: |
             **/jquery.validate.js
             **/jquery.validate.min.js
