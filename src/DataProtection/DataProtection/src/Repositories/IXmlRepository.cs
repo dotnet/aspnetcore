@@ -41,7 +41,7 @@ public interface IXmlRepository
     bool CanRemoveElements => false;
 
     /// <summary>
-    /// Removes elements satisfying the given predicate.
+    /// Removes selected elements from the repository.
     /// </summary>
     /// <param name="chooseElements">
     /// A snapshot of the elements in this repository.

@@ -424,8 +424,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             // It is important to delete key elements before the corresponding revocation elements,
             // in case the deletion fails part way - we don't want to accidentally unrevoke a key
             // and then not delete it.
-            // Don't start at zero just to make it a little clearer in the debugger that it was set
-            // explicitly.
+            // Start at a non-zero value just to make it a little clearer in the debugger that it
+            // was set explicitly.
             const int deletionOrderKey = 1;
             const int deletionOrderRevocation = 2;
             const int deletionOrderMassRevocation = 3;
@@ -437,8 +437,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
             var allKeyIds = new HashSet<Guid>();
             var deletedKeyIds = new HashSet<Guid>();
-
-            var now = DateTimeOffset.Now;
 
             for (var i = 0; i < deletableElementsArray.Length; i++)
             {
@@ -465,6 +463,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 }
             }
 
+            // Separate loop since deletedKeyIds and allKeyIds need to have been populated.
             for (var i = 0; i < deletableElementsArray.Length; i++)
             {
                 if (processed[i] is Guid revocationId)
