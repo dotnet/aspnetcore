@@ -46,7 +46,7 @@ public interface IXmlRepository
     /// <param name="chooseElements">
     /// A snapshot of the elements in this repository.
     /// For each, set <see cref="IDeletableElement.DeletionOrder"/> to a non-<c>null</c> value if it should be deleted.
-    /// Elements are deleted in increasing order.
+    /// Elements are deleted in increasing order.  If any deletion fails, the remaining deletions *MUST* be skipped.
     /// </param>
     /// <returns>
     /// True if all deletions succeeded.
