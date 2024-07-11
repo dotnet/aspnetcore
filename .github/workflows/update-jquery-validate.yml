@@ -34,6 +34,10 @@ jobs:
           npm run update-identity-ui-scripts
           echo "JQUERY_VALIDATE_VERSION=$(npm ls jquery-validation --json | jq -r '.dependencies["jquery-validation"].version')" >> $GITHUB_ENV
 
+      - name: Update script tags
+        working-directory: ${{ env.RepoRoot }}/src/Identity/UI
+        run: node update-jquery-validate.mjs
+
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
         with:
