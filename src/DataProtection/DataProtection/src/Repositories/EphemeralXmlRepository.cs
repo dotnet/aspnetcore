@@ -54,4 +54,64 @@ internal sealed class EphemeralXmlRepository : IXmlRepository
             _storedElements.Add(cloned);
         }
     }
+
+#if NETCOREAPP
+    /// <inheritdoc/>
+    public bool CanRemoveElements => true;
+
+    /// <inheritdoc/>
+    public bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
+
+        var deletableElements = new List<DeletableElement>();
+
+        foreach (var storedElement in _storedElements)
+        {
+            // Make a deep copy so caller doesn't inadvertently modify it.
+            deletableElements.Add(new DeletableElement(storedElement, new XElement(storedElement)));
+        }
+
+        chooseElements(deletableElements);
+
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        lock (_storedElements)
+        {
+            foreach (var deletableElement in elementsToDelete)
+            {
+                var storedElement = deletableElement.StoredElement;
+                var index = _storedElements.FindIndex(e => ReferenceEquals(e, storedElement));
+                if (index >= 0) // Might not find it if the collection has changed since we started.
+                {
+                    // It would be more efficient to remove the larger indices first, but deletion order
+                    // is important for correctness.
+                    _storedElements.RemoveAt(index);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(XElement storedElement, XElement element)
+        {
+            StoredElement = storedElement;
+            Element = element;
+        }
+
+        /// <inheritdoc/>
+        public XElement Element { get; }
+
+        /// <summary>The <see cref="XElement"/> from which <see cref="Element"/> was cloned.</summary>
+        public XElement StoredElement { get; }
+
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
+    }
+#endif
 }
