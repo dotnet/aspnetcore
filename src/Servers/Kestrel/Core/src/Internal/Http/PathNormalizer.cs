@@ -70,6 +70,9 @@ internal static class PathNormalizer
             }
             else
             {
+                // Copy until the next segment excluding the trailer. Move the read pointer
+                // beyond the initial /. section, because FirstIndexOfDotSegment return the
+                // index of a complete dot segment.
                 src.Slice(0, nextDotSegmentIndex).CopyTo(dst[writtenLength..]);
                 writtenLength += nextDotSegmentIndex;
                 src = src[(nextDotSegmentIndex + 2)..];
@@ -80,11 +83,14 @@ internal static class PathNormalizer
                 case 0: // Ending with /.
                     dst[writtenLength++] = ByteSlash;
                     return writtenLength;
-                case 1: // Ending with either /.. or /./
+
+                case 1: // Ending with /.. or /./
                     if (src[0] == ByteDot)
                     {
-                        // Remove the last segment and replace the path with '/'
+                        // Remove the last segment and replace the path with /
                         var lastSlashIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
+
+                        // If this was the beginning of the string, then return /
                         if (lastSlashIndex < 0)
                         {
                             dst[0] = ByteSlash;
@@ -98,6 +104,7 @@ internal static class PathNormalizer
                     }
                     else if (src[0] == ByteSlash)
                     {
+                        // Replace the /./ segment with a closing /
                         dst[writtenLength++] = ByteSlash;
                         return writtenLength;
                     }
@@ -105,24 +112,18 @@ internal static class PathNormalizer
                 default: // Case of /../ or /./
                     if (dotSlash.SequenceEqual(src.Slice(0, 2)))
                     {
-                        // Remove the last segment and replace the path with '/'
+                        // Remove the last segment and replace the path with /
                         var lastIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
-                        if (lastIndex < 0)
-                        {
-                            dst[0] = ByteSlash;
-                            writtenLength = 1;
-                        }
-                        else
-                        {
-                            writtenLength = lastIndex;
-                        }
+
+                        // Move write pointer to the end of the previous segment without / or to start position
+                        writtenLength = Math.Max(0, lastIndex);
+
+                        // Move the read pointer to the next segments beginning including /
                         src = src.Slice(1);
                     }
-                    //else if (src[0] == ByteSlash)
-                    //{
-                    //    dst[writtenLength++] = ByteSlash;
-                    //    src = src.Slice(1);
-                    //}
+                    // Else if it was /./ segment, then move the read pointer to end of the segment.
+                    // As the pointer is already there, do nothing for this case. Note, that this switches
+                    // always handles a complete dot segment.
                     break;
             }
         }
