@@ -64,6 +64,8 @@ public class PathNormalizerTests
     [InlineData("/./../", "/")]
     [InlineData("/..", "/")]
     [InlineData("/.", "/")]
+    [InlineData("/a/abc/../abc/../b", "/a/b")]
+    [InlineData("/a/abc/.a", "/a/abc/.a")]
     public void RemovesDotSegments(string input, string expected)
     {
         var data = Encoding.ASCII.GetBytes(input);
