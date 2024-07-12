@@ -259,7 +259,7 @@ public class FileSystemXmlRepositoryTests
             {
                 ranSelector = true;
 
-                // Now that the repository has read the files from disk, delete one out of band
+                // Now that the repository has read the element from disk, delete it out-of-band.
                 File.Delete(filePath);
 
                 Assert.Equal(1, deletableElements.Count);
