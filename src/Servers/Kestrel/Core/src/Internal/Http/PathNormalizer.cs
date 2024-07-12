@@ -54,13 +54,14 @@ internal static class PathNormalizer
     {
         Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
         ReadOnlySpan<byte> dotSlash = "./"u8;
+        ReadOnlySpan<byte> slashDot = "/."u8;
 
         var writtenLength = 0;
         var dst = src;
 
         while (src.Length > 0)
         {
-            var nextDotSegmentIndex = FirstIndexOfDotSegment(src);
+            var nextDotSegmentIndex = src.IndexOf(slashDot);
             if (nextDotSegmentIndex < 0)
             {
                 // Copy the remianing src to dst, and return.
@@ -68,24 +69,28 @@ internal static class PathNormalizer
                 writtenLength += src.Length;
                 return writtenLength;
             }
-            else
+            else if (nextDotSegmentIndex > 0)
             {
                 // Copy until the next segment excluding the trailer. Move the read pointer
                 // beyond the initial /. section, because FirstIndexOfDotSegment return the
                 // index of a complete dot segment.
                 src.Slice(0, nextDotSegmentIndex).CopyTo(dst[writtenLength..]);
                 writtenLength += nextDotSegmentIndex;
-                src = src[(nextDotSegmentIndex + 2)..];
+                src = src[(nextDotSegmentIndex)..];
             }
 
             switch (src.Length)
             {
-                case 0: // Ending with /.
+                case 0:
+                case 1:
+                    Debug.Fail("This should be always larger than 1");
+                    break;
+                case 2: // Ending with /.
                     dst[writtenLength++] = ByteSlash;
                     return writtenLength;
 
-                case 1: // Ending with /.. or /./
-                    if (src[0] == ByteDot)
+                case 3: // Ending with /.. or /./
+                    if (src[2] == ByteDot)
                     {
                         // Remove the last segment and replace the path with /
                         var lastSlashIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
@@ -102,15 +107,20 @@ internal static class PathNormalizer
                         }
                         return writtenLength;
                     }
-                    else if (src[0] == ByteSlash)
+                    else if (src[2] == ByteSlash)
                     {
                         // Replace the /./ segment with a closing /
                         dst[writtenLength++] = ByteSlash;
                         return writtenLength;
                     }
+                    else
+                    {
+                        dst[writtenLength++] = ByteSlash;
+                        src = src.Slice(1);
+                    }
                     break;
                 default: // Case of /../ or /./
-                    if (dotSlash.SequenceEqual(src.Slice(0, 2)))
+                    if (dotSlash.SequenceEqual(src.Slice(2, 2)))
                     {
                         // Remove the last segment and replace the path with /
                         var lastIndex = dst.Slice(0, writtenLength).LastIndexOf(ByteSlash);
@@ -119,11 +129,19 @@ internal static class PathNormalizer
                         writtenLength = Math.Max(0, lastIndex);
 
                         // Move the read pointer to the next segments beginning including /
-                        src = src.Slice(1);
+                        src = src.Slice(3);
                     }
-                    // Else if it was /./ segment, then move the read pointer to end of the segment.
-                    // As the pointer is already there, do nothing for this case. Note, that this switches
-                    // always handles a complete dot segment.
+                    else if (src[2] == ByteSlash)
+                    {
+                        src = src.Slice(2);
+                    }
+                    else
+                    {
+                        dst[writtenLength++] = ByteSlash;
+                        dst[writtenLength++] = ByteDot;
+                        src = src.Slice(2);
+                    }
+
                     break;
             }
         }
