@@ -21,7 +21,7 @@ public sealed class OpenApiOptions
     /// A default implementation for creating a schema reference ID for a given <see cref="JsonTypeInfo"/>.
     /// </summary>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the schema we are generating a reference ID for.</param>
-    /// <returns>The reference ID to use for the schema or <c>null</c>  if the schema should always be inlined.</returns>
+    /// <returns>The reference ID to use for the schema or <see langword="null"/> if the schema should always be inlined.</returns>
     public static string? CreateDefaultSchemaReferenceId(JsonTypeInfo jsonTypeInfo) => jsonTypeInfo.GetSchemaReferenceId();
 
     /// <summary>
@@ -53,7 +53,7 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <remarks>
     /// The default implementation uses the <see cref="CreateDefaultSchemaReferenceId"/> method to generate reference IDs. When
-    /// the provided delegate returns <c>null</c>, the schema associated with the <see cref="JsonTypeInfo"/>  will always be inlined.
+    /// the provided delegate returns <see langword="null"/>, the schema associated with the <see cref="JsonTypeInfo"/> will always be inlined.
     /// </remarks>
     public Func<JsonTypeInfo, string?> CreateSchemaReferenceId { get; set; } = CreateDefaultSchemaReferenceId;
 
