@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 /// <summary>
 /// An XML repository backed by a Redis list entry.
 /// </summary>
-public class RedisXmlRepository : IXmlRepositoryWithDeletion
+public class RedisXmlRepository : IDeletableXmlRepository
 {
     private readonly Func<IDatabase> _databaseFactory;
     private readonly RedisKey _key;

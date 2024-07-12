@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// An ephemeral XML repository backed by process memory. This class must not be used for
 /// anything other than dev scenarios as the keys will not be persisted to storage.
 /// </summary>
-internal sealed class EphemeralXmlRepository : IXmlRepositoryWithDeletion
+internal sealed class EphemeralXmlRepository : IDeletableXmlRepository
 {
     private readonly List<XElement> _storedElements = new List<XElement>();
 
@@ -56,7 +56,7 @@ internal sealed class EphemeralXmlRepository : IXmlRepositoryWithDeletion
     }
 
     /// <inheritdoc/>
-    bool IXmlRepositoryWithDeletion.RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    bool IDeletableXmlRepository.RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
         ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
 

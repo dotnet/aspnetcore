@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// <summary>
 /// An XML repository backed by a file system.
 /// </summary>
-public class FileSystemXmlRepository : IXmlRepositoryWithDeletion
+public class FileSystemXmlRepository : IDeletableXmlRepository
 {
     private readonly ILogger _logger;
 

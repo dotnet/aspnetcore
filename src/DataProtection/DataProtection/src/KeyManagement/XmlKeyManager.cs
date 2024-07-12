@@ -408,12 +408,12 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     }
 
     /// <inheritdoc/>
-    public bool CanDeleteKeys => KeyRepository is IXmlRepositoryWithDeletion;
+    public bool CanDeleteKeys => KeyRepository is IDeletableXmlRepository;
 
     /// <inheritdoc/>
     public bool DeleteKeys(Func<IKey, bool> shouldDelete)
     {
-        if (KeyRepository is not IXmlRepositoryWithDeletion xmlRepositoryWithDeletion)
+        if (KeyRepository is not IDeletableXmlRepository xmlRepositoryWithDeletion)
         {
             throw Error.XmlKeyManager_DoesNotSupportKeyDeletion();
         }

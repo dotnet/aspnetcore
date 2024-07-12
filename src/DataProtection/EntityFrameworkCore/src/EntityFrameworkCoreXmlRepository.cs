@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 /// <summary>
 /// An <see cref="IXmlRepository"/> backed by an EntityFrameworkCore datastore.
 /// </summary>
-public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepositoryWithDeletion
+public class EntityFrameworkCoreXmlRepository<TContext> : IDeletableXmlRepository
     where TContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IServiceProvider _services;

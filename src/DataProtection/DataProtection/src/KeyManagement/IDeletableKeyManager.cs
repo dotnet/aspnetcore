@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// <remarks>
 /// Instantiations of this interface are expected to be thread-safe.
 /// </remarks>
-public interface IKeyManagerWithDeletion : IKeyManager
+public interface IDeletableKeyManager : IKeyManager
 {
     /// <summary>
     /// Indicates whether this key manager supports key deletion.
@@ -27,7 +27,7 @@ public interface IKeyManagerWithDeletion : IKeyManager
 
     /// <summary>
     /// Deletes keys matching a predicate.
-    /// 
+    ///
     /// Use with caution as deleting active keys will normally cause data loss.
     /// </summary>
     /// <param name="shouldDelete">
@@ -40,7 +40,7 @@ public interface IKeyManagerWithDeletion : IKeyManager
     /// <remarks>
     /// Generally, keys should only be deleted to save space.  If space is not a concern, keys
     /// should be revoked or allowed to expire instead.
-    /// 
+    ///
     /// This method will not mutate existing IKey instances. After calling this method,
     /// all existing IKey instances should be discarded, and GetAllKeys should be called again.
     /// </remarks>

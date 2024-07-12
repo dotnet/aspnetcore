@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// An XML repository backed by the Windows registry.
 /// </summary>
 [SupportedOSPlatform("windows")]
-public class RegistryXmlRepository : IXmlRepositoryWithDeletion
+public class RegistryXmlRepository : IDeletableXmlRepository
 {
     private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
