@@ -198,4 +198,107 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.Equal("TodoWithDueDate", responseSchema.Reference.Id);
         });
     }
+
+    [Fact]
+    public async Task HandlesDuplicateSchemaReferenceIdsGeneratedByOverload()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Todo todo) => new TodoWithDueDate(todo.Id, todo.Title, todo.Completed, todo.CreatedAt, DateTime.UtcNow));
+        var options = new OpenApiOptions
+        {
+            CreateSchemaReferenceId = (type) =>
+            {
+                if (type.Type.Name == "TodoWithDueDate" || type.Type.Name == "Todo")
+                {
+                    return "Todo";
+                }
+                return OpenApiOptions.CreateDefaultSchemaReferenceId(type);
+            }
+        };
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var response = operation.Responses["200"];
+
+            // Assert that a reference was created for the Todo type
+            Assert.NotNull(requestBody);
+            var content = Assert.Single(requestBody.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema);
+            var schema = content.Value.Schema;
+            Assert.NotNull(schema.Reference);
+
+            // Assert that a reference was created for the TodoWithDueDate type
+            Assert.NotNull(response);
+            var responseContent = Assert.Single(response.Content);
+            Assert.Equal("application/json", responseContent.Key);
+            Assert.NotNull(responseContent.Value.Schema);
+            var responseSchema = responseContent.Value.Schema;
+            Assert.NotNull(responseSchema.Reference);
+
+            // Assert that the reference IDs are not the same (have been deduped)
+            Assert.NotEqual(schema.Reference.Id, responseSchema.Reference.Id);
+
+            // Assert that the referenced schemas are correct
+            var effectiveResponseSchema = responseSchema.GetEffective(document);
+            Assert.Equal("object", effectiveResponseSchema.Type);
+            Assert.Collection(effectiveResponseSchema.Properties,
+                property =>
+                {
+                    Assert.Equal("dueDate", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("date-time", property.Value.Format);
+                },
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("title", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("completed", property.Key);
+                    Assert.Equal("boolean", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("createdAt", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("date-time", property.Value.Format);
+                });
+
+            var effectiveRequestSchema = schema.GetEffective(document);
+            Assert.Equal("object", effectiveRequestSchema.Type);
+            Assert.Collection(effectiveRequestSchema.Properties,
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("title", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("completed", property.Key);
+                    Assert.Equal("boolean", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("createdAt", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("date-time", property.Value.Format);
+                });
+        });
+    }
+
 }
