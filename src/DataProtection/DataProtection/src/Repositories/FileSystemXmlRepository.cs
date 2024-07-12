@@ -192,8 +192,6 @@ public class FileSystemXmlRepository : IXmlRepositoryWithDeletion
 
         chooseElements(deletableElements);
 
-        var allSucceeded = true;
-
         var elementsToDelete = deletableElements
             .Where(e => e.DeletionOrder.HasValue)
             .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
@@ -210,11 +208,11 @@ public class FileSystemXmlRepository : IXmlRepositoryWithDeletion
             {
                 Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
                 _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
-                allSucceeded = false;
+                return false;
             }
         }
 
-        return allSucceeded;
+        return true;
     }
 
     private sealed class DeletableElement : IDeletableElement

@@ -98,8 +98,6 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepositoryWithDele
 
             chooseElements(deletableElements);
 
-            var allSucceeded = true;
-
             var elementsToDelete = deletableElements
                 .Where(e => e.DeletionOrder.HasValue)
                 .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
@@ -115,7 +113,7 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepositoryWithDele
                 catch (Exception ex)
                 {
                     _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
-                    allSucceeded = false;
+                    return false;
                 }
             }
 
@@ -126,10 +124,10 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepositoryWithDele
             catch (Exception ex)
             {
                 _logger.FailedToSaveKeyDeletionsToDbContext(typeof(TContext).Name, ex);
-                allSucceeded = false;
+                return false;
             }
 
-            return allSucceeded;
+            return true;
         }
     }
 

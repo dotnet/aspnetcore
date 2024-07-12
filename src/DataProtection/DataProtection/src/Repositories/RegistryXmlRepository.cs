@@ -174,8 +174,6 @@ public class RegistryXmlRepository : IXmlRepositoryWithDeletion
 
         chooseElements(deletableElements);
 
-        var allSucceeded = true;
-
         var elementsToDelete = deletableElements
             .Where(e => e.DeletionOrder.HasValue)
             .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
@@ -186,16 +184,16 @@ public class RegistryXmlRepository : IXmlRepositoryWithDeletion
             _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
             try
             {
-                RegistryKey.DeleteValue(valueName);
+                RegistryKey.DeleteValue(valueName, throwOnMissingValue: false);
             }
             catch (Exception ex)
             {
                 _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
-                allSucceeded = false;
+                return false;
             }
         }
 
-        return allSucceeded;
+        return true;
     }
 
     private sealed class DeletableElement : IDeletableElement

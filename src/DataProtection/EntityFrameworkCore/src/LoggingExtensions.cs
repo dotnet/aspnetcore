@@ -11,10 +11,10 @@ internal static partial class LoggingExtensions
     [LoggerMessage(2, LogLevel.Debug, "Saving key '{FriendlyName}' to '{DbContext}'.", EventName = "SavingKeyToDbContext")]
     public static partial void LogSavingKeyToDbContext(this ILogger logger, string friendlyName, string dbContext);
 
-    [LoggerMessage(3, LogLevel.Debug, "Deleting key '{FriendlyName}' from '{DbContext}'.", EventName = "DeletingKeyFromDbContext")]
+    [LoggerMessage(3, LogLevel.Debug, "Marking key '{FriendlyName}' for deletion from '{DbContext}'.", EventName = "DeletingKeyFromDbContext")]
     public static partial void DeletingKeyFromDbContext(this ILogger logger, string? friendlyName, string dbContext);
 
-    [LoggerMessage(4, LogLevel.Error, "Failed to delete key '{FriendlyName}' from '{DbContext}'.", EventName = "FailedToDeleteKeyFromDbContext")]
+    [LoggerMessage(4, LogLevel.Error, "Failed to mark key '{FriendlyName}' for deletion from '{DbContext}'.  Abandoning deletion attempt.", EventName = "FailedToDeleteKeyFromDbContext")]
     public static partial void FailedToDeleteKeyFromDbContext(this ILogger logger, string? friendlyName, string dbContext, Exception exception);
 
     [LoggerMessage(5, LogLevel.Error, "Failed to save key deletions to '{DbContext}'.", EventName = "FailedToSaveKeyDeletionsToDbContext")]
