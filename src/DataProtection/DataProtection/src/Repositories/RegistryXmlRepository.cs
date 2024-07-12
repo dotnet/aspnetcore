@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// An XML repository backed by the Windows registry.
 /// </summary>
 [SupportedOSPlatform("windows")]
-public class RegistryXmlRepository : IXmlRepository
+public class RegistryXmlRepository : IXmlRepositoryWithDeletion
 {
     private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
@@ -156,9 +155,6 @@ public class RegistryXmlRepository : IXmlRepository
         // but the window for that should be small enough that we shouldn't have to worry about it.
         RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
     }
-
-    /// <inheritdoc/>
-    public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
     public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)

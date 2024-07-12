@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -33,27 +32,4 @@ public interface IXmlRepository
     /// be the id of the key being stored.
     /// </remarks>
     void StoreElement(XElement element, string friendlyName);
-
-#if NETCOREAPP
-    /// <summary>
-    /// Indicates whether this respository supports removal.
-    /// </summary>
-    bool CanRemoveElements => false;
-
-    /// <summary>
-    /// Removes selected elements from the repository.
-    /// </summary>
-    /// <param name="chooseElements">
-    /// A snapshot of the elements in this repository.
-    /// For each, set <see cref="IDeletableElement.DeletionOrder"/> to a non-<c>null</c> value if it should be deleted.
-    /// Elements are deleted in increasing order.  If any deletion fails, the remaining deletions *MUST* be skipped.
-    /// </param>
-    /// <returns>
-    /// True if all deletions succeeded.
-    /// </returns>
-    /// <exception cref="NotSupportedException">
-    /// If <see cref="CanRemoveElements"/> is false.
-    /// </exception>
-    bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new NotSupportedException();
-#endif
 }

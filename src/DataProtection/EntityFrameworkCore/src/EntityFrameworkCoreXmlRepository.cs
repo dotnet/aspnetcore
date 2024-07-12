@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 /// <summary>
 /// An <see cref="IXmlRepository"/> backed by an EntityFrameworkCore datastore.
 /// </summary>
-public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
+public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepositoryWithDeletion
     where TContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IServiceProvider _services;
@@ -79,9 +79,6 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
             context.SaveChanges();
         }
     }
-
-    /// <inheritdoc />
-    public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc />
     public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)

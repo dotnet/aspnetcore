@@ -407,19 +407,18 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             reason: reason);
     }
 
-#if NETCOREAPP
     /// <inheritdoc/>
-    public bool CanDeleteKeys => KeyRepository.CanRemoveElements;
+    public bool CanDeleteKeys => KeyRepository is IXmlRepositoryWithDeletion;
 
     /// <inheritdoc/>
     public bool DeleteKeys(Func<IKey, bool> shouldDelete)
     {
-        if (!CanDeleteKeys)
+        if (KeyRepository is not IXmlRepositoryWithDeletion xmlRepositoryWithDeletion)
         {
             throw Error.XmlKeyManager_DoesNotSupportKeyDeletion();
         }
 
-        return KeyRepository.RemoveElements((deletableElements) =>
+        return xmlRepositoryWithDeletion.RemoveElements((deletableElements) =>
         {
             // It is important to delete key elements before the corresponding revocation elements,
             // in case the deletion fails part way - we don't want to accidentally unrevoke a key
@@ -477,7 +476,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             }
         });
     }
-#endif
 
     private void TriggerAndResetCacheExpirationToken([CallerMemberName] string? opName = null, bool suppressLogging = false)
     {

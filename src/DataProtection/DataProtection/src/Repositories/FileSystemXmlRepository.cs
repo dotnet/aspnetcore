@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// <summary>
 /// An XML repository backed by a file system.
 /// </summary>
-public class FileSystemXmlRepository : IXmlRepository
+public class FileSystemXmlRepository : IXmlRepositoryWithDeletion
 {
     private readonly ILogger _logger;
 
@@ -175,9 +175,6 @@ public class FileSystemXmlRepository : IXmlRepository
             File.Delete(tempFilename); // won't throw if the file doesn't exist
         }
     }
-
-    /// <inheritdoc/>
-    public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
     public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
