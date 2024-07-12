@@ -2,22 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http.Metadata;
 
-namespace Microsoft.AspNetCore.Http.Timeouts;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Metadata that disables request timeouts on an endpoint.
+/// Specifies that HTTP request duration metrics is disabled for an endpoint.
 /// </summary>
-/// <remarks>
-/// Completely disables the request timeouts middleware from applying to this endpoint.
-/// </remarks>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class DisableRequestTimeoutAttribute : Attribute
+public sealed class DisableHttpMetricsAttribute : Attribute, IDisableHttpMetricsMetadata
 {
     /// <inheritdoc/>
     public override string ToString()
     {
-        return "DisableRequestTimeout";
+        return "DisableHttpMetrics";
     }
 }

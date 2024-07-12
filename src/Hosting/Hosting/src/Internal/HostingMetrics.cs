@@ -42,7 +42,7 @@ internal sealed class HostingMetrics : IDisposable
         _activeRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, string scheme, string method, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, string scheme, string method, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp, bool disableHttpRequestDurationMetric)
     {
         var tags = new TagList();
         InitializeRequestTags(ref tags, scheme, method);
@@ -53,7 +53,7 @@ internal sealed class HostingMetrics : IDisposable
             _activeRequestsCounter.Add(-1, tags);
         }
 
-        if (_requestDuration.Enabled)
+        if (!disableHttpRequestDurationMetric && _requestDuration.Enabled)
         {
             if (TryGetHttpVersion(protocol, out var httpVersion))
             {
