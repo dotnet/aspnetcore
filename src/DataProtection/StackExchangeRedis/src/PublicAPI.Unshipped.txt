@@ -1,2 +1,1 @@
 #nullable enable
-virtual Microsoft.AspNetCore.DataProtection.StackExchangeRedis.RedisXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool

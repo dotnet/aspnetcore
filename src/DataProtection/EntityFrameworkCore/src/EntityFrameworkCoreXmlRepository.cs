@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 /// <summary>
 /// An <see cref="IXmlRepository"/> backed by an EntityFrameworkCore datastore.
 /// </summary>
-public class EntityFrameworkCoreXmlRepository<TContext> : IDeletableXmlRepository
+public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     where TContext : DbContext, IDataProtectionKeyContext
 {
     private readonly IServiceProvider _services;
@@ -78,74 +78,5 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IDeletableXmlRepositor
             _logger.LogSavingKeyToDbContext(friendlyName, typeof(TContext).Name);
             context.SaveChanges();
         }
-    }
-
-    /// <inheritdoc />
-    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
-    {
-        using (var scope = _services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<TContext>();
-            var deletableElements = new List<DeletableElement>();
-
-            foreach (var key in context.DataProtectionKeys.AsNoTracking())
-            {
-                if (!string.IsNullOrEmpty(key.Xml))
-                {
-                    deletableElements.Add(new DeletableElement(key, XElement.Parse(key.Xml)));
-                }
-            }
-
-            chooseElements(deletableElements);
-
-            var elementsToDelete = deletableElements
-                .Where(e => e.DeletionOrder.HasValue)
-                .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
-
-            foreach (var deletableElement in elementsToDelete)
-            {
-                var key = deletableElement.Key;
-                _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
-                try
-                {
-                    context.DataProtectionKeys.Remove(key);
-                }
-                catch (Exception ex)
-                {
-                    _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
-                    return false;
-                }
-            }
-
-            try
-            {
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                _logger.FailedToSaveKeyDeletionsToDbContext(typeof(TContext).Name, ex);
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    private sealed class DeletableElement : IDeletableElement
-    {
-        public DeletableElement(DataProtectionKey key, XElement element)
-        {
-            Key = key;
-            Element = element;
-        }
-
-        /// <inheritdoc/>
-        public XElement Element { get; }
-
-        /// <summary>The <see cref="DataProtectionKey"/> from which <see cref="Element"/> was read.</summary>
-        public DataProtectionKey Key { get; }
-
-        /// <inheritdoc/>
-        public int? DeletionOrder { get; set; }
     }
 }
