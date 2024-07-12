@@ -9,11 +9,8 @@ using System.Threading;
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 /// <summary>
-/// The basic interface for performing key management operations.
+/// An extension of <see cref="IKeyManager"/> that supports key deletion.
 /// </summary>
-/// <remarks>
-/// Instantiations of this interface are expected to be thread-safe.
-/// </remarks>
 public interface IDeletableKeyManager : IKeyManager
 {
     /// <summary>

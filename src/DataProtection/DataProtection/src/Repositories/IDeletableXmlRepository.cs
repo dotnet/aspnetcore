@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
 
 /// <summary>
-/// The basic interface for storing and retrieving XML elements.
+/// An extension of <see cref="IXmlRepository"/> that supports deletion of elements.
 /// </summary>
 public interface IDeletableXmlRepository : IXmlRepository
 {
