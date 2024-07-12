@@ -71,7 +71,7 @@ internal static class PathNormalizer
             }
             else if (nextDotSegmentIndex > 0)
             {
-                // Copy until the next segment excluding the trailer. Move the read pointer
+                // Copy until the next segment excluding the trailer.
                 // beyond the initial /. section, because FirstIndexOfDotSegment return the
                 // index of a complete dot segment.
                 src.Slice(0, nextDotSegmentIndex).CopyTo(dst[writtenLength..]);
@@ -150,45 +150,38 @@ internal static class PathNormalizer
 
     public static bool ContainsDotSegments(Span<byte> src)
     {
-        return FirstIndexOfDotSegment(src) > -1;
-    }
-
-    private static int FirstIndexOfDotSegment(Span<byte> src)
-    {
         Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
         ReadOnlySpan<byte> slashDot = "/."u8;
         ReadOnlySpan<byte> dotSlash = "./"u8;
-        int totalLength = 0;
         while (src.Length > 0)
         {
             var nextSlashDotIndex = src.IndexOf(slashDot);
             if (nextSlashDotIndex < 0)
             {
-                return -1;
+                return false;
             }
             else
             {
                 src = src[(nextSlashDotIndex + 2)..];
-                totalLength += nextSlashDotIndex + 2;
             }
             switch (src.Length)
             {
                 case 0: // Case of /.
-                    return totalLength - 2;
+                    return true;
                 case 1: // Case of /.. or /./
                     if (src[0] == ByteDot || src[0] == ByteSlash)
                     {
-                        return totalLength - 2;
+                        return true;
                     }
                     break;
                 default: // Case of /../ or /./ 
                     if (dotSlash.SequenceEqual(src.Slice(0, 2)) || src[0] == ByteSlash)
                     {
-                        return totalLength - 2;
+                        return true;
                     }
                     break;
             }
         }
-        return -1;
+        return false;
     }
 }
