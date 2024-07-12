@@ -34,4 +34,77 @@ public class EphemeralXmlRepositoryTests
         repository.StoreElement(element3, null);
         Assert.Equal(new[] { element1, element2, element3 }, repository.GetAllElements(), XmlAssert.EqualityComparer);
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RemoveElements(bool remove1, bool remove2)
+    {
+        var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
+
+        var element1 = new XElement("element1");
+        var element2 = new XElement("element2");
+
+        repository.StoreElement(element1, friendlyName: null);
+        repository.StoreElement(element2, friendlyName: null);
+
+        var ranSelector = false;
+
+        Assert.True(repository.RemoveElements(deletableElements =>
+        {
+            ranSelector = true;
+            Assert.Equal(2, deletableElements.Count);
+
+            foreach (var element in deletableElements)
+            {
+                switch (element.Element.Name.LocalName)
+                {
+                    case "element1":
+                        element.DeletionOrder = remove1 ? 1 : null;
+                        break;
+                    case "element2":
+                        element.DeletionOrder = remove2 ? 2 : null;
+                        break;
+                    default:
+                        Assert.Fail("Unexpected element name: " + element.Element.Name.LocalName);
+                        break;
+                }
+            }
+        }));
+        Assert.True(ranSelector);
+
+        var elementSet = new HashSet<string>(repository.GetAllElements().Select(e => e.Name.LocalName));
+
+        Assert.InRange(elementSet.Count, 0, 2);
+
+        Assert.Equal(!remove1, elementSet.Contains(element1.Name.LocalName));
+        Assert.Equal(!remove2, elementSet.Contains(element2.Name.LocalName));
+    }
+
+    [Fact]
+    public void RemoveElementsWithOutOfBandDeletion()
+    {
+        var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
+
+        repository.StoreElement(new XElement("element1"), friendlyName: "friendly1");
+
+        var ranSelector = false;
+
+        Assert.True(repository.RemoveElements(deletableElements =>
+        {
+            ranSelector = true;
+
+            // Now that the repository has read the element from the registry, delete it out-of-band.
+            repository.RemoveElements(deletableElements => deletableElements.First().DeletionOrder = 1);
+
+            Assert.Equal(1, deletableElements.Count);
+
+            deletableElements.First().DeletionOrder = 1;
+        }));
+        Assert.True(ranSelector);
+
+        Assert.Empty(repository.GetAllElements());
+    }
 }
