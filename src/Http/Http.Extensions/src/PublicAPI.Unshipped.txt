@@ -3,4 +3,5 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDeta
 Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute
 Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.DisableHttpMetricsAttribute() -> void
+override Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.ToString() -> string!
 static Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions.DisableHttpMetrics<TBuilder>(this TBuilder builder) -> TBuilder
