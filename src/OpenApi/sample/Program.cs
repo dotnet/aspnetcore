@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -111,6 +110,7 @@ schemas.MapGet("/frozen-dictionary-of-ints", () => ImmutableDictionary.CreateRan
 schemas.MapPost("/shape", (Shape shape) => { });
 schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
 schemas.MapPost("/person", (Person person) => { });
+schemas.MapPost("/problem-details", () => { }).ProducesProblem(statusCode: 500);
 
 app.MapControllers();
 

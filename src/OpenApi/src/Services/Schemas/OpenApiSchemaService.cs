@@ -88,6 +88,17 @@ internal sealed class OpenApiSchemaService(
             {
                 schema = new JsonObject();
             }
+            // STJ operates under the assumption that JSON Schema makes around `additionalProperties` being
+            // true by default for all schemas. OpenAPI v3 takes a different interpretation and assumes that
+            // `additionalProperties` is false by default. We override the default behavior assumed by STJ to
+            // match the OpenAPI v3 interpretation here by checking to see if any properties on a type map to
+            // extension data and explicitly setting the `additionalProperties` keyword to an empty object.
+            // Since `[ExtensionData]` can only be applied on dictionaries with `object` or `JsonElement` values
+            // there is no need to encode a concrete schema for thm and the catch-all empty schema is sufficient.
+            if (context.TypeInfo.Properties.Any(jsonPropertyInfo => jsonPropertyInfo.IsExtensionData))
+            {
+                schema[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = new JsonObject();
+            }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
             schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
