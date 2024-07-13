@@ -8,25 +8,26 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class TypeBasedOpenApiDocumentTransformer : IOpenApiDocumentTransformer
+internal sealed class TypeBasedOpenApiOperationTransformer : IOpenApiOperationTransformer
 {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _transformerType;
     private readonly ObjectFactory _transformerFactory;
 
-    internal TypeBasedOpenApiDocumentTransformer([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type transformerType)
+    internal TypeBasedOpenApiOperationTransformer([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type transformerType)
     {
         _transformerType = transformerType;
         _transformerFactory = ActivatorUtilities.CreateFactory(_transformerType, []);
     }
 
-    public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiDocumentTransformer;
-        Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiDocumentTransformer)}.");
+        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiOperationTransformer;
+        Debug.Assert(transformer is not null, $"The type {_transformerType} does not implement {nameof(IOpenApiOperationTransformer)}.");
+
         try
         {
-            await transformer.TransformAsync(document, context, cancellationToken);
+            await transformer.TransformAsync(operation, context, cancellationToken);
         }
         finally
         {
