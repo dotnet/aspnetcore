@@ -30,4 +30,9 @@ public class ResponseCachingOptions
     /// For testing purposes only.
     /// </summary>
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+
+    /// <summary>
+    /// <c>true</c> if caching is allowed for authorised endpoints
+    /// </summary>
+    public bool AllowAuthorizedEndpoint { get; set; } = false;
 }

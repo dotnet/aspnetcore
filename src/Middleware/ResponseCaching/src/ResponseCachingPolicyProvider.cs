@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.ResponseCaching;
 
 internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
 {
-    public bool AttemptResponseCaching(ResponseCachingContext context)
+  public bool AttemptResponseCaching(ResponseCachingContext context, ResponseCachingOptions _options)
     {
         var request = context.HttpContext.Request;
 
@@ -21,7 +21,7 @@ internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProv
         }
 
         // Verify existence of authorization headers
-        if (!StringValues.IsNullOrEmpty(request.Headers.Authorization))
+    if (!_options.AllowAuthorizedEndpoint && !StringValues.IsNullOrEmpty(request.Headers.Authorization))
         {
             context.Logger.RequestWithAuthorizationNotCacheable();
             return false;
