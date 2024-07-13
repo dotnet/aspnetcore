@@ -36,7 +36,7 @@ internal sealed class OpenApiDocumentService(
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
-    private readonly IOpenApiDocumentTransformer _schemaReferenceTransformer = new();
+    private readonly OpenApiSchemaReferenceTransformer _schemaReferenceTransformer = new();
 
     private static readonly OpenApiEncoding _defaultFormEncoding = new() { Style = ParameterStyle.Form, Explode = true };
 
