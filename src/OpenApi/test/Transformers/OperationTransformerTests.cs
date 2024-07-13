@@ -44,7 +44,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task OperationTransformer_RunsInRegisteredOrder()
+    public async Task OperationTransformers_RunInRegisteredOrder()
     {
         var builder = CreateBuilder();
 
@@ -52,8 +52,19 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/user", () => { });
 
         var options = new OpenApiOptions();
+
+        // While added first, document transformers should run after the operation transformers
+        options.AddDocumentTransformer<MyDocumentationTransformer>();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.All(document.Paths.Values.SelectMany(p => p.Operations).Select(p => p.Value), o => Assert.Equal("6", o.Description));
+            return Task.CompletedTask;
+        });
+
+        // Operation transforms should run FIFO regardless of which kind of transformer is used
         options.AddOperationTransformer((operation, context, cancellationToken) =>
         {
+            Assert.Null(operation.Description);
             operation.Description = "1";
             return Task.CompletedTask;
         });
@@ -63,10 +74,18 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
             operation.Description = "2";
             return Task.CompletedTask;
         });
+        options.AddOperationTransformer<MyOperationTransformer3>();
+        options.AddOperationTransformer(new MyOperationTransformer4());
         options.AddOperationTransformer((operation, context, cancellationToken) =>
         {
-            Assert.Equal("2", operation.Description);
-            operation.Description = "3";
+            Assert.Equal("4", operation.Description);
+            operation.Description = "5";
+            return Task.CompletedTask;
+        });
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            Assert.Equal("5", operation.Description);
+            operation.Description = "6";
             return Task.CompletedTask;
         });
 
@@ -77,15 +96,44 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("/todo", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("3", operation.Description);
+                    Assert.Equal("6", operation.Description);
                 },
                 path =>
                 {
                     Assert.Equal("/user", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("3", operation.Description);
+                    Assert.Equal("6", operation.Description);
                 });
         });
+    }
+
+    private sealed class MyDocumentationTransformer : IOpenApiDocumentTransformer
+    {
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            Assert.All(document.Paths.Values.SelectMany(p => p.Operations).Select(p => p.Value), o => Assert.Equal("6", o.Description));
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class MyOperationTransformer3 : IOpenApiOperationTransformer
+    {
+        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        {
+            Assert.Equal("2", operation.Description);
+            operation.Description = "3";
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class MyOperationTransformer4 : IOpenApiOperationTransformer
+    {
+        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        {
+            Assert.Equal("3", operation.Description);
+            operation.Description = "4";
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
@@ -280,9 +328,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddOperationTransformer<ActivatedTransformerWithDependency>();
 
-        // Assert that transient dependency is instantiated once for each
-        // request to the OpenAPI document, not once per operation.
-        string description = null;
+        // Assert that transient dependency is instantiated once for each operation.
         await VerifyOpenApiDocument(builder, options, document =>
         {
             Assert.Collection(document.Paths.OrderBy(p => p.Key),
@@ -290,14 +336,13 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("/todo", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    description = operation.Description;
-                    Assert.Equal(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture), description);
+                    Assert.Equal("1", operation.Description);
                 },
                 path =>
                 {
                     Assert.Equal("/user", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal(description, operation.Description);
+                    Assert.Equal("2", operation.Description);
                 });
         });
         await VerifyOpenApiDocument(builder, options, document =>
@@ -307,14 +352,13 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("/todo", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    description = operation.Description;
-                    Assert.Equal(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture), operation.Description);
+                    Assert.Equal("3", operation.Description);
                 },
                 path =>
                 {
                     Assert.Equal("/user", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal(description, operation.Description);
+                    Assert.Equal("4", operation.Description);
                 });
         });
     }
@@ -347,7 +391,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Operation Description", operation.Description);
                 });
         });
-        Assert.Equal(1, DisposableTransformer.DisposeCount);
+        Assert.Equal(2, DisposableTransformer.DisposeCount);
     }
 
     [Fact]
@@ -378,7 +422,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Operation Description", operation.Description);
                 });
         });
-        Assert.Equal(1, AsyncDisposableTransformer.DisposeCount);
+        Assert.Equal(2, AsyncDisposableTransformer.DisposeCount);
     }
 
     private class ActivatedTransformer : IOpenApiOperationTransformer

@@ -113,10 +113,10 @@ public class OpenApiOptionsTests
         var result = options.AddOperationTransformer<TestOpenApiOperationTransformer>();
 
         // Assert
-        var insertedTransformer = Assert.Single(options.DocumentTransformers);
+        var insertedTransformer = Assert.Single(options.OperationTransformers);
         Assert.IsType<TypeBasedOpenApiDocumentTransformer>(insertedTransformer);
         Assert.IsType<OpenApiOptions>(result);
-        Assert.Empty(options.OperationTransformers);
+        Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.SchemaTransformers);
     }
 

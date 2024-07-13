@@ -104,7 +104,7 @@ public sealed class OpenApiOptions
     public OpenApiOptions AddOperationTransformer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTransformerType>()
         where TTransformerType : IOpenApiOperationTransformer
     {
-        DocumentTransformers.Add(new TypeBasedOpenApiDocumentTransformer(typeof(TTransformerType)));
+        OperationTransformers.Add(new TypeBasedOpenApiDocumentTransformer(typeof(TTransformerType)));
         return this;
     }
 

@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class TypeBasedOpenApiDocumentTransformer : IOpenApiDocumentTransformer
+internal sealed class TypeBasedOpenApiDocumentTransformer : IOpenApiDocumentTransformer, IOpenApiOperationTransformer
 {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _transformerType;
@@ -22,20 +22,33 @@ internal sealed class TypeBasedOpenApiDocumentTransformer : IOpenApiDocumentTran
 
     public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []);
-        Debug.Assert(transformer is IOpenApiDocumentTransformer or IOpenApiOperationTransformer, $"The type {_transformerType} does not implement one of {nameof(IOpenApiDocumentTransformer)} or {nameof(IOpenApiOperationTransformer)}.");
+        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiDocumentTransformer;
+        Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiDocumentTransformer)}.");
+        try
+        {
+            await transformer.TransformAsync(document, context, cancellationToken);
+        }
+        finally
+        {
+            if (transformer is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else if (transformer is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+    }
+
+    public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+    {
+        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiOperationTransformer;
+        Debug.Assert(transformer is not null, $"The type {_transformerType} does not implement {nameof(IOpenApiOperationTransformer)}.");
 
         try
         {
-            if (transformer is IOpenApiDocumentTransformer documentTransformer)
-            {
-                await documentTransformer.TransformAsync(document, context, cancellationToken);
-            }
-            else if (transformer is IOpenApiOperationTransformer operationTransformer)
-            {
-                var documentService = context.ApplicationServices.GetRequiredKeyedService<OpenApiDocumentService>(context.DocumentName);
-                await documentService.ForEachOperationAsync(document, operationTransformer.TransformAsync, cancellationToken);
-            }
+            await transformer.TransformAsync(operation, context, cancellationToken);
         }
         finally
         {
