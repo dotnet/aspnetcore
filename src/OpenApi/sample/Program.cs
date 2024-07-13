@@ -21,6 +21,8 @@ builder.Services.AddOpenApi("v1", options =>
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 builder.Services.AddOpenApi("v2", options => {
+    options.AddSchemaTransformer<AddExternalDocsTransformer>();
+    options.AddOperationTransformer<AddExternalDocsTransformer>();
     options.AddDocumentTransformer(new AddContactTransformer());
     options.AddDocumentTransformer((document, context, token) => {
         document.Info.License = new OpenApiLicense { Name = "MIT" };
@@ -81,7 +83,8 @@ v1.MapGet("/todos/{id}", (int id) => new TodoWithDueDate(1, "Test todo", false, 
 v2.MapGet("/users", () => new [] { "alice", "bob" })
     .WithTags("users");
 
-v2.MapPost("/users", () => Results.Created("/users/1", new { Id = 1, Name = "Test user" }));
+v2.MapPost("/users", () => Results.Created("/users/1", new { Id = 1, Name = "Test user" }))
+  .WithName("CreateUser");
 
 responses.MapGet("/200-add-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
     .Produces<Todo>(additionalContentTypes: "text/xml");
