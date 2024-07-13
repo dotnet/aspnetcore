@@ -136,11 +136,14 @@ jobs:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
-      - task: PowerShell@2
+      - task: AzureCLI@2
         displayName: Publish Using Darc
         inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
-          arguments: -BuildId $(BARBuildId)
+          azureSubscription: "Darc: Maestro Production"
+          scriptType: ps
+          scriptLocation: scriptPath
+          scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          arguments: -BuildId $(BARBuildId) 
             -PublishingInfraVersion 3
             -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
             -WaitPublishingFinish true
