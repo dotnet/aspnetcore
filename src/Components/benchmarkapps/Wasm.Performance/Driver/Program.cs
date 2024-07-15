@@ -15,7 +15,7 @@ namespace Wasm.Performance.Driver;
 
 public class Program
 {
-    private const bool RunHeadless = false;
+    private const bool RunHeadless = true;
 
     internal static TaskCompletionSource<BenchmarkResult> BenchmarkResultTask;
 
