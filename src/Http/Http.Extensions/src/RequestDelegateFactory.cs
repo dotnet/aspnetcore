@@ -1871,11 +1871,7 @@ public static partial class RequestDelegateFactory
         if (source == "header" && (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType)))
         {
             var stringValuesExpr = Expression.Convert(valueExpression, typeof(StringValues));
-            var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray));
-            if (toStringArrayMethod == null)
-            {
-                throw new InvalidOperationException("The method 'ToArray' could not be found on 'StringValues'.");
-            }
+            var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray))!;
             var headerValuesArrayExpr = Expression.Call(stringValuesExpr, toStringArrayMethod);
 
             var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
