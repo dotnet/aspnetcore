@@ -25,7 +25,7 @@ RUN git init \
 
 RUN ./restore.sh
 RUN npm run build
-RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true --no-restore -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
