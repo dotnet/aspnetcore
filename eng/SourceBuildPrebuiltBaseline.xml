@@ -17,6 +17,7 @@
     <UsagePattern IdentityGlob="System.Composition.Hosting/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
@@ -26,7 +27,9 @@
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*3.3.1*" />
+    <UsagePattern IdentityGlob="System.Composition/1.0.*" />
     <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.IO.Pipelines/8.0.*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
 
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
