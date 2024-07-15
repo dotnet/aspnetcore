@@ -1874,11 +1874,7 @@ public static partial class RequestDelegateFactory
             var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray))!;
             var headerValuesArrayExpr = Expression.Call(stringValuesExpr, toStringArrayMethod);
 
-            var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            if (splitAndTrimMethod == null)
-            {
-                throw new InvalidOperationException("The method 'SplitAndTrim' could not be found on 'RequestDelegateFactory'.");
-            }
+            var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
             var splitAndTrimExpr = Expression.Call(splitAndTrimMethod, headerValuesArrayExpr);
 
             var boundValueExpr = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
