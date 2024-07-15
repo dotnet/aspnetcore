@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 public interface IOpenApiOperationTransformer
 {
     /// <summary>
-    /// Transforms the specified OpenAPI document.
+    /// Transforms the specified OpenAPI operation.
     /// </summary>
     /// <param name="operation">The <see cref="OpenApiOperation"/> to modify.</param>
     /// <param name="context">The <see cref="OpenApiOperationTransformerContext"/> associated with the <see paramref="operation"/>.</param>

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 public interface IOpenApiSchemaTransformer
 {
     /// <summary>
-    /// Transforms the specified OpenAPI document.
+    /// Transforms the specified OpenAPI schema.
     /// </summary>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to modify.</param>
     /// <param name="context">The <see cref="OpenApiSchemaTransformerContext"/> associated with the <see paramref="schema"/>.</param>

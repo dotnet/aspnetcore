@@ -46,7 +46,7 @@ internal sealed class OpenApiDocumentService(
     /// are unique within the lifetime of an application and serve as helpful associators between
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
-    private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = [];
+    private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)

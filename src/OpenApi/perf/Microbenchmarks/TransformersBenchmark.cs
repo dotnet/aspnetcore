@@ -79,7 +79,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     [GlobalSetup(Target = nameof(ActivatedSchemaTransformer))]
     public void ActivatedSchemaTransformer_Setup()
     {
-        _builder.MapGet("/", () => { });
+        _builder.MapPost("/", (Todo todo) => todo);
         for (var i = 0; i <= TransformerCount; i++)
         {
             _options.AddSchemaTransformer<SchemaTransformer>();
