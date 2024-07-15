@@ -3,7 +3,8 @@
 
 param (
     [switch]$WhatIf,
-    [switch]$SkipPullRequestCreation
+    [switch]$SkipPullRequestCreation,
+    [switch]$SkipClearCache
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,6 +19,12 @@ if (-not $WhatIf) {
 Write-Host "Removing package-lock.json"
 if (-not $WhatIf) {
     Remove-Item .\package-lock.json
+}
+
+if (-not $SkipClearCache -and -not $WhatIf) {
+    Write-Host "Clearing the npm cache"
+    Remove-Item -Recurse -Force "$PWD/src/submodules/Node-Externals/cache"
+    New-Item -ItemType Directory -Path "$PWD/src/submodules/Node-Externals/cache"
 }
 
 try {
