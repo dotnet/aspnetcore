@@ -113,38 +113,19 @@ jobs:
           Add-Content -Path $filePath -Value "$(DefaultChannels)"
           Add-Content -Path $filePath -Value $(IsStableBuild)
 
+          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
+          if (Test-Path -Path $symbolExclusionfile)
+          {
+            Write-Host "SymbolExclusionFile exists"
+            Copy-Item -Path $symbolExclusionfile -Destination "$(Build.StagingDirectory)/ReleaseConfigs"
+          }
+
     - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
       parameters:
         is1ESPipeline: ${{ parameters.is1ESPipeline }}
         args:
           displayName: Publish ReleaseConfigs Artifact
           pathToPublish: '$(Build.StagingDirectory)/ReleaseConfigs'
-          publishLocation: Container
-          artifactName: ReleaseConfigs
-
-    - task: powershell@2
-      displayName: Check if SymbolPublishingExclusionsFile.txt exists
-      inputs:
-        targetType: inline
-        script: |
-          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
-          if(Test-Path -Path $symbolExclusionfile)
-          {
-            Write-Host "SymbolExclusionFile exists"
-            Write-Host "##vso[task.setvariable variable=SymbolExclusionFile]true"
-          }
-          else{
-           Write-Host "Symbols Exclusion file does not exist"
-           Write-Host "##vso[task.setvariable variable=SymbolExclusionFile]false"
-          }
-
-    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
-      parameters:
-        is1ESPipeline: ${{ parameters.is1ESPipeline }}
-        args:
-          displayName: Publish SymbolPublishingExclusionsFile Artifact
-          condition: eq(variables['SymbolExclusionFile'], 'true') 
-          pathToPublish: '$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
           publishLocation: Container
           artifactName: ReleaseConfigs
 
