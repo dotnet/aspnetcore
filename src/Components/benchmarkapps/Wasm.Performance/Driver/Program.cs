@@ -8,13 +8,15 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using OpenQA.Selenium;
+using Microsoft.Playwright;
 using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Wasm.Performance.Driver;
 
 public class Program
 {
+    private const bool RunHeadless = false;
+
     internal static TaskCompletionSource<BenchmarkResult> BenchmarkResultTask;
 
     public static async Task<int> Main(string[] args)
@@ -51,7 +53,18 @@ public class Program
         // This write is required for the benchmarking infrastructure.
         Console.WriteLine("Application started.");
 
-        using var browser = await Selenium.CreateBrowser(default, captureBrowserMemory: isStressRun);
+        var browserArgs = new List<string>();
+        if (isStressRun)
+        {
+            browserArgs.Add("--enable-precise-memory-info");
+        }
+
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new()
+        {
+            Headless = RunHeadless,
+            Args = browserArgs,
+        });
         using var testApp = StartTestApp();
         using var benchmarkReceiver = StartBenchmarkResultReceiver();
         var testAppUrl = GetListeningUrl(testApp);
@@ -67,19 +80,20 @@ public class Program
         var timeForEachRun = TimeSpan.FromMinutes(3);
 
         var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
-        browser.Url = launchUrl;
-        browser.Navigate();
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync(launchUrl);
+        page.Console += WriteBrowserConsoleMessage;
 
         do
         {
             BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
             using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
-            using var registration = runCancellationToken.Token.Register(() =>
+            using var registration = runCancellationToken.Token.Register(async () =>
             {
-                string exceptionMessage = $"Timed out after {timeForEachRun}.";
+                var exceptionMessage = $"Timed out after {timeForEachRun}.";
                 try
                 {
-                    var innerHtml = browser.FindElement(By.CssSelector(":first-child")).GetAttribute("innerHTML");
+                    var innerHtml = await page.GetAttributeAsync(":first-child", "innerHTML");
                     exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
                 }
                 catch
@@ -105,6 +119,11 @@ public class Program
 
         Console.WriteLine("Done executing benchmark");
         return 0;
+    }
+
+    private static void WriteBrowserConsoleMessage(object sender, IConsoleMessage message)
+    {
+        Console.WriteLine($"[Browser Log]: {message.Text}");
     }
 
     private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult, bool includeMetadata, bool isStressRun)
@@ -261,7 +280,7 @@ public class Program
 #if DEBUG
                 "--contentroot",
                 Path.GetFullPath(typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .First(f => f.Key == "TestAppLocatiion")
+                    .First(f => f.Key == "TestAppLocation")
                     .Value)
 #endif
             };
