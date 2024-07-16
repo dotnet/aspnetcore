@@ -230,6 +230,9 @@ dotnet_diagnostic.CA1857.severity = warning
 # CA1858: Use 'StartsWith' instead of 'IndexOf'
 dotnet_diagnostic.CA1858.severity = warning
 
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -334,6 +337,9 @@ dotnet_diagnostic.IDE0161.severity = warning
 
 # IDE0200: Lambda expression can be removed
 dotnet_diagnostic.IDE0200.severity = warning
+
+# IDE0300: Use collection expression for array
+dotnet_diagnostic.IDE0300.severity = warning
 
 # IDE2000: Disallow multiple blank lines
 dotnet_style_allow_multiple_blank_lines_experimental = false
