@@ -154,7 +154,7 @@ internal sealed class OpenApiSchemaService(
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
             var transformer = _openApiOptions.SchemaTransformers[i];
-            await transformer(schema, context, cancellationToken);
+            await transformer.TransformAsync(schema, context, cancellationToken);
         }
     }
 

@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 public sealed class OpenApiOptions
 {
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
-    internal readonly List<Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task>> SchemaTransformers = [];
+    internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
+    internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
 
     /// <summary>
     /// A default implementation for creating a schema reference ID for a given <see cref="JsonTypeInfo"/>.
@@ -62,7 +63,7 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <typeparam name="TTransformerType">The type of the <see cref="IOpenApiDocumentTransformer"/> to instantiate.</typeparam>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions UseTransformer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTransformerType>()
+    public OpenApiOptions AddDocumentTransformer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTransformerType>()
         where TTransformerType : IOpenApiDocumentTransformer
     {
         DocumentTransformers.Add(new TypeBasedOpenApiDocumentTransformer(typeof(TTransformerType)));
@@ -74,9 +75,9 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <param name="transformer">The <see cref="IOpenApiDocumentTransformer"/> instance to use.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions UseTransformer(IOpenApiDocumentTransformer transformer)
+    public OpenApiOptions AddDocumentTransformer(IOpenApiDocumentTransformer transformer)
     {
-        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+        ArgumentNullException.ThrowIfNull(transformer);
 
         DocumentTransformers.Add(transformer);
         return this;
@@ -87,11 +88,36 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <param name="transformer">The delegate representing the document transformer.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions UseTransformer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> transformer)
+    public OpenApiOptions AddDocumentTransformer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> transformer)
     {
-        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+        ArgumentNullException.ThrowIfNull(transformer);
 
         DocumentTransformers.Add(new DelegateOpenApiDocumentTransformer(transformer));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a new operation transformer on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <typeparam name="TTransformerType">The type of the <see cref="IOpenApiOperationTransformer"/> to instantiate.</typeparam>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddOperationTransformer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTransformerType>()
+        where TTransformerType : IOpenApiOperationTransformer
+    {
+        OperationTransformers.Add(new TypeBasedOpenApiOperationTransformer(typeof(TTransformerType)));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given instance of <see cref="IOpenApiOperationTransformer"/> on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <param name="transformer">The <see cref="IOpenApiOperationTransformer"/> instance to use.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddOperationTransformer(IOpenApiOperationTransformer transformer)
+    {
+        ArgumentNullException.ThrowIfNull(transformer);
+
+        OperationTransformers.Add(transformer);
         return this;
     }
 
@@ -100,11 +126,36 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <param name="transformer">The delegate representing the operation transformer.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions UseOperationTransformer(Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> transformer)
+    public OpenApiOptions AddOperationTransformer(Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> transformer)
     {
-        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+        ArgumentNullException.ThrowIfNull(transformer);
 
-        DocumentTransformers.Add(new DelegateOpenApiDocumentTransformer(transformer));
+        OperationTransformers.Add(new DelegateOpenApiOperationTransformer(transformer));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a new schema transformer on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <typeparam name="TTransformerType">The type of the <see cref="IOpenApiSchemaTransformer"/> to instantiate.</typeparam>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddSchemaTransformer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTransformerType>()
+        where TTransformerType : IOpenApiSchemaTransformer
+    {
+        SchemaTransformers.Add(new TypeBasedOpenApiSchemaTransformer(typeof(TTransformerType)));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given instance of <see cref="IOpenApiOperationTransformer"/> on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <param name="transformer">The <see cref="IOpenApiOperationTransformer"/> instance to use.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddSchemaTransformer(IOpenApiSchemaTransformer transformer)
+    {
+        ArgumentNullException.ThrowIfNull(transformer);
+
+        SchemaTransformers.Add(transformer);
         return this;
     }
 
@@ -113,11 +164,11 @@ public sealed class OpenApiOptions
     /// </summary>
     /// <param name="transformer">The delegate representing the schema transformer.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions UseSchemaTransformer(Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task> transformer)
+    public OpenApiOptions AddSchemaTransformer(Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task> transformer)
     {
-        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+        ArgumentNullException.ThrowIfNull(transformer);
 
-        SchemaTransformers.Add(transformer);
+        SchemaTransformers.Add(new DelegateOpenApiSchemaTransformer(transformer));
         return this;
     }
 }

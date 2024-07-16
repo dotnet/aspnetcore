@@ -21,8 +21,19 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     public int TransformerCount { get; set; }
 
     private readonly IEndpointRouteBuilder _builder = CreateBuilder();
-    private readonly OpenApiOptions _options = new OpenApiOptions();
+    private readonly OpenApiOptions _options = new();
     private OpenApiDocumentService _documentService;
+
+    [GlobalSetup(Target = nameof(ActivatedOperationTransformer))]
+    public void ActivatedOperationTransformer_Setup()
+    {
+        _builder.MapGet("/", () => { });
+        for (var i = 0; i <= TransformerCount; i++)
+        {
+            _options.AddOperationTransformer<OperationTransformer>();
+        }
+        _documentService = CreateDocumentService(_builder, _options);
+    }
 
     [GlobalSetup(Target = nameof(OperationTransformerAsDelegate))]
     public void OperationTransformerAsDelegate_Setup()
@@ -30,7 +41,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         _builder.MapGet("/", () => { });
         for (var i = 0; i <= TransformerCount; i++)
         {
-            _options.UseOperationTransformer((operation, context, token) =>
+            _options.AddOperationTransformer((operation, context, token) =>
             {
                 operation.Description = "New Description";
                 return Task.CompletedTask;
@@ -45,7 +56,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         _builder.MapGet("/", () => { });
         for (var i = 0; i <= TransformerCount; i++)
         {
-            _options.UseTransformer<ActivatedTransformer>();
+            _options.AddDocumentTransformer<DocumentTransformer>();
         }
         _documentService = CreateDocumentService(_builder, _options);
     }
@@ -56,7 +67,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         _builder.MapGet("/", () => { });
         for (var i = 0; i <= TransformerCount; i++)
         {
-            _options.UseTransformer((document, context, token) =>
+            _options.AddDocumentTransformer((document, context, token) =>
             {
                 document.Info.Description = "New Description";
                 return Task.CompletedTask;
@@ -65,13 +76,24 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         _documentService = CreateDocumentService(_builder, _options);
     }
 
-    [GlobalSetup(Target = nameof(SchemaTransformer))]
+    [GlobalSetup(Target = nameof(ActivatedSchemaTransformer))]
+    public void ActivatedSchemaTransformer_Setup()
+    {
+        _builder.MapPost("/", (Todo todo) => todo);
+        for (var i = 0; i <= TransformerCount; i++)
+        {
+            _options.AddSchemaTransformer<SchemaTransformer>();
+        }
+        _documentService = CreateDocumentService(_builder, _options);
+    }
+
+    [GlobalSetup(Target = nameof(SchemaTransformerAsDelegate))]
     public void SchemaTransformer_Setup()
     {
         _builder.MapPost("/", (Todo todo) => todo);
         for (var i = 0; i <= TransformerCount; i++)
         {
-            _options.UseSchemaTransformer((schema, context, token) =>
+            _options.AddSchemaTransformer((schema, context, token) =>
             {
                 if (context.Type == typeof(Todo) && context.ParameterDescription != null)
                 {
@@ -85,6 +107,12 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             });
         }
         _documentService = CreateDocumentService(_builder, _options);
+    }
+
+    [Benchmark]
+    public async Task ActivatedOperationTransformer()
+    {
+        await _documentService.GetOpenApiDocumentAsync();
     }
 
     [Benchmark]
@@ -106,16 +134,47 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     }
 
     [Benchmark]
-    public async Task SchemaTransformer()
+    public async Task ActivatedSchemaTransformer()
     {
         await _documentService.GetOpenApiDocumentAsync();
     }
 
-    private class ActivatedTransformer : IOpenApiDocumentTransformer
+    [Benchmark]
+    public async Task SchemaTransformerAsDelegate()
+    {
+        await _documentService.GetOpenApiDocumentAsync();
+    }
+
+    private class DocumentTransformer : IOpenApiDocumentTransformer
     {
         public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {
             document.Info.Description = "Info Description";
+            return Task.CompletedTask;
+        }
+    }
+
+    private class OperationTransformer : IOpenApiOperationTransformer
+    {
+        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        {
+            operation.Description = "Operation Description";
+            return Task.CompletedTask;
+        }
+    }
+
+    private class SchemaTransformer : IOpenApiSchemaTransformer
+    {
+        public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
+        {
+            if (context.Type == typeof(Todo) && context.ParameterDescription != null)
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
+            }
+            else
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("response");
+            }
             return Task.CompletedTask;
         }
     }
