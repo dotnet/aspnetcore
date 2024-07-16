@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <_TestConsoleAppSourceFiles Include="BasicMinimalApiWithOpenApiDependency.cs">
+      <EnabledProperties>EnableRequestDelegateGenerator</EnabledProperties>
+      <InterceptorNamespaces>Microsoft.AspNetCore.Http.Generated</InterceptorNamespaces>
+    </_TestConsoleAppSourceFiles>
+  </ItemGroup>
+
+</Project>
