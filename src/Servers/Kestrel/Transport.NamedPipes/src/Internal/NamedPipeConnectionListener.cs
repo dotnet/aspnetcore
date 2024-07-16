@@ -194,7 +194,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         public NamedPipeServerStream Create()
         {
-            NamedPipeServerStream stream;
             var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
             if (!_hasFirstPipeStarted)
             {
@@ -209,30 +208,13 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                 pipeOptions |= NamedPipeOptions.CurrentUserOnly;
             }
 
-            if (_options.PipeSecurity != null)
+            var context = new CreateNamedPipeServerStreamContext
             {
-                stream = NamedPipeServerStreamAcl.Create(
-                    _endpoint.PipeName,
-                    PipeDirection.InOut,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte,
-                    pipeOptions,
-                    inBufferSize: 0, // Buffer in System.IO.Pipelines
-                    outBufferSize: 0, // Buffer in System.IO.Pipelines
-                    _options.PipeSecurity);
-            }
-            else
-            {
-                stream = new NamedPipeServerStream(
-                    _endpoint.PipeName,
-                    PipeDirection.InOut,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte,
-                    pipeOptions,
-                    inBufferSize: 0,
-                    outBufferSize: 0);
-            }
-            return stream;
+                NamedPipeEndPoint = _endpoint,
+                PipeOptions = pipeOptions,
+                PipeSecurity = _options.PipeSecurity
+            };
+            return _options.CreateNamedPipeServerStream(context);
         }
 
         public bool Return(NamedPipeServerStream obj) => !obj.IsConnected;

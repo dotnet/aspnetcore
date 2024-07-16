@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 using System.Linq;
 
 namespace Microsoft.Extensions.ApiDescriptions;
@@ -41,7 +40,7 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // more info.
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var document = await targetDocumentService.GetOpenApiDocumentAsync();
-        var jsonWriter = new OpenApiJsonWriter(writer);
+        var jsonWriter = new ScrubbingOpenApiJsonWriter(writer);
         document.Serialize(jsonWriter, openApiSpecVersion);
     }
 

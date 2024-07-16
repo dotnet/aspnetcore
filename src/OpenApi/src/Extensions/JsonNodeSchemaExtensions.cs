@@ -24,12 +24,11 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly NullabilityInfoContext _nullabilityInfoContext = new();
-
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
-        [typeof(byte)] = new() { Type = "string", Format = "byte" },
+        [typeof(byte)] = new() { Type = "integer", Format = "uint8" },
+        [typeof(byte[])] = new() { Type = "string", Format = "byte" },
         [typeof(int)] = new() { Type = "integer", Format = "int32" },
         [typeof(uint)] = new() { Type = "integer", Format = "uint32" },
         [typeof(long)] = new() { Type = "integer", Format = "int64" },
@@ -42,7 +41,7 @@ internal static class JsonNodeSchemaExtensions
         [typeof(DateTime)] = new() { Type = "string", Format = "date-time" },
         [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
         [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
-        [typeof(char)] = new() { Type = "string" },
+        [typeof(char)] = new() { Type = "string", Format = "char" },
         [typeof(Uri)] = new() { Type = "string", Format = "uri" },
         [typeof(string)] = new() { Type = "string" },
         [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
@@ -169,7 +168,8 @@ internal static class JsonNodeSchemaExtensions
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
         var type = context.TypeInfo.Type;
         var underlyingType = Nullable.GetUnderlyingType(type);
@@ -178,7 +178,7 @@ internal static class JsonNodeSchemaExtensions
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
-            schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+            schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
             schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
             // Clear out patterns that the underlying JSON schema generator uses to represent
             // validations for DateTime, DateTimeOffset, and integers.
@@ -324,19 +324,26 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions)
+        // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
+        // to the top-level schema and not to any nested schemas that are generated.
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.Path.Length == 0)
         {
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
-                if (derivedType.TypeDiscriminator is null)
+                if (derivedType.TypeDiscriminator is { } discriminator)
                 {
-                    continue;
+                    var jsonDerivedType = context.TypeInfo.Options.GetTypeInfo(derivedType.DerivedType);
+                    // Discriminator mappings are only supported in OpenAPI v3+ so we can safely assume that
+                    // the generated reference mappings will support the OpenAPI v3 schema reference format
+                    // that we hardcode here. We could use `OpenApiReference` to construct the reference and
+                    // serialize it but we use a hardcoded string here to avoid allocating a new object and
+                    // working around Microsoft.OpenApi's serialization libraries.
+                    mappings[$"{discriminator}"] = $"#/components/schemas/{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
                 }
-                // TODO: Use the actual reference ID instead of the empty string.
-                mappings[derivedType.TypeDiscriminator.ToString()!] = string.Empty;
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
@@ -348,9 +355,13 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+        if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
+        {
+            schema[OpenApiConstants.SchemaId] = schemaReferenceId;
+        }
     }
 
     /// <summary>
@@ -365,7 +376,8 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
-        var nullabilityInfo = _nullabilityInfoContext.Create(parameterInfo);
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
         if (nullabilityInfo.WriteState == NullabilityState.Nullable)
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;
@@ -376,16 +388,12 @@ internal static class JsonNodeSchemaExtensions
     /// Support applying nullability status for reference types provided as a property or field.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="attributeProvider">The <see cref="PropertyInfo" /> or <see cref="FieldInfo"/> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ICustomAttributeProvider attributeProvider)
+    /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
+    internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
-        var nullabilityInfo = attributeProvider switch
-        {
-            PropertyInfo propertyInfo => !propertyInfo.PropertyType.IsValueType ? _nullabilityInfoContext.Create(propertyInfo) : null,
-            FieldInfo fieldInfo => !fieldInfo.FieldType.IsValueType ? _nullabilityInfoContext.Create(fieldInfo) : null,
-            _ => null
-        };
-        if (nullabilityInfo is { WriteState: NullabilityState.Nullable } or { ReadState: NullabilityState.Nullable })
+        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
+        // all schema (no type, no format, no constraints).
+        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = true;
         }

@@ -20,23 +20,6 @@ internal record ResumeUpload(string Name, string Description, IFormFile Resume);
 
 internal record Result<T>(bool IsSuccessful, T Value, Error Error);
 
-[JsonDerivedType(typeof(Triangle), typeDiscriminator: "triangle")]
-[JsonDerivedType(typeof(Square), typeDiscriminator: "square")]
-internal class Shape
-{
-    internal string Color { get; set; } = string.Empty;
-    internal int Sides { get; set; }
-}
-
-internal class Triangle : Shape
-{
-    internal double Hypotenuse { get; set; }
-}
-internal class Square : Shape
-{
-    internal double Area { get; set; }
-}
-
 internal class Vehicle
 {
     public int Wheels { get; set; }

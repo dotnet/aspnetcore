@@ -32,7 +32,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     private static string GetOpenApiJson(OpenApiDocument document)
     {
         using var textWriter = new StringWriter(CultureInfo.InvariantCulture);
-        var jsonWriter = new OpenApiJsonWriter(textWriter);
+        var jsonWriter = new ScrubbingOpenApiJsonWriter(textWriter);
         document.SerializeAsV3(jsonWriter);
         return textWriter.ToString();
     }

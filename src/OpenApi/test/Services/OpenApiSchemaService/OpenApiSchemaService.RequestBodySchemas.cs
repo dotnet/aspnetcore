@@ -4,12 +4,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBase
+public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
     public async Task GetOpenApiRequestBody_GeneratesSchemaForPoco()
@@ -30,8 +32,9 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
-            Assert.Equal("object", content.Value.Schema.Type);
-            Assert.Collection(content.Value.Schema.Properties,
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
@@ -76,8 +79,9 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
-            Assert.Equal("object", content.Value.Schema.Type);
-            Assert.Collection(content.Value.Schema.Properties,
+            var effectiveSchema = content.Value.Schema.GetEffective(document);
+            Assert.Equal("object", effectiveSchema.Type);
+            Assert.Collection(effectiveSchema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
@@ -148,7 +152,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
-            var schema = content.Value.Schema;
+            var schema = content.Value.Schema.GetEffective(document);
             Assert.Collection(schema.Required,
                 property => Assert.Equal("title", property),
                 property => Assert.Equal("completed", property));
@@ -175,7 +179,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                 var operation = document.Paths[$"/{path}"].Operations[OperationType.Post];
                 var requestBody = operation.RequestBody;
 
-                var effectiveSchema = requestBody.Content["application/octet-stream"].Schema;
+                var effectiveSchema = requestBody.Content["application/octet-stream"].Schema.GetEffective(document);
 
                 Assert.Equal("string", effectiveSchema.Type);
                 Assert.Equal("binary", effectiveSchema.Format);
@@ -198,15 +202,18 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var operation = document.Paths[$"/proposal"].Operations[OperationType.Post];
             var requestBody = operation.RequestBody;
             var schema = requestBody.Content["application/json"].Schema;
-            Assert.Collection(schema.Properties,
+            Assert.Equal("Proposal", schema.Reference.Id);
+            var effectiveSchema = schema.GetEffective(document);
+            Assert.Collection(effectiveSchema.Properties,
                 property => {
                     Assert.Equal("proposalElement", property.Key);
-                    // Todo: Assert that refs are used correctly.
+                    Assert.Equal("Proposal", property.Value.Reference.Id);
                 },
                 property => {
                     Assert.Equal("stream", property.Key);
-                    Assert.Equal("string", property.Value.Type);
-                    Assert.Equal("binary", property.Value.Format);
+                    var targetSchema = property.Value.GetEffective(document);
+                    Assert.Equal("string", targetSchema.Type);
+                    Assert.Equal("binary", targetSchema.Format);
                 });
         });
     }
@@ -290,9 +297,10 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            Assert.Equal("object", mediaType.Schema.Type);
-            Assert.Empty(mediaType.Schema.AnyOf);
-            Assert.Collection(mediaType.Schema.Properties,
+            var schema = mediaType.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Empty(schema.AnyOf);
+            Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("length", property.Key);
@@ -329,8 +337,9 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            Assert.Equal("object", mediaType.Schema.Type);
-            Assert.Collection(mediaType.Schema.Properties,
+            var schema = mediaType.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
@@ -393,7 +402,7 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
             var operation = document.Paths["/api"].Operations[OperationType.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
-            var schema = content.Value.Schema;
+            var schema = content.Value.Schema.GetEffective(document);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -430,6 +439,82 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         });
     }
 
+    [Fact]
+    public async Task SupportsNestedTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (NestedType type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            Assert.Equal("NestedType", content.Value.Schema.Reference.Id);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("name", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("nested", property.Key);
+                    Assert.Equal("NestedType", property.Value.Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task SupportsNestedTypes_WithNoAttributeProvider()
+    {
+        // Arrange: this test ensures that we can correctly handle the scenario
+        // where the attribute provider is null and we need to patch the property mappings
+        // that are created by the underlying JsonSchemaExporter.
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.TypeInfoResolver = options.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
+            {
+                foreach (var propertyInfo in jsonTypeInfo.Properties)
+                {
+                    propertyInfo.AttributeProvider = null;
+                }
+
+            });
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act
+        builder.MapPost("/api", (NestedType type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            Assert.Equal("NestedType", content.Value.Schema.Reference.Id);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("name", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("nested", property.Key);
+                    Assert.Equal("NestedType", property.Value.Reference.Id);
+                });
+        });
+    }
+
     private class DescriptionTodo
     {
         [Description("The unique identifier for a todo item.")]
@@ -455,4 +540,10 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         public Uri? NullableUri { get; set; }
     }
 #nullable restore
+
+    private class NestedType
+    {
+        public string Name { get; set; }
+        public NestedType Nested { get; set; }
+    }
 }

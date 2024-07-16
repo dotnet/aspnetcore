@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +22,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -30,11 +31,11 @@ internal sealed class OpenApiDocumentService(
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IServer? server = null)
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
-    private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
     private readonly IOpenApiDocumentTransformer _schemaReferenceTransformer = new OpenApiSchemaReferenceTransformer();
 
     private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
@@ -60,6 +61,7 @@ internal sealed class OpenApiDocumentService(
         {
             Info = GetOpenApiInfo(),
             Paths = await GetOpenApiPathsAsync(capturedTags, cancellationToken),
+            Servers = GetOpenApiServers(),
             Tags = [.. capturedTags]
         };
         await ApplyTransformersAsync(document, cancellationToken);
@@ -82,8 +84,6 @@ internal sealed class OpenApiDocumentService(
         }
         // Move duplicated JSON schemas to the global components.schemas object and map references after all transformers have run.
         await _schemaReferenceTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
-        // Remove `x-aspnetcore-id` and `x-schema-id` extensions from operations after all transformers have run.
-        await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
     }
 
     // Note: Internal for testing.
@@ -94,6 +94,16 @@ internal sealed class OpenApiDocumentService(
             Title = $"{hostEnvironment.ApplicationName} | {documentName}",
             Version = OpenApiConstants.DefaultOpenApiVersion
         };
+    }
+
+    internal List<OpenApiServer> GetOpenApiServers()
+    {
+        if (hostEnvironment.IsDevelopment() &&
+            server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
+        {
+            return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
+        }
+        return [];
     }
 
     /// <summary>
@@ -126,7 +136,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var description in descriptions)
         {
             var operation = await GetOperationAsync(description, capturedTags, cancellationToken);
-            operation.Extensions.Add(OpenApiConstants.DescriptionId, new OpenApiString(description.ActionDescriptor.Id));
+            operation.Extensions.Add(OpenApiConstants.DescriptionId, new ScrubbedOpenApiAny(description.ActionDescriptor.Id));
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, new OpenApiOperationTransformerContext
             {
                 DocumentName = documentName,
@@ -228,7 +238,7 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(type, null, cancellationToken) : new OpenApiSchema();
+            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(type, null, captureSchemaByRef: true, cancellationToken) : new OpenApiSchema();
             response.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
@@ -269,7 +279,7 @@ internal sealed class OpenApiDocumentService(
                     _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
                 },
                 Required = IsRequired(parameter),
-                Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, parameter, cancellationToken),
+                Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, parameter, cancellationToken: cancellationToken),
                 Description = GetParameterDescriptionFromAttribute(parameter)
             };
 
@@ -347,7 +357,7 @@ internal sealed class OpenApiDocumentService(
             if (parameter.All(parameter => parameter.ModelMetadata.ContainerType is null))
             {
                 var description = parameter.Single();
-                var parameterSchema = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken);
+                var parameterSchema = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken: cancellationToken);
                 // Form files are keyed by their parameter name so we must capture the parameter name
                 // as a property in the schema.
                 if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
@@ -410,7 +420,7 @@ internal sealed class OpenApiDocumentService(
                     var propertySchema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
                     foreach (var description in parameter)
                     {
-                        propertySchema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken);
+                        propertySchema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken: cancellationToken);
                     }
                     schema.AllOf.Add(propertySchema);
                 }
@@ -418,7 +428,7 @@ internal sealed class OpenApiDocumentService(
                 {
                     foreach (var description in parameter)
                     {
-                        schema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken);
+                        schema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(description.Type, null, cancellationToken: cancellationToken);
                     }
                 }
             }
@@ -465,7 +475,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestForm in supportedRequestFormats)
         {
             var contentType = requestForm.MediaType;
-            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(bodyParameter.Type, bodyParameter, cancellationToken) };
+            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(bodyParameter.Type, bodyParameter, captureSchemaByRef: true, cancellationToken: cancellationToken) };
         }
 
         return requestBody;

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBase
+public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
 #nullable enable
     public static object?[][] RouteParametersWithPrimitiveTypes =>
@@ -21,8 +21,9 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [(decimal id) => {}, "number", "double", false],
         [(bool id) => {}, "boolean", null, false],
         [(string id) => {}, "string", null, false],
-        [(char id) => {}, "string", null, false],
-        [(byte id) => {}, "string", "byte", false],
+        [(char id) => {}, "string", "char", false],
+        [(byte id) => {}, "integer", "uint8", false],
+        [(byte[] id) => {}, "string", "byte", false],
         [(short id) => {}, "integer", "int16", false],
         [(ushort id) => {}, "integer", "uint16", false],
         [(uint id) => {}, "integer", "uint32", false],
@@ -37,8 +38,9 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [(decimal? id) => {}, "number", "double", true],
         [(bool? id) => {}, "boolean", null, true],
         [(string? id) => {}, "string", null, true],
-        [(char? id) => {}, "string", null, true],
-        [(byte? id) => {}, "string", "byte", true],
+        [(char? id) => {}, "string", "char", true],
+        [(byte? id) => {}, "integer", "uint8", true],
+        [(byte[]? id) => {}, "string", "byte", true],
         [(short? id) => {}, "integer", "int16", true],
         [(ushort? id) => {}, "integer", "uint16", true],
         [(uint? id) => {}, "integer", "uint32", true],

@@ -44,7 +44,6 @@
     <Message Text="Building NPM packages..." Importance="high" />
 
     <Exec
-      Condition="$(ContinuousIntegrationBuild) == 'true'"
       Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
@@ -65,7 +64,9 @@
     </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
     <ItemGroup>
       <_NpmGeneratedPackages Include="$(PackageOutputPath)/*.tgz" />
     </ItemGroup>

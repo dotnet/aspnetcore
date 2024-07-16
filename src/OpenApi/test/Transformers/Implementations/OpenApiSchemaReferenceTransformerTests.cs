@@ -130,11 +130,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         {
             var operation = document.Paths["/api"].Operations[OperationType.Post];
             var requestBody = operation.RequestBody.Content["application/json"];
-            var requestBodySchema = requestBody.Schema;
+            var requestBodySchema = requestBody.Schema.GetEffective(document);
 
             var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
             var requestBody2 = operation2.RequestBody.Content["application/json"];
-            var requestBodySchema2 = requestBody2.Schema;
+            var requestBodySchema2 = requestBody2.Schema.GetEffective(document);
 
             // {
             //   "type": "array",
@@ -201,14 +201,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal("string", requestBodySchema.AllOf[0].Properties["resume"].Type);
             Assert.Equal("binary", requestBodySchema.AllOf[0].Properties["resume"].Format);
 
-            // String parameter `name` should use reference ID shared by string properties in the
-            // Todo object.
+            // string parameter is not resolved to a top-level reference.
             Assert.Equal("object", requestBodySchema2.AllOf[0].Type);
-            var nameParameterReference = requestBodySchema2.AllOf[0].Properties["name"].Reference.Id;
-            var todoTitleReference = requestBodySchema.AllOf[1].GetEffective(document).Properties["title"].Reference.Id;
-            var todoTitleReference2 = requestBodySchema2.AllOf[1].GetEffective(document).Properties["title"].Reference.Id;
-            Assert.Equal(nameParameterReference, todoTitleReference);
-            Assert.Equal(nameParameterReference, todoTitleReference2);
+            Assert.Null(requestBodySchema.AllOf[1].GetEffective(document).Properties["title"].Reference);
+            Assert.Null(requestBodySchema2.AllOf[1].GetEffective(document).Properties["title"].Reference);
         });
     }
 
@@ -285,33 +281,66 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var path = Assert.Single(document.Paths.Values);
             var postOperation = path.Operations[OperationType.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            // Schemas are distinct because of applied transformer so no reference is used.
-            Assert.Null(requestSchema.Reference);
-            Assert.Equal("todo", ((OpenApiString)requestSchema.Extensions["x-my-extension"]).Value);
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
             // Schemas are distinct because of applied transformer so no reference is used.
-            Assert.Null(responseSchema.Reference);
-
-            // References are still created for common types within the complex object (boolean, int, etc.)
-            Assert.Collection(document.Components.Schemas.Keys,
-            key =>
-            {
-                Assert.Equal("boolean", key);
-            },
-            key =>
-            {
-                Assert.Equal("DateTime", key);
-            },
-            key =>
-            {
-                Assert.Equal("int", key);
-            },
-            key =>
-            {
-                Assert.Equal("string", key);
-            });
+            Assert.NotEqual(requestSchema.Reference.Id, responseSchema.Reference.Id);
+            Assert.Equal("todo", ((OpenApiString)requestSchema.GetEffective(document).Extensions["x-my-extension"]).Value);
+            Assert.False(responseSchema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var _));
         });
+    }
+
+    [Fact]
+    public static async Task ProducesStableSchemaRefsForListOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (List<Todo> todo) => { });
+        builder.MapPost("/api-2", (List<Todo> todo) => { });
+
+        // Assert -- call twice to ensure the schema reference is stable
+        await VerifyOpenApiDocument(builder, VerifyDocument);
+        await VerifyOpenApiDocument(builder, VerifyDocument);
+
+        static void VerifyDocument(OpenApiDocument document)
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody.Content["application/json"];
+            var requestBodySchema = requestBody.Schema;
+
+            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var requestBody2 = operation2.RequestBody.Content["application/json"];
+            var requestBodySchema2 = requestBody2.Schema;
+
+            // {
+            //   "$ref": "#/components/schemas/TodoList"
+            // }
+            // {
+            //   "$ref": "#/components/schemas/TodoList"
+            // }
+            // {
+            //   "components": {
+            //     "schemas": {
+            //       "ArrayOfTodo": {
+            //         "type": "array",
+            //         "items": {
+            //           "$ref": "#/components/schemas/Todo"
+            //         }
+            //       }
+            //     }
+            //   }
+            // }
+
+            // Both list types should point to the same reference ID
+            Assert.Equal("ArrayOfTodo", requestBodySchema.Reference.Id);
+            Assert.Equal(requestBodySchema.Reference.Id, requestBodySchema2.Reference.Id);
+            // The referenced schema has an array type
+            Assert.Equal("array", requestBodySchema.GetEffective(document).Type);
+            var itemsSchema = requestBodySchema.GetEffective(document).Items;
+            Assert.Equal("Todo", itemsSchema.Reference.Id);
+            Assert.Equal(4, itemsSchema.GetEffective(document).Properties.Count);
+        }
     }
 }

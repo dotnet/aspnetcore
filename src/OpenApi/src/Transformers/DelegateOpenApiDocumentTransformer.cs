@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -43,7 +42,7 @@ internal sealed class DelegateOpenApiDocumentTransformer : IOpenApiDocumentTrans
                     }
 
                     if (operation.Extensions.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionIdExtension) &&
-                        descriptionIdExtension is OpenApiString { Value: var descriptionId } &&
+                        descriptionIdExtension is ScrubbedOpenApiAny { Value: string descriptionId } &&
                         documentService.TryGetCachedOperationTransformerContext(descriptionId, out var operationContext))
                     {
                         await _operationTransformer(operation, operationContext, cancellationToken);

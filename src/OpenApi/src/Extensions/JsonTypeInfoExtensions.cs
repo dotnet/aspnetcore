@@ -45,10 +45,20 @@ internal static class JsonTypeInfoExtensions
     /// generated reference ID.
     /// </summary>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the target schema.</param>
+    /// <param name="isTopLevel">
+    /// When <see langword="false" />, returns schema name for primitive
+    /// types to support use in list/dictionary types.
+    /// </param>
     /// <returns>The schema reference ID represented as a string name.</returns>
-    internal static string GetSchemaReferenceId(this JsonTypeInfo jsonTypeInfo)
+    internal static string? GetSchemaReferenceId(this JsonTypeInfo jsonTypeInfo, bool isTopLevel = true)
     {
         var type = jsonTypeInfo.Type;
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(underlyingType ?? type))
+        {
+            return null;
+        }
+
         // Short-hand if the type we're generating a schema reference ID for is
         // one of the simple types defined above.
         if (_simpleTypeToName.TryGetValue(type, out var simpleName))
@@ -59,14 +69,14 @@ internal static class JsonTypeInfoExtensions
         if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Enumerable, ElementType: { } elementType })
         {
             var elementTypeInfo = jsonTypeInfo.Options.GetTypeInfo(elementType);
-            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId()}";
+            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
         }
 
         if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Dictionary, KeyType: { } keyType, ElementType: { } valueType })
         {
             var keyTypeInfo = jsonTypeInfo.Options.GetTypeInfo(keyType);
             var valueTypeInfo = jsonTypeInfo.Options.GetTypeInfo(valueType);
-            return $"DictionaryOf{keyTypeInfo.GetSchemaReferenceId()}And{valueTypeInfo.GetSchemaReferenceId()}";
+            return $"DictionaryOf{keyTypeInfo.GetSchemaReferenceId(isTopLevel: false)}And{valueTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
         }
 
         return type.GetSchemaReferenceId(jsonTypeInfo.Options);
@@ -86,7 +96,7 @@ internal static class JsonTypeInfoExtensions
         if (type.IsArray && type.GetElementType() is { } elementType)
         {
             var elementTypeInfo = options.GetTypeInfo(elementType);
-            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId()}";
+            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
         }
 
         // Special handling for anonymous types
@@ -98,23 +108,14 @@ internal static class JsonTypeInfoExtensions
             return $"{typeName}Of{propertyNames}";
         }
 
+        // Special handling for generic types that are collections
+        // Generic types become a concatenation of the generic type name and the type arguments
         if (type.IsGenericType)
         {
-            // Nullable types are suffixed with `?` (e.g. `Todo?`)
-            if (type.GetGenericTypeDefinition() == typeof(Nullable<>)
-                && Nullable.GetUnderlyingType(type) is { } underlyingType)
-            {
-                return $"{underlyingType.GetSchemaReferenceId(options)}?";
-            }
-            // Special handling for generic types that are collections
-            // Generic types become a concatenation of the generic type name and the type arguments
-            else
-            {
-                var genericTypeName = type.Name[..type.Name.LastIndexOf('`')];
-                var genericArguments = type.GetGenericArguments();
-                var argumentNames = string.Join("And", genericArguments.Select(arg => arg.GetSchemaReferenceId(options)));
-                return $"{genericTypeName}Of{argumentNames}";
-            }
+            var genericTypeName = type.Name[..type.Name.LastIndexOf('`')];
+            var genericArguments = type.GetGenericArguments();
+            var argumentNames = string.Join("And", genericArguments.Select(arg => arg.GetSchemaReferenceId(options)));
+            return $"{genericTypeName}Of{argumentNames}";
         }
         return type.Name;
     }
