@@ -1854,10 +1854,10 @@ public static partial class RequestDelegateFactory
     }
 
     private static Expression BindParameterFromExpression(
-        ParameterInfo parameter,
-        Expression valueExpression,
-        RequestDelegateFactoryContext factoryContext,
-        string source)
+    ParameterInfo parameter,
+    Expression valueExpression,
+    RequestDelegateFactoryContext factoryContext,
+    string source)
     {
         var nullability = factoryContext.NullabilityContext.Create(parameter);
         var isOptional = IsOptionalParameter(parameter, factoryContext);
@@ -1868,7 +1868,7 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
-        if (source == "header" && (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType)))
+        if (source == "header" && (parameter.ParameterType == typeof(string[]) || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType)))
         {
             var stringValuesExpr = Expression.Convert(valueExpression, typeof(StringValues));
             var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray))!;
@@ -1877,52 +1877,19 @@ public static partial class RequestDelegateFactory
             var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
             var splitAndTrimExpr = Expression.Call(splitAndTrimMethod, headerValuesArrayExpr);
 
-            var boundValueExpr = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
-
-            if (!isOptional)
-            {
-                var checkRequiredStringParameterBlock = Expression.Block(
-                    Expression.Assign(argument, boundValueExpr),
-                    Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
-                        Expression.Block(
-                            Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                            Expression.Call(LogRequiredParameterNotProvidedMethod,
-                                HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, sourceConstant,
-                                Expression.Constant(factoryContext.ThrowOnBadRequest))
-                        )
-                    )
-                );
-
-                // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
-                factoryContext.ExtraLocals.Add(argument);
-                factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
-                return argument;
-            }
-
-            // Allow nullable parameters that don't have a default value
-            if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
-            {
-                if (parameter.ParameterType == typeof(StringValues?))
-                {
-                    return Expression.Block(
-                        Expression.Condition(Expression.Equal(boundValueExpr, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
-                            Expression.Convert(Expression.Constant(null), parameter.ParameterType),
-                            boundValueExpr
-                        )
-                    );
-                }
-                return boundValueExpr;
-            }
-
-            return Expression.Block(
-                Expression.Condition(Expression.NotEqual(boundValueExpr, Expression.Constant(null)),
-                    boundValueExpr,
-                    Expression.Convert(Expression.Constant(parameter.DefaultValue), parameter.ParameterType)));
+            valueExpression = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
         }
 
         if (!isOptional)
         {
-            // The following is produced if the parameter is optional. 
+            // The following is produced if the parameter is required:
+            //
+            // argument = value;
+            // if (argument == null)
+            // {
+            //      wasParamCheckFailure = true;
+            //      Log.RequiredParameterNotProvided(httpContext, "TypeOfValue", "parameterName", "source");
+            // }
             var checkRequiredStringParameterBlock = Expression.Block(
                 Expression.Assign(argument, valueExpression),
                 Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
@@ -1956,6 +1923,12 @@ public static partial class RequestDelegateFactory
             return valueExpression;
         }
 
+        // The following is produced if the parameter is optional. Note that we convert the
+        // default value to the target ParameterType to address scenarios where the user is
+        // setting null as the default value in a context where nullability is disabled.
+        //
+        // param1_local = value;
+        // param1_local != null ? param1_local : Convert(defaultValue, ParameterType)
         return Expression.Block(
             Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
                 valueExpression,
@@ -2891,6 +2864,7 @@ public static partial class RequestDelegateFactory
         }
 
         var result = new List<string>();
+        Span<Range> parts = stackalloc Range[16]; 
 
         foreach (var value in values)
         {
@@ -2899,21 +2873,15 @@ public static partial class RequestDelegateFactory
                 continue;
             }
 
-            var span = value.AsSpan();
-            var start = 0;
+            var valueSpan = value.AsSpan();
+            var length = valueSpan.Split(parts, ',');
 
-            for (var i = 0; i <= span.Length; i++)
+            for (int i = 0; i < length; i++)
             {
-                if (i == span.Length || span[i] == ',')
+                var part = valueSpan[parts[i]].Trim();
+                if (!part.IsEmpty)
                 {
-                    var slice = span.Slice(start, i - start).Trim();
-
-                    if (!slice.IsEmpty)
-                    {
-                        result.Add(new string(slice));
-                    }
-
-                    start = i + 1;
+                    result.Add(new string(part));
                 }
             }
         }
