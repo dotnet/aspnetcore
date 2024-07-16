@@ -75,7 +75,7 @@ namespace RepoTasks
                     uriSuffix = System.Text.Encoding.UTF8.GetString(uriSuffixBytes);
 
                     // Ensure that the url suffix starts with the query string prefix
-                    if (!uriSuffix.StartsWith("?"))
+                    if (!uriSuffix.StartsWith("?", StringComparison.OrdinalIgnoreCase))
                     {
                         uriSuffix = $"?{uriSuffix}";
                     }
