@@ -31,7 +31,7 @@
         <_Parameter1>TestAppLocation</_Parameter1>
         <_Parameter2>$(MSBuildThisFileDirectory)..\TestApp\</_Parameter2>
       </AssemblyAttribute>
-  </ItemGroup>
+    </ItemGroup>
   </Target>
 
 </Project>

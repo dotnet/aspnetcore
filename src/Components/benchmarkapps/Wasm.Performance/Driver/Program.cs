@@ -9,7 +9,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Playwright;
-using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
+using DevHostStartup = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Startup;
 
 namespace Wasm.Performance.Driver;
 
@@ -273,29 +273,34 @@ public class Program
 
     static IHost StartTestApp()
     {
-        var args = new[]
-        {
-                "--urls", "http://127.0.0.1:0",
-                "--applicationpath", typeof(TestApp.Program).Assembly.Location,
-#if DEBUG
-                "--contentroot",
-                Path.GetFullPath(typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .First(f => f.Key == "TestAppLocation")
-                    .Value)
-#endif
-            };
+        string[] args = ["--urls", "http://127.0.0.1:0"];
 
-        var host = DevHostServerProgram.BuildWebHost(args);
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureHostConfiguration(config =>
+            {
+                var endpointsManifest = Path.ChangeExtension(typeof(Program).Assembly.Location, "staticwebassets.endpoints.json");
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    [WebHostDefaults.EnvironmentKey] = "Production",
+                    ["Logging:LogLevel:Microsoft"] = "Warning",
+                    ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
+                    ["staticAssets"] = endpointsManifest,
+                });
+            })
+            .ConfigureWebHostDefaults(builder =>
+            {
+                builder.UseStaticWebAssets();
+                builder.UseStartup<DevHostStartup>();
+            })
+            .Build();
+
         RunInBackgroundThread(host.Start);
         return host;
     }
 
     static IHost StartBenchmarkResultReceiver()
     {
-        var args = new[]
-        {
-                "--urls", "http://127.0.0.1:0",
-            };
+        string[] args = ["--urls", "http://127.0.0.1:0"];
 
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(builder => builder.UseStartup<BenchmarkDriverStartup>())
