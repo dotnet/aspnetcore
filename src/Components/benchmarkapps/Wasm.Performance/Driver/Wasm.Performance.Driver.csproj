@@ -24,14 +24,4 @@
     <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
   </ItemGroup>
 
-  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile">
-    <ItemGroup>
-      <AssemblyAttribute
-        Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>TestAppLocation</_Parameter1>
-        <_Parameter2>$(MSBuildThisFileDirectory)..\TestApp\</_Parameter2>
-      </AssemblyAttribute>
-    </ItemGroup>
-  </Target>
-
 </Project>
