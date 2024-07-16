@@ -11,6 +11,7 @@
     <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
     <_ExtraTrimmerArgs>{ExtraTrimmerArgs} $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);{InterceptorsPreviewNamespacesArgs}</InterceptorsPreviewNamespaces>
     {AdditionalProperties}
   </PropertyGroup>
 
@@ -21,5 +22,5 @@
   <ItemGroup>
     {AdditionalProjectReferences}
   </ItemGroup>
-  
+
 </Project>
