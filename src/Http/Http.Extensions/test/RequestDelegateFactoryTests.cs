@@ -3151,11 +3151,11 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegate_ShouldHandleSingleHeaderValue()
+    public async Task RequestDelegate_ShouldHandleCommaSeparatedHeaderValuesAsString()
     {
         // Arrange
         var httpContext = CreateHttpContext();
-        httpContext.Request.Headers["TestHeader"] = "HeaderValue";
+        httpContext.Request.Headers["TestHeader"] = "Value1,Value2";
 
         var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, [FromHeader(Name = "TestHeader")] string headerValue) =>
         {
@@ -3169,15 +3169,15 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.True(httpContext.Items.ContainsKey("headerValue"));
-        Assert.Equal("HeaderValue", httpContext.Items["headerValue"]);
+        Assert.Equal("Value1,Value2", httpContext.Items["headerValue"]);
     }
 
     [Fact]
-    public async Task RequestDelegate_ShouldHandleCommaSeparatedHeaderValues()
+    public async Task RequestDelegate_ShouldHandleSingleHeaderValueAsStringArray()
     {
         // Arrange
         var httpContext = CreateHttpContext();
-        httpContext.Request.Headers["TestHeader"] = "Value1,Value2,Value3";
+        httpContext.Request.Headers["TestHeader"] = "Value1";
 
         var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, [FromHeader(Name = "TestHeader")] string[] headerValues) =>
         {
@@ -3192,6 +3192,31 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.True(httpContext.Items.ContainsKey("headerValues"));
         var headerValues = httpContext.Items["headerValues"] as string[];
+        Assert.NotNull(headerValues);
+        Assert.Single(headerValues);
+        Assert.Equal("Value1", headerValues[0]);
+    }
+
+    [Fact]
+    public async Task RequestDelegate_ShouldHandleCommaSeparatedHeaderValuesAsIEnumerable()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["TestHeader"] = "Value1,Value2,Value3";
+
+        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, [FromHeader(Name = "TestHeader")] IEnumerable<string> headerValues) =>
+        {
+            httpContext.Items["headerValues"] = headerValues;
+        });
+
+        var requestDelegate = resultFactory.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.True(httpContext.Items.ContainsKey("headerValues"));
+        var headerValues = httpContext.Items["headerValues"] as IEnumerable<string>;
         Assert.NotNull(headerValues);
         Assert.Equal(new[] { "Value1", "Value2", "Value3" }, headerValues);
     }
