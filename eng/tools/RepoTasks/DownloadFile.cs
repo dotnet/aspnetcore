@@ -73,6 +73,12 @@ namespace RepoTasks
                 {
                     var uriSuffixBytes = System.Convert.FromBase64String(PrivateUriSuffix);
                     uriSuffix = System.Text.Encoding.UTF8.GetString(uriSuffixBytes);
+
+                    // Ensure that the url suffix starts with the query string prefix
+                    if (!uriSuffix.StartsWith('?'))
+                    {
+                        uriSuffix = $"?{uriSuffix}";
+                    }
                 }
                 downloadStatus = await DownloadWithRetriesAsync($"{PrivateUri}{uriSuffix}", DestinationPath, errorMessages);
             }
