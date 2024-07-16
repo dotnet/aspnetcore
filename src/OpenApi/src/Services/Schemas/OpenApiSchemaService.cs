@@ -161,14 +161,14 @@ internal sealed class OpenApiSchemaService(
             // it on.
             if (transformer is TypeBasedOpenApiSchemaTransformer typeBasedTransformer)
             {
-                typeBasedTransformer.InitializeTransformer(serviceProvider);
+                var initializedTransformer = typeBasedTransformer.InitializeTransformer(serviceProvider);
                 try
                 {
-                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, typeBasedTransformer, cancellationToken);
+                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, initializedTransformer, cancellationToken);
                 }
                 finally
                 {
-                    await typeBasedTransformer.FinalizeTransformer();
+                    await TypeBasedOpenApiSchemaTransformer.FinalizeTransformer(initializedTransformer);
                 }
             }
             else
