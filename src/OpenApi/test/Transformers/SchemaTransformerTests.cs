@@ -334,7 +334,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.True(responseSchema.Extensions.ContainsKey("x-my-extension"));
         });
         var countAfter = Dependency.InstantiationCount;
-        Assert.Equal(countBefore + 20, countAfter);
+        Assert.Equal(countBefore + 4, countAfter);
     }
 
     [Fact]
@@ -359,9 +359,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("Schema Description", responseSchema.Description);
         });
-        // Assert that the transformer is disposed for each top-level schema
-        // and the four properties within that schema.
-        Assert.Equal(10, DisposableTransformer.DisposeCount);
+        // Assert that the transformer is disposed twice for each top-level schema.
+        Assert.Equal(2, DisposableTransformer.DisposeCount);
     }
 
     [Fact]
@@ -386,9 +385,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("Schema Description", responseSchema.Description);
         });
-        // Assert that the transformer is disposed after the top-level
-        // schema and each sub-property within the schema.
-        Assert.Equal(10, AsyncDisposableTransformer.DisposeCount);
+        // Assert that the transformer is disposed twice for each top-level schema.
+        Assert.Equal(2, AsyncDisposableTransformer.DisposeCount);
     }
 
     [Fact]

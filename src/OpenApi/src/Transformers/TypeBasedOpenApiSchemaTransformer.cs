@@ -13,6 +13,7 @@ internal sealed class TypeBasedOpenApiSchemaTransformer : IOpenApiSchemaTransfor
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _transformerType;
     private readonly ObjectFactory _transformerFactory;
+    private IOpenApiSchemaTransformer? _transformer;
 
     internal TypeBasedOpenApiSchemaTransformer([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type transformerType)
     {
@@ -20,24 +21,28 @@ internal sealed class TypeBasedOpenApiSchemaTransformer : IOpenApiSchemaTransfor
         _transformerFactory = ActivatorUtilities.CreateFactory(_transformerType, []);
     }
 
+    internal void InitializeTransformer(IServiceProvider serviceProvider)
+    {
+        _transformer = _transformerFactory.Invoke(serviceProvider, []) as IOpenApiSchemaTransformer;
+
+    }
+
+    internal async Task FinalizeTransformer()
+    {
+        if (_transformer is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync();
+        }
+        else if (_transformer is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+
     public async Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiSchemaTransformer;
-        Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiSchemaTransformer)}.");
-        try
-        {
-            await transformer.TransformAsync(schema, context, cancellationToken);
-        }
-        finally
-        {
-            if (transformer is IAsyncDisposable asyncDisposable)
-            {
-                await asyncDisposable.DisposeAsync();
-            }
-            else if (transformer is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
+        Debug.Assert(_transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiSchemaTransformer)}.");
+        await _transformer.TransformAsync(schema, context, cancellationToken);
+
     }
 }
