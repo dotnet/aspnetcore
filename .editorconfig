@@ -410,6 +410,8 @@ dotnet_diagnostic.CA1856.severity = suggestion
 dotnet_diagnostic.CA1857.severity = suggestion
 # CA1858: Use 'StartsWith' instead of 'IndexOf'
 dotnet_diagnostic.CA1858.severity = suggestion
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = suggestion
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
@@ -446,6 +448,8 @@ dotnet_diagnostic.IDE0060.severity = suggestion
 dotnet_diagnostic.IDE0062.severity = suggestion
 # IDE0200: Lambda expression can be removed
 dotnet_diagnostic.IDE0200.severity = suggestion
+# IDE0300: Use collection expression for array
+dotnet_diagnostic.IDE0300.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
