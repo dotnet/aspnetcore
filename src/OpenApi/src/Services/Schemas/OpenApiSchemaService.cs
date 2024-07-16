@@ -195,6 +195,10 @@ internal sealed class OpenApiSchemaService(
             {
                 var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
                 context.UpdateJsonTypeInfo(derivedJsonTypeInfo, null);
+                if (schema.AnyOf.Count <= anyOfIndex)
+                {
+                    break;
+                }
                 await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, context, transformer, cancellationToken);
                 anyOfIndex++;
             }
@@ -212,7 +216,10 @@ internal sealed class OpenApiSchemaService(
             foreach (var propertyInfo in jsonTypeInfo.Properties)
             {
                 context.UpdateJsonTypeInfo(_jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo);
-                await InnerApplySchemaTransformersAsync(schema.Properties[propertyInfo.Name], jsonTypeInfo, context, transformer, cancellationToken);
+                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                {
+                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), context, transformer, cancellationToken);
+                }
             }
         }
     }
