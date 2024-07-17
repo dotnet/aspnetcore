@@ -65,6 +65,6 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status422UnprocessableEntity, HttpResultsHelper.ApplicationJsonContentTypes));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status422UnprocessableEntity, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

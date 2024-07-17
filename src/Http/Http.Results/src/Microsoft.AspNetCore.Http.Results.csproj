@@ -20,6 +20,7 @@
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

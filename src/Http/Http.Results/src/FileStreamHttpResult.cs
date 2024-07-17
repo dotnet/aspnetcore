@@ -67,7 +67,7 @@ public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTyp
             FileLength = fileStream.Length;
         }
 
-        ContentType = contentType ?? HttpResultsHelper.BinaryContentType;
+        ContentType = contentType ?? ContentTypeConstants.BinaryContentType;
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
         LastModified = lastModified;

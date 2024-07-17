@@ -76,7 +76,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (responseType is Type && string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/json";
+            contentType = ContentTypeConstants.JsonContentType;
         }
 
         if (contentType is null)
@@ -103,7 +103,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return Produces(builder, statusCode, typeof(ProblemDetails), contentType);
@@ -124,7 +124,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(ProblemDetails), [contentType]));
@@ -145,7 +145,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return Produces(builder, statusCode, typeof(HttpValidationProblemDetails), contentType);
@@ -169,7 +169,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(HttpValidationProblemDetails), [contentType]));
