@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ModelMetadata(System.Type! type, Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata? parameterBindingMetadata) -> void

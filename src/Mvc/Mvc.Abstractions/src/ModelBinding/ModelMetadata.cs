@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -30,6 +31,17 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache
         = new(throwOnInvalidMethod: false);
 
+    /// <summary>
+    /// Exposes a feature switch to disable generating model metadata with reflection-heavy strategies.
+    /// This is primarily intended for use in Minimal API-based scenarios where information is derived from
+    /// IParameterBindingMetadata
+    /// </summary>
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported")]
+    [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+    [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+    private static bool IsEnhancedModelMetadataSupported { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", out var isEnhancedModelMetadataSupported) ? isEnhancedModelMetadataSupported : true;
+
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
@@ -44,8 +56,58 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     protected ModelMetadata(ModelMetadataIdentity identity)
     {
         Identity = identity;
+        if (IsEnhancedModelMetadataSupported)
+        {
+            InitializeTypeInformation();
+        }
+    }
 
-        InitializeTypeInformation();
+    /// <summary>
+    /// Creates a new <see cref="ModelMetadata"/> from a <see cref="IParameterBindingMetadata"/> instance
+    /// and its associated type.
+    /// </summary>
+    /// <param name="type">The <see cref="Type"/> associated with the <see cref="ModelMetadata"/>  generated.</param>
+    /// <param name="parameterBindingMetadata">The <see cref="IParameterBindingMetadata"/> instance associated with the <see cref="ModelMetadata"/> generated.</param>
+    protected ModelMetadata(Type type, IParameterBindingMetadata? parameterBindingMetadata)
+    {
+        Identity = ModelMetadataIdentity.ForType(type);
+
+        InitializeTypeInformationFromType();
+        if (parameterBindingMetadata is not null)
+        {
+            InitializeTypeInformationFromParameterBindingMetadata(parameterBindingMetadata);
+        }
+    }
+
+    private void InitializeTypeInformationFromType()
+    {
+        IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
+        IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
+        UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
+
+        if (ModelType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(ModelType))
+        {
+            // Do nothing, not Enumerable.
+        }
+        else if (ModelType.IsArray)
+        {
+            IsEnumerableType = true;
+            ElementType = ModelType.GetElementType()!;
+        }
+    }
+
+    private void InitializeTypeInformationFromParameterBindingMetadata(IParameterBindingMetadata parameterBindingMetadata)
+    {
+        // We assume that parameters bound from an endpoint's metadata originated from minimal API's source
+        // generation layer and are not convertible based on the `TypeConverter`s in MVC.
+        IsConvertibleType = false;
+        HasDefaultValue = parameterBindingMetadata.ParameterInfo.HasDefaultValue;
+        IsParseableType = parameterBindingMetadata.HasTryParse;
+        IsComplexType = !IsParseableType;
+
+        var nullabilityContext = new NullabilityInfoContext();
+        var nullability = nullabilityContext.Create(parameterBindingMetadata.ParameterInfo);
+        NullabilityState = nullability?.ReadState ?? NullabilityState.Unknown;
     }
 
     /// <summary>
@@ -442,7 +504,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// from <see cref="string"/> and without a <c>TryParse</c> method. Most POCO and <see cref="IEnumerable"/> types are therefore complex.
     /// Most, if not all, BCL value types are simple types.
     /// </remarks>
-    public bool IsComplexType => !IsConvertibleType && !IsParseableType;
+    public bool IsComplexType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> is a <see cref="Nullable{T}"/>.
@@ -647,12 +709,13 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         return _hashCode.Value;
     }
 
+    [RequiresUnreferencedCode("Using ModelMetadata with 'Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported=true' is not trim compatible.")]
+    [RequiresDynamicCode("Using ModelMetadata with 'Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported=true' is not native AOT compatible.")]
     private void InitializeTypeInformation()
     {
-        Debug.Assert(ModelType != null);
-
         IsConvertibleType = TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
         IsParseableType = FindTryParseMethod(ModelType) is not null;
+        IsComplexType = !IsConvertibleType && !IsParseableType;
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
