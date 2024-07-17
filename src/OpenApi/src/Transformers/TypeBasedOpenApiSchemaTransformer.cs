@@ -20,24 +20,26 @@ internal sealed class TypeBasedOpenApiSchemaTransformer : IOpenApiSchemaTransfor
         _transformerFactory = ActivatorUtilities.CreateFactory(_transformerType, []);
     }
 
-    public async Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
+    internal IOpenApiSchemaTransformer InitializeTransformer(IServiceProvider serviceProvider)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiSchemaTransformer;
+        var transformer = _transformerFactory.Invoke(serviceProvider, []) as IOpenApiSchemaTransformer;
         Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiSchemaTransformer)}.");
-        try
+        return transformer;
+    }
+
+    internal static async Task FinalizeTransformer(IOpenApiSchemaTransformer transformer)
+    {
+        if (transformer is IAsyncDisposable asyncDisposable)
         {
-            await transformer.TransformAsync(schema, context, cancellationToken);
+            await asyncDisposable.DisposeAsync();
         }
-        finally
+        else if (transformer is IDisposable disposable)
         {
-            if (transformer is IAsyncDisposable asyncDisposable)
-            {
-                await asyncDisposable.DisposeAsync();
-            }
-            else if (transformer is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            disposable.Dispose();
         }
     }
+
+    // No-op because the activate instance is invoked by the OpenApiSchema service.
+    public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }

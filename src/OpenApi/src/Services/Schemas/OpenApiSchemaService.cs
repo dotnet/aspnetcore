@@ -144,17 +144,83 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
-            Type = type,
+            JsonTypeInfo = jsonTypeInfo,
+            JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
             ApplicationServices = serviceProvider
         };
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
             var transformer = _openApiOptions.SchemaTransformers[i];
-            await transformer.TransformAsync(schema, context, cancellationToken);
+            // If the transformer is a type-based transformer, we need to initialize and finalize it
+            // once in the context of the top-level assembly and not the child properties we are invoking
+            // it on.
+            if (transformer is TypeBasedOpenApiSchemaTransformer typeBasedTransformer)
+            {
+                var initializedTransformer = typeBasedTransformer.InitializeTransformer(serviceProvider);
+                try
+                {
+                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, initializedTransformer, cancellationToken);
+                }
+                finally
+                {
+                    await TypeBasedOpenApiSchemaTransformer.FinalizeTransformer(initializedTransformer);
+                }
+            }
+            else
+            {
+                await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, transformer, cancellationToken);
+            }
+        }
+    }
+
+    private async Task InnerApplySchemaTransformersAsync(OpenApiSchema schema,
+        JsonTypeInfo jsonTypeInfo,
+        OpenApiSchemaTransformerContext context,
+        IOpenApiSchemaTransformer transformer,
+        CancellationToken cancellationToken = default)
+    {
+        await transformer.TransformAsync(schema, context, cancellationToken);
+
+        // Only apply transformers on polymorphic schemas where we can resolve the derived
+        // types associated with the base type.
+        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            var anyOfIndex = 0;
+            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
+                context.UpdateJsonTypeInfo(derivedJsonTypeInfo, null);
+                if (schema.AnyOf.Count <= anyOfIndex)
+                {
+                    break;
+                }
+                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, context, transformer, cancellationToken);
+                anyOfIndex++;
+            }
+        }
+
+        if (schema.Items is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
+            context.UpdateJsonTypeInfo(elementTypeInfo, null);
+            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, context, transformer, cancellationToken);
+        }
+
+        if (schema.Properties is { Count: > 0 })
+        {
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                context.UpdateJsonTypeInfo(_jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo);
+                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                {
+                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), context, transformer, cancellationToken);
+                }
+            }
         }
     }
 

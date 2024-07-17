@@ -52,7 +52,11 @@
       "ArrayOfstring": {
         "type": "array",
         "items": {
-          "type": "string"
+          "type": "string",
+          "externalDocs": {
+            "description": "Documentation for this OpenAPI schema",
+            "url": "https://example.com/api/docs/schemas/string"
+          }
         },
         "externalDocs": {
           "description": "Documentation for this OpenAPI schema",
