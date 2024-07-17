@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -188,7 +187,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         return new ApiParameterDescription
         {
             Name = name,
-            ModelMetadata = CreateModelMetadata(paramType),
+            ModelMetadata = CreateModelMetadata(paramType, parameter),
             Source = source,
             DefaultValue = parameter.ParameterInfo.DefaultValue,
             Type = parameter.ParameterInfo.ParameterType,
@@ -431,8 +430,8 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         }
     }
 
-    private static EndpointModelMetadata CreateModelMetadata(Type type) =>
-        new(ModelMetadataIdentity.ForType(type));
+    private static EndpointModelMetadata CreateModelMetadata(Type type, IParameterBindingMetadata? parameterBindingMetadata = null) =>
+        new(type, parameterBindingMetadata);
 
     private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
     {
