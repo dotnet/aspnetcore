@@ -2,8 +2,12 @@
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorization.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorization.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AdditionalAuthorizationParameters.get -> System.Collections.Generic.IDictionary<string!, string!>!
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UsePushedAuthorization.get -> bool
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UsePushedAuthorization.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.PushedAuthorizationBehavior.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.PushedAuthorizationBehavior.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.Disable = 1 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.Require = 2 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.UseIfAvailable = 0 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandleClientAuthentication() -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandledClientAuthentication.get -> bool

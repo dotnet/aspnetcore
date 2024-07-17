@@ -486,12 +486,39 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
-        var parRequired = ConfigFlagEnabled("require_pushed_authorization_requests");
         GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
 
-        if ((Options.UsePushedAuthorization && !string.IsNullOrEmpty(parEndpoint)) || parRequired)
+        switch (Options.PushedAuthorizationBehavior)
         {
-            await PushAuthorizationRequest(message, properties);
+            case PushedAuthorizationBehavior.UseIfAvailable:
+                // Push if endpoint is in disco
+                if (!string.IsNullOrEmpty(parEndpoint))
+                {
+                    await PushAuthorizationRequest(message, properties);
+                }
+
+                break;
+            case PushedAuthorizationBehavior.Disable:
+                // Fail if disabled in options but required by disco
+                var requiredInDiscovery = ConfigFlagEnabled("require_pushed_authorization_requests");
+                if (requiredInDiscovery)
+                {
+                    new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
+                }
+
+                // Otherwise do nothing
+                break;
+            case PushedAuthorizationBehavior.Require:
+                // Fail if required in options but unavailable in disco
+                var endpointIsConfigured = !parEndpoint.IsNullOrEmpty();
+                if (!endpointIsConfigured)
+                {
+                    new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
+                }
+
+                // Otherwise push
+                await PushAuthorizationRequest(message, properties);
+                break;
         }
 
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
@@ -526,7 +553,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     }
 
     // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
-    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
+    // Microsoft.IdentityModel.Protocols.OpenIdConnect is updated to v7.6.1 or later.
     private bool GetConfigString(string name, [NotNullWhen(true)] out string? value)
     {
         if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
@@ -542,7 +569,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     }
 
     // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
-    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
+    // Microsoft.IdentityModel.Protocols.OpenIdConnect is updated to v7.6.1 or later.
     private bool ConfigFlagEnabled(string name)
     {
         if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
@@ -597,9 +624,6 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             {
                 new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
             }
-
-            // TODO - If we get support for PAR in wilson, we can replace GetConfigString with something like this:
-            // var requestMessage = new HttpRequestMessage(HttpMethod.Post, parRequest.ParEndpoint ?? _configuration?.ParEndpoint);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);

@@ -108,8 +108,6 @@ public class Startup
             o.ClientSecret = "secret"; // for code flow
             o.Authority = "https://demo.duendesoftware.com/";
 
-            o.UsePushedAuthorization = true;
-
             o.ResponseType = OpenIdConnectResponseType.Code;
             o.SaveTokens = true;
             o.GetClaimsFromUserInfoEndpoint = true;
