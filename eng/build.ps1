@@ -311,8 +311,8 @@ if ($NoBuildJava) { $dotnetBuildArguments += "/p:BuildJava=false"; $BuildJava = 
 if ($BuildJava) { $dotnetBuildArguments += "/p:BuildJava=true" }
 if ($NoBuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=false"; $BuildManaged = $false }
 if ($BuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=true" }
-if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=false"; $BuildNodeJS = $false }
-if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
+if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJSUnlessSourcebuild=false"; $BuildNodeJS = $false }
+if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJSUnlessSourcebuild=true" }
 
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
