@@ -22,12 +22,12 @@ public interface IParameterBindingMetadata
 	string Name { get; }
 
     /// <summary>
-    /// <see langword="true "/> is the parameter is associated with a type that implements IParsable or exposes a TryParse method.
+    /// <see langword="true "/> is the parameter is associated with a type that implements <see cref="IParsable{TSelf}" /> or exposes a <c>TryParse</c> method.
     /// </summary>
 	bool HasTryParse { get; }
 
     /// <summary>
-    /// <see langword="true"/> if the parameter is associated with a type that implements a BindAsync method.
+    /// <see langword="true"/> if the parameter is associated with a type that implements a <c>BindAsync</c> method.
     /// </summary>
 	bool HasBindAsync { get; }
 

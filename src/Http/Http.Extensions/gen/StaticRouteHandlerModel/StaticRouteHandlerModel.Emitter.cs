@@ -217,7 +217,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (response.IsAwaitable && response.ResponseType == null)
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(void), contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(void), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
         else if (response.ResponseType is { } responseType)
         {

@@ -354,22 +354,31 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
     %GENERATEDCODEATTRIBUTE%
-    file sealed class ParameterBindingMetadata(
-        string name,
-        ParameterInfo parameterInfo,
-        bool hasTryParse = false,
-        bool hasBindAsync = false,
-        bool isOptional = false) : Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
     {
-        public string Name => name;
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
 
-        public bool HasTryParse => hasTryParse;
+        public string Name { get; }
 
-        public bool HasBindAsync => hasBindAsync;
+        public bool HasTryParse { get; }
 
-        public ParameterInfo ParameterInfo => parameterInfo;
+        public bool HasBindAsync { get; }
 
-        public bool IsOptional => isOptional;
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
     }
 
     %GENERATEDCODEATTRIBUTE%
