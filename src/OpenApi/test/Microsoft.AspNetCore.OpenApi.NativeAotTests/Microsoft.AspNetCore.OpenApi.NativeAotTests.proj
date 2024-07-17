@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <TestConsoleAppSourceFiles Include="BasicMinimalApiWithOpenApiDependency.cs">
+    <!-- Disable tests in production until https://github.com/microsoft/OpenAPI.NET/pull/1717 is merged and
+    released in Microsoft.OpenApi -->
+    <_TestConsoleAppSourceFiles Include="BasicMinimalApiWithOpenApiDependency.cs">
       <EnabledProperties>EnableRequestDelegateGenerator</EnabledProperties>
       <InterceptorNamespaces>Microsoft.AspNetCore.Http.Generated</InterceptorNamespaces>
       <DisabledFeatureSwitches>Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported</DisabledFeatureSwitches>
-    </TestConsoleAppSourceFiles>
+    </_TestConsoleAppSourceFiles>
   </ItemGroup>
 
 </Project>
