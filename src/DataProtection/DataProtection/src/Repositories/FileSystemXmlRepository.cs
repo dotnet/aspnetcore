@@ -208,6 +208,7 @@ public class FileSystemXmlRepository : IDeletableXmlRepository
             {
                 Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
                 _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
+                // Stop processing deletions to avoid deleting a revocation entry for a key that we failed to delete.
                 return false;
             }
         }

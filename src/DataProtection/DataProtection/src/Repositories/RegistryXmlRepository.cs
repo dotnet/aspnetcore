@@ -189,6 +189,7 @@ public class RegistryXmlRepository : IDeletableXmlRepository
             catch (Exception ex)
             {
                 _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                // Stop processing deletions to avoid deleting a revocation entry for a key that we failed to delete.
                 return false;
             }
         }
