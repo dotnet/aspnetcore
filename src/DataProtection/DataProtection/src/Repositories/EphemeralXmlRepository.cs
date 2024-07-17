@@ -56,7 +56,7 @@ internal sealed class EphemeralXmlRepository : IDeletableXmlRepository
     }
 
     /// <inheritdoc/>
-    public bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    public bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
         ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
 

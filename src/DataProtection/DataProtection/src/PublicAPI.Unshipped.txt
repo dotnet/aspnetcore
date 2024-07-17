@@ -9,6 +9,6 @@ Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder
 Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.set -> void
 Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.Element.get -> System.Xml.Linq.XElement!
 Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository
-Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
-virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
-virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool

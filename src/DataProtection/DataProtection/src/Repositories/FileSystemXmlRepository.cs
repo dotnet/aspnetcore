@@ -177,7 +177,7 @@ public class FileSystemXmlRepository : IDeletableXmlRepository
     }
 
     /// <inheritdoc/>
-    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    public virtual bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
         ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
 

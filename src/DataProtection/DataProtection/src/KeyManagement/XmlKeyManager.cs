@@ -418,7 +418,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             throw Error.XmlKeyManager_DoesNotSupportKeyDeletion();
         }
 
-        return xmlRepositoryWithDeletion.RemoveElements((deletableElements) =>
+        return xmlRepositoryWithDeletion.DeleteElements((deletableElements) =>
         {
             // It is important to delete key elements before the corresponding revocation elements,
             // in case the deletion fails part way - we don't want to accidentally unrevoke a key

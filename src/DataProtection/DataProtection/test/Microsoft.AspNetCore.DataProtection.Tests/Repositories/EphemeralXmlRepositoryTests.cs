@@ -52,7 +52,7 @@ public class EphemeralXmlRepositoryTests
 
         var ranSelector = false;
 
-        Assert.True(repository.RemoveElements(deletableElements =>
+        Assert.True(repository.DeleteElements(deletableElements =>
         {
             ranSelector = true;
             Assert.Equal(2, deletableElements.Count);
@@ -92,12 +92,12 @@ public class EphemeralXmlRepositoryTests
 
         var ranSelector = false;
 
-        Assert.True(repository.RemoveElements(deletableElements =>
+        Assert.True(repository.DeleteElements(deletableElements =>
         {
             ranSelector = true;
 
             // Now that the repository has read the element from the registry, delete it out-of-band.
-            repository.RemoveElements(deletableElements => deletableElements.First().DeletionOrder = 1);
+            repository.DeleteElements(deletableElements => deletableElements.First().DeletionOrder = 1);
 
             Assert.Equal(1, deletableElements.Count);
 

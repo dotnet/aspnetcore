@@ -157,7 +157,7 @@ public class FileSystemXmlRepositoryTests
 
             var ranSelector = false;
 
-            Assert.True(repository.RemoveElements(deletableElements =>
+            Assert.True(repository.DeleteElements(deletableElements =>
             {
                 ranSelector = true;
                 Assert.Equal(2, deletableElements.Count);
@@ -212,7 +212,7 @@ public class FileSystemXmlRepositoryTests
             try
             {
                 var ranSelector = false;
-                Assert.False(repository.RemoveElements(deletableElements =>
+                Assert.False(repository.DeleteElements(deletableElements =>
                 {
                     ranSelector = true;
 
@@ -255,7 +255,7 @@ public class FileSystemXmlRepositoryTests
 
             var ranSelector = false;
 
-            Assert.True(repository.RemoveElements(deletableElements =>
+            Assert.True(repository.DeleteElements(deletableElements =>
             {
                 ranSelector = true;
 

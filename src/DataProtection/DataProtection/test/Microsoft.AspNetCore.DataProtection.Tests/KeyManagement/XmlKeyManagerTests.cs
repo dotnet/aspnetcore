@@ -1016,7 +1016,7 @@ public class XmlKeyManagerTests
 
         IReadOnlyCollection<XElement> IXmlRepository.GetAllElements() => [];
         void IXmlRepository.StoreElement(XElement element, string friendlyName) => throw new InvalidOperationException();
-        bool IDeletableXmlRepository.RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new InvalidOperationException();
+        bool IDeletableXmlRepository.DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new InvalidOperationException();
     }
 
     private class MyDeserializer : IAuthenticatedEncryptorDescriptorDeserializer

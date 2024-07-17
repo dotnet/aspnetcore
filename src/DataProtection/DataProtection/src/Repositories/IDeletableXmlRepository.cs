@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 public interface IDeletableXmlRepository : IXmlRepository
 {
     /// <summary>
-    /// Removes selected elements from the repository.
+    /// Deletes selected elements from the repository.
     /// </summary>
     /// <param name="chooseElements">
     /// A snapshot of the elements in this repository.
@@ -23,5 +23,5 @@ public interface IDeletableXmlRepository : IXmlRepository
     /// <returns>
     /// True if all deletions succeeded.
     /// </returns>
-    bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements);
+    bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements);
 }

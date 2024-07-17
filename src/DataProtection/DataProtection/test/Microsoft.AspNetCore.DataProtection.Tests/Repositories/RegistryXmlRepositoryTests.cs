@@ -144,7 +144,7 @@ public class RegistryXmlRepositoryTests
 
             var ranSelector = false;
 
-            Assert.True(repository.RemoveElements(deletableElements =>
+            Assert.True(repository.DeleteElements(deletableElements =>
             {
                 ranSelector = true;
                 Assert.Equal(2, deletableElements.Count);
@@ -196,7 +196,7 @@ public class RegistryXmlRepositoryTests
 
             var ranSelector = false;
 
-            Assert.True(repository.RemoveElements(deletableElements =>
+            Assert.True(repository.DeleteElements(deletableElements =>
             {
                 ranSelector = true;
 
