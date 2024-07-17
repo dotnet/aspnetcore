@@ -283,7 +283,7 @@ public static class HttpRequestJsonExtensions
         }
 
         // Matches application/json
-        if (mt.MediaType.Equals(JsonConstants.JsonContentType, StringComparison.OrdinalIgnoreCase))
+        if (mt.MediaType.Equals(ContentTypeConstants.JsonContentType, StringComparison.OrdinalIgnoreCase))
         {
             charset = mt.Charset;
             return true;
