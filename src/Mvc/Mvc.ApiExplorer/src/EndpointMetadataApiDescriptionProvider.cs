@@ -179,7 +179,8 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             return null;
         }
 
-        // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
+        // Use the optionality status determined by the code generation layer which accounts for
+        // nullability, default values, and the whether or not `[FromBody(AllowEmpty = true)]`.
         var isOptional = parameter.IsOptional;
         var parameterDescriptor = CreateParameterDescriptor(parameter.ParameterInfo, pattern);
         var routeInfo = CreateParameterRouteInfo(pattern, parameter.ParameterInfo, isOptional);

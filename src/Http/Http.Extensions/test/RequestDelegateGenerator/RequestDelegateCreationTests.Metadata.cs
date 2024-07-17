@@ -92,7 +92,7 @@ app.MapGet("/", Task () => Task.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
-        Assert.Equal("application/json", metadata.ContentTypes.Single());
+        Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Equal(typeof(void), metadata.Type);
     }
 
@@ -120,7 +120,7 @@ app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
-        Assert.Equal("application/json", metadata.ContentTypes.Single());
+        Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Equal(typeof(void), metadata.Type);
     }
 
