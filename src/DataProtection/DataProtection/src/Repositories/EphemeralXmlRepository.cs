@@ -62,10 +62,13 @@ internal sealed class EphemeralXmlRepository : IDeletableXmlRepository
 
         var deletableElements = new List<DeletableElement>();
 
-        foreach (var storedElement in _storedElements)
+        lock (_storedElements)
         {
-            // Make a deep copy so caller doesn't inadvertently modify it.
-            deletableElements.Add(new DeletableElement(storedElement, new XElement(storedElement)));
+            foreach (var storedElement in _storedElements)
+            {
+                // Make a deep copy so caller doesn't inadvertently modify it.
+                deletableElements.Add(new DeletableElement(storedElement, new XElement(storedElement)));
+            }
         }
 
         chooseElements(deletableElements);
