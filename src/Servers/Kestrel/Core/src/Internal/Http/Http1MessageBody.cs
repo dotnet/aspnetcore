@@ -115,10 +115,10 @@ internal abstract class Http1MessageBody : MessageBody
         }
     }
 
-    protected override void OnOnbservedBytesExceedMaxRequestBodySize(long? maxRequestBodySize)
+    protected override void OnObservedBytesExceedMaxRequestBodySize(long maxRequestBodySize)
     {
         _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
-        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
+        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.ToString(CultureInfo.InvariantCulture));
     }
 
     public static MessageBody For(

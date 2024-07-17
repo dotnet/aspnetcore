@@ -305,7 +305,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown));
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdownTimeout));
         });
     }
 
@@ -647,7 +647,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             await shutdownTask;
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown)));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdownTimeout)));
     }
 
     [ConditionalFact]

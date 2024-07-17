@@ -80,7 +80,7 @@ internal sealed class TransportConnectionManager
                 // Connection didn't shutdown in allowed time. Force close the connection and set the end reason.
                 KestrelMetrics.AddConnectionEndReason(
                     connection.TransportConnection.Features.Get<IConnectionMetricsContextFeature>()?.MetricsContext,
-                    ConnectionEndReason.AppShutdown, overwrite: true);
+                    ConnectionEndReason.AppShutdownTimeout, overwrite: true);
 
                 connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
                 abortTasks.Add(connection.ExecutionTask);

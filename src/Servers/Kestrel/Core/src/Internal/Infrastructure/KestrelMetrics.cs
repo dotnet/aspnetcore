@@ -497,7 +497,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.ServerTimeout => "server_timeout",
             ConnectionEndReason.StreamCreationError => "stream_creation_error",
             ConnectionEndReason.IOError => "io_error",
-            ConnectionEndReason.AppShutdown => "app_shutdown",
+            ConnectionEndReason.AppShutdownTimeout => "app_shutdown_timeout",
             ConnectionEndReason.TlsHandshakeFailed => "tls_handshake_failed",
             ConnectionEndReason.InvalidRequestLine => "invalid_request_line",
             ConnectionEndReason.TlsOverHttp => "tls_over_http",

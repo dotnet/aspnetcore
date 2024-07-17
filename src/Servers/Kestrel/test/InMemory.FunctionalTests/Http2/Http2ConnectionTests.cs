@@ -5109,7 +5109,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
-        _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdown);
+        _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         await _closingStateReached.Task.DefaultTimeout();
 
         VerifyGoAway(await ReceiveFrameAsync(), Int32.MaxValue, Http2ErrorCode.NO_ERROR);
@@ -5132,7 +5132,7 @@ public class Http2ConnectionTests : Http2TestBase
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
 
-        AssertConnectionEndReason(ConnectionEndReason.AppShutdown);
+        AssertConnectionEndReason(ConnectionEndReason.AppShutdownTimeout);
     }
 
     [Fact]
@@ -5143,7 +5143,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
-        _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdown);
+        _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         VerifyGoAway(await ReceiveFrameAsync(), Int32.MaxValue, Http2ErrorCode.NO_ERROR);
 
         await _closingStateReached.Task.DefaultTimeout();
@@ -5181,7 +5181,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-        AssertConnectionEndReason(ConnectionEndReason.AppShutdown);
+        AssertConnectionEndReason(ConnectionEndReason.AppShutdownTimeout);
     }
 
     [Fact]

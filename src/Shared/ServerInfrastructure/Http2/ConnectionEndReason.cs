@@ -43,7 +43,7 @@ internal enum ConnectionEndReason
     StreamCreationError,
     IOError,
     ClientGoAway,
-    AppShutdown,
+    AppShutdownTimeout,
     GracefulAppShutdown,
     TransportCompleted,
     TlsHandshakeFailed,
