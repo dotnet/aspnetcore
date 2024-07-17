@@ -14,12 +14,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 public interface IDeletableKeyManager : IKeyManager
 {
     /// <summary>
-    /// Indicates whether this key manager supports key deletion.
+    /// Indicates whether this key manager and the underlying <see cref="Repositories.IXmlRepository"/> support key deletion.
     /// </summary>
-    /// <remarks>
-    /// Deletion is stronger than revocation.  A revoked key is retained and can even be (forcefully) applied.
-    /// A deleted key is indistinguishable from a key that never existed.
-    /// </remarks>
+    /// <seealso cref="DeleteKeys"/>
     bool CanDeleteKeys { get; }
 
     /// <summary>
@@ -35,6 +32,9 @@ public interface IDeletableKeyManager : IKeyManager
     /// True if all attempted deletions succeeded.
     /// </returns>
     /// <remarks>
+    /// Deletion is stronger than revocation.  A revoked key is retained and can even be (forcefully) applied.
+    /// A deleted key is indistinguishable from a key that never existed.
+    /// 
     /// Generally, keys should only be deleted to save space.  If space is not a concern, keys
     /// should be revoked or allowed to expire instead.
     ///

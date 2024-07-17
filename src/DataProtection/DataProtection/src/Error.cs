@@ -105,7 +105,6 @@ internal static class Error
 
     public static NotSupportedException XmlKeyManager_DoesNotSupportKeyDeletion()
     {
-        var message = string.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DoesNotSupportKeyDeletion);
-        return new NotSupportedException(message);
+        return new NotSupportedException(Resources.XmlKeyManager_DoesNotSupportKeyDeletion);
     }
 }

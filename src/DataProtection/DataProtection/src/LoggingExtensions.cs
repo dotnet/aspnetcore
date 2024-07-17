@@ -256,7 +256,7 @@ internal static partial class LoggingExtensions
     [LoggerMessage(73, LogLevel.Debug, "Key {KeyId:B} method {MethodName} failed. Retrying.", EventName = "RetryingMethodOfKeyAfterFailure")]
     public static partial void RetryingMethodOfKeyAfterFailure(this ILogger logger, Guid keyId, string methodName, Exception exception);
 	
-    [LoggerMessage(74, LogLevel.Information, "Deleting file '{FileName}'.", EventName = "DeletingFile")]
+    [LoggerMessage(74, LogLevel.Debug, "Deleting file '{FileName}'.", EventName = "DeletingFile")]
     public static partial void DeletingFile(this ILogger logger, string fileName);
 
     [LoggerMessage(75, LogLevel.Error, "Failed to delete file '{FileName}'.  Not attempting further deletions.", EventName = "FailedToDeleteFile")]
