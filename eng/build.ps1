@@ -235,6 +235,7 @@ if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
         if ($node) {
             $nodeHome = Split-Path -Parent (Split-Path -Parent $node.Path)
             Write-Host -f Magenta "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected in $nodeHome."
+            Write-Host -f Magenta "Note that if you are running Source Build, building NodeJS projects will be disabled later on."
             $BuildNodeJS = $true
         }
         else {

@@ -19,6 +19,7 @@
 
     <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
     <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
+    <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
     <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
 
