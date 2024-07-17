@@ -9,8 +9,6 @@ parameters:
 
 steps:
 - task: NuGetAuthenticate@1
-  inputs:
-    nuGetServiceConnections: GuardianConnect
 
 - task: NuGetToolInstaller@1
   displayName: 'Install NuGet.exe'

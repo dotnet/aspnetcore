@@ -4,6 +4,8 @@ function Install-Gdn {
         [Parameter(Mandatory=$true)]
         [string]$Path,
 
+        [string]$Source = "https://pkgs.dev.azure.com/dnceng/_packaging/Guardian1ESPTUpstreamOrgFeed/nuget/v3/index.json",
+
         # If omitted, install the latest version of Guardian, otherwise install that specific version.
         [string]$Version
     )
@@ -19,7 +21,7 @@ function Install-Gdn {
     $ci = $true
     . $PSScriptRoot\..\tools.ps1
 
-    $argumentList = @("install", "Microsoft.Guardian.Cli", "-Source https://securitytools.pkgs.visualstudio.com/_packaging/Guardian/nuget/v3/index.json", "-OutputDirectory $Path", "-NonInteractive", "-NoCache")
+    $argumentList = @("install", "Microsoft.Guardian.Cli.win-x64", "-Source $Source", "-OutputDirectory $Path", "-NonInteractive", "-NoCache")
 
     if ($Version) {
         $argumentList += "-Version $Version"

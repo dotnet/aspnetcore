@@ -9,8 +9,6 @@ parameters:
 
 steps:
 - task: NuGetAuthenticate@1
-  inputs:
-    nuGetServiceConnections: GuardianConnect
 
 - task: NuGetToolInstaller@1
   displayName: 'Install NuGet.exe'
@@ -36,16 +34,19 @@ steps:
     displayName: Execute SDL (Overridden)
     continueOnError: ${{ parameters.sdlContinueOnError }}
     condition: ${{ parameters.condition }}
+    env:
+      GUARDIAN_DEFAULT_PACKAGE_SOURCE_SECRET: $(System.AccessToken)
 
 - ${{ if eq(parameters.overrideParameters, '') }}:
   - powershell: ${{ parameters.executeAllSdlToolsScript }}
       -GuardianCliLocation $(GuardianCliLocation)
       -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
-      -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
       ${{ parameters.additionalParameters }}
     displayName: Execute SDL
     continueOnError: ${{ parameters.sdlContinueOnError }}
     condition: ${{ parameters.condition }}
+    env:
+      GUARDIAN_DEFAULT_PACKAGE_SOURCE_SECRET: $(System.AccessToken)
 
 - ${{ if ne(parameters.publishGuardianDirectoryToPipeline, 'false') }}:
   # We want to publish the Guardian results and configuration for easy diagnosis. However, the
