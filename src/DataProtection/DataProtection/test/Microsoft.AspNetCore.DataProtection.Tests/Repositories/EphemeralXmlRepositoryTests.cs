@@ -40,7 +40,7 @@ public class EphemeralXmlRepositoryTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void RemoveElements(bool remove1, bool remove2)
+    public void DeleteElements(bool delete1, bool delete2)
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
 
@@ -62,10 +62,10 @@ public class EphemeralXmlRepositoryTests
                 switch (element.Element.Name.LocalName)
                 {
                     case "element1":
-                        element.DeletionOrder = remove1 ? 1 : null;
+                        element.DeletionOrder = delete1 ? 1 : null;
                         break;
                     case "element2":
-                        element.DeletionOrder = remove2 ? 2 : null;
+                        element.DeletionOrder = delete2 ? 2 : null;
                         break;
                     default:
                         Assert.Fail("Unexpected element name: " + element.Element.Name.LocalName);
@@ -79,12 +79,12 @@ public class EphemeralXmlRepositoryTests
 
         Assert.InRange(elementSet.Count, 0, 2);
 
-        Assert.Equal(!remove1, elementSet.Contains(element1.Name.LocalName));
-        Assert.Equal(!remove2, elementSet.Contains(element2.Name.LocalName));
+        Assert.Equal(!delete1, elementSet.Contains(element1.Name.LocalName));
+        Assert.Equal(!delete2, elementSet.Contains(element2.Name.LocalName));
     }
 
     [Fact]
-    public void RemoveElementsWithOutOfBandDeletion()
+    public void DeleteElementsWithOutOfBandDeletion()
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
 
