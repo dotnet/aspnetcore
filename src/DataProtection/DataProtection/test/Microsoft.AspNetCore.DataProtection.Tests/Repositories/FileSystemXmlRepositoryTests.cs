@@ -189,7 +189,8 @@ public class FileSystemXmlRepositoryTests
         });
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Making FileSystemInfo.Delete throw on Linux is hard")]
     public void DeleteElementsWithFailure()
     {
         WithUniqueTempDirectory(dirInfo =>
