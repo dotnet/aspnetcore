@@ -7,7 +7,7 @@ function _compareFiles($fileName) {
     $submoduleFile = "$repoRoot/src/submodules/BlazorMinifiedJs/src/$fileName"
     $delta = Compare-Object -ReferenceObject ((Get-Content -Path $submoduleFile).trim()) -DifferenceObject ((Get-Content -Path $localFile).trim())
     if (![string]::IsNullOrEmpty($delta)) {
-        $script:errors += "Diff found in $fileName, please see https://github.com/dotnet/aspnetcore/blob/main/docs/UpdatingMinifiedJsFiles.md for remediation steps"
+        $script:errors += "$fileName: $delta"
     }
 }
 
