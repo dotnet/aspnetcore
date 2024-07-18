@@ -11,4 +11,6 @@ Building our `src/Components` projects will produce minified.js files under `src
 6. Once that PR has been merged, return to your aspnetcore PR, navigate to `src/submodules/BlazorMinifiedJs`, and checkout the commit you just pushed.
 7. Push the submodule update to your aspnetcore PR.
 
+Alternatively, you can find the generated .js files in the artifacts of your PR build, under the artifact named "Minified_JS_Files". This may be more reliable than building the node components locally.
+
 Following these steps should remediate any build errors related to `BlazorMinifiedJs` in your PR.
