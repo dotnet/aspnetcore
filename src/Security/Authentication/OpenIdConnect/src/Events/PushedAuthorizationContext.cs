@@ -44,7 +44,7 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     {
         if (SkippedPush || HandledClientAuthentication)
         {
-            throw new InvalidOperationException("TODO MESSASGE");
+            throw new InvalidOperationException("Only one of HandlePush, SkipPush, and HandledClientAuthentication may be called in the OnPushAuthorization event.");
         }
         HandledPush = true;
         RequestUri = requestUri;
@@ -74,7 +74,7 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     {
         if (HandledPush || HandledClientAuthentication)
         {
-            throw new InvalidOperationException("TODO MESSASGE");
+            throw new InvalidOperationException("Only one of HandlePush, SkipPush, and HandledClientAuthentication may be called in the OnPushAuthorization event.");
         }
         SkippedPush = true;
     }
@@ -98,7 +98,7 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     {
         if (SkippedPush || HandledPush)
         {
-            throw new InvalidOperationException("TODO MESSASGE");
+            throw new InvalidOperationException("Only one of HandlePush, SkipPush, and HandledClientAuthentication may be called in the OnPushAuthorization event.");
         }
         HandledClientAuthentication = true;
     }
