@@ -31,6 +31,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         });
         services.AddHttpContextAccessor();
+        services.AddCascadingAuthenticationState();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +55,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
 
             app.UseStaticFiles();
             app.UseRouting();
+            RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(app);
             app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {

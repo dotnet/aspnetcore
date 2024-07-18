@@ -16,6 +16,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*.cs" LinkBase="Forms\ExpressionFommatting" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JsonConverterFactoryTypeInfoResolver.cs" LinkBase="JsonSerialization" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +25,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <ItemGroup>

@@ -97,4 +97,9 @@ internal static class Error
         var message = string.Format(CultureInfo.CurrentCulture, Resources.KeyRingProvider_DefaultKeyRevoked, id);
         return new InvalidOperationException(message);
     }
+
+    public static InvalidOperationException KeyRingProvider_RefreshFailedOnOtherThread(Exception? inner)
+    {
+        return new InvalidOperationException(Resources.KeyRingProvider_RefreshFailedOnOtherThread, inner);
+    }
 }

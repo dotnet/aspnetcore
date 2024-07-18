@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+    <HeadOutlet @rendermode="@PageRenderMode" />
+</head>
+<body>
+    <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" />
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                loadBootResource: (type, name, defaultUri, integrity) => `WasmMinimal/_framework/${name}`
+            }
+        });
+    </script>
+</body>
+</html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    // Show we can use arbitrary logic to determine the rendermode. Here it's global by default,
+    // but that can be suppressed via URL or attribute.
+    private IComponentRenderMode? PageRenderMode
+        => HttpContext.AcceptsInteractiveRouting() && !HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
+        ? RenderMode.InteractiveWebAssembly
+        : null;
+}

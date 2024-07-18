@@ -63,6 +63,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
@@ -166,6 +167,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
 
+            // This has the side-effect of validating the error code, so do it before we consume the error code
+            _errorCodeFeature.Error = (long)errorCode;
+
             _context.WebTransportSession?.Abort(abortReason, errorCode);
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
@@ -181,7 +185,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             RequestBodyPipe.Writer.Complete(exception);
 
             // Abort framewriter and underlying transport after stopping output.
-            _errorCodeFeature.Error = (long)errorCode;
             _frameWriter.Abort(abortReason);
         }
     }
@@ -834,6 +837,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
             }
 
+            if (_context.ClientPeerSettings.EnableWebTransport != _context.ServerPeerSettings.EnableWebTransport)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3WebTransportStatusMismatch(_context.ClientPeerSettings.EnableWebTransport == 1, _context.ServerPeerSettings.EnableWebTransport == 1), Http3ErrorCode.SettingsError);
+            }
+
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
             {
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
@@ -892,12 +900,20 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             InputRemaining -= payload.Length;
         }
 
-        foreach (var segment in payload)
+        lock (_completionLock)
         {
-            RequestBodyPipe.Writer.Write(segment.Span);
-        }
+            if (IsAborted || IsAbortedRead)
+            {
+                return Task.CompletedTask;
+            }
 
-        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+            foreach (var segment in payload)
+            {
+                RequestBodyPipe.Writer.Write(segment.Span);
+            }
+
+            return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+        }
     }
 
     protected override void OnReset()

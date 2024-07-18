@@ -315,4 +315,10 @@
   <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
     <value>Use AddAuthorizationBuilder</value>
   </data>
+  <data name="Analyzer_OverriddenAuthorizeAttribute_Message" xml:space="preserve">
+    <value>This [Authorize] attribute is overridden by an [AllowAnonymous] attribute from farther away on '{0}'. See https://aka.ms/aspnetcore-warnings/ASP0026 for more details.</value>
+  </data>
+  <data name="Analyzer_OverriddenAuthorizeAttribute_Title" xml:space="preserve">
+    <value>[Authorize] overridden by [AllowAnonymous] from farther away</value>
+  </data>
 </root>

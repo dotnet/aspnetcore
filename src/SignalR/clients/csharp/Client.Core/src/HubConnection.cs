@@ -825,20 +825,100 @@ public partial class HubConnection : IAsyncDisposable
             // For each stream that needs to be sent, run a "send items" task in the background.
             // This reads from the channel, attaches streamId, and sends to server.
             // A single background thread here quickly gets messy.
-            if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
+            if (ReflectionHelper.GetIAsyncEnumerableInterface(reader.GetType()) is { } asyncEnumerableType)
             {
-                _ = _sendIAsyncStreamItemsMethod
-                    .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1")!.GetGenericArguments())
-                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
+                InvokeStreamMethod(
+                    _sendIAsyncStreamItemsMethod,
+                    asyncEnumerableType.GetGenericArguments(),
+                    connectionState,
+                    kvp.Key.ToString(),
+                    reader,
+                    cts);
                 continue;
             }
-            _ = _sendStreamItemsMethod
-                .MakeGenericMethod(reader.GetType().GetGenericArguments())
-                .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
+
+            if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
+            {
+                InvokeStreamMethod(
+                    _sendStreamItemsMethod,
+                    [channelGenericType],
+                    connectionState,
+                    kvp.Key.ToString(),
+                    reader,
+                    cts);
+                continue;
+            }
+
+            // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
+            throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
     }
 
-    // this is called via reflection using the `_sendStreamItems` field
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "The methods passed into here (SendStreamItems and SendIAsyncEnumerableStreamItems) don't have trimming annotations.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "ValueTypes are handled without using MakeGenericMethod.")]
+    private void InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
+    {
+        Debug.Assert(genericTypes.Length == 1);
+#if NET6_0_OR_GREATER
+        if (!RuntimeFeature.IsDynamicCodeSupported && genericTypes[0].IsValueType)
+        {
+            _ = ReflectionSendStreamItems(methodInfo, connectionState, streamId, reader, tokenSource);
+        }
+        else
+#endif
+        {
+            _ = methodInfo
+                .MakeGenericMethod(genericTypes)
+                .Invoke(this, [connectionState, streamId, reader, tokenSource]);
+        }
+    }
+
+#if NET6_0_OR_GREATER
+
+    /// <summary>
+    /// Uses reflection to read items from an IAsyncEnumerable{T} or ChannelReader{T} and send them to the server.
+    ///
+    /// Used when the runtime does not support dynamic code generation (ex. native AOT) and the generic type is a value type. In this scenario,
+    /// we cannot use MakeGenericMethod to call the appropriate SendStreamItems method because the generic type is a value type.
+    /// </summary>
+    private Task ReflectionSendStreamItems(MethodInfo methodInfo, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
+    {
+        async Task ReadAsyncEnumeratorStream(IAsyncEnumerator<object?> enumerator)
+        {
+            try
+            {
+                while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    await SendStreamItemAsync(connectionState, streamId, enumerator.Current, tokenSource).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                await enumerator.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+
+        Func<Task> createAndConsumeStream;
+        if (methodInfo == _sendStreamItemsMethod)
+        {
+            // reader is a ChannelReader<T>
+            createAndConsumeStream = () => ReadAsyncEnumeratorStream(AsyncEnumerableAdapters.MakeReflectionAsyncEnumeratorFromChannel(reader, tokenSource.Token));
+        }
+        else
+        {
+            // reader is an IAsyncEnumerable<T>
+            Debug.Assert(methodInfo == _sendIAsyncStreamItemsMethod);
+
+            createAndConsumeStream = () => ReadAsyncEnumeratorStream(AsyncEnumerableAdapters.MakeReflectionAsyncEnumerator(reader, tokenSource.Token));
+        }
+
+        return CommonStreaming(connectionState, streamId, createAndConsumeStream, tokenSource);
+    }
+#endif
+
+    // this is called via reflection using the `_sendStreamItemsMethod` field
     private Task SendStreamItems<T>(ConnectionState connectionState, string streamId, ChannelReader<T> reader, CancellationTokenSource tokenSource)
     {
         async Task ReadChannelStream()
@@ -847,8 +927,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (!tokenSource.Token.IsCancellationRequested && reader.TryRead(out var item))
                 {
-                    await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token).ConfigureAwait(false);
-                    Log.SendingStreamItem(_logger, streamId);
+                    await SendStreamItemAsync(connectionState, streamId, item, tokenSource).ConfigureAwait(false);
                 }
             }
         }
@@ -861,16 +940,19 @@ public partial class HubConnection : IAsyncDisposable
     {
         async Task ReadAsyncEnumerableStream()
         {
-            var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
-
-            await foreach (var streamValue in streamValues.ConfigureAwait(false))
+            await foreach (var streamValue in stream.WithCancellation(tokenSource.Token).ConfigureAwait(false))
             {
-                await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token).ConfigureAwait(false);
-                Log.SendingStreamItem(_logger, streamId);
+                await SendStreamItemAsync(connectionState, streamId, streamValue, tokenSource).ConfigureAwait(false);
             }
         }
 
         return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream, tokenSource);
+    }
+
+    private async Task SendStreamItemAsync(ConnectionState connectionState, string streamId, object? item, CancellationTokenSource tokenSource)
+    {
+        await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token).ConfigureAwait(false);
+        Log.SendingStreamItem(_logger, streamId);
     }
 
     private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream, CancellationTokenSource cts)

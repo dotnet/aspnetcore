@@ -831,6 +831,18 @@ public class HttpRequestHeadersTests
         Assert.Equal(0, count);
     }
 
+    [Fact]
+    public void ContentLengthEnumerableWithoutOtherKnownHeader()
+    {
+        IHeaderDictionary headers = new HttpRequestHeaders();
+        headers["content-length"] = "1024";
+        Assert.Single(headers);
+        headers["unknown"] = "value";
+        Assert.Equal(2, headers.Count()); // NB: enumerable count, not property
+        headers["host"] = "myhost";
+        Assert.Equal(3, headers.Count()); // NB: enumerable count, not property
+    }
+
     private static (string PrevHeaderValue, string NextHeaderValue) GetHeaderValues(HttpRequestHeaders headers, string prevName, string nextName, string prevValue, string nextValue)
     {
         headers.Reset();

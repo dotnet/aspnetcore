@@ -8,7 +8,9 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\OpenApi\\src\\Microsoft.AspNetCore.OpenApi.csproj",
-      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests.csproj"
+      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
+      "src\\OpenApi\\sample\\Sample.csproj",
+      "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj"
     ]
   }
 }
