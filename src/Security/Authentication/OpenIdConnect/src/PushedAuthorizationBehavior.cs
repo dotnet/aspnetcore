@@ -16,9 +16,7 @@ public enum PushedAuthorizationBehavior
     UseIfAvailable,
     /// <summary>
     /// Never use Pushed Authorization (PAR), even if the PAR endpoint is available in the identity provider's discovery document or the explicit <see cref="OpenIdConnectConfiguration"/>.
-    ///
-    /// TODO - Document the required by disco but disabled here case
-    ///
+    /// If the identity provider's discovery document indicates that it requires Pushed Authorization (PAR), the handler will fail.
     /// </summary>
     Disable,
     /// <summary>

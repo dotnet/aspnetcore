@@ -637,7 +637,6 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         authorizeRequest.Parameters.Add("request_uri", requestUri);
     }
 
-    // TODO Compare with similar use case in RedeemAuthorizationCodeAsync
     private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
     {
         // Check content type
@@ -648,7 +647,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         // Parse response
-        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync();
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
         var message = new OpenIdConnectMessage(parResponseString);
 
         var requestUri = message.GetParameter("request_uri");
