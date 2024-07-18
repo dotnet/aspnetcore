@@ -692,7 +692,7 @@ public class ExceptionHandlerTest
     }
 
     [Fact]
-    public async Task ExceptionHandler_SelectsStatusCode404_When404ThrowedAndNotNotAllowed()
+    public async Task StatusCodeSelector_CanSelect404()
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
