@@ -702,6 +702,7 @@ public class OpenIdConnectChallengeTests
         var settings = new TestSettings(opt =>
         {
             opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
 
             opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
             // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
@@ -712,7 +713,7 @@ public class OpenIdConnectChallengeTests
         }, mockBackchannel);
 
         var server = settings.CreateTestServer();
-        var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.Challenge);
+        var transaction = await server.SendAsync(ChallengeEndpoint);
 
         var res = transaction.Response;
 
@@ -725,9 +726,165 @@ public class OpenIdConnectChallengeTests
         // The request_uri takes the place of all the other usual parameters
         Assert.DoesNotContain("redirect_uri", res.Headers.Location.Query);
         Assert.DoesNotContain("scope", res.Headers.Location.Query);
+        Assert.DoesNotContain("client_secret", res.Headers.Location.Query);
 
         Assert.Contains("redirect_uri", mockBackchannel.PushedParameters);
         Assert.Contains("scope", mockBackchannel.PushedParameters);
+        Assert.Contains("client_secret", mockBackchannel.PushedParameters);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_RequiredByOptions_EndpointMissingInDiscovery()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Require;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+
+            // We are NOT setting the endpoint (as if the disco document didn't contain it)
+            //opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"];
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+        Assert.Equal("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.", exception.Message);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_DisabledByOptions_RequiredInDiscovery()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+
+            opt.Configuration.AdditionalData["require_pushed_authorization_requests"] = true;
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+        Assert.Equal("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.", exception.Message);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_Skipped()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.SkipPush();
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // We didn't push, so we don't have a request_uri, and the mock didn't capture any values
+        Assert.DoesNotContain("request_uri=my_reference_value", res.Headers.Location.Query);
+        Assert.Empty(mockBackchannel.PushedParameters);
+
+        // All the usual parameters are present
+        Assert.Contains("redirect_uri", res.Headers.Location.Query);
+        Assert.Contains("scope", res.Headers.Location.Query);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_Handled()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var eventProvidedRequestUri = "request_uri_from_event";
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.HandlePush(eventProvidedRequestUri);
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        
+        Assert.Contains("request_uri=request_uri_from_event", res.Headers.Location.Query);
+        Assert.Empty(mockBackchannel.PushedParameters);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_HandleClientAuthentication()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.HandleClientAuthentication();
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // No secret is set, since the event handled it
+        Assert.DoesNotContain("scope", res.Headers.Location.Query);
+        Assert.DoesNotContain("client_secret", mockBackchannel.PushedParameters);
     }
 
     [Fact]
@@ -750,7 +907,7 @@ public class OpenIdConnectChallengeTests
         }, mockBackchannel);
 
         var server = settings.CreateTestServer();
-        var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.Challenge);
+        var transaction = await server.SendAsync(ChallengeEndpoint);
 
         var res = transaction.Response;
 

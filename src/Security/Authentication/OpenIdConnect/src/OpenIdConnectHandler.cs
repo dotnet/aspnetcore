@@ -503,7 +503,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 var requiredInDiscovery = ConfigFlagEnabled("require_pushed_authorization_requests");
                 if (requiredInDiscovery)
                 {
-                    new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
                 }
 
                 // Otherwise do nothing
@@ -513,7 +513,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 var endpointIsConfigured = !parEndpoint.IsNullOrEmpty();
                 if (!endpointIsConfigured)
                 {
-                    new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
                 }
 
                 // Otherwise push
