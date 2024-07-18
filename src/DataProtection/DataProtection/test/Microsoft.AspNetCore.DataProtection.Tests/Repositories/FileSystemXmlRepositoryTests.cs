@@ -191,6 +191,7 @@ public class FileSystemXmlRepositoryTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Making FileSystemInfo.Delete throw on Linux is hard")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Making FileSystemInfo.Delete throw on macOS is hard")]
     public void DeleteElementsWithFailure()
     {
         WithUniqueTempDirectory(dirInfo =>
