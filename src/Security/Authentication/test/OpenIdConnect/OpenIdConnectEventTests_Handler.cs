@@ -1285,7 +1285,6 @@ public class OpenIdConnectEventTests_Handlers
                             UserInfoEndpoint = "http://testhost/user",
                             EndSessionEndpoint = "http://testhost/end"
                         };
-                        // o.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "http://testhost/par";
                         o.StateDataFormat = new TestStateDataFormat();
                         o.UseSecurityTokenValidator = false;
                         o.TokenHandler = new TestTokenHandler();
