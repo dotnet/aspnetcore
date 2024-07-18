@@ -510,7 +510,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 break;
             case PushedAuthorizationBehavior.Require:
                 // Fail if required in options but unavailable in disco
-                var endpointIsConfigured = !parEndpoint.IsNullOrEmpty();
+                var endpointIsConfigured = !string.IsNullOrEmpty(parEndpoint);
                 if (!endpointIsConfigured)
                 {
                     throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
