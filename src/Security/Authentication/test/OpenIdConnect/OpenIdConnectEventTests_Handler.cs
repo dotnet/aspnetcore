@@ -1134,22 +1134,6 @@ public class OpenIdConnectEventTests_Handlers
         events.ValidateExpectations();
     }
 
-    [Fact]
-    public void OnPushAuthorization_SkipPush_DoesNotPush()
-    {
-        var events = new ExpectedOidcEvents
-        {
-            ExpectPushAuthorization = true
-        };
-        events.OnPushAuthorization = context =>
-        {
-            context.SkipPush();
-            return Task.CompletedTask;
-        };
-        var server = CreateServer(events, AppNotImpl);
-
-    }
-
     private class ExpectedOidcEvents : OpenIdConnectEvents
     {
         public bool ExpectMessageReceived { get; set; }
@@ -1187,9 +1171,6 @@ public class OpenIdConnectEventTests_Handlers
 
         public bool ExpectRedirectToSignedOut { get; set; }
         public bool InvokedRedirectToSignedOut { get; set; }
-
-        public bool ExpectPushAuthorization { get; set; }
-        public bool InvokedPushAuthorization { get; set; }
 
         public override Task MessageReceived(MessageReceivedContext context)
         {
@@ -1263,12 +1244,6 @@ public class OpenIdConnectEventTests_Handlers
             return base.SignedOutCallbackRedirect(context);
         }
 
-        public override Task PushAuthorization(PushedAuthorizationContext context)
-        {
-            InvokedPushAuthorization = true;
-            return base.PushAuthorization(context);
-        }
-
         public void ValidateExpectations()
         {
             Assert.Equal(ExpectMessageReceived, InvokedMessageReceived);
@@ -1283,7 +1258,6 @@ public class OpenIdConnectEventTests_Handlers
             Assert.Equal(ExpectRedirectForSignOut, InvokedRedirectForSignOut);
             Assert.Equal(ExpectRemoteSignOut, InvokedRemoteSignOut);
             Assert.Equal(ExpectRedirectToSignedOut, InvokedRedirectToSignedOut);
-            Assert.Equal(ExpectPushAuthorization, InvokedPushAuthorization);
         }
     }
 
@@ -1424,10 +1398,6 @@ public class OpenIdConnectEventTests_Handlers
             {
                 return Task.FromResult(new HttpResponseMessage() { Content = new StringContent("{ }", Encoding.ASCII, "application/json") });
             }
-            // if (string.Equals("/par", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
-            // {
-            //     return Task.FromResult(new HttpResponseMessage() { Content = new StringContent("{ \"request_uri\": \"urn:ietf:params:oauth:request_uri:my_reference_value\", \"expires_in\": 60}", Encoding.ASCII, "application/json") });
-            // }
 
             throw new NotImplementedException(request.RequestUri.ToString());
         }
