@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <RuntimeIdentifier>{RuntimeIdentifier}</RuntimeIdentifier>
     <PublishAot>{PublishAot}</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <MicrosoftNETCoreAppRuntimeVersion>{MicrosoftNETCoreAppRuntimeVersion}</MicrosoftNETCoreAppRuntimeVersion>
     <MicrosoftNETCoreAppRefVersion>{MicrosoftNETCoreAppRefVersion}</MicrosoftNETCoreAppRefVersion>
     <RepoRoot>{RepoRoot}</RepoRoot>
