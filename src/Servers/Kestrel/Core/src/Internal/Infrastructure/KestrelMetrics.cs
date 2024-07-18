@@ -19,7 +19,7 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
-    public const string ErrorType = "error.type";
+    public const string ErrorTypeAttributeName = "error.type";
 
     public const string Http11 = "1.1";
     public const string Http2 = "2";
@@ -123,11 +123,11 @@ internal sealed class KestrelMetrics
             // Check if there is an end reason on the context. For example, the connection could have been aborted by shutdown.
             if (metricsContext.ConnectionEndReason is { } reason && TryGetErrorType(reason, out var errorValue))
             {
-                tags.TryAddTag(ErrorType, errorValue);
+                tags.TryAddTag(ErrorTypeAttributeName, errorValue);
             }
             else if (exception != null)
             {
-                tags.TryAddTag(ErrorType, exception.GetType().FullName);
+                tags.TryAddTag(ErrorTypeAttributeName, exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -311,7 +311,8 @@ internal sealed class KestrelMetrics
         }
         if (exception != null)
         {
-            tags.TryAddTag("error.type", exception.GetType().FullName);
+            // Set exception name as error.type if there isn't already a value.
+            tags.TryAddTag(ErrorTypeAttributeName, exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -424,7 +425,7 @@ internal sealed class KestrelMetrics
         {
             if (TryGetErrorType(reason, out var errorTypeValue))
             {
-                feature.TryAddTag(ErrorType, errorTypeValue);
+                feature.TryAddTag(ErrorTypeAttributeName, errorTypeValue);
             }
         }
     }
@@ -435,9 +436,19 @@ internal sealed class KestrelMetrics
 
         if (context != null)
         {
-            if (TryGetErrorType(reason, out _))
+            // Set end reason when either:
+            // - Overwrite is true. For example, AppShutdownTimeout reason is forced when shutting down
+            //   the app reguardless of whether there is already a value.
+            // - New reason is an error type and there isn't already an error type set.
+            //   In other words, first error wins.
+            if (overwrite)
             {
-                if (context.ConnectionEndReason == null || overwrite)
+                Debug.Assert(TryGetErrorType(reason, out _), "Overwrite should only be set for an error reason.");
+                context.ConnectionEndReason = reason;
+            }
+            else if (TryGetErrorType(reason, out _))
+            {
+                if (context.ConnectionEndReason == null)
                 {
                     context.ConnectionEndReason = reason;
                 }

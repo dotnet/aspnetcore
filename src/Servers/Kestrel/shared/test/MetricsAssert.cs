@@ -16,14 +16,14 @@ internal static class MetricsAssert
 
     public static void Equal(ConnectionEndReason expectedReason, IReadOnlyDictionary<string, object> tags)
     {
-        Equal(expectedReason, (string) tags[KestrelMetrics.ErrorType]);
+        Equal(expectedReason, (string) tags[KestrelMetrics.ErrorTypeAttributeName]);
     }
 
     public static void NoError(IReadOnlyDictionary<string, object> tags)
     {
-        if (tags.TryGetValue(KestrelMetrics.ErrorType, out var error))
+        if (tags.TryGetValue(KestrelMetrics.ErrorTypeAttributeName, out var error))
         {
-            Assert.Fail($"Tag collection contains {KestrelMetrics.ErrorType} with value {error}.");
+            Assert.Fail($"Tag collection contains {KestrelMetrics.ErrorTypeAttributeName} with value {error}.");
         }
     }
 }

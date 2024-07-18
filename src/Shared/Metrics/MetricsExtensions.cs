@@ -40,7 +40,7 @@ internal static class MetricsExtensions
             {
                 if (list[i].Key == name)
                 {
-                    list.RemoveAt(i);
+                    list[i] = new KeyValuePair<string, object?>(name, value);
                     break;
                 }
             }
@@ -52,12 +52,11 @@ internal static class MetricsExtensions
                 if (tag.Key == name)
                 {
                     tags.Remove(tag);
+                    tags.Add(new KeyValuePair<string, object?>(name, value));
                     break;
                 }
             }
         }
-
-        tags.Add(new KeyValuePair<string, object?>(name, value));
     }
 
     private static bool TryAddTagCore(string name, object? value, ICollection<KeyValuePair<string, object?>> tags)

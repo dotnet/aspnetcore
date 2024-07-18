@@ -762,9 +762,9 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         return new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.UnexpectedFrame);
     }
 
-    private Http2ConnectionErrorException CreateUnexpectedFrameLengthException(int exceptedLength)
+    private Http2ConnectionErrorException CreateUnexpectedFrameLengthException(int expectedLength)
     {
-        return new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, exceptedLength), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.InvalidFrameLength);
+        return new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, expectedLength), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.InvalidFrameLength);
     }
 
     private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
@@ -914,7 +914,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_incomingFrame.PayloadLength != 5)
         {
-            throw CreateUnexpectedFrameLengthException(exceptedLength: 5);
+            throw CreateUnexpectedFrameLengthException(expectedLength: 5);
         }
 
         return Task.CompletedTask;
@@ -934,7 +934,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_incomingFrame.PayloadLength != 4)
         {
-            throw CreateUnexpectedFrameLengthException(exceptedLength: 4);
+            throw CreateUnexpectedFrameLengthException(expectedLength: 4);
         }
 
         ThrowIfIncomingFrameSentToIdleStream();
@@ -1058,7 +1058,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_incomingFrame.PayloadLength != 8)
         {
-            throw CreateUnexpectedFrameLengthException(exceptedLength: 8);
+            throw CreateUnexpectedFrameLengthException(expectedLength: 8);
         }
 
         // Incoming ping resets connection keep alive timeout
@@ -1104,7 +1104,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_incomingFrame.PayloadLength != 4)
         {
-            throw CreateUnexpectedFrameLengthException(exceptedLength: 4);
+            throw CreateUnexpectedFrameLengthException(expectedLength: 4);
         }
 
         ThrowIfIncomingFrameSentToIdleStream();

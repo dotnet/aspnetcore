@@ -3778,7 +3778,7 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
-        Assert.False(ConnectionTags.ContainsKey(KestrelMetrics.ErrorType), "Non-error reason shouldn't be added to error.type");
+        Assert.False(ConnectionTags.ContainsKey(KestrelMetrics.ErrorTypeAttributeName), "Non-error reason shouldn't be added to error.type");
     }
 
     [Fact]

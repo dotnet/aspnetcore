@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 internal enum ConnectionEndReason
 {
     Unset,
+    OtherError,
     ConnectionReset,
     FlowControlWindowExceeded,
     KeepAliveTimeout,
@@ -28,7 +29,6 @@ internal enum ConnectionEndReason
     MaxFrameLengthExceeded,
     ErrorReadingHeaders,
     ErrorWritingHeaders,
-    OtherError,
     InvalidHttpVersion,
     RequestHeadersTimeout,
     MinRequestBodyDataRate,

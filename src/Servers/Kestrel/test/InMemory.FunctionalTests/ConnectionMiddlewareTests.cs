@@ -172,7 +172,7 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.Equal(typeof(InvalidOperationException).FullName, m.Tags[KestrelMetrics.ErrorType]);
+            Assert.Equal(typeof(InvalidOperationException).FullName, m.Tags[KestrelMetrics.ErrorTypeAttributeName]);
         });
     }
 

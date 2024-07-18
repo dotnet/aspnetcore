@@ -155,7 +155,7 @@ public class ConnectionLimitTests : LoggedTest
         var connectionErrors = measurements
             .GroupBy(m =>
             {
-                m.Tags.TryGetValue(KestrelMetrics.ErrorType, out var value);
+                m.Tags.TryGetValue(KestrelMetrics.ErrorTypeAttributeName, out var value);
                 return value as string;
             })
             .ToList();
