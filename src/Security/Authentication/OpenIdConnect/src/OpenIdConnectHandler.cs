@@ -647,7 +647,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         // Parse response
-        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync();
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
         var message = new OpenIdConnectMessage(parResponseString);
 
         var requestUri = message.GetParameter("request_uri");
