@@ -88,7 +88,7 @@ public static partial class HttpResponseJsonExtensions
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 
-        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+        response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
         if (!response.HasStarted)
@@ -129,7 +129,7 @@ public static partial class HttpResponseJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+        response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
         if (!response.HasStarted)
@@ -182,7 +182,7 @@ public static partial class HttpResponseJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+        response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
         if (!response.HasStarted)
@@ -302,7 +302,7 @@ public static partial class HttpResponseJsonExtensions
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 
-        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+        response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
         if (!response.HasStarted)
@@ -365,7 +365,7 @@ public static partial class HttpResponseJsonExtensions
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(context);
 
-        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+        response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
         if (!response.HasStarted)

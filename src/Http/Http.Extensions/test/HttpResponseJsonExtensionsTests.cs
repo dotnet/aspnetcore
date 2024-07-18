@@ -26,7 +26,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(1);
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         var data = body.ToArray();
@@ -45,7 +45,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync<Uri?>(value: null);
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("null", data);
@@ -65,7 +65,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, options);
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("[false,true,false]", data);
@@ -97,7 +97,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(1);
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
     }
 
@@ -167,7 +167,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(1, typeof(int));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         var data = body.ToArray();
@@ -186,7 +186,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(value: null, typeof(int?));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("null", data);
@@ -249,7 +249,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(1, typeof(int));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
     }
 
@@ -265,7 +265,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(AsyncEnumerable());
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
@@ -290,7 +290,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
@@ -318,7 +318,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(AsyncEnumerable());
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         // System.Text.Json might write the '[' before cancellation is observed
@@ -352,7 +352,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         // System.Text.Json might write the '[' before cancellation is observed
@@ -386,7 +386,7 @@ public class HttpResponseJsonExtensionsTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>), cts.Token));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         // System.Text.Json might write the '[' before cancellation is observed
@@ -420,7 +420,7 @@ public class HttpResponseJsonExtensionsTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), cts.Token));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         // System.Text.Json might write the '[' before cancellation is observed
@@ -454,7 +454,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, (JsonTypeInfo<int[]>)options.GetTypeInfo(typeof(int[])));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("[1,2,3]", data);
@@ -475,7 +475,7 @@ public class HttpResponseJsonExtensionsTests
         await context.Response.WriteAsJsonAsync(value : null, options.GetTypeInfo(typeof(Uri)));
 
         // Assert
-        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("null", data);

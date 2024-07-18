@@ -58,7 +58,7 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult, I
         EntityTagHeaderValue? entityTag = null)
     {
         FileName = fileName;
-        ContentType = contentType ?? HttpResultsHelper.BinaryContentType;
+        ContentType = contentType ?? ContentTypeConstants.BinaryContentType;
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
         LastModified = lastModified;
