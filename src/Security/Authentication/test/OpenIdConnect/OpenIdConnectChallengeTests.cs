@@ -922,6 +922,47 @@ public class OpenIdConnectChallengeTests
 
         Assert.Equal("login", mockBackchannel.PushedParameters["prompt"]);
     }
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    public async Task Challenge_WithPushedAuthorization_MultipleContextActionsAreNotAllowed(bool handlePush, bool skipPush, bool handleAuth)
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                if (handlePush)
+                {
+                    ctx.HandlePush("some request uri");
+                }
+                if (skipPush)
+                {
+                    ctx.SkipPush();
+                }
+                if (handleAuth)
+                {
+                    ctx.HandleClientAuthentication();
+                }
+                return Task.CompletedTask;
+            };
+
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+    }
 }
 
 class ParMockBackchannel : HttpMessageHandler

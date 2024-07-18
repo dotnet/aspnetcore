@@ -42,6 +42,10 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     /// </summary>
     public void HandlePush(string requestUri)
     {
+        if (SkippedPush || HandledClientAuthentication)
+        {
+            throw new InvalidOperationException("TODO MESSASGE");
+        }
         HandledPush = true;
         RequestUri = requestUri;
     }
@@ -68,6 +72,10 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     /// </summary>
     public void SkipPush()
     {
+        if (HandledPush || HandledClientAuthentication)
+        {
+            throw new InvalidOperationException("TODO MESSASGE");
+        }
         SkippedPush = true;
     }
 
@@ -86,6 +94,13 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     /// replace that with an alternative authentication mode, such as
     /// private_key_jwt.
     /// </summary>
-    public void HandleClientAuthentication() => HandledClientAuthentication = true;
+    public void HandleClientAuthentication()
+    {
+        if (SkippedPush || HandledPush)
+        {
+            throw new InvalidOperationException("TODO MESSASGE");
+        }
+        HandledClientAuthentication = true;
+    }
 }
 
