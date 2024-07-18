@@ -125,7 +125,8 @@ public class RegistryXmlRepositoryTests
         });
     }
 
-    [Theory]
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -180,10 +181,12 @@ public class RegistryXmlRepositoryTests
     // but there's no obvious way to simulate a failure for only one of the values.  You can
     // lock a whole key, but not individual values, and we don't have a hook to let us lock the
     // whole key while a particular value deletion is attempted.
-    //[Fact]
+    //[ConditionalFact]
+    //[ConditionalConditionalRunTestOnlyIfHkcuRegistryAvailable]
     //public void DeleteElementsWithFailure()
 
-    [Fact]
+    [ConditionalFact]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void DeleteElementsWithOutOfBandDeletion()
     {
         WithUniqueTempRegKey(regKey =>
