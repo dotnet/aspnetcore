@@ -66,12 +66,22 @@ public class PathNormalizerTests
     [InlineData("/.", "/")]
     [InlineData("/a/abc/../abc/../b", "/a/b")]
     [InlineData("/a/abc/.a", "/a/abc/.a")]
+    [InlineData("/a/abc/..a", "/a/abc/..a")]
+    [InlineData("/a/.b/c", "/a/.b/c")]
+    [InlineData("/a/.b/../c", "/a/c")]
+    [InlineData("/a/../.b/./c", "/.b/c")]
+    [InlineData("/a/.b/./c", "/a/.b/c")]
+    [InlineData("/a/./.b/./c", "/a/.b/c")]
+    [InlineData("/a/..b/c", "/a/..b/c")]
+    [InlineData("/a/..b/../c", "/a/c")]
+    [InlineData("/a/../..b/./c", "/..b/c")]
+    [InlineData("/a/..b/./c", "/a/..b/c")]
+    [InlineData("/a/./..b/./c", "/a/..b/c")]
     public void RemovesDotSegments(string input, string expected)
     {
         var data = Encoding.ASCII.GetBytes(input);
         var length = PathNormalizer.RemoveDotSegments(new Span<byte>(data));
         Assert.True(length >= 1);
         Assert.Equal(expected, Encoding.ASCII.GetString(data, 0, length));
-        Assert.Equal(input != expected, PathNormalizer.ContainsDotSegments(Encoding.ASCII.GetBytes(input)));
     }
 }
