@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 /// <summary>
 /// A context for <see cref="OpenIdConnectEvents.PushAuthorization(PushedAuthorizationContext)"/>.
 /// </summary>
-public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions>
+public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions>
 {
     /// <summary>
     /// Initializes a new instance of <see cref="PushedAuthorizationContext"/>.
