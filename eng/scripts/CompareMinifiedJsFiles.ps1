@@ -7,7 +7,7 @@ function _compareFiles($fileName) {
     $submoduleFile = "$repoRoot/src/submodules/BlazorMinifiedJs/src/$fileName"
     $delta = diff -w $localFile $submoduleFile
     if (![string]::IsNullOrEmpty($delta)) {
-        $script:errors += "Diff found in $fileName, please push new minifed .js files to https://github.com/dotnet/BlazorMinifiedJs/tree/main/src"
+        $script:errors += "Diff found in $fileName, please push new minified .js files to https://github.com/dotnet/BlazorMinifiedJs/tree/main/src"
     }
 }
 
