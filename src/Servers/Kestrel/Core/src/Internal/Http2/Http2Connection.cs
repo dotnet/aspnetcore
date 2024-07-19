@@ -676,7 +676,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             Http2FrameType.PRIORITY => ProcessPriorityFrameAsync(),
             Http2FrameType.RST_STREAM => ProcessRstStreamFrameAsync(),
             Http2FrameType.SETTINGS => ProcessSettingsFrameAsync(payload),
-            Http2FrameType.PUSH_PROMISE => throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.UnsupportedFrame),
+            Http2FrameType.PUSH_PROMISE => throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.UnexpectedFrame),
             Http2FrameType.PING => ProcessPingFrameAsync(payload),
             Http2FrameType.GOAWAY => ProcessGoAwayFrameAsync(),
             Http2FrameType.WINDOW_UPDATE => ProcessWindowUpdateFrameAsync(),
@@ -1126,14 +1126,14 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Since server initiated stream resets are not yet properly
             // implemented and tested, we treat all zero length window
             // increments as connection errors for now.
-            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateIncrementZero, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.WindowUpdateSizeInvalid);
+            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateIncrementZero, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidWindowUpdateSize);
         }
 
         if (_incomingFrame.StreamId == 0)
         {
             if (!_frameWriter.TryUpdateConnectionWindow(_incomingFrame.WindowUpdateSizeIncrement))
             {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionEndReason.WindowUpdateSizeInvalid);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionEndReason.InvalidWindowUpdateSize);
             }
         }
         else if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))

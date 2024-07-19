@@ -190,7 +190,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
             Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
             {
-                AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.BodyReaderInvalidState));
+                AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidBodyReaderState));
             });
         }
     }

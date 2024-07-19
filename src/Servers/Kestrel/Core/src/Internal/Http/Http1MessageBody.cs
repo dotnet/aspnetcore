@@ -72,7 +72,7 @@ internal abstract class Http1MessageBody : MessageBody
             Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest(ConnectionEndReason.BodyReaderInvalidState);
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
             return Task.CompletedTask;
         }
 
@@ -107,7 +107,7 @@ internal abstract class Http1MessageBody : MessageBody
             Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest(ConnectionEndReason.BodyReaderInvalidState);
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
         }
         finally
         {

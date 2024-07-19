@@ -2279,7 +2279,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsOverHttp, m.Tags));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsNotSupported, m.Tags));
     }
 
     [Fact]

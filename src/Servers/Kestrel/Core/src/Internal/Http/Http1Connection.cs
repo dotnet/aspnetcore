@@ -809,7 +809,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             case RequestRejectionReason.InvalidHostHeader:
                 return ConnectionEndReason.InvalidRequestHeaders;
             case RequestRejectionReason.TlsOverHttpError:
-                return ConnectionEndReason.TlsOverHttp;
+                return ConnectionEndReason.TlsNotSupported;
             case RequestRejectionReason.UnexpectedEndOfRequestContent:
                 return ConnectionEndReason.UnexpectedEndOfRequestContent;
             default:

@@ -2109,7 +2109,7 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(Http3Formatting.ToFormattedType(f)));
-        MetricsAssert.Equal(ConnectionEndReason.UnsupportedFrame, Http3Api.ConnectionTags);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -2139,7 +2139,7 @@ public class Http3StreamTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.UnexpectedFrame,
             null);
-        MetricsAssert.Equal(ConnectionEndReason.UnsupportedFrame, Http3Api.ConnectionTags);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]

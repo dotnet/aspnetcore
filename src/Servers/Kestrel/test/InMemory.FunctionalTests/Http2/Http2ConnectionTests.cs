@@ -4006,7 +4006,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: CoreStrings.Http2ErrorPushPromiseReceived);
 
-        AssertConnectionEndReason(ConnectionEndReason.UnsupportedFrame);
+        AssertConnectionEndReason(ConnectionEndReason.UnexpectedFrame);
     }
 
     [Fact]
@@ -4443,7 +4443,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateIncrementZero);
 
-        AssertConnectionEndReason(ConnectionEndReason.WindowUpdateSizeInvalid);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidWindowUpdateSize);
     }
 
     [Fact]
@@ -4460,7 +4460,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateIncrementZero);
 
-        AssertConnectionEndReason(ConnectionEndReason.WindowUpdateSizeInvalid);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidWindowUpdateSize);
     }
 
     [Fact]
@@ -4495,7 +4495,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
             expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateSizeInvalid);
 
-        AssertConnectionEndReason(ConnectionEndReason.WindowUpdateSizeInvalid);
+        AssertConnectionEndReason(ConnectionEndReason.InvalidWindowUpdateSize);
     }
 
     [Fact]
