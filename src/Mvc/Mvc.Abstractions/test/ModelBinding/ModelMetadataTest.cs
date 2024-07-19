@@ -412,7 +412,7 @@ public class ModelMetadataTest
     {
         var options = new RemoteInvokeOptions();
 
-        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false);
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", false);
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
             var metadata = new TestModelMetadata(typeof(DateTime));
@@ -429,7 +429,7 @@ public class ModelMetadataTest
     {
         var options = new RemoteInvokeOptions();
 
-        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", true);
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", true);
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
             var metadata = new TestModelMetadata(typeof(DateTime));

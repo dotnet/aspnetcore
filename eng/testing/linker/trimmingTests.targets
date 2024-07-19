@@ -91,7 +91,6 @@
                                                  .Replace('{AdditionalProperties}', '$(_additionalPropertiesString)')
                                                  .Replace('{RuntimeHostConfigurationOptions}', '$(_runtimeHostConfigurationOptionsString)')
                                                  .Replace('{AdditionalProjectReferences}', '$(_additionalProjectReferencesString)')
-                                                 .Replace('{InterceptorsPreviewNamespacesArgs}', '%(TestConsoleApps.InterceptorNamespaces)')
                                                  )"
                       Overwrite="true" />
     <Copy SourceFiles="$(_projectSourceFile);
