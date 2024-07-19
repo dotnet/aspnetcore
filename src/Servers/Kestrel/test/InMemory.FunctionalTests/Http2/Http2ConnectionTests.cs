@@ -2865,7 +2865,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: expectedErrorMessage);
 
-        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
+        AssertConnectionEndReason(ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded);
     }
 
     [Theory]

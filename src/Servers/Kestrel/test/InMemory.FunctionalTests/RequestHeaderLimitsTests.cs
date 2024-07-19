@@ -112,7 +112,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestHeaders, m.Tags));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded, m.Tags));
     }
 
     [Theory]
@@ -141,7 +141,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             }
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestHeaders, m.Tags));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestHeaderCountExceeded, m.Tags));
     }
 
     private static string MakeHeaders(int count)
