@@ -50,6 +50,8 @@ internal enum ConnectionEndReason
     MaxRequestBodySizeExceeded,
     UnexpectedEndOfRequestContent,
     MaxConcurrentConnectionsExceeded,
+    MaxRequestHeadersTotalSizeExceeded,
+    MaxRequestHeaderCountExceeded,
     ResponseContentLengthMismatch,
     RequestNoKeepAlive,
     ResponseNoKeepAlive,

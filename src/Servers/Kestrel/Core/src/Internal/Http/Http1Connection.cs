@@ -796,8 +796,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
             case RequestRejectionReason.InvalidRequestHeader:
             case RequestRejectionReason.InvalidContentLength:
-            case RequestRejectionReason.HeadersExceedMaxTotalSize:
-            case RequestRejectionReason.TooManyHeaders:
             case RequestRejectionReason.MultipleContentLengths:
             case RequestRejectionReason.MalformedRequestInvalidHeaders:
             case RequestRejectionReason.InvalidCharactersInHeaderName:
@@ -808,6 +806,10 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             case RequestRejectionReason.MultipleHostHeaders:
             case RequestRejectionReason.InvalidHostHeader:
                 return ConnectionEndReason.InvalidRequestHeaders;
+            case RequestRejectionReason.HeadersExceedMaxTotalSize:
+                return ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded;
+            case RequestRejectionReason.TooManyHeaders:
+                return ConnectionEndReason.MaxRequestHeaderCountExceeded;
             case RequestRejectionReason.TlsOverHttpError:
                 return ConnectionEndReason.TlsNotSupported;
             case RequestRejectionReason.UnexpectedEndOfRequestContent:

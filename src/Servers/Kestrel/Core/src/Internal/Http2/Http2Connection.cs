@@ -1562,7 +1562,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         // Allow a 2x grace before aborting the connection. We'll check the size limit again later where we can send a 431.
         if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize * 2)
         {
-            throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidRequestHeaders);
+            throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded);
         }
 
         try
