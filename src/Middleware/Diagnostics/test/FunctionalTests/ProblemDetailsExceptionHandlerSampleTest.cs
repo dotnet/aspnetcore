@@ -37,10 +37,10 @@ public class ProblemDetailsExceptionHandlerSampleTest : IClassFixture<TestFixtur
     }
 
     [Fact]
-    public async Task StatusCodeSelector_ProducesProblemDetailsWith403()
+    public async Task StatusCodeSelector_ProducesProblemDetailsWithCustomStatusCode()
     {
         // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/throw/conflict");
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/throw2/conflict");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         // Act
