@@ -10,8 +10,6 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
-// REVIEW: Should this be merged into BasicTestAppServerSiteFixture? Is there any case where we wouldn't
-// want to trim BasicTestAppServerSiteFixture tests when TestTrimmedOrMultithreadingApps is true?
 public class TrimmingServerFixture<TStartup> : BasicTestAppServerSiteFixture<TStartup> where TStartup : class
 {
     public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
