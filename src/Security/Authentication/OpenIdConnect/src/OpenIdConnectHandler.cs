@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -486,7 +485,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
-        GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
+        var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
 
         switch (Options.PushedAuthorizationBehavior)
         {
@@ -500,8 +499,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 break;
             case PushedAuthorizationBehavior.Disable:
                 // Fail if disabled in options but required by disco
-                var requiredInDiscovery = ConfigFlagEnabled("require_pushed_authorization_requests");
-                if (requiredInDiscovery)
+                if (_configuration?.RequirePushedAuthorizationRequests == true)
                 {
                     throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
                 }
@@ -552,36 +550,6 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
     }
 
-    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
-    // Microsoft.IdentityModel.Protocols.OpenIdConnect is updated to v7.6.1 or later.
-    private bool GetConfigString(string name, [NotNullWhen(true)] out string? value)
-    {
-        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
-        {
-            if (configValue is string v)
-            {
-                value = v;
-                return true;
-            }
-        }
-        value = null;
-        return false;
-    }
-
-    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
-    // Microsoft.IdentityModel.Protocols.OpenIdConnect is updated to v7.6.1 or later.
-    private bool ConfigFlagEnabled(string name)
-    {
-        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
-        {
-            if (configValue is bool v)
-            {
-                return v;
-            }
-        }
-        return false;
-    }
-
     private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
     {
         // Build context and run event
@@ -619,7 +587,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
         else
         {
-            GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
+            var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
             if (string.IsNullOrEmpty(parEndpoint))
             {
                 new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");

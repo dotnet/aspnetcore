@@ -709,7 +709,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
         }, mockBackchannel);
 
         var server = settings.CreateTestServer();
@@ -749,7 +749,7 @@ public class OpenIdConnectChallengeTests
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
 
             // We are NOT setting the endpoint (as if the disco document didn't contain it)
-            //opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"];
+            //opt.Configuration.PushedAuthorizationRequestEndpoint;
         }, mockBackchannel);
 
         var server = settings.CreateTestServer();
@@ -772,7 +772,7 @@ public class OpenIdConnectChallengeTests
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
 
-            opt.Configuration.AdditionalData["require_pushed_authorization_requests"] = true;
+            opt.Configuration.RequirePushedAuthorizationRequests = true;
         }, mockBackchannel);
 
         var server = settings.CreateTestServer();
@@ -793,7 +793,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
 
             opt.Events.OnPushAuthorization = ctx =>
             {
@@ -832,7 +832,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
 
             opt.Events.OnPushAuthorization = ctx =>
             {
@@ -866,7 +866,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
 
             opt.Events.OnPushAuthorization = ctx =>
             {
@@ -900,7 +900,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
 
             opt.AdditionalAuthorizationParameters.Add("prompt", "login"); // This should get pushed too, so we don't expect to see it in the authorize redirect.
 
@@ -939,7 +939,7 @@ public class OpenIdConnectChallengeTests
             // This makes it easier to manipulate the discovery results
             opt.Configuration = new OpenIdConnectConfiguration();
             opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
-            opt.Configuration.AdditionalData["pushed_authorization_request_endpoint"] = "https://testauthority/par";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
 
             opt.Events.OnPushAuthorization = ctx =>
             {
