@@ -2806,7 +2806,10 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(":unknown", "0"),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -2820,14 +2823,20 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Status, "200"),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Theory]
     [MemberData(nameof(DuplicatePseudoHeaderFieldData))]
     public Task HEADERS_Received_HeaderBlockContainsDuplicatePseudoHeaderField_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
     {
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorDuplicatePseudoHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            expectedErrorMessage: CoreStrings.HttpErrorDuplicatePseudoHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Theory]
@@ -2852,10 +2861,13 @@ public class Http2ConnectionTests : Http2TestBase
     [MemberData(nameof(PseudoHeaderFieldAfterRegularHeadersData))]
     public Task HEADERS_Received_HeaderBlockContainsPseudoHeaderFieldAfterRegularHeaders_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
     {
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            expectedErrorMessage: CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
-    private async Task HEADERS_Received_InvalidHeaderFields_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers, string expectedErrorMessage)
+    private async Task HEADERS_Received_InvalidHeaderFields_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers, string expectedErrorMessage, ConnectionEndReason expectedEndReason)
     {
         await InitializeConnectionAsync(_noopApplication);
         await StartStreamAsync(1, headers, endStream: true);
@@ -2865,7 +2877,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
             expectedErrorMessage: expectedErrorMessage);
 
-        AssertConnectionEndReason(ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded);
+        AssertConnectionEndReason(expectedEndReason);
     }
 
     [Theory]
@@ -2918,7 +2930,10 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("p", _4kHeaderValue),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.BadRequest_HeadersExceedMaxTotalSize,
+            expectedEndReason: ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded);
     }
 
     [Fact]
@@ -2937,7 +2952,10 @@ public class Http2ConnectionTests : Http2TestBase
             headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
         }
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_TooManyHeaders);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.BadRequest_TooManyHeaders,
+            expectedEndReason: ConnectionEndReason.MaxRequestHeaderCountExceeded);
     }
 
     [Fact]
@@ -2951,7 +2969,10 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("Custom", "val\0ue"),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.BadRequest_MalformedRequestInvalidHeaders,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -2965,7 +2986,10 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("connection", "keep-alive")
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.HttpErrorConnectionSpecificHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -2979,7 +3003,10 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("te", "trailers, deflate")
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.HttpErrorConnectionSpecificHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]

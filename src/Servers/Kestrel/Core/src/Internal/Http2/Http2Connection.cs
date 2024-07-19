@@ -1621,6 +1621,12 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 }
             }
         }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException bre) when (bre.Reason == RequestRejectionReason.TooManyHeaders)
+        {
+            throw new Http2ConnectionErrorException(bre.Message, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.MaxRequestHeaderCountExceeded);
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
         catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
         {
             throw new Http2ConnectionErrorException(bre.Message, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidRequestHeaders);
