@@ -155,6 +155,8 @@ internal sealed class OpenApiSchemaService(
         };
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
+            // Reset context object to base state before running each transformer.
+            context.UpdateJsonTypeInfo(jsonTypeInfo, null);
             var transformer = _openApiOptions.SchemaTransformers[i];
             // If the transformer is a type-based transformer, we need to initialize and finalize it
             // once in the context of the top-level assembly and not the child properties we are invoking
