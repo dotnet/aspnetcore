@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 internal sealed class EndpointModelMetadata : ModelMetadata
 {
-    public EndpointModelMetadata(Type type, IParameterBindingMetadata? parameterBindingMetadata) : base(type, parameterBindingMetadata)
+    public EndpointModelMetadata(ModelMetadataIdentity identity) : base(identity)
     {
         IsBindingAllowed = true;
     }
