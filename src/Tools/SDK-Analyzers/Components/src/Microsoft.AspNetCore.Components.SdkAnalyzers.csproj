@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
     <RootNamespace>Microsoft.AspNetCore.Components.Analyzers</RootNamespace>
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
