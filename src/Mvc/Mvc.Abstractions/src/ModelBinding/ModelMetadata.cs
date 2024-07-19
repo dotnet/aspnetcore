@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -28,8 +27,18 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     public static readonly int DefaultOrder = 10000;
 
-    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache
-        = new(throwOnInvalidMethod: false);
+    /// <summary>
+    /// Exposes a feature switch to disable generating model metadata with reflection-heavy strategies.
+    /// This is primarily intended for use in Minimal API-based scenarios where information is derived from
+    /// IParameterBindingMetadata
+    /// </summary>
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported")]
+    [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+    [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+    private static bool IsEnhancedModelMetadataSupported { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", out var isEnhancedModelMetadataSupported) ? isEnhancedModelMetadataSupported : true;
+
+    private static ParameterBindingMethodCache? ParameterBindingMethodCache;
 
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
@@ -47,7 +56,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         Identity = identity;
 
         InitializeTypeInformation();
-        if (RuntimeFeature.IsDynamicCodeSupported)
+        if (IsEnhancedModelMetadataSupported)
         {
             InitializeDynamicTypeInformation();
         }
@@ -443,7 +452,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     {
         get
         {
-            if (!RuntimeFeature.IsDynamicCodeSupported)
+            if (!IsEnhancedModelMetadataSupported)
             {
                 throw new NotSupportedException("ElementType is not initialized in ModelMetadata in native AoT.");
             }
@@ -625,6 +634,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         }
 
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+        ParameterBindingMethodCache ??= new ParameterBindingMethodCache(throwOnInvalidMethod: false);
         return ParameterBindingMethodCache.FindTryParseMethod(modelType);
     }
 
@@ -744,8 +754,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         }
     }
 
-    [RequiresUnreferencedCode("Using ModelMetadata with dynamic dependencies enabled is not trim compatible.")]
-    [RequiresDynamicCode("Using ModelMetadata with dynamic dependencies enabled is not native AOT compatible.")]
+    [RequiresUnreferencedCode("Using ModelMetadata with IsEnhancedModelMetadataSupport=true is not trim compatible.")]
+    [RequiresDynamicCode("Using ModelMetadata with IsEnhancedModelMetadataSupport=true is not native AOT compatible.")]
     private void InitializeDynamicTypeInformation()
     {
         Debug.Assert(ModelType != null);

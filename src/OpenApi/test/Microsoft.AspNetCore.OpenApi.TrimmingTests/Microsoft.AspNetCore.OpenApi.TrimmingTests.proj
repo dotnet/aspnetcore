@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <TestConsoleAppSourceFiles Include="BasicMinimalApiWithOpenApiDependency.cs">
+    <TestConsoleAppSourceFiles Include="../Microsoft.AspNetCore.OpenApi.NativeAotTests/BasicMinimalApiWithOpenApiDependency.cs">
       <EnabledProperties>EnableRequestDelegateGenerator</EnabledProperties>
       <DisabledFeatureSwitches>Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported</DisabledFeatureSwitches>
     </TestConsoleAppSourceFiles>

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Mvc.ApiExplorer, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2066</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.DependencyInjection.EndpointMetadataApiExplorerServiceCollectionExtensions.AddEndpointsApiExplorer(Microsoft.Extensions.DependencyInjection.IServiceCollection)</property>
+    </attribute>
+  </assembly>
+</linker>

@@ -10,11 +10,6 @@
 
   <ItemGroup>
     <Reference Include="@(TrimmableProject)" />
-    <!-- Instead of relying on `IsTrimmable=true` to include Mvc.Core in the linkability checks, we include it
-     here manually to avoid exploding the set of linker errors the end-user will receive when using Mvc.Core-related
-     dependencies in their project. This allows us to run the linkability checks on Mvc.Core, since it is a dependecy
-     of projects that enable trimming (Mvc.ApiExplorer), but avoids the user having to see expanded errors. -->
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 
   <ItemGroup>
