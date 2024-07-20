@@ -27,6 +27,9 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     public static readonly int DefaultOrder = 10000;
 
+    internal const string RequiresUnreferencedCodeMessage = "Resolving this property is not compatible with trimming, as it requires dynamic access to code that is not referenced statically.";
+    internal const string RequiresDynamicCodeMessage = "Resolving this property may require dynamic code generation.";
+
     /// <summary>
     /// Exposes a feature switch to disable generating model metadata with reflection-heavy strategies.
     /// This is primarily intended for use in Minimal API-based scenarios where information is derived from
@@ -450,11 +453,13 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     public Type? ElementType
     {
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
         get
         {
             if (!IsEnhancedModelMetadataSupported)
             {
-                throw new NotSupportedException("ElementType is not initialized in ModelMetadata in native AoT.");
+                throw new NotSupportedException("ElementType is not initialized when `Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported` is false.");
             }
             return _elementType;
         }
@@ -489,11 +494,13 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </remarks>
     public bool IsCollectionType
     {
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
         get
         {
             if (_isCollectionType == null)
             {
-                throw new NotSupportedException("IsCollectionType has not been initialized on this metadata instance.");
+                throw new NotSupportedException("IsCollectionType is not initialized when `Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported` is false.");
             }
             return _isCollectionType.Value;
         }
@@ -533,11 +540,13 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     internal virtual bool IsParseableType
     {
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
         get
         {
             if (!_isParseableType.HasValue)
             {
-                throw new NotSupportedException("IsParseableType has not been initialized on this metadata instance.");
+                throw new NotSupportedException("IsParseableType is not initialized when `Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported` is false.");
             }
             return _isParseableType.Value;
         }
@@ -555,11 +564,12 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     internal bool IsConvertibleType
     {
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
         get
         {
             if (!_isConvertibleType.HasValue)
             {
-                throw new NotSupportedException("IsConvertibleType has not been initialized on this metadata instance.");
+                throw new NotSupportedException("IsConvertibleType is not initialized when `Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported` is false.");
 
             }
             return _isConvertibleType.Value;
