@@ -24,7 +24,6 @@ public class ClientValidationOptionsTests : LoggedTest
 
     public MvcTestFixture<RazorPagesWebSite.Startup> Factory { get; private set; }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55926")]
     [Fact]
     public async Task DisablingClientValidation_DisablesItForPagesAndViews()
     {

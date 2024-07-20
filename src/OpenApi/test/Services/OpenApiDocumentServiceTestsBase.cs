@@ -3,6 +3,9 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -75,7 +78,7 @@ public abstract class OpenApiDocumentServiceTestBase
 
         var schemaService = new OpenApiSchemaService("Test", Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()), builder.ServiceProvider, openApiOptions.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
-        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, openApiOptions.Object, builder.ServiceProvider);
+        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, openApiOptions.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
 
         return documentService;
@@ -98,10 +101,11 @@ public abstract class OpenApiDocumentServiceTestBase
         provider.OnProvidersExecuted(context);
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
+        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions());
 
-        var schemaService = new OpenApiSchemaService("Test", Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()), builder.ServiceProvider, options.Object);
+        var schemaService = new OpenApiSchemaService("Test", jsonOptions, builder.ServiceProvider, options.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
-        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider);
+        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
 
         return documentService;
@@ -275,5 +279,32 @@ public abstract class OpenApiDocumentServiceTestBase
 
             return _serviceProvider.GetService(serviceType);
         }
+    }
+
+    internal class OpenApiTestServer(string[] addresses = null) : IServer
+    {
+        public IFeatureCollection Features => GenerateFeatures();
+
+        public void Dispose()
+        {
+            return;
+        }
+
+        internal virtual IFeatureCollection GenerateFeatures()
+        {
+            var features = new FeatureCollection();
+            features.Set<IServerAddressesFeature>(new TestServerAddressesFeature { Addresses = addresses });
+            return features;
+        }
+
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull => Task.CompletedTask;
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private class TestServerAddressesFeature : IServerAddressesFeature
+    {
+        public ICollection<string> Addresses { get; set; }
+        public bool PreferHostingUrls { get; set; }
     }
 }

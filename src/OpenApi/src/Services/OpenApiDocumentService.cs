@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +22,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -30,14 +31,14 @@ internal sealed class OpenApiDocumentService(
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IServer? server = null)
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
-    private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
-    private readonly IOpenApiDocumentTransformer _schemaReferenceTransformer = new OpenApiSchemaReferenceTransformer();
+    private readonly OpenApiSchemaReferenceTransformer _schemaReferenceTransformer = new();
 
-    private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
+    private static readonly OpenApiEncoding _defaultFormEncoding = new() { Style = ParameterStyle.Form, Explode = true };
 
     /// <summary>
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
@@ -46,7 +47,7 @@ internal sealed class OpenApiDocumentService(
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
     private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
-    private static readonly ApiResponseType _defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
+    private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
@@ -60,6 +61,7 @@ internal sealed class OpenApiDocumentService(
         {
             Info = GetOpenApiInfo(),
             Paths = await GetOpenApiPathsAsync(capturedTags, cancellationToken),
+            Servers = GetOpenApiServers(),
             Tags = [.. capturedTags]
         };
         await ApplyTransformersAsync(document, cancellationToken);
@@ -82,8 +84,41 @@ internal sealed class OpenApiDocumentService(
         }
         // Move duplicated JSON schemas to the global components.schemas object and map references after all transformers have run.
         await _schemaReferenceTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
-        // Remove `x-aspnetcore-id` and `x-schema-id` extensions from operations after all transformers have run.
-        await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+    }
+
+    internal async Task ForEachOperationAsync(
+        OpenApiDocument document,
+        Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> callback,
+        CancellationToken cancellationToken)
+    {
+        foreach (var pathItem in document.Paths.Values)
+        {
+            for (var i = 0; i < OpenApiConstants.OperationTypes.Length; i++)
+            {
+                var operationType = OpenApiConstants.OperationTypes[i];
+                if (!pathItem.Operations.TryGetValue(operationType, out var operation))
+                {
+                    continue;
+                }
+
+                if (operation.Extensions.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionIdExtension) &&
+                    descriptionIdExtension is ScrubbedOpenApiAny { Value: string descriptionId } &&
+                    TryGetCachedOperationTransformerContext(descriptionId, out var operationContext))
+                {
+                    await callback(operation, operationContext, cancellationToken);
+                }
+                else
+                {
+                    // If the cached operation transformer context was not found, throw an exception.
+                    // This can occur if the `x-aspnetcore-id` extension attribute was removed by the
+                    // user in another operation transformer or if the lookup for operation transformer
+                    // context resulted in a cache miss. As an alternative here, we could just to implement
+                    // the "slow-path" and look up the ApiDescription associated with the OpenApiOperation
+                    // using the OperationType and given path, but we'll avoid this for now.
+                    throw new InvalidOperationException("Cached operation transformer context not found. Please ensure that the operation contains the `x-aspnetcore-id` extension attribute.");
+                }
+            }
+        }
     }
 
     // Note: Internal for testing.
@@ -94,6 +129,16 @@ internal sealed class OpenApiDocumentService(
             Title = $"{hostEnvironment.ApplicationName} | {documentName}",
             Version = OpenApiConstants.DefaultOpenApiVersion
         };
+    }
+
+    internal List<OpenApiServer> GetOpenApiServers()
+    {
+        if (hostEnvironment.IsDevelopment() &&
+            server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
+        {
+            return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
+        }
+        return [];
     }
 
     /// <summary>
@@ -126,14 +171,24 @@ internal sealed class OpenApiDocumentService(
         foreach (var description in descriptions)
         {
             var operation = await GetOperationAsync(description, capturedTags, cancellationToken);
-            operation.Extensions.Add(OpenApiConstants.DescriptionId, new OpenApiString(description.ActionDescriptor.Id));
-            _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, new OpenApiOperationTransformerContext
+            operation.Extensions.Add(OpenApiConstants.DescriptionId, new ScrubbedOpenApiAny(description.ActionDescriptor.Id));
+
+            var operationContext = new OpenApiOperationTransformerContext
             {
                 DocumentName = documentName,
                 Description = description,
                 ApplicationServices = serviceProvider,
-            });
+            };
+
+            _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
             operations[description.GetOperationType()] = operation;
+
+            // Use index-based for loop to avoid allocating an enumerator with a foreach.
+            for (var i = 0; i < _options.OperationTransformers.Count; i++)
+            {
+                var transformer = _options.OperationTransformers[i];
+                await transformer.TransformAsync(operation, operationContext, cancellationToken);
+            }
         }
         return operations;
     }

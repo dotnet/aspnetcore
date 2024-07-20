@@ -1788,7 +1788,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotReferencedInWasmCodePack
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.WasmRemoteAuthentication", "src\Components\test\testassets\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj", "{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "src\OpenApi\sample\Sample.csproj", "{6DEC24A8-A166-432F-8E3B-58FFCDA92F52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "src\OpenApi\sample\Sample.csproj", "{6DEC24A8-A166-432F-8E3B-58FFCDA92F52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hybrid", "Hybrid", "{2D64CA23-6E81-488E-A7D3-9BDF87240098}"
 EndProject
@@ -1802,7 +1802,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Cachin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{9DC6B242-457B-4767-A84B-C3D23B76C642}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.OpenApi.Microbenchmarks", "src\OpenApi\perf\Microbenchmarks\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj", "{D53F0EF7-0CDC-49B4-AA2D-229901B0A734}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OpenApi.Microbenchmarks", "src\OpenApi\perf\Microbenchmarks\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj", "{D53F0EF7-0CDC-49B4-AA2D-229901B0A734}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyManagementSimulator", "src\DataProtection\samples\KeyManagementSimulator\KeyManagementSimulator.csproj", "{5B5F86CC-3598-463C-9F9B-F78FBB6642F4}"
 EndProject

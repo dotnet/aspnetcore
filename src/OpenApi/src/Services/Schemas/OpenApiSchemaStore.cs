@@ -4,7 +4,6 @@
 using System.IO.Pipelines;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -106,7 +105,7 @@ internal sealed class OpenApiSchemaStore
             // ID to support disambiguating between a derived type on its own and a derived type
             // as part of a polymorphic schema.
             var baseTypeSchemaId = schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var schemaId)
-                ? ((OpenApiString)schemaId).Value
+                ? ((ScrubbedOpenApiAny)schemaId).Value
                 : null;
             foreach (var anyOfSchema in schema.AnyOf)
             {
@@ -178,7 +177,7 @@ internal sealed class OpenApiSchemaStore
     private static string? GetSchemaReferenceId(OpenApiSchema schema)
     {
         if (schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var referenceIdAny)
-            && referenceIdAny is OpenApiString { Value: string referenceId })
+            && referenceIdAny is ScrubbedOpenApiAny { Value: string referenceId })
         {
             return referenceId;
         }

@@ -408,4 +408,13 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// When using TokenHandler, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>.
     /// </remarks>
     public bool UseSecurityTokenValidator { get; set; }
+
+    /// <summary>
+    /// Controls wether the handler should push authorization parameters on the
+    /// backchannel before redirecting to the identity provider. See <see
+    /// href="https://tools.ietf.org/html/9126"/>.
+    /// </summary>
+    /// <value>Defaults to <see
+    /// cref="PushedAuthorizationBehavior.UseIfAvailable" />.</value>
+    public PushedAuthorizationBehavior PushedAuthorizationBehavior { get; set; } = PushedAuthorizationBehavior.UseIfAvailable;
 }
