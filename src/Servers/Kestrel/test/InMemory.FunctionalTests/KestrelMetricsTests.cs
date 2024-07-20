@@ -758,6 +758,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(context =>
         {
             context.Response.WriteAsync("Hello world");
+            Logger.LogInformation("Server aborting request.");
             context.Abort();
             return Task.CompletedTask;
         },
@@ -790,12 +791,21 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact,
             };
 
+            Logger.LogInformation("Client sending request.");
             using var responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+
+            Logger.LogInformation("Client validating response status code.");
             responseMessage.EnsureSuccessStatusCode();
 
+            Logger.LogInformation("Client reading response until end.");
+            var stream = await responseMessage.Content.ReadAsStreamAsync();
+            await Assert.ThrowsAnyAsync<Exception>(() => stream.ReadUntilEndAsync());
+
+            Logger.LogInformation("Connection waiting for close.");
             await connection.WaitForConnectionClose();
         }
 
+        Logger.LogInformation("Asserting metrics.");
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2));
     }
 
