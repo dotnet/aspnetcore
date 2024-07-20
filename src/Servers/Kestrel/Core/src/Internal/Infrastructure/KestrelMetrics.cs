@@ -82,7 +82,7 @@ internal sealed class KestrelMetrics
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
-    public void ConnectionStart(in ConnectionMetricsContext metricsContext)
+    public void ConnectionStart(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.CurrentConnectionsCounterEnabled)
         {
@@ -91,14 +91,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStartCore(in ConnectionMetricsContext metricsContext)
+    private void ConnectionStartCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _activeConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionStop(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop(ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         if (metricsContext.CurrentConnectionsCounterEnabled || metricsContext.ConnectionDurationEnabled)
         {
@@ -107,7 +107,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
@@ -144,7 +144,7 @@ internal sealed class KestrelMetrics
         }
     }
 
-    public void ConnectionRejected(in ConnectionMetricsContext metricsContext)
+    public void ConnectionRejected(ConnectionMetricsContext metricsContext)
     {
         AddConnectionEndReason(metricsContext, ConnectionEndReason.MaxConcurrentConnectionsExceeded);
 
@@ -156,14 +156,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionRejectedCore(in ConnectionMetricsContext metricsContext)
+    private void ConnectionRejectedCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _rejectedConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionQueuedStart(in ConnectionMetricsContext metricsContext)
+    public void ConnectionQueuedStart(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.QueuedConnectionsCounterEnabled)
         {
@@ -172,14 +172,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionQueuedStartCore(in ConnectionMetricsContext metricsContext)
+    private void ConnectionQueuedStartCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _queuedConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionQueuedStop(in ConnectionMetricsContext metricsContext)
+    public void ConnectionQueuedStop(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.QueuedConnectionsCounterEnabled)
         {
@@ -188,14 +188,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionQueuedStopCore(in ConnectionMetricsContext metricsContext)
+    private void ConnectionQueuedStopCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _queuedConnectionsCounter.Add(-1, tags);
     }
 
-    public void RequestQueuedStart(in ConnectionMetricsContext metricsContext, string httpVersion)
+    public void RequestQueuedStart(ConnectionMetricsContext metricsContext, string httpVersion)
     {
         if (metricsContext.QueuedRequestsCounterEnabled)
         {
@@ -204,7 +204,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestQueuedStartCore(in ConnectionMetricsContext metricsContext, string httpVersion)
+    private void RequestQueuedStartCore(ConnectionMetricsContext metricsContext, string httpVersion)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
@@ -213,7 +213,7 @@ internal sealed class KestrelMetrics
         _queuedRequestsCounter.Add(1, tags);
     }
 
-    public void RequestQueuedStop(in ConnectionMetricsContext metricsContext, string httpVersion)
+    public void RequestQueuedStop(ConnectionMetricsContext metricsContext, string httpVersion)
     {
         if (metricsContext.QueuedRequestsCounterEnabled)
         {
@@ -222,7 +222,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestQueuedStopCore(in ConnectionMetricsContext metricsContext, string httpVersion)
+    private void RequestQueuedStopCore(ConnectionMetricsContext metricsContext, string httpVersion)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
@@ -231,7 +231,7 @@ internal sealed class KestrelMetrics
         _queuedRequestsCounter.Add(-1, tags);
     }
 
-    public void RequestUpgradedStart(in ConnectionMetricsContext metricsContext)
+    public void RequestUpgradedStart(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.CurrentUpgradedRequestsCounterEnabled)
         {
@@ -240,14 +240,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestUpgradedStartCore(in ConnectionMetricsContext metricsContext)
+    private void RequestUpgradedStartCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _currentUpgradedRequestsCounter.Add(1, tags);
     }
 
-    public void RequestUpgradedStop(in ConnectionMetricsContext metricsContext)
+    public void RequestUpgradedStop(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.CurrentUpgradedRequestsCounterEnabled)
         {
@@ -256,14 +256,14 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestUpgradedStopCore(in ConnectionMetricsContext metricsContext)
+    private void RequestUpgradedStopCore(ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _currentUpgradedRequestsCounter.Add(-1, tags);
     }
 
-    public void TlsHandshakeStart(in ConnectionMetricsContext metricsContext)
+    public void TlsHandshakeStart(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.CurrentTlsHandshakesCounterEnabled)
         {
@@ -272,7 +272,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStartCore(in ConnectionMetricsContext metricsContext)
+    private void TlsHandshakeStartCore(ConnectionMetricsContext metricsContext)
     {
         // Tags must match TLS handshake end.
         var tags = new TagList();
@@ -280,7 +280,7 @@ internal sealed class KestrelMetrics
         _activeTlsHandshakesCounter.Add(1, tags);
     }
 
-    public void TlsHandshakeStop(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    public void TlsHandshakeStop(ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
         if (metricsContext.CurrentTlsHandshakesCounterEnabled || _tlsHandshakeDuration.Enabled)
         {
@@ -289,7 +289,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStopCore(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    private void TlsHandshakeStopCore(ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);

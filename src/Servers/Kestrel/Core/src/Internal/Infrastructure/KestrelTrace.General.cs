@@ -112,7 +112,7 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": The request was aborted by the client.", EventName = "RequestAborted")]
         public static partial void RequestAbortedException(ILogger logger, string connectionId, string traceIdentifier);
 
-        [LoggerMessage(67, LogLevel.Information, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body failed because the body reader is in an invalid state.", EventName = "RequestBodyDrainBodyReaderInvalidState")]
+        [LoggerMessage(67, LogLevel.Error, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body failed because the body reader is in an invalid state.", EventName = "RequestBodyDrainBodyReaderInvalidState")]
         public static partial void RequestBodyDrainBodyReaderInvalidState(ILogger logger, string connectionId, string traceIdentifier, Exception ex);
 
         // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)

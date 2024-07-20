@@ -227,6 +227,9 @@ internal abstract class Http1MessageBody : MessageBody
     [StackTraceHidden]
     protected void ThrowUnexpectedEndOfRequestContent()
     {
+        // Set before calling OnInputOrOutputCompleted.
+        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
+
         // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
         // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
         // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
@@ -234,7 +237,6 @@ internal abstract class Http1MessageBody : MessageBody
         // closing the connection without a response as expected.
         ((IHttpOutputAborter)_context).OnInputOrOutputCompleted();
 
-        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
     }
 }
