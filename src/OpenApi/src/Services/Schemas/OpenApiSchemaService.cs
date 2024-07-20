@@ -156,7 +156,6 @@ internal sealed class OpenApiSchemaService(
         for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
         {
             // Reset context object to base state before running each transformer.
-            context.UpdateJsonTypeInfo(jsonTypeInfo, null);
             var transformer = _openApiOptions.SchemaTransformers[i];
             // If the transformer is a type-based transformer, we need to initialize and finalize it
             // once in the context of the top-level assembly and not the child properties we are invoking
@@ -166,7 +165,7 @@ internal sealed class OpenApiSchemaService(
                 var initializedTransformer = typeBasedTransformer.InitializeTransformer(serviceProvider);
                 try
                 {
-                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, initializedTransformer, cancellationToken);
+                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, initializedTransformer, cancellationToken);
                 }
                 finally
                 {
@@ -175,17 +174,19 @@ internal sealed class OpenApiSchemaService(
             }
             else
             {
-                await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, context, transformer, cancellationToken);
+                await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
             }
         }
     }
 
     private async Task InnerApplySchemaTransformersAsync(OpenApiSchema schema,
         JsonTypeInfo jsonTypeInfo,
+        JsonPropertyInfo? jsonPropertyInfo,
         OpenApiSchemaTransformerContext context,
         IOpenApiSchemaTransformer transformer,
         CancellationToken cancellationToken = default)
     {
+        context.UpdateJsonTypeInfo(jsonTypeInfo, jsonPropertyInfo);
         await transformer.TransformAsync(schema, context, cancellationToken);
 
         // Only apply transformers on polymorphic schemas where we can resolve the derived
@@ -196,12 +197,11 @@ internal sealed class OpenApiSchemaService(
             foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
             {
                 var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
-                context.UpdateJsonTypeInfo(derivedJsonTypeInfo, null);
                 if (schema.AnyOf.Count <= anyOfIndex)
                 {
                     break;
                 }
-                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, context, transformer, cancellationToken);
+                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, null, context, transformer, cancellationToken);
                 anyOfIndex++;
             }
         }
@@ -209,18 +209,16 @@ internal sealed class OpenApiSchemaService(
         if (schema.Items is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
-            context.UpdateJsonTypeInfo(elementTypeInfo, null);
-            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 
         if (schema.Properties is { Count: > 0 })
         {
             foreach (var propertyInfo in jsonTypeInfo.Properties)
             {
-                context.UpdateJsonTypeInfo(_jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo);
                 if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
                 {
-                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), context, transformer, cancellationToken);
+                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
                 }
             }
         }
