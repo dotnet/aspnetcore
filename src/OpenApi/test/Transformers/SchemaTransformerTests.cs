@@ -19,7 +19,28 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         builder.MapPost("/todo", (Todo todo) => { });
 
         var options = new OpenApiOptions();
+        var firstInvocationOnSecondTransformer = true;
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            ValidateContext(context);
+            return Task.CompletedTask;
+        })
+        .AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            // Coverage for https://github.com/dotnet/aspnetcore/issues/56899
+            if (firstInvocationOnSecondTransformer)
+            {
+                Assert.Equal(typeof(Todo), context.JsonTypeInfo.Type);
+                firstInvocationOnSecondTransformer = false;
+            }
+            // Rest of the state is still consistent
+            ValidateContext(context);
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+
+        static void ValidateContext(OpenApiSchemaTransformerContext context)
         {
             if (context.JsonPropertyInfo == null)
             {
@@ -42,10 +63,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             {
                 Assert.Equal(typeof(DateTime), context.JsonTypeInfo.Type);
             }
-            return Task.CompletedTask;
-        });
-
-        await VerifyOpenApiDocument(builder, options, document => { });
+        }
     }
 
     [Fact]
