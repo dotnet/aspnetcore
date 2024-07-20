@@ -779,7 +779,8 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
                 SslOptions = new SslClientAuthenticationOptions
                 {
                     RemoteCertificateValidationCallback = (_, _, _, _) => true
-                }
+                },
+                KeepAlivePingDelay = Timeout.InfiniteTimeSpan
             };
 
             using var httpClient = new HttpClient(socketsHandler);
