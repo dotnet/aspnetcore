@@ -546,7 +546,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         });
     }
 
-    [Fact(Skip = "Depends on https://github.com/dotnet/runtime/issues/104046")]
+    [Fact]
     public async Task SchemaTransformer_CanModifyListOfPolymorphicTypes()
     {
         var builder = CreateBuilder();
@@ -581,6 +581,88 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 
             // Assert that the `Square` type within the polymorphic type list has been updated
             var squareSubschema = Assert.Single(itemSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            // Assert that the x-my-extension type is set to this-is-a-square
+            Assert.True(squareSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var squareExtension));
+            Assert.Equal("this-is-a-square", ((OpenApiString)squareExtension).Value);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanModifyPolymorphicTypesInProperties()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/list", () => new PolymorphicContainer());
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Triangle))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-triangle");
+            }
+            if (context.JsonTypeInfo.Type == typeof(Square))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-square");
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the `Triangle` type within the list has been updated
+            var path = document.Paths["/list"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var someShapeSchema = responseSchema.GetEffective(document).Properties["someShape"];
+            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            // Assert that the x-my-extension type is set to this-is-a-triangle
+            Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var triangleExtension));
+            Assert.Equal("this-is-a-triangle", ((OpenApiString)triangleExtension).Value);
+
+            // Assert that the `Square` type within the polymorphic type list has been updated
+            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            // Assert that the x-my-extension type is set to this-is-a-square
+            Assert.True(squareSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var squareExtension));
+            Assert.Equal("this-is-a-square", ((OpenApiString)squareExtension).Value);
+        });
+    }
+
+        [Fact]
+    public async Task SchemaTransformer_CanModifyDeeplyNestedPolymorphicTypesInProperties()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/list", () => new List<PolymorphicContainer>());
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Triangle))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-triangle");
+            }
+            if (context.JsonTypeInfo.Type == typeof(Square))
+            {
+                schema.Extensions["x-my-extension"] = new OpenApiString("this-is-a-square");
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            // Assert that the `Triangle` type within the list has been updated
+            var path = document.Paths["/list"];
+            var getOperation = path.Operations[OperationType.Get];
+            var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
+            var someShapeSchema = responseSchema.GetEffective(document).Items.GetEffective(document).Properties["someShape"];
+            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            // Assert that the x-my-extension type is set to this-is-a-triangle
+            Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var triangleExtension));
+            Assert.Equal("this-is-a-triangle", ((OpenApiString)triangleExtension).Value);
+
+            // Assert that the `Square` type within the polymorphic type list has been updated
+            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var squareExtension));
             Assert.Equal("this-is-a-square", ((OpenApiString)squareExtension).Value);
@@ -674,6 +756,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
                 return;
             });
         }
+    }
+
+    private class PolymorphicContainer
+    {
+        public string Name { get; }
+        public Shape SomeShape { get; }
     }
 
     private class ActivatedTransformer : IOpenApiSchemaTransformer

@@ -94,6 +94,7 @@ internal sealed class OpenApiSchemaService(
             schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.ApplyPolymorphismOptions(context, createSchemaReferenceId);
+            schema.MarkPolymorphicSchemaForNonAbstractBaseClass(context);
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 // Short-circuit STJ's handling of nested properties, which uses a reference to the
@@ -137,7 +138,7 @@ internal sealed class OpenApiSchemaService(
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
-        Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
+        Debug.Assert(deserializedSchema != null && deserializedSchema.Schema != null, "Top-level schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
         _schemaStore.PopulateSchemaIntoReferenceCache(schema, captureSchemaByRef);

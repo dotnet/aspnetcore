@@ -72,3 +72,20 @@ internal class FabricColor : Color
 {
     public required string Dye { get; set; }
 }
+
+[JsonDerivedType(typeof(Cat), typeDiscriminator: "cat")]
+[JsonDerivedType(typeof(Dog), typeDiscriminator: "dog")]
+[JsonDerivedType(typeof(Pet), typeDiscriminator: "pet")]
+internal class Pet
+{
+    public required string Name { get; set; }
+}
+
+internal class Cat : Pet
+{
+    public bool IsKitten { get; set; }
+}
+internal class Dog : Pet
+{
+    public required string Breed { get; set; }
+}

@@ -341,9 +341,9 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
     internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
+        // The `context.BaseTypeInfo == null` check is used to ensure that we only apply the polymorphism options
         // to the top-level schema and not to any nested schemas that are generated.
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.Path.Length == 0)
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.BaseTypeInfo == null)
         {
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
@@ -361,6 +361,24 @@ internal static class JsonNodeSchemaExtensions
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+        }
+    }
+
+    /// <summary>
+    /// System.Text.Json will support binding to a non-abstract base class with polymorphic schema if no
+    /// discriminator is provided, OpenAPI requires that any sub-schemas referenced in a polymorphic schema
+    /// provide a discriminator to support round-tripping. This method will mark the sub-schema to be pruned from the list.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    internal static void MarkPolymorphicSchemaForNonAbstractBaseClass(this JsonNode schema, JsonSchemaExporterContext context)
+    {
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions &&
+            context.BaseTypeInfo == context.TypeInfo &&
+            !context.TypeInfo.Type.IsAbstract &&
+            !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type))
+        {
+            schema[OpenApiConstants.SweepSchemaKeyword] = "true";
         }
     }
 
