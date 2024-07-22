@@ -252,6 +252,8 @@ configuration:
       - titleContains:
           pattern: Merge branch
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
