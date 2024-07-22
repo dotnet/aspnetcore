@@ -812,6 +812,50 @@ internal abstract class CertificateManager
     internal static string GetDescription(X509Certificate2 c) =>
         $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
 
+    /// <remarks>
+    /// <see cref="X509Certificate.Equals(X509Certificate?)"/> is not adequate for security purposes.
+    /// </remarks>
+    internal static bool AreCertificatesEqual(X509Certificate2 cert1, X509Certificate2 cert2)
+    {
+        return cert1.RawDataMemory.Span.SequenceEqual(cert2.RawDataMemory.Span);
+    }
+
+    /// <summary>
+    /// Given a certificate, usually from the <see cref="StoreName.My"/> store, try to find the
+    /// corresponding certificate in <paramref name="store"/> (usually the <see cref="StoreName.Root"/> store)."/>
+    /// </summary>
+    /// <param name="store">An open <see cref="X509Store"/>.</param>
+    /// <param name="certificate">A certificate to search for.</param>
+    /// <param name="foundCertificate">The certificate, if any, corresponding to <paramref name="certificate"/> in <paramref name="store"/>.</param>
+    /// <returns>True if a corresponding certificate was found.</returns>
+    /// <remarks><see cref="ListCertificates"/> has richer filtering and a lot of debugging output that's unhelpful here.</remarks>
+    internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? foundCertificate)
+    {
+        foundCertificate = null;
+
+        // We specifically don't search by thumbprint to avoid being flagged for using a SHA-1 hash.
+        var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySerialNumber, certificate.SerialNumber, validOnly: false);
+        if (certificatesWithSubjectName.Count == 0)
+        {
+            return false;
+        }
+
+        var certificatesToDispose = new List<X509Certificate2>();
+        foreach (var candidate in certificatesWithSubjectName.OfType<X509Certificate2>())
+        {
+            if (foundCertificate is null && AreCertificatesEqual(candidate, certificate))
+            {
+                foundCertificate = candidate;
+            }
+            else
+            {
+                certificatesToDispose.Add(candidate);
+            }
+        }
+        DisposeCertificates(certificatesToDispose);
+        return foundCertificate is not null;
+    }
+
     [EventSource(Name = "Dotnet-dev-certs")]
     public sealed class CertificateManagerEventSource : EventSource
     {

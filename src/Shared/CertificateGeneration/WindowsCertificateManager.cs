@@ -71,26 +71,22 @@ internal sealed class WindowsCertificateManager : CertificateManager
 
     protected override void TrustCertificateCore(X509Certificate2 certificate)
     {
-        using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
-
-        publicCertificate.FriendlyName = certificate.FriendlyName;
-
         using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-
         store.Open(OpenFlags.ReadWrite);
-        var existing = store.Certificates.Find(X509FindType.FindByThumbprint, publicCertificate.Thumbprint, validOnly: false);
-        if (existing.Count > 0)
+
+        if (TryFindCertificateInStore(store, certificate, out _))
         {
             Log.WindowsCertificateAlreadyTrusted();
-            DisposeCertificates(existing.OfType<X509Certificate2>());
             return;
         }
 
         try
         {
             Log.WindowsAddCertificateToRootStore();
+
+            using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+            publicCertificate.FriendlyName = certificate.FriendlyName;
             store.Add(publicCertificate);
-            store.Close();
         }
         catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
         {
@@ -102,14 +98,11 @@ internal sealed class WindowsCertificateManager : CertificateManager
     protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
     {
         Log.WindowsRemoveCertificateFromRootStoreStart();
+
         using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-
         store.Open(OpenFlags.ReadWrite);
-        var matching = store.Certificates
-            .OfType<X509Certificate2>()
-            .SingleOrDefault(c => c.SerialNumber == certificate.SerialNumber);
 
-        if (matching != null)
+        if (TryFindCertificateInStore(store, certificate, out var matching))
         {
             store.Remove(matching);
         }
@@ -118,14 +111,13 @@ internal sealed class WindowsCertificateManager : CertificateManager
             Log.WindowsRemoveCertificateFromRootStoreNotFound();
         }
 
-        store.Close();
         Log.WindowsRemoveCertificateFromRootStoreEnd();
     }
 
     public override bool IsTrusted(X509Certificate2 certificate)
     {
         return ListCertificates(StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
-            .Any(c => c.Thumbprint == certificate.Thumbprint);
+            .Any(c => AreCertificatesEqual(c, certificate));
     }
 
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
