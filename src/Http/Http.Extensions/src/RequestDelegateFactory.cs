@@ -38,8 +38,6 @@ namespace Microsoft.AspNetCore.Http;
 [RequiresDynamicCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
 public static partial class RequestDelegateFactory
 {
-    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
-
     private static readonly MethodInfo ExecuteTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -783,8 +781,8 @@ public static partial class RequestDelegateFactory
             var useSimpleBinding = parameter.ParameterType == typeof(string) ||
                 parameter.ParameterType == typeof(StringValues) ||
                 parameter.ParameterType == typeof(StringValues?) ||
-                ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType) ||
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
             hasTryParse = useSimpleBinding;
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
@@ -860,12 +858,12 @@ public static partial class RequestDelegateFactory
         {
             return RequestPipeReaderExpr;
         }
-        else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
+        else if (ParameterBindingMethodCache.Instance.HasBindAsyncMethod(parameter))
         {
             hasBindAsync = true;
             return BindParameterFromBindAsync(parameter, factoryContext);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType))
         {
             hasTryParse = true;
             // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
@@ -895,7 +893,7 @@ public static partial class RequestDelegateFactory
             parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues) ||
                  parameter.ParameterType == typeof(StringValues?) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues/StringValues?, and DisableInferredFromBody is true
             hasTryParse = true;
@@ -1565,7 +1563,7 @@ public static partial class RequestDelegateFactory
         }
 
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameterType);
+        var (constructor, parameters) = ParameterBindingMethodCache.Instance.FindConstructor(parameterType);
 
         Expression initExpression;
 
@@ -1676,7 +1674,7 @@ public static partial class RequestDelegateFactory
         var isNotNullable = underlyingNullableType is null;
 
         var nonNullableParameterType = underlyingNullableType ?? targetParseType;
-        var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
+        var tryParseMethodCall = ParameterBindingMethodCache.Instance.FindTryParseMethod(nonNullableParameterType);
 
         if (tryParseMethodCall is null)
         {
@@ -1974,7 +1972,7 @@ public static partial class RequestDelegateFactory
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
         // Get the BindAsync method for the type.
-        var bindAsyncMethod = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
+        var bindAsyncMethod = ParameterBindingMethodCache.Instance.FindBindAsyncMethod(parameter);
         // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
         Debug.Assert(bindAsyncMethod.Expression is not null);
 
