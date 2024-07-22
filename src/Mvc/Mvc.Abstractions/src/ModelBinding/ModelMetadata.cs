@@ -477,7 +477,15 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// from <see cref="string"/> and without a <c>TryParse</c> method. Most POCO and <see cref="IEnumerable"/> types are therefore complex.
     /// Most, if not all, BCL value types are simple types.
     /// </remarks>
-    public bool IsComplexType => !IsConvertibleType && !IsParseableType;
+    public bool IsComplexType
+    {
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+        get
+        {
+            return !IsConvertibleType && !IsParseableType;
+        }
+    }
 
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> is a <see cref="Nullable{T}"/>.
