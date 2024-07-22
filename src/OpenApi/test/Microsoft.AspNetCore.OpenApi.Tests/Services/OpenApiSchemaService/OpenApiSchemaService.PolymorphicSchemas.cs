@@ -129,7 +129,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task HandlesPolymorphicTypesWithNonAbstractBaseClass()
+    public async Task HandlesPolymorphicTypesWithNonAbstractBaseClassWithNoDiscriminator()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -145,32 +145,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema.GetEffective(document);
-            // Assert discriminator mappings have been configured correctly
-            Assert.Equal("$type", schema.Discriminator.PropertyName);
-            Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("paint", item.Key),
-                item => Assert.Equal("fabric", item.Key)
-            );
-            Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/ColorPaintColor", item.Value),
-                item => Assert.Equal("#/components/schemas/ColorFabricColor", item.Value)
-            );
-            // OpenAPI requires that derived types in a polymorphic schema _always_ have a discriminator
-            // property associated with them. STJ permits the discriminator to be omitted from the
-            // if the base type is a non-abstract class and falls back to serializing to this base
-            // type. In this scenario, we check that the base class is not included in the `anyOf`
-            // schema.
+            // Assert discriminator mappings are not configured for this type since we
+            // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
+            // property associated with them.
+            Assert.Null(schema.Discriminator);
             Assert.Collection(schema.AnyOf,
                 schema => Assert.Equal("ColorPaintColor", schema.Reference.Id),
-                schema => Assert.Equal("ColorFabricColor", schema.Reference.Id));
+                schema => Assert.Equal("ColorFabricColor", schema.Reference.Id),
+                schema => Assert.Equal("ColorBase", schema.Reference.Id));
             // Assert schema with discriminator = "paint" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ColorPaintColor", out var paintSchema));
-            Assert.Contains(schema.Discriminator.PropertyName, paintSchema.Properties.Keys);
-            Assert.Equal("paint", ((OpenApiString)paintSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Contains("$type", paintSchema.Properties.Keys);
+            Assert.Equal("paint", ((OpenApiString)paintSchema.Properties["$type"].Enum.First()).Value);
             // Assert schema with discriminator = "fabric" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ColorFabricColor", out var fabricSchema));
-            Assert.Contains(schema.Discriminator.PropertyName, fabricSchema.Properties.Keys);
-            Assert.Equal("fabric", ((OpenApiString)fabricSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Contains("$type", fabricSchema.Properties.Keys);
+            Assert.Equal("fabric", ((OpenApiString)fabricSchema.Properties["$type"].Enum.First()).Value);
+            // Assert that schema for `Color` has been inserted into the components without a discriminator
+            Assert.True(document.Components.Schemas.TryGetValue("ColorBase", out var colorSchema));
+            Assert.DoesNotContain("$type", colorSchema.Properties.Keys);
         });
     }
 

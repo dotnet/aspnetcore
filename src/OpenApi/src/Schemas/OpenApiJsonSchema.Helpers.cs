@@ -287,7 +287,7 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Type = "object";
                 var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema).Where(schema => schema is not null).ToList();
+                schema.AnyOf = schemas?.Select(s => s.Schema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
@@ -300,7 +300,10 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.DiscriminatorMappingKeyword:
                 reader.Read();
                 var mappings = ReadDictionary<string>(ref reader);
-                schema.Discriminator.Mapping = mappings;
+                if (mappings is not null)
+                {
+                    schema.Discriminator.Mapping = mappings;
+                }
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();

@@ -345,6 +345,15 @@ internal static class JsonNodeSchemaExtensions
         // to the top-level schema and not to any nested schemas that are generated.
         if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.BaseTypeInfo == null)
         {
+            // System.Text.Json supports serializing to a non-abstract base class if no discriminator is provided.
+            // OpenAPI requires that all polymorphic sub-schemas have an associated discriminator. To maintain accuracy,
+            // with the actual implementation and comply with the limitations of the OpenAPI schema we do not emit
+            // a `discriminator` property for types that are represented this way.
+            if (!context.TypeInfo.Type.IsAbstract &&
+                !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type))
+            {
+                return;
+            }
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -365,24 +374,6 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// System.Text.Json will support binding to a non-abstract base class with polymorphic schema if no
-    /// discriminator is provided, OpenAPI requires that any sub-schemas referenced in a polymorphic schema
-    /// provide a discriminator to support round-tripping. This method will mark the sub-schema to be pruned from the list.
-    /// </summary>
-    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void MarkPolymorphicSchemaForNonAbstractBaseClass(this JsonNode schema, JsonSchemaExporterContext context)
-    {
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions &&
-            context.BaseTypeInfo == context.TypeInfo &&
-            !context.TypeInfo.Type.IsAbstract &&
-            !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type))
-        {
-            schema[OpenApiConstants.SweepSchemaKeyword] = "true";
-        }
-    }
-
-    /// <summary>
     /// Set the x-schema-id property on the schema to the identifier associated with the type.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
@@ -393,6 +384,14 @@ internal static class JsonNodeSchemaExtensions
         if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
+        }
+        // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions &&
+            context.BaseTypeInfo == context.TypeInfo &&
+            !context.TypeInfo.Type.IsAbstract &&
+            !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type))
+        {
+            schema[OpenApiConstants.SchemaId] = "Base";
         }
     }
 
