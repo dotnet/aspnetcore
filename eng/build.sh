@@ -266,6 +266,7 @@ if [ "$build_managed" = true ] || ([ "$build_all" = true ] && [ "$build_managed"
     if [ -z "$build_nodejs" ]; then
         if [ -x "$(command -v node)" ]; then
             __warn "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected on PATH."
+            __warn "Note that if you are running Source Build, building NodeJS projects will be disabled later on."
             build_nodejs=true
         else
             __warn "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
@@ -281,7 +282,7 @@ fi
 # Only set these MSBuild properties if they were explicitly set by build parameters.
 [ ! -z "$build_java" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildJava=$build_java"
 [ ! -z "$build_native" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNative=$build_native"
-[ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
+[ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
 
