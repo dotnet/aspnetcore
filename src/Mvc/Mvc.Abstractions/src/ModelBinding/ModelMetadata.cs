@@ -41,8 +41,6 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     private static bool IsEnhancedModelMetadataSupported { get; } =
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", out var isEnhancedModelMetadataSupported) ? isEnhancedModelMetadataSupported : true;
 
-    private static ParameterBindingMethodCache? ParameterBindingMethodCache;
-
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
@@ -652,8 +650,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         }
 
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
-        ParameterBindingMethodCache ??= new ParameterBindingMethodCache(throwOnInvalidMethod: false);
-        return ParameterBindingMethodCache.FindTryParseMethod(modelType);
+        return ParameterBindingMethodCache.NonThrowingInstance.FindTryParseMethod(modelType);
     }
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
