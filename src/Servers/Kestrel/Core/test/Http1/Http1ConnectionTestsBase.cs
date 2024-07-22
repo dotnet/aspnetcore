@@ -38,8 +38,12 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
         _transport = pair.Transport;
         _application = pair.Application;
 
+        var connectionContext = Mock.Of<ConnectionContext>();
+        var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
+
         var connectionFeatures = new FeatureCollection();
         connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+        connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
 
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
@@ -53,7 +57,8 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
             transport: pair.Transport,
             timeoutControl: _timeoutControl.Object,
             memoryPool: _pipelineFactory,
-            connectionFeatures: connectionFeatures);
+            connectionFeatures: connectionFeatures,
+            metricsContext: metricsContext);
 
         _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
     }
