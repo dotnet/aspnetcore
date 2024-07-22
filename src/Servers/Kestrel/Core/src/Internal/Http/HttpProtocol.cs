@@ -659,7 +659,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             var messageBody = CreateMessageBody();
             if (!messageBody.RequestKeepAlive)
             {
-                _keepAlive = false;
+                DisableKeepAlive(ConnectionEndReason.RequestNoKeepAlive);
             }
 
             IsUpgradableRequest = messageBody.RequestUpgrade;
@@ -860,7 +860,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             responseHeaders.ContentLength.HasValue &&
             _responseBytesWritten + count > responseHeaders.ContentLength.Value)
         {
-            _keepAlive = false;
+            DisableKeepAlive(ConnectionEndReason.ResponseContentLengthMismatch);
             ThrowTooManyBytesWritten(count);
         }
 
@@ -913,7 +913,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             // cannot be certain of how many bytes it will receive.
             if (_responseBytesWritten > 0)
             {
-                _keepAlive = false;
+                DisableKeepAlive(ConnectionEndReason.ResponseContentLengthMismatch);
             }
 
             ex = new InvalidOperationException(
@@ -1032,7 +1032,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             if (HasResponseStarted)
             {
                 // We can no longer change the response, so we simply close the connection.
-                _keepAlive = false;
+                DisableKeepAlive(ConnectionEndReason.ErrorAfterStartingResponse);
                 OnErrorAfterResponseStarted();
                 return Task.CompletedTask;
             }
@@ -1139,7 +1139,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             hasConnection &&
             (HttpHeaders.ParseConnection(responseHeaders) & ConnectionOptions.KeepAlive) == 0)
         {
-            _keepAlive = false;
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         // https://tools.ietf.org/html/rfc7230#section-3.3.1
@@ -1150,7 +1150,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         if (hasTransferEncoding &&
             HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
         {
-            _keepAlive = false;
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         // Set whether response can have body
@@ -1186,7 +1186,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
         else if (StatusCode == StatusCodes.Status101SwitchingProtocols)
         {
-            _keepAlive = false;
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
         else if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
         {
@@ -1216,7 +1216,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
             else
             {
-                _keepAlive = false;
+                DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
             }
         }
 
@@ -1392,16 +1392,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                 : string.Empty);
 
-    // This is called during certain bad requests so the automatic Connection: close header gets sent with custom responses.
-    // If no response is written, SetBadRequestState(BadHttpRequestException) will later also modify the status code.
-    public void DisableHttp1KeepAlive()
-    {
-        if (_httpVersion == Http.HttpVersion.Http10 || _httpVersion == Http.HttpVersion.Http11)
-        {
-            _keepAlive = false;
-        }
-    }
-
     public void SetBadRequestState(BadHttpRequestException ex)
     {
         Log.ConnectionBadRequest(ConnectionId, ex);
@@ -1418,6 +1408,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             WriteDiagnosticEvent(ServiceContext.DiagnosticSource, badRequestEventName, this);
         }
 
+        DisableKeepAlive(Http1Connection.GetConnectionEndReason(ex));
+    }
+
+    internal virtual void DisableKeepAlive(ConnectionEndReason reason)
+    {
         _keepAlive = false;
     }
 

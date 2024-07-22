@@ -103,6 +103,7 @@
       <BlazorServerJSFilename>blazor.server.js</BlazorServerJSFilename>
       <BlazorServerJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
       <BlazorServerJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
+      <BlazorServerJSFile Condition="!Exists('$(BlazorServerJSFile)') and '$(BuildNodeJS)' != 'true' ">$(RepoRoot)src\submodules\BlazorMinifiedJs\src\$(BlazorServerJSFilename)</BlazorServerJSFile>
     </PropertyGroup>
 
     <Warning Condition="!Exists('$(BlazorServerJSFile)')" Text="'$(BlazorServerJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />

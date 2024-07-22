@@ -12,6 +12,7 @@ using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
@@ -154,9 +155,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal TestServiceContext _serviceContext;
 
     internal DuplexPipe.DuplexPipePair _pair;
+    internal IConnectionMetricsTagsFeature _metricsTagsFeature;
+    internal IConnectionMetricsContextFeature _metricsContextFeature;
     internal Http2Connection _connection;
     protected Task _connectionTask;
     protected long _bytesReceived;
+
+    internal Dictionary<string, object> ConnectionTags => _metricsTagsFeature.Tags.ToDictionary(t => t.Key, t => t.Value);
+    internal ConnectionMetricsContext MetricsContext => _metricsContextFeature.MetricsContext;
 
     public Http2TestBase()
     {
@@ -419,6 +425,16 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         base.Dispose();
     }
 
+    internal void AssertConnectionNoError()
+    {
+        MetricsAssert.NoError(ConnectionTags);
+    }
+
+    internal void AssertConnectionEndReason(ConnectionEndReason expectedEndReason)
+    {
+        Assert.Equal(expectedEndReason, MetricsContext.ConnectionEndReason);
+    }
+
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         var nameStr = name.GetHeaderName();
@@ -457,8 +473,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
+        _metricsTagsFeature = new TestConnectionMetricsTagsFeature();
+
+        var metricsContext = TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object);
+        _metricsContextFeature = new TestConnectionMetricsContextFeature() { MetricsContext = metricsContext };
+
         var features = new FeatureCollection();
-        features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
+        features.Set<IConnectionMetricsContextFeature>(_metricsContextFeature);
+        features.Set<IConnectionMetricsTagsFeature>(_metricsTagsFeature);
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -466,7 +488,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             transport: _pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: features,
-            timeoutControl: _mockTimeoutControl.Object);
+            timeoutControl: _mockTimeoutControl.Object,
+            metricsContext: metricsContext);
 
         _connection = new Http2Connection(httpConnectionContext);
         _connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(_connection._streamLifetimeHandler, this);
@@ -479,9 +502,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _timeoutControl.Initialize();
     }
 
+    private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
+    }
+
     private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
     {
-        public ConnectionMetricsContext MetricsContext { get; }
+        public ConnectionMetricsContext MetricsContext { get; init; }
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler

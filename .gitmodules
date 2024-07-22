@@ -11,3 +11,7 @@
 	url = https://github.com/dotnet/Node-Externals
 	branch = main
 	depth = 1
+[submodule "src/submodules/BlazorMinifiedJs"]
+	path = src/submodules/BlazorMinifiedJs
+	url = https://github.com/dotnet/BlazorMinifiedJs
+	branch = main

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.get -> System.Func<System.Exception!, int>?
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.set -> void

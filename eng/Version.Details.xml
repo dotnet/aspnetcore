@@ -372,9 +372,9 @@
       <Sha>e1ab2243b27da4aa8a76372e4384bcd2b5894b3b</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24358.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24367.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>52c45e529d6a5956136ba3cddf849a16b65eb1f2</Sha>
+      <Sha>ff7fd0e205df9f2e3651716f92a15b2bb82b80ba</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
@@ -414,13 +414,13 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>731d793be2d0a66bafc96b1a79dc96b4d1f0301b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.7.24360.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.7.24370.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ff6dd4e5c43307fc8144d0361cf96986e43fba83</Sha>
+      <Sha>efe26050c7813b9fd7a2714965046a7773a69390</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.7.24360.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.7.24370.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ff6dd4e5c43307fc8144d0361cf96986e43fba83</Sha>
+      <Sha>efe26050c7813b9fd7a2714965046a7773a69390</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>

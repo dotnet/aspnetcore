@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -1051,7 +1052,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
-
+            httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -1152,7 +1153,10 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ContentLengthReadAsyncSingleBytesAtATime()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1221,6 +1225,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]
@@ -2244,6 +2250,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+    }
+
+    [Fact]
+    public async Task TlsOverHttp()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = new TestServer(context =>
+        {
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Stream.WriteAsync(new byte[] { 0x16, 0x03, 0x01, 0x02, 0x00, 0x01, 0x00, 0xfc, 0x03, 0x03, 0x03, 0xca, 0xe0, 0xfd, 0x0a }).DefaultTimeout();
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 400 Bad Request",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsNotSupported, m.Tags));
     }
 
     [Fact]
