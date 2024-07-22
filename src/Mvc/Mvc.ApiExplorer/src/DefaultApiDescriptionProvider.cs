@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 /// by <see cref="ControllerActionDescriptor"/>.
 /// </summary>
 [RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+[RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
 public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 {
     private readonly MvcOptions _mvcOptions;
@@ -534,6 +535,8 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
+    [RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+    [RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)

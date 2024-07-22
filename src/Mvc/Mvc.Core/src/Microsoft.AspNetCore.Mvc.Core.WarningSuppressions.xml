@@ -47,6 +47,12 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.IsComplexTypeParameter(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel,Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata@)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart.get_Types</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -107,13 +113,31 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder.&lt;BindPropertyAsync&gt;d__15.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.&lt;BindProperty&gt;d__11.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider.IsSimpleType(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -155,7 +179,19 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.CalculateHasValidators(System.Collections.Generic.HashSet{Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata},Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.get_ElementMetadata</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.get_ValidateChildren</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -179,6 +215,12 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ClearValidationStateForModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ConvertSimpleType(System.Object,System.Type,System.Globalization.CultureInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -192,6 +234,12 @@
       <argument>IL2026</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultCollectionValidationStrategy.GetEnumeratorForElementType(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.VisitImplementation(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata@,System.String@,System.Object)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
