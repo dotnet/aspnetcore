@@ -831,25 +831,29 @@ internal abstract class CertificateManager
     /// <remarks><see cref="ListCertificates"/> has richer filtering and a lot of debugging output that's unhelpful here.</remarks>
     internal static bool TryFindCertificateInStore(X509Store store, X509Certificate2 certificate, [NotNullWhen(true)] out X509Certificate2? foundCertificate)
     {
+        foundCertificate = null;
+
         // We specifically don't search by thumbprint to avoid being flagged for using a SHA-1 hash.
         var certificatesWithSubjectName = store.Certificates.Find(X509FindType.FindBySerialNumber, certificate.SerialNumber, validOnly: false);
-        if (certificatesWithSubjectName.Count > 0)
+        if (certificatesWithSubjectName.Count == 0)
         {
-            var certificatesToDispose = new List<X509Certificate2>();
-            foreach (var candidate in certificatesWithSubjectName.OfType<X509Certificate2>())
+            return false;
+        }
+
+        var certificatesToDispose = new List<X509Certificate2>();
+        foreach (var candidate in certificatesWithSubjectName.OfType<X509Certificate2>())
+        {
+            if (foundCertificate is null && AreCertificatesEqual(candidate, certificate))
             {
-                if (AreCertificatesEqual(candidate, certificate))
-                {
-                    DisposeCertificates(certificatesToDispose);
-                    foundCertificate = candidate;
-                    return true;
-                }
+                foundCertificate = candidate;
+            }
+            else
+            {
                 certificatesToDispose.Add(candidate);
             }
         }
-
-        foundCertificate = null;
-        return false;
+        DisposeCertificates(certificatesToDispose);
+        return foundCertificate is not null;
     }
 
     [EventSource(Name = "Dotnet-dev-certs")]
