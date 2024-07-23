@@ -362,12 +362,17 @@ internal sealed class OpenApiDocumentService(
         // in the same endpoint.
         if (description.TryGetFormParameters(out var formParameters))
         {
-            return await GetFormRequestBody(description.SupportedRequestFormats, formParameters, cancellationToken);
+            var endpointMetadata = description.ActionDescriptor.EndpointMetadata;
+            return await GetFormRequestBody(description.SupportedRequestFormats, formParameters, endpointMetadata, cancellationToken);
         }
         return null;
     }
 
-    private async Task<OpenApiRequestBody> GetFormRequestBody(IList<ApiRequestFormat> supportedRequestFormats, IEnumerable<ApiParameterDescription> formParameters, CancellationToken cancellationToken)
+    private async Task<OpenApiRequestBody> GetFormRequestBody(
+        IList<ApiRequestFormat> supportedRequestFormats,
+        IEnumerable<ApiParameterDescription> formParameters,
+        IList<object> endpointMetadata,
+        CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
         {
@@ -425,11 +430,17 @@ internal sealed class OpenApiDocumentService(
                 }
                 else
                 {
+                    // Resolve complex type state from endpoint metadata when checking for
+                    // minimal API types to use trim friendly code paths.
+                    var isComplexType = endpointMetadata
+                        .OfType<IParameterBindingMetadata>()
+                        .SingleOrDefault(parameter => parameter.Name == description.Name)?
+                        .HasTryParse == false;
                     if (hasMultipleFormParameters)
                     {
                         // Here and below: POCOs do not need to be need under their parameter name in the grouping.
                         // The form-binding implementation will capture them implicitly.
-                        if (description.ModelMetadata.IsComplexType)
+                        if (isComplexType)
                         {
                             schema.AllOf.Add(parameterSchema);
                         }
@@ -447,7 +458,7 @@ internal sealed class OpenApiDocumentService(
                     }
                     else
                     {
-                        if (description.ModelMetadata.IsComplexType)
+                        if (isComplexType)
                         {
                             schema = parameterSchema;
                         }

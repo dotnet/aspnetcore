@@ -33,7 +33,7 @@ app.MapGet("/", () => "Hello, world!");
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
 
         await VerifyAgainstBaselineUsingFile(compilation);
     }
@@ -79,19 +79,21 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
     }
 
     [Fact]
-    public async Task MapAction_ReturnsTask_Has_No_Metadata()
+    public async Task MapAction_ReturnsTask_ProducesInferredMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", Task () => Task.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
-        Assert.Empty(metadata);
+        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
+        Assert.Equal(200, metadata.StatusCode);
+        Assert.Equal("text/plain", metadata.ContentTypes.Single());
+        Assert.Equal(typeof(void), metadata.Type);
     }
 
     [Fact]
@@ -105,19 +107,21 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
     }
 
     [Fact]
-    public async Task MapAction_ReturnsValueTask_Has_No_Metadata()
+    public async Task MapAction_ReturnsValueTask_ProducesInferredMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
-        Assert.Empty(metadata);
+        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
+        Assert.Equal(200, metadata.StatusCode);
+        Assert.Equal("text/plain", metadata.ContentTypes.Single());
+        Assert.Equal(typeof(void), metadata.Type);
     }
 
     [Fact]
@@ -189,7 +193,7 @@ app.MapGet("/", () => "Hello");
         var responseMetadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
-        Assert.Null(responseMetadata.Type);
+        Assert.Equal(typeof(string), responseMetadata.Type);
     }
 
     [Fact]
@@ -526,6 +530,8 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         Assert.Collection(filteredMetadata,
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is IAcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Parameter binding metadata inferred by RDF
+            m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
             // Inferred ProducesResopnseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
