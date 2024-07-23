@@ -17,8 +17,7 @@ public interface IHybridCacheSerializer<T>
     T Deserialize(ReadOnlySequence<byte> source);
 
     /// <summary>
-    /// Serialize <paramref name="value"/>, writing to the provided <paramref name="target"/>.
+    /// Serialize <paramref name="value"/> to the provided <paramref name="target"/>.
     /// </summary>
     void Serialize(T value, IBufferWriter<byte> target);
 }
-

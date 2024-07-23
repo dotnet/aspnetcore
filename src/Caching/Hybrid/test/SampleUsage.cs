@@ -121,7 +121,7 @@ public class SampleUsage
             return await cache.GetOrCreateAsync(
                 $"someinfo:{name}:{id}", // unique key for this combination
                 async ct => await SomeExpensiveOperationAsync(name, id, ct),
-                token: token
+                cancellationToken: token
                 );
         }
     }
@@ -147,7 +147,7 @@ public class SampleUsage
                 (name, id), // all of the state we need for the final call, if needed
                 static async (state, token) =>
                     await SomeExpensiveOperationAsync(state.name, state.id, token),
-                token: token
+                cancellationToken: token
             );
         }
     }
@@ -161,7 +161,7 @@ public class SampleUsage
                 (name, id), // all of the state we need for the final call, if needed
                 static async (state, token) =>
                     await SomeExpensiveOperationReuseAsync(state.name, state.id, token),
-                token: token
+                cancellationToken: token
             );
         }
     }
