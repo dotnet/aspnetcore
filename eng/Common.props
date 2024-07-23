@@ -11,7 +11,6 @@
 
     <BuildNodeJS>$(BuildNodeJSUnlessSourcebuild)</BuildNodeJS>
     <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
-    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
@@ -20,7 +19,7 @@
     <BuildNative Condition=" '$(TargetOsName)' != 'win' ">false</BuildNative>
     <BuildNative Condition=" '$(VCTargetsPath)' == '' ">false</BuildNative>
     <BuildNative Condition=" '$(BuildNative)' == '' ">true</BuildNative>
-
+    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
     <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
     <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
