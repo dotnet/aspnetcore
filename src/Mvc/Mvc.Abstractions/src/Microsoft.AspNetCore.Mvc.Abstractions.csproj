@@ -9,6 +9,12 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
+    <!-- Mark this assembly as trimmable to support the LinkabilityChecker and trim warnings
+    for end-users but disable the analyzers since the entire assembly has not been made
+    trim/AoT compatible. -->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableAoTAnalyzer>false</EnableAoTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

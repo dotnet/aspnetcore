@@ -47,7 +47,7 @@ internal class EndpointParameter
         PropertyAsParameterInfoConstruction = parameter is not null
             ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructorCode()})"
             : $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo})";
-        endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && IsEndpointParameterMetadataProvider;
+        endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty;
         ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
     }
 
