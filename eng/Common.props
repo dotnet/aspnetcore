@@ -8,6 +8,10 @@
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
     <DefaultAppHostRuntimeIdentifier Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
+
+    <BuildNodeJS>$(BuildNodeJSUnlessSourcebuild)</BuildNodeJS>
+    <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
+    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
@@ -18,9 +22,6 @@
     <BuildNative Condition=" '$(BuildNative)' == '' ">true</BuildNative>
 
     <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
-    <BuildNodeJS>$(BuildNodeJSUnlessSourcebuild)</BuildNodeJS>
-    <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
-    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
     <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
 
