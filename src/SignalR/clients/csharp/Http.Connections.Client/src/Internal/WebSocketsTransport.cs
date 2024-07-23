@@ -404,15 +404,27 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         {
             if (!_gracefulClose && UpdateConnectionPair())
             {
-                try
+                Exception? exception = null;
+                // Arbitrary number of retries, will likely be user configurable in the future
+                for (var i = 0; i < 3; i++)
                 {
-                    await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
-                        cancellationToken: default).ConfigureAwait(false);
-                    cleanup = false;
+                    try
+                    {
+                        await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
+                            cancellationToken: default).ConfigureAwait(false);
+                        exception = null;
+                        cleanup = false;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                    }
                 }
-                catch (Exception ex)
+
+                if (exception is not null)
                 {
-                    throw new InvalidOperationException("Reconnect attempt failed.", innerException: ex);
+                    throw new InvalidOperationException("Reconnect attempt failed.", innerException: exception);
                 }
             }
         }
