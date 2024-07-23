@@ -755,36 +755,40 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var testMeterFactory = new TestMeterFactory();
         using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
-        await using (var server = new TestServer(context =>
-        {
-            context.Response.WriteAsync("Hello world");
-            Logger.LogInformation("Server aborting request.");
-            context.Abort();
-            return Task.CompletedTask;
-        },
-        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
-        listenOptions =>
-        {
-            listenOptions.Protocols = HttpProtocols.Http2;
-        }))
-        {
-            using var connection = server.CreateConnection();
-
-            using var socketsHandler = new SocketsHttpHandler()
+        var server = new TestServer(
+            context =>
             {
-                ConnectCallback = (_, _) =>
-                {
-                    return new ValueTask<Stream>(connection.Stream);
-                },
-                SslOptions = new SslClientAuthenticationOptions
-                {
-                    RemoteCertificateValidationCallback = (_, _, _, _) => true
-                },
-                KeepAlivePingDelay = Timeout.InfiniteTimeSpan
-            };
+                context.Response.WriteAsync("Hello world");
+                Logger.LogInformation("Server aborting request.");
+                context.Abort();
+                return Task.CompletedTask;
+            },
+            new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
+            listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+            });
 
-            using var httpClient = new HttpClient(socketsHandler);
+        using var connection = server.CreateConnection();
 
+        using var socketsHandler = new SocketsHttpHandler()
+        {
+            ConnectCallback = (_, _) =>
+            {
+                return new ValueTask<Stream>(connection.Stream);
+            },
+            SslOptions = new SslClientAuthenticationOptions
+            {
+                RemoteCertificateValidationCallback = (_, _, _, _) => true
+            },
+            KeepAlivePingDelay = Timeout.InfiniteTimeSpan
+        };
+
+        using var httpClient = new HttpClient(socketsHandler);
+        Task shutdownTask = Task.CompletedTask;
+
+        try
+        {
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 RequestUri = new Uri("http://localhost/"),
@@ -793,21 +797,29 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             };
 
             Logger.LogInformation("Client sending request.");
-            using var responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+            using var responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
             Logger.LogInformation("Client validating response status code.");
             responseMessage.EnsureSuccessStatusCode();
 
             Logger.LogInformation("Client reading response until end.");
-            var stream = await responseMessage.Content.ReadAsStreamAsync();
-            await Assert.ThrowsAnyAsync<Exception>(() => stream.ReadUntilEndAsync());
-
-            Logger.LogInformation("Connection waiting for close.");
-            await connection.WaitForConnectionClose();
+            var stream = await responseMessage.Content.ReadAsStreamAsync().DefaultTimeout();
+            await Assert.ThrowsAnyAsync<Exception>(() => stream.ReadUntilEndAsync()).DefaultTimeout();
         }
+        finally
+        {
+            Logger.LogInformation("Start server shutdown. The connection should be closed because it has no active requests.");
+            shutdownTask = server.DisposeAsync().AsTask();
+        }
+
+        Logger.LogInformation("Waiting for measurement.");
+        await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         Logger.LogInformation("Asserting metrics.");
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2));
+
+        connection.ShutdownSend();
+        await shutdownTask.DefaultTimeout();
     }
 
     [ConditionalFact]
