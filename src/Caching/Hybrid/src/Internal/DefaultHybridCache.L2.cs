@@ -106,9 +106,19 @@ partial class DefaultHybridCache
         DistributedCacheEntryOptions? result = null;
         if (options is not null && options.Expiration.HasValue && options.Expiration.GetValueOrDefault() != _defaultExpiration)
         {
-            result = options.ToDistributedCacheEntryOptions();
+            result = ToDistributedCacheEntryOptions(options);
         }
         return result ?? _defaultDistributedCacheExpiration;
+
+#if NET8_0_OR_GREATER
+        // internal method memoizes this allocation; since it is "init", it is immutable (outside reflection)
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(ToDistributedCacheEntryOptions))]
+        extern static DistributedCacheEntryOptions? ToDistributedCacheEntryOptions(HybridCacheEntryOptions options);
+#else
+        // withoug that helper method, we'll just eat the alloc (down-level TFMs)
+        static DistributedCacheEntryOptions ToDistributedCacheEntryOptions(HybridCacheEntryOptions options)
+            => new() { AbsoluteExpirationRelativeToNow = options.Expiration };
+#endif
     }
 
     internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
