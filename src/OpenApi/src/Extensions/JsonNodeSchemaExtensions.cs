@@ -12,6 +12,7 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.OpenApi.Models;
@@ -316,6 +317,12 @@ internal static class JsonNodeSchemaExtensions
         if (parameterDescription.RouteInfo?.Constraints is { } constraints)
         {
             schema.ApplyRouteConstraints(constraints);
+        }
+        // Parameters sourced from the header, query, and route parameter cannot be nullable.
+        if (parameterDescription.Source is { } bindingSource &&
+            (bindingSource == BindingSource.Header || bindingSource == BindingSource.Query || bindingSource == BindingSource.Path))
+        {
+            schema[OpenApiSchemaKeywords.NullableKeyword] = false;
         }
     }
 
