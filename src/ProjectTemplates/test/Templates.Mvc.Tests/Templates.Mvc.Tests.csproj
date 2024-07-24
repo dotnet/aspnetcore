@@ -20,6 +20,14 @@
     <RestoreFolderName>Mvc</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <HelixTimeout>01:20:00</HelixTimeout>
+
+    <!-- These tests fail in Helix in Debian and Mariner due to error -901 -->
+    <!-- Disabling on those OSes until a better fix can be identified -->
+    <SkipHelixQueues>
+      $(HelixQueueDebian11);
+      $(HelixQueueMariner);
+      $(SkipHelixQueues)
+    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
