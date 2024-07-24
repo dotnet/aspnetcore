@@ -280,7 +280,7 @@ internal sealed class GetDocumentCommandWorker
                 generateMethod,
                 service,
                 generateWithVersionMethod,
-                _context.OutputFileName);
+                _context.ProjectNameOverride);
             if (filePath == null)
             {
                 return false;
@@ -310,7 +310,7 @@ internal sealed class GetDocumentCommandWorker
         MethodInfo generateMethod,
         object service,
         MethodInfo? generateWithVersionMethod,
-        string outputFileName)
+        string projectNameOverride)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
@@ -354,7 +354,7 @@ internal sealed class GetDocumentCommandWorker
             return null;
         }
 
-        var filePath = GetDocumentPath(documentName, projectName, outputDirectory, outputFileName);
+        var filePath = GetDocumentPath(documentName, projectName, outputDirectory, projectNameOverride);
         _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
         try
         {
@@ -373,16 +373,17 @@ internal sealed class GetDocumentCommandWorker
         return filePath;
     }
 
-    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory, string outputFileName)
+    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory, string projectNameOverride)
     {
         string path;
 
-
-        if (!string.IsNullOrWhiteSpace(outputFileName))
+        //Override the default projectName with the one provided
+        if (!string.IsNullOrWhiteSpace(projectNameOverride))
         {
-            path = outputFileName + JsonExtension;
+            projectName = projectNameOverride;
         }
-        else if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
+
+        if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
         {
             // Leave default document name out of the filename.
             path = projectName + JsonExtension;

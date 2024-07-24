@@ -30,10 +30,10 @@ public class GetDocumentCommandContext
     // Generates all documents if not provided.
     public string DocumentName { get; set; }
 
-    //Custom name for the output file
-    //otherwise if document name == v1 = ProjectName.json
-    //else = ProjectName_documentName.json
-    public string OutputFileName { get; set; }
+    //Override the default projectName
+    //By default if document name == v1 => output = projectName.json
+    //else projectName_documentName.json
+    public string ProjectNameOverride { get; set; }
 
     public IReporter Reporter { get; set; }
 }
