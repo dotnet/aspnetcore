@@ -238,8 +238,9 @@ public class KestrelConfigurationLoaderTests
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
-    // On helix retry list - inherently flaky (writes to a well-known path)
     [Fact]
+    // inherently flaky (writes to a well-known path)
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48736")]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try

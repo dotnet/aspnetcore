@@ -13,8 +13,10 @@
       "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj",
       "src\\OpenApi\\sample\\Sample.csproj",
       "src\\OpenApi\\src\\Microsoft.AspNetCore.OpenApi.csproj",
-      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
-      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj"
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
+      "src\\OpenApi\\sample\\Sample.csproj",
+      "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj"
     ]
   }
 }
