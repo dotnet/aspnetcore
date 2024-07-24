@@ -9,7 +9,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Playwright;
-using DevHostStartup = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Startup;
 
 namespace Wasm.Performance.Driver;
 
@@ -271,31 +270,15 @@ public class Program
         }
     }
 
-    static IHost StartTestApp()
+    static WebApplication StartTestApp()
     {
         string[] args = ["--urls", "http://127.0.0.1:0"];
+        var app = WebApplication.Create(args);
+        app.MapStaticAssets();
+        app.MapFallbackToFile("index.html");
 
-        var host = Host.CreateDefaultBuilder(args)
-            .ConfigureHostConfiguration(config =>
-            {
-                var endpointsManifest = Path.ChangeExtension(typeof(Program).Assembly.Location, "staticwebassets.endpoints.json");
-                config.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    [WebHostDefaults.EnvironmentKey] = "Production",
-                    ["Logging:LogLevel:Microsoft"] = "Warning",
-                    ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
-                    ["staticAssets"] = endpointsManifest,
-                });
-            })
-            .ConfigureWebHostDefaults(builder =>
-            {
-                builder.UseStaticWebAssets();
-                builder.UseStartup<DevHostStartup>();
-            })
-            .Build();
-
-        RunInBackgroundThread(host.Start);
-        return host;
+        RunInBackgroundThread(app.Start);
+        return app;
     }
 
     static IHost StartBenchmarkResultReceiver()

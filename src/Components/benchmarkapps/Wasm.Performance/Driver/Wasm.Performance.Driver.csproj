@@ -20,8 +20,4 @@
     <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
-  </ItemGroup>
-
 </Project>
