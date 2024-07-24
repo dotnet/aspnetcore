@@ -5,6 +5,7 @@
 using System;
 #if NETCOREAPP
 using System.Buffers;
+using System.Buffers.Text;
 #endif
 using System.Diagnostics;
 using System.Globalization;
@@ -60,6 +61,9 @@ static class WebEncoders
 
         ValidateParameters(input.Length, nameof(input), offset, count);
 
+#if NET9_0_OR_GREATER
+        return Base64Url.DecodeFromChars(input.AsSpan(offset, count));
+#else
         // Special-case empty input
         if (count == 0)
         {
@@ -70,6 +74,7 @@ static class WebEncoders
         var buffer = new char[GetArraySizeRequiredToDecode(count)];
 
         return Base64UrlDecode(input, offset, buffer, bufferOffset: 0, count: count);
+#endif
     }
 
     /// <summary>
@@ -99,6 +104,9 @@ static class WebEncoders
         ValidateParameters(input.Length, nameof(input), offset, count);
         ArgumentOutOfRangeThrowHelper.ThrowIfNegative(bufferOffset);
 
+#if NET9_0_OR_GREATER
+        return Base64Url.DecodeFromChars(input.AsSpan(offset, count));
+#else
         if (count == 0)
         {
             return Array.Empty<byte>();
@@ -150,6 +158,7 @@ static class WebEncoders
         // Decode.
         // If the caller provided invalid base64 chars, they'll be caught here.
         return Convert.FromBase64CharArray(buffer, bufferOffset, arraySizeRequired);
+#endif
     }
 
     /// <summary>
@@ -314,6 +323,9 @@ static class WebEncoders
     [SkipLocalsInit]
     public static string Base64UrlEncode(ReadOnlySpan<byte> input)
     {
+#if NET9_0_OR_GREATER
+        return Base64Url.EncodeToString(input);
+#else
         const int StackAllocThreshold = 128;
 
         if (input.IsEmpty)
@@ -337,6 +349,7 @@ static class WebEncoders
         }
 
         return base64Url;
+#endif
     }
 
 #if NET9_0_OR_GREATER
@@ -347,9 +360,11 @@ static class WebEncoders
     /// <param name="output">The buffer to place the result in.</param>
     /// <returns></returns>
     public static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
+    {
+        return Base64Url.EncodeToChars(input, output);
+    }
 #else
     private static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
-#endif
     {
         Debug.Assert(output.Length >= GetArraySizeRequiredToEncode(input.Length));
 
@@ -384,8 +399,9 @@ static class WebEncoders
         return charsWritten;
     }
 #endif
+#endif
 
-    private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
+        private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
     {
         switch (inputLength % 4)
         {
