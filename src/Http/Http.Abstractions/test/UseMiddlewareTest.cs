@@ -146,7 +146,7 @@ public class UseMiddlewareTest
     }
 
     [Fact]
-    public async Task UseMiddleware_ThrowsIfKeyedConstructorArgCantBeResolvedFromContainer()
+    public void UseMiddleware_ThrowsIfKeyedConstructorArgCantBeResolvedFromContainer()
     {
         var builder = new ApplicationBuilder(new DummyKeyedServiceProvider());
         builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
