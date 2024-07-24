@@ -279,7 +279,8 @@ internal sealed class GetDocumentCommandWorker
                 _context.OutputDirectory,
                 generateMethod,
                 service,
-                generateWithVersionMethod);
+                generateWithVersionMethod,
+                _context.OutputFileName);
             if (filePath == null)
             {
                 return false;
@@ -308,7 +309,8 @@ internal sealed class GetDocumentCommandWorker
         string outputDirectory,
         MethodInfo generateMethod,
         object service,
-        MethodInfo? generateWithVersionMethod)
+        MethodInfo? generateWithVersionMethod,
+        string outputFileName)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
@@ -352,7 +354,7 @@ internal sealed class GetDocumentCommandWorker
             return null;
         }
 
-        var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+        var filePath = GetDocumentPath(documentName, projectName, outputDirectory, outputFileName);
         _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
         try
         {
@@ -371,10 +373,16 @@ internal sealed class GetDocumentCommandWorker
         return filePath;
     }
 
-    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
+    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory, string outputFileName)
     {
         string path;
-        if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
+
+
+        if (!string.IsNullOrWhiteSpace(outputFileName))
+        {
+            path = outputFileName + JsonExtension;
+        }
+        else if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
         {
             // Leave default document name out of the filename.
             path = projectName + JsonExtension;
