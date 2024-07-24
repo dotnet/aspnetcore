@@ -230,31 +230,37 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestBodySchema2 = requestBody2.Schema;
 
             // {
-            //  "$ref": "#/components/schemas/TodoArray"
-            // }
+            //  "type": "array",
+            //  "items": {
+            //    "$ref": "#/components/schemas/Todo"
+            //  }
             // {
-            //  "$ref": "#/components/schemas/TodoArray"
-            // }
+            //  "type": "array",
+            //  "items": {
+            //    "$ref": "#/components/schemas/Todo"
+            //  }
             // {
             //   "components": {
             //     "schemas": {
             //       "TodoArray": {
-            //         "type": "array",
-            //         "items": {
-            //           "$ref": "#/components/schemas/Todo"
+            //         "type": "object",
+            //         "properties": {
+            //           ...
             //         }
             //       }
             //     }
             //   }
             // }
 
-            // Both list types should point to the same reference ID
-            Assert.Equal(requestBodySchema.Reference.Id, requestBodySchema2.Reference.Id);
-            // The referenced schema has an array type
-            Assert.Equal("array", requestBodySchema.GetEffective(document).Type);
-            // The items in the array are mapped to the Todo reference
-            Assert.NotNull(requestBodySchema.GetEffective(document).Items.Reference.Id);
-            Assert.Equal(4, requestBodySchema.GetEffective(document).Items.GetEffective(document).Properties.Count);
+            // Both list types should be inlined
+            Assert.Null(requestBodySchema.Reference);
+            Assert.Equal(requestBodySchema.Reference, requestBodySchema2.Reference);
+            // And have an `array` type
+            Assert.Equal("array", requestBodySchema.Type);
+            // With an `items` sub-schema should consist of a $ref to Todo
+            Assert.Equal("Todo", requestBodySchema.Items.Reference.Id);
+            Assert.Equal(requestBodySchema.Items.Reference.Id, requestBodySchema2.Items.Reference.Id);
+            Assert.Equal(4, requestBodySchema.Items.GetEffective(document).Properties.Count);
         });
     }
 
@@ -288,59 +294,5 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal("todo", ((OpenApiString)requestSchema.GetEffective(document).Extensions["x-my-extension"]).Value);
             Assert.False(responseSchema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var _));
         });
-    }
-
-    [Fact]
-    public static async Task ProducesStableSchemaRefsForListOf()
-    {
-        // Arrange
-        var builder = CreateBuilder();
-
-        // Act
-        builder.MapPost("/api", (List<Todo> todo) => { });
-        builder.MapPost("/api-2", (List<Todo> todo) => { });
-
-        // Assert -- call twice to ensure the schema reference is stable
-        await VerifyOpenApiDocument(builder, VerifyDocument);
-        await VerifyOpenApiDocument(builder, VerifyDocument);
-
-        static void VerifyDocument(OpenApiDocument document)
-        {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
-            var requestBody = operation.RequestBody.Content["application/json"];
-            var requestBodySchema = requestBody.Schema;
-
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
-            var requestBody2 = operation2.RequestBody.Content["application/json"];
-            var requestBodySchema2 = requestBody2.Schema;
-
-            // {
-            //   "$ref": "#/components/schemas/TodoList"
-            // }
-            // {
-            //   "$ref": "#/components/schemas/TodoList"
-            // }
-            // {
-            //   "components": {
-            //     "schemas": {
-            //       "ArrayOfTodo": {
-            //         "type": "array",
-            //         "items": {
-            //           "$ref": "#/components/schemas/Todo"
-            //         }
-            //       }
-            //     }
-            //   }
-            // }
-
-            // Both list types should point to the same reference ID
-            Assert.Equal("ArrayOfTodo", requestBodySchema.Reference.Id);
-            Assert.Equal(requestBodySchema.Reference.Id, requestBodySchema2.Reference.Id);
-            // The referenced schema has an array type
-            Assert.Equal("array", requestBodySchema.GetEffective(document).Type);
-            var itemsSchema = requestBodySchema.GetEffective(document).Items;
-            Assert.Equal("Todo", itemsSchema.Reference.Id);
-            Assert.Equal(4, itemsSchema.GetEffective(document).Properties.Count);
-        }
     }
 }

@@ -35,10 +35,10 @@ public class JsonTypeInfoExtensionsTests
     public static IEnumerable<object[]> GetSchemaReferenceId_Data =>
     [
         [typeof(Todo), "Todo"],
-        [typeof(IEnumerable<Todo>), "ArrayOfTodo"],
-        [typeof(List<Todo>), "ArrayOfTodo"],
+        [typeof(IEnumerable<Todo>), null],
+        [typeof(List<Todo>), null],
         [typeof(TodoWithDueDate), "TodoWithDueDate"],
-        [typeof(IEnumerable<TodoWithDueDate>), "ArrayOfTodoWithDueDate"],
+        [typeof(IEnumerable<TodoWithDueDate>), null],
         [(new { Id = 1 }).GetType(), "AnonymousTypeOfint"],
         [(new { Id = 1, Name = "Todo" }).GetType(), "AnonymousTypeOfintAndstring"],
         [typeof(IFormFile), "IFormFile"],
@@ -50,14 +50,14 @@ public class JsonTypeInfoExtensionsTests
         [typeof(NotFound<TodoWithDueDate>), "NotFoundOfTodoWithDueDate"],
         [typeof(TestDelegate), "TestDelegate"],
         [typeof(Container.ContainedTestDelegate), "ContainedTestDelegate"],
-        [typeof(List<int>), "ArrayOfint"],
-        [typeof(List<List<int>>), "ArrayOfArrayOfint"],
-        [typeof(int[]), "ArrayOfint"],
+        [typeof(List<int>), null],
+        [typeof(List<List<int>>), null],
+        [typeof(int[]), null],
         [typeof(ValidationProblemDetails), "ValidationProblemDetails"],
         [typeof(ProblemDetails), "ProblemDetails"],
-        [typeof(Dictionary<string, string[]>), "DictionaryOfstringAndArrayOfstring"],
-        [typeof(Dictionary<string, List<string[]>>), "DictionaryOfstringAndArrayOfArrayOfstring"],
-        [typeof(Dictionary<string, IEnumerable<string[]>>), "DictionaryOfstringAndArrayOfArrayOfstring"],
+        [typeof(Dictionary<string, string[]>), null],
+        [typeof(Dictionary<string, List<string[]>>), null],
+        [typeof(Dictionary<string, IEnumerable<string[]>>), null],
     ];
 
     [Theory]

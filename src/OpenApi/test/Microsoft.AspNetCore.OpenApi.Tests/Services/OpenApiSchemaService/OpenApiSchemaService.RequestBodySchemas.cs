@@ -242,11 +242,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             var enumerableTodoSchema = enumerableTodo.RequestBody.Content["application/json"].Schema;
             var arrayTodoSchema = arrayTodo.RequestBody.Content["application/json"].Schema;
-            // Assert that both IEnumerable<Todo> and Todo[] map to the same schemas
-            Assert.Equal(enumerableTodoSchema.Reference.Id, arrayTodoSchema.Reference.Id);
+            // Assert that both IEnumerable<Todo> and Todo[] have items that map to the same schema
+            Assert.Equal(enumerableTodoSchema.Items.Reference.Id, arrayTodoSchema.Items.Reference.Id);
             // Assert all types materialize as arrays
-            Assert.Equal("array", enumerableTodoSchema.GetEffective(document).Type);
-            Assert.Equal("array", arrayTodoSchema.GetEffective(document).Type);
+            Assert.Equal("array", enumerableTodoSchema.Type);
+            Assert.Equal("array", arrayTodoSchema.Type);
 
             Assert.Equal("array", parameter.Schema.Type);
             Assert.Equal("string", parameter.Schema.Items.Type);
@@ -255,7 +255,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert the array items are the same as the Todo schema
             foreach (var element in new[] { enumerableTodoSchema, arrayTodoSchema })
             {
-                Assert.Collection(element.GetEffective(document).Items.GetEffective(document).Properties,
+                Assert.Collection(element.Items.GetEffective(document).Properties,
                     property =>
                     {
                         Assert.Equal("id", property.Key);

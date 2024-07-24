@@ -23,7 +23,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ArrayOfstring"
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "externalDocs": {
+                      "description": "Documentation for this OpenAPI schema",
+                      "url": "https://example.com/api/docs/schemas/string"
+                    }
+                  },
+                  "externalDocs": {
+                    "description": "Documentation for this OpenAPI schema",
+                    "url": "https://example.com/api/docs/schemas/array"
+                  }
                 }
               }
             }
@@ -47,24 +58,7 @@
       }
     }
   },
-  "components": {
-    "schemas": {
-      "ArrayOfstring": {
-        "type": "array",
-        "items": {
-          "type": "string",
-          "externalDocs": {
-            "description": "Documentation for this OpenAPI schema",
-            "url": "https://example.com/api/docs/schemas/string"
-          }
-        },
-        "externalDocs": {
-          "description": "Documentation for this OpenAPI schema",
-          "url": "https://example.com/api/docs/schemas/array"
-        }
-      }
-    }
-  },
+  "components": { },
   "tags": [
     {
       "name": "users"

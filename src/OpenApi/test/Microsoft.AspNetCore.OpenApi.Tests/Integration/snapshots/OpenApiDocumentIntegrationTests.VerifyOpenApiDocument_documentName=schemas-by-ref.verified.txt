@@ -185,7 +185,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ArrayOfint"
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
               }
             }
           },
@@ -215,7 +219,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ArrayOfint"
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
               }
             }
           },
@@ -267,7 +275,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
                 }
               }
             }
@@ -286,7 +298,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DictionaryOfstringAndint"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
                 }
               }
             }
@@ -373,20 +389,6 @@
           "name": {
             "type": "string"
           }
-        }
-      },
-      "ArrayOfint": {
-        "type": "array",
-        "items": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "DictionaryOfstringAndint": {
-        "type": "object",
-        "additionalProperties": {
-          "type": "integer",
-          "format": "int32"
         }
       },
       "Person": {
