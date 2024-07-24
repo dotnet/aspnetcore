@@ -152,9 +152,7 @@ public class UseMiddlewareTest
         builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
         var exception = Assert.Throws<InvalidOperationException>(builder.Build);
         Assert.Equal(
-            Resources.FormatException_ActivateMiddlewareNoService(
-                typeof(IKeyedServiceProvider),
-                typeof(MiddlewareKeyedConstructorInjectInvoke)),
+            $"Unable to resolve service for type '{typeof(IKeyedServiceProvider)}' while attempting to activate '{typeof(MiddlewareKeyedConstructorInjectInvoke)}'.",
             exception.Message);
     }
 
