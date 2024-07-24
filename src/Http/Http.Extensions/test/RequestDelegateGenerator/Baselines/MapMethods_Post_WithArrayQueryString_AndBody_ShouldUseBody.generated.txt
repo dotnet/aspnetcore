@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         break;
                     }
                 }
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("p", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("p", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
