@@ -210,6 +210,6 @@
     <value>Using discovered `GenerateAsync` overload with version parameter.</value>
   </data>
   <data name="ProjectNameOverrideDescription" xml:space="preserve">
-    <value>Custom projectName that replace the default one, used to generate OpenAPI JSON</value>
+    <value>Custom projectName that replace the default one, used to generate OpenAPI JSON file</value>
   </data>
 </root>

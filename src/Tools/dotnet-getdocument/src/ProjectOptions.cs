@@ -27,6 +27,12 @@ internal sealed class ProjectOptions
         Platform = command.Option("--platform <Target>", Resources.PlatformDescription);
         ProjectName = command.Option("--project <Name>", Resources.ProjectDescription);
         RuntimeFrameworkVersion = command.Option("--runtime <RUNTIME_IDENTIFIER>", Resources.RuntimeDescription);
+        command.Option("--prefix-output", Resources.PrefixDescription);
+        command.Option("--file-list <Path>", Resources.FileListDescription);
+        command.Option("--output <Directory>", Resources.OutputDescription);
+        command.Option("--openapi-version <Version>", Resources.OpenApiVersionDescription);
+        command.Option("--document-name <Name>", Resources.DocumentNameDescription);
+        command.Option("--projectName-override <Name>", Resources.ProjectNameOverrideDescription);
     }
 
     public void Validate()
