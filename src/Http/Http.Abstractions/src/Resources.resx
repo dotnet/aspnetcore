@@ -168,4 +168,7 @@
   <data name="Exception_NoServiceRegistered" xml:space="preserve">
     <value>No service for type '{0}' has been registered.</value>
   </data>
+  <data name="Exception_ActivateMiddlewareNoService" xml:space="preserve">
+    <value>Unable to resolve service for type '{0}' while attempting to activate '{1}'.</value>
+  </data>
 </root>

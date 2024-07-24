@@ -146,6 +146,19 @@ public class UseMiddlewareTest
     }
 
     [Fact]
+    public async Task UseMiddleware_ThrowsIfKeyedConstructorArgCantBeResolvedFromContainer()
+    {
+        var builder = new ApplicationBuilder(new DummyKeyedServiceProvider());
+        builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
+        Assert.Equal(
+            Resources.FormatException_ActivateMiddlewareNoService(
+                typeof(IKeyedServiceProvider),
+                typeof(MiddlewareKeyedConstructorInjectInvoke)),
+            exception.Message);
+    }
+
+    [Fact]
     public async Task UseMiddleware_ThrowsIfServiceProviderIsNotAIKeyedServiceProvider()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
@@ -173,6 +186,17 @@ public class UseMiddlewareTest
         keyedServiceProvider.AddKeyedService("test", typeof(DummyKeyedServiceProvider), keyedServiceProvider);
         var builder = new ApplicationBuilder(keyedServiceProvider);
         builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
+        var app = builder.Build();
+        app(new DefaultHttpContext());
+    }
+
+    [Fact]
+    public void UseMiddlewareWithConstructorKeyedArg()
+    {
+        var keyedServiceProvider = new DummyKeyedServiceProvider();
+        keyedServiceProvider.AddKeyedService("test", typeof(DummyKeyedServiceProvider), keyedServiceProvider);
+        var builder = new ApplicationBuilder(keyedServiceProvider);
+        builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
         var app = builder.Build();
         app(new DefaultHttpContext());
     }
@@ -391,6 +415,13 @@ public class UseMiddlewareTest
         public MiddlewareKeyedInjectInvoke(RequestDelegate next) { }
 
         public Task Invoke(HttpContext context, [FromKeyedServices("test")] IKeyedServiceProvider provider) => Task.CompletedTask;
+    }
+
+    private class MiddlewareKeyedConstructorInjectInvoke
+    {
+        public MiddlewareKeyedConstructorInjectInvoke(RequestDelegate next, [FromKeyedServices("test")] IKeyedServiceProvider provider) { }
+
+        public Task Invoke(HttpContext context) => Task.CompletedTask;
     }
 
     private class MiddlewareNoParametersStub
