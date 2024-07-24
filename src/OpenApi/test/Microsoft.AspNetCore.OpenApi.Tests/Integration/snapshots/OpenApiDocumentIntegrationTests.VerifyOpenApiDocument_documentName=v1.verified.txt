@@ -16,7 +16,11 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ArrayOfGuid"
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
             }
           },
           {
@@ -34,7 +38,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ArrayOfGuid"
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
                 }
               }
             }
@@ -117,13 +125,6 @@
   },
   "components": {
     "schemas": {
-      "ArrayOfGuid": {
-        "type": "array",
-        "items": {
-          "type": "string",
-          "format": "uuid"
-        }
-      },
       "Todo": {
         "required": [
           "id",
