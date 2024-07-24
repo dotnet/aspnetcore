@@ -3,10 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
@@ -125,5 +129,42 @@ internal sealed class WindowsCertificateManager : CertificateManager
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
     {
         return ListCertificates(storeName, storeLocation, isValid: false);
+    }
+
+    protected override void CreateDirectoryWithPermissions(string directoryPath)
+    {
+        var dirInfo = new DirectoryInfo(directoryPath);
+
+        if (!dirInfo.Exists)
+        {
+            // We trust the default permissions on Windows enough not to apply custom ACLs.
+            // We'll warn below if things seem really off.
+            dirInfo.Create();
+        }
+
+        var currentUser = WindowsIdentity.GetCurrent();
+        var currentUserSid = currentUser.User;
+        var systemSid = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, domainSid: null);
+        var adminGroupSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, domainSid: null);
+
+        var dirSecurity = dirInfo.GetAccessControl();
+        var accessRules = dirSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
+
+        foreach (FileSystemAccessRule rule in accessRules)
+        {
+            var idRef = rule.IdentityReference;
+            if (rule.AccessControlType == AccessControlType.Allow &&
+                !idRef.Equals(currentUserSid) &&
+                !idRef.Equals(systemSid) &&
+                !idRef.Equals(adminGroupSid))
+            {
+                // This is just a heuristic - determining whether the cumulative effect of the rules
+                // is to allow access to anyone other than the current user, system, or administrators
+                // is very complicated.  We're not going to do anything but log, so an approximation
+                // is fine.
+                // TODO (acasey): Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+                break;
+            }
+        }
     }
 }

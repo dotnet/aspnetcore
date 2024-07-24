@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 /// </remarks>
 internal sealed class MacOSCertificateManager : CertificateManager
 {
+    private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     // User keychain. Guard with quotes when using in command lines since users may have set
     // their user profile (HOME) directory to a non-standard path that includes whitespace.
     private static readonly string MacOSUserKeychain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
@@ -93,6 +95,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         var tmpFile = Path.GetTempFileName();
         try
         {
+            // We can't guarantee that the temp file is in a directory with sensible permissions, but we're not exporting the private key
             ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
             if (Log.IsEnabled())
             {
@@ -134,9 +137,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     {
         try
         {
-            // Ensure that the directory exists before writing to the file.
-            Directory.CreateDirectory(MacOSUserHttpsCertificateLocation);
-
+            // This path is in a well-known folder, so we trust the permissions.
             var certificatePath = GetCertificateFilePath(candidate);
             ExportCertificate(candidate, certificatePath, includePrivateKey: true, null, CertificateKeyExportFormat.Pfx);
         }
@@ -152,6 +153,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         var tmpFile = Path.GetTempFileName();
         try
         {
+            // We can't guarantee that the temp file is in a directory with sensible permissions, but we're not exporting the private key
             ExportCertificate(certificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
 
             using var checkTrustProcess = Process.Start(new ProcessStartInfo(
@@ -316,7 +318,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             }
 
             // Ensure that the directory exists before writing to the file.
-            Directory.CreateDirectory(MacOSUserHttpsCertificateLocation);
+            CreateDirectoryWithPermissions(MacOSUserHttpsCertificateLocation);
 
             File.WriteAllBytes(GetCertificateFilePath(certificate), certBytes);
         }
@@ -473,5 +475,23 @@ internal sealed class MacOSCertificateManager : CertificateManager
         {
             RemoveCertificateFromKeychain(MacOSUserKeychain, certificate);
         }
+    }
+
+    protected override void CreateDirectoryWithPermissions(string directoryPath)
+    {
+#pragma warning disable CA1416 // Validate platform compatibility (not supported on Windows)
+        var dirInfo = new DirectoryInfo(directoryPath);
+        if (dirInfo.Exists)
+        {
+            if ((dirInfo.UnixFileMode & ~DirectoryPermissions) != 0)
+            {
+                // TODO (acasey): Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(directoryPath, DirectoryPermissions);
+        }
+#pragma warning restore CA1416 // Validate platform compatibility
     }
 }

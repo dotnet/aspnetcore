@@ -484,7 +484,9 @@ internal abstract class CertificateManager
 
     protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-    internal static void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
+    protected abstract void CreateDirectoryWithPermissions(string directoryPath);
+
+    internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
     {
         if (Log.IsEnabled())
         {
@@ -500,7 +502,7 @@ internal abstract class CertificateManager
         if (!string.IsNullOrEmpty(targetDirectoryPath))
         {
             Log.CreateExportCertificateDirectory(targetDirectoryPath);
-            Directory.CreateDirectory(targetDirectoryPath);
+            CreateDirectoryWithPermissions(targetDirectoryPath);
         }
 
         byte[] bytes;

@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 /// </remarks>
 internal sealed partial class UnixCertificateManager : CertificateManager
 {
+	private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     /// <summary>The name of an environment variable consumed by OpenSSL to locate certificates.</summary>
     private const string OpenSslCertificateDirectoryVariableName = "SSL_CERT_DIR";
 
@@ -447,6 +449,24 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
     {
         return ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: false);
+    }
+
+    protected override void CreateDirectoryWithPermissions(string directoryPath)
+    {
+#pragma warning disable CA1416 // Validate platform compatibility (not supported on Windows)
+        var dirInfo = new DirectoryInfo(directoryPath);
+        if (dirInfo.Exists)
+        {
+            if ((dirInfo.UnixFileMode & ~DirectoryPermissions) != 0)
+            {
+                // TODO (acasey): Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(directoryPath, DirectoryPermissions);
+        }
+#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     private static string GetChromiumNssDb(string homeDirectory)
