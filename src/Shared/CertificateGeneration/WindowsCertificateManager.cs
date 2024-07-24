@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
@@ -162,7 +160,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
                 // is to allow access to anyone other than the current user, system, or administrators
                 // is very complicated.  We're not going to do anything but log, so an approximation
                 // is fine.
-                // TODO (acasey): Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+                Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
                 break;
             }
         }

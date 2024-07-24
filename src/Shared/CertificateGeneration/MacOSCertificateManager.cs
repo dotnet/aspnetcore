@@ -485,7 +485,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         {
             if ((dirInfo.UnixFileMode & ~DirectoryPermissions) != 0)
             {
-                // TODO (acasey): Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+                Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
             }
         }
         else
