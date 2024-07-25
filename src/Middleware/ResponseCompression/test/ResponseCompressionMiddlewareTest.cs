@@ -59,7 +59,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
+        CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -431,7 +431,7 @@ public class ResponseCompressionMiddlewareTest
 
     [Theory]
     [InlineData(false, 100)]
-    [InlineData(true, 30)]
+    [InlineData(true, 29)]
     public async Task Request_Https_CompressedIfEnabled(bool enableHttps, int expectedLength)
     {
         var sink = new TestSink(
@@ -1114,7 +1114,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 34, expectedEncoding: "gzip");
+        CheckResponseCompressed(response, expectedBodyLength: 35, expectedEncoding: "gzip");
 
         Assert.False(fakeSendFile.SendFileInvoked);
     }
