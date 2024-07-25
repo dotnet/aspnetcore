@@ -26,7 +26,7 @@ internal abstract class CertificateManager
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
 
     private const string LocalhostHttpsDnsName = "localhost";
-    private const string LocalhostHttpsDistinguishedName = "CN=" + LocalhostHttpsDnsName;
+    internal const string LocalhostHttpsDistinguishedName = "CN=" + LocalhostHttpsDnsName;
 
     public const int RSAMinimumKeySizeInBits = 2048;
 
@@ -62,6 +62,10 @@ internal abstract class CertificateManager
         AspNetHttpsCertificateVersion = version;
     }
 
+    /// <remarks>
+    /// This only checks if the certificate has the OID for ASP.NET Core HTTPS development certificates -
+    /// it doesn't check the subject, validity, key usages, etc.
+    /// </remarks>
     public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
         certificate.Extensions.OfType<X509Extension>()
         .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
@@ -398,7 +402,10 @@ internal abstract class CertificateManager
             return ImportCertificateResult.InvalidCertificate;
         }
 
-        if (!IsHttpsDevelopmentCertificate(certificate))
+        // Note that we're checking Subject, rather than LocalhostHttpsDistinguishedName,
+        // because the tests use a different subject.
+        if (!string.Equals(certificate.Subject, Subject, StringComparison.Ordinal) || // Kestrel requires this
+            !IsHttpsDevelopmentCertificate(certificate))
         {
             if (Log.IsEnabled())
             {
