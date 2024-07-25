@@ -23,6 +23,7 @@
          from the dependency on Microsoft.Extensions.DependencyModel which would cause a source-built prebuilt. -->
     <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
+    <PackageReference Include="Microsoft.IO.Redist" Version="$(MicrosoftIoRedistVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
