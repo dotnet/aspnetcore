@@ -361,7 +361,7 @@ public class UseMiddlewareTest
 
             if (service == null)
             {
-                throw new InvalidOperationException(Resources.FormatException_NoServiceRegistered(serviceType));
+                throw new InvalidOperationException($"No service for type '{serviceType}' has been registered.");
             }
 
             return service;

@@ -165,7 +165,4 @@
   <data name="Exception_KeyedServicesNotSupported" xml:space="preserve">
     <value>This service provider doesn't support keyed services.</value>
   </data>
-  <data name="Exception_NoServiceRegistered" xml:space="preserve">
-    <value>No service for type '{0}' has been registered.</value>
-  </data>
 </root>
