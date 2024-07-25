@@ -114,7 +114,6 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.get ->
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QuickGrid() -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ShowColumnOptionsAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.SortByColumnAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column, Microsoft.AspNetCore.Components.QuickGrid.SortDirection direction = Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.set -> void
