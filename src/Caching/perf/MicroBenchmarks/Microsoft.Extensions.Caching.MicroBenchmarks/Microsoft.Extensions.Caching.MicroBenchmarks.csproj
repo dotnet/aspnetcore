@@ -16,6 +16,8 @@
     <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
+
 
     <Compile Include="..\..\..\Hybrid\src\Internal\RecyclableArrayBufferWriter.cs" LinkBase="Microsoft.Extensions.Caching.Hybrid" />
     <!--<Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />-->
