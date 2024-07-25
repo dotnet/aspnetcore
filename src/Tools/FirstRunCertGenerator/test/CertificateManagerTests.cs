@@ -352,6 +352,29 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
     }
 
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
+    public void EnsureCreateHttpsCertificate_CannotExportToNonExistentDirectory()
+    {
+        // Arrange
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pem";
+
+        _fixture.CleanupCertificates();
+
+        var now = DateTimeOffset.UtcNow;
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+        var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+        Output.WriteLine(creation.ToString());
+        ListCertificates();
+
+        // Act
+        var result = _manager
+            .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), Path.Combine("NoSuchDirectory", CertificateName));
+
+        // Assert
+        Assert.Equal(EnsureCertificateResult.ErrorExportingTheCertificate, result);
+    }
+
     [Fact]
     public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
     {
