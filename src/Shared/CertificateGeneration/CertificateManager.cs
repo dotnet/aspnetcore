@@ -66,9 +66,17 @@ internal abstract class CertificateManager
     /// This only checks if the certificate has the OID for ASP.NET Core HTTPS development certificates -
     /// it doesn't check the subject, validity, key usages, etc.
     /// </remarks>
-    public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
-        certificate.Extensions.OfType<X509Extension>()
-        .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
+    public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate)
+    {
+        foreach (var extension in certificate.Extensions.OfType<X509Extension>())
+        {
+            if (string.Equals(AspNetHttpsOid, extension.Oid?.Value, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public IList<X509Certificate2> ListCertificates(
         StoreName storeName,
