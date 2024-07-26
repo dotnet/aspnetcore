@@ -125,7 +125,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         {
             // Can navigate to the counter page
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/counter" }),
+                page.WaitForURLAsync("**/counter"),
                 page.WaitForSelectorAsync("h1 >> text=Counter"),
                 page.WaitForSelectorAsync("p >> text=Current count: 0"),
                 page.ClickAsync("a[href=counter]"));
@@ -137,36 +137,36 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         if (usesAuth)
         {
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Identity/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Log in"));
 
             await Task.WhenAll(
                 page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Identity/Account/Register**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Register as a new user"));
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = "[PLACEHOLDER]-1a";
 
-            await page.TypeAsync("[name=\"Input.Email\"]", userName);
-            await page.TypeAsync("[name=\"Input.Password\"]", password);
-            await page.TypeAsync("[name=\"Input.ConfirmPassword\"]", password);
+            await page.FillAsync("[name=\"Input.Email\"]", userName);
+            await page.FillAsync("[name=\"Input.Password\"]", password);
+            await page.FillAsync("[name=\"Input.ConfirmPassword\"]", password);
 
             // We will be redirected to the RegisterConfirmation
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Identity/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("#registerSubmit"));
 
             // We will be redirected to the ConfirmEmail
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Identity/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
             // Now we can login
             await page.ClickAsync("text=Login");
             await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
-            await page.TypeAsync("[name=\"Input.Email\"]", userName);
-            await page.TypeAsync("[name=\"Input.Password\"]", password);
+            await page.FillAsync("[name=\"Input.Email\"]", userName);
+            await page.FillAsync("[name=\"Input.Password\"]", password);
             await page.ClickAsync("#login-submit");
 
             // Need to navigate to fetch page
