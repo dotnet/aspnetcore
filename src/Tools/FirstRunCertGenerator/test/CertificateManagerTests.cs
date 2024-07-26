@@ -116,7 +116,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             var certificates = store.Certificates;
             foreach (var certificate in certificates)
             {
-                Output.WriteLine($"Certificate: '{Convert.ToBase64String(certificate.Export(X509ContentType.Cert))}'.");
+                Output.WriteLine($"Certificate: {certificate.Subject} '{Convert.ToBase64String(certificate.Export(X509ContentType.Cert))}'.");
                 certificate.Dispose();
             }
 
@@ -225,7 +225,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
     public void EnsureCreateHttpsCertificate_CanImport_ExportedPfx()
     {
         // Arrange
-        const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_CanImport_ExportedPfx) + ".pfx";
         var certificatePassword = Guid.NewGuid().ToString();
 
         _fixture.CleanupCertificates();
@@ -258,7 +258,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
     public void EnsureCreateHttpsCertificate_CanImport_ExportedPfx_FailsIfThereAreCertificatesPresent()
     {
         // Arrange
-        const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_CanImport_ExportedPfx_FailsIfThereAreCertificatesPresent) + ".pfx";
         var certificatePassword = Guid.NewGuid().ToString();
 
         _fixture.CleanupCertificates();
@@ -278,6 +278,47 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
 
         // Assert
         Assert.Equal(ImportCertificateResult.ExistingCertificatesPresent, result);
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
+    public void EnsureCreateHttpsCertificate_CannotImportIfTheSubjectNameIsWrong()
+    {
+        // Arrange
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_CannotImportIfTheSubjectNameIsWrong) + ".pfx";
+        var certificatePassword = Guid.NewGuid().ToString();
+
+        _fixture.CleanupCertificates();
+
+        var now = DateTimeOffset.UtcNow;
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+        var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+        Output.WriteLine(creation.ToString());
+        ListCertificates();
+
+        var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+        _manager.CleanupHttpsCertificates();
+
+        using var privateKey = httpsCertificate.GetRSAPrivateKey();
+        var csr = new CertificateRequest(httpsCertificate.Subject + "Not", privateKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        foreach (var extension in httpsCertificate.Extensions)
+        {
+            csr.CertificateExtensions.Add(extension);
+        }
+        var wrongSubjectCertificate = csr.CreateSelfSigned(httpsCertificate.NotBefore, httpsCertificate.NotAfter);
+
+        Assert.True(CertificateManager.IsHttpsDevelopmentCertificate(wrongSubjectCertificate));
+        Assert.NotEqual(_manager.Subject, wrongSubjectCertificate.Subject);
+
+        File.WriteAllBytes(CertificateName, wrongSubjectCertificate.Export(X509ContentType.Pfx, certificatePassword));
+
+        // Act
+        var result = _manager.ImportCertificate(CertificateName, certificatePassword);
+
+        // Assert
+        Assert.Equal(ImportCertificateResult.NoDevelopmentHttpsCertificate, result);
+        Assert.Empty(_manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false));
     }
 
     [ConditionalFact]
