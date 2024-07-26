@@ -913,6 +913,7 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public async Task Locking_ExecuteAllRequestsWhenDisabled()
     {
         var responseCounter = 0;
