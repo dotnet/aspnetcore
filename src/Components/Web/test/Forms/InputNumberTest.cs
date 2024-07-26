@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputNumberTest
 {
-    private TestRenderer _testRenderer;
+    private readonly TestRenderer _testRenderer;
 
     public InputNumberTest()
     {
