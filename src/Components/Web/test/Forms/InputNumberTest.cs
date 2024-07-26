@@ -13,7 +13,7 @@ public class InputNumberTest
 {
     private TestRenderer _testRenderer;
 
-    public InputNumberTests()
+    public InputNumberTest()
     {
         var services = new ServiceCollection();
         services.AddLogging();
