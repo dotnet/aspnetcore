@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Specifies that a parameter or property should be bound using the request body.
 /// </summary>
 /// <remarks>
-/// Be default for MVC ASP.NET Core runtime delegates the responsibility of reading the body to an input formatter.<br/>
-/// In the case of Minimal API, the body is deserialized by <see cref="System.Text.Json.JsonSerializer">JsonSerializer</see>.
+/// By default, ASP.NET Core MVC delegates the responsibility of reading the body to an input formatter.<br/>
+/// In the case of ASP.NET Core Minimal APIs, the body is deserialized by <see cref="System.Text.Json.JsonSerializer"/>.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class FromBodyAttribute : Attribute, IBindingSourceMetadata, IConfigureEmptyBodyBehavior, IFromBodyMetadata
