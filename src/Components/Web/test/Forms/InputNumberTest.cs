@@ -74,63 +74,32 @@ public class InputNumberTest
             EditContext = new EditContext(model),
             ValueExpression = () => model.SomeNumber,
             AdditionalAttributes = new Dictionary<string, object>
-            {
-                { "type", "range" }  // User-defined 'type' attribute to override default
-            }
+        {
+            { "type", "range" }  // User-defined 'type' attribute to override default
+        }
         };
 
         // Act
         var componentId = await RenderAndGetTestInputNumberComponentIdAsync(hostComponent);
 
-        // Retrieve the render tree frames and extract attributes
+        // Retrieve the render tree frames and extract attributes using helper methods
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Debugging: Output the frames for inspection
-        foreach (var frame in frames.Array)
-        {
-            Console.WriteLine($"Frame: {frame.FrameType}, {frame.ElementName}, {frame.AttributeName}, {frame.AttributeValue}");
-        }
-
-        bool inputElementFound = false;
-        var attributes = new Dictionary<string, object>();
-
-        for (int i = 0; i < frames.Count; i++)
-        {
-            var frame = frames.Array[i];
-            if (frame.FrameType == RenderTreeFrameType.Element && frame.ElementName == "input")
-            {
-                inputElementFound = true;
-                for (int j = i + 1; j < frames.Count; j++)
-                {
-                    var attributeFrame = frames.Array[j];
-                    if (attributeFrame.FrameType != RenderTreeFrameType.Attribute)
-                    {
-                        break;
-                    }
-                    attributes[attributeFrame.AttributeName] = attributeFrame.AttributeValue;
-                }
-                break;
-            }
-        }
+        var typeAttributeFrame = frames.Array.Single(frame =>
+            frame.FrameType == RenderTreeFrameType.Attribute &&
+            frame.AttributeName == "type");
 
         // Assert
-        Assert.True(inputElementFound, "Input element was not found.");
-        Assert.True(attributes.ContainsKey("type"), "Type attribute was not found.");
-        Assert.Equal("range", attributes["type"]);
+        Assert.Equal("range", typeAttributeFrame.AttributeValue);
     }
 
     private async Task<int> RenderAndGetTestInputNumberComponentIdAsync(TestInputHostComponent<int, TestInputNumberComponent> hostComponent)
     {
-        var componentId = _testRenderer.AssignRootComponentId(hostComponent);
-        await _testRenderer.RenderRootComponentAsync(componentId);
-        return FindTestInputNumberComponentId(_testRenderer.Batches.Single(), typeof(TestInputNumberComponent));
+        var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+        var batch = _testRenderer.Batches.Single();
+        return batch.GetComponentFrames<TestInputNumberComponent>().Single().ComponentId;
     }
-
-    private static int FindTestInputNumberComponentId(CapturedBatch batch, Type componentType)
-        => batch.ReferenceFrames
-                .Where(f => f.FrameType == RenderTreeFrameType.Component && f.Component.GetType() == componentType)
-                .Select(f => f.ComponentId)
-                .Single();
 
     private class TestModel
     {
