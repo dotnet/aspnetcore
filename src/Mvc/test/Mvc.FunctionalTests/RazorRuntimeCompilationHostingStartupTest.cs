@@ -85,6 +85,7 @@ public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange

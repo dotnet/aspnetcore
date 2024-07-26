@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -136,6 +137,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                     // Read() will have already have greedily consumed the entire request body if able.
                     if (result.IsCompleted)
                     {
+                        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
                         ThrowUnexpectedEndOfRequestContent();
                     }
                 }

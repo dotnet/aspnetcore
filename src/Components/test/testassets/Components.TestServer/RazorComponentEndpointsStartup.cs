@@ -86,7 +86,16 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapStaticAssets();
+                var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+                if (File.Exists(contentRootStaticAssetsPath))
+                {
+                    endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+                }
+                else
+                {
+                    endpoints.MapStaticAssets();
+                }
+
                 _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>

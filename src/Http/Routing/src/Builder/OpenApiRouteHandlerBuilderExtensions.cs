@@ -76,7 +76,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (responseType is Type && string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/json";
+            contentType = ContentTypeConstants.JsonContentType;
         }
 
         if (contentType is null)
@@ -103,10 +103,31 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return Produces(builder, statusCode, typeof(ProblemDetails), contentType);
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
+    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="statusCode">The response status code.</param>
+    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static TBuilder ProducesProblem<TBuilder>(this TBuilder builder, int statusCode, string? contentType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (string.IsNullOrEmpty(contentType))
+        {
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
+        }
+
+        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(ProblemDetails), [contentType]));
     }
 
     /// <summary>
@@ -124,10 +145,34 @@ public static class OpenApiRouteHandlerBuilderExtensions
     {
         if (string.IsNullOrEmpty(contentType))
         {
-            contentType = "application/problem+json";
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
         }
 
         return Produces(builder, statusCode, typeof(HttpValidationProblemDetails), contentType);
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
+    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
+    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static TBuilder ProducesValidationProblem<TBuilder>(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        this TBuilder builder,
+        int statusCode = StatusCodes.Status400BadRequest,
+        string? contentType = null)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (string.IsNullOrEmpty(contentType))
+        {
+            contentType = ContentTypeConstants.ProblemDetailsContentType;
+        }
+
+        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(HttpValidationProblemDetails), [contentType]));
     }
 
     /// <summary>

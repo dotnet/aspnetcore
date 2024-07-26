@@ -46,7 +46,7 @@ public static class AuthenticationTokenExtensions
 
         if (tokenNames.Count > 0)
         {
-            properties.Items[TokenNamesKey] = string.Join(";", tokenNames);
+            properties.Items[TokenNamesKey] = string.Join(';', tokenNames);
         }
     }
 

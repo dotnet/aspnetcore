@@ -56,16 +56,22 @@
 
   <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
-  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
+  <PropertyGroup>
+    <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+  </PropertyGroup>
 
+  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Fall back if not. -->
+  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
+    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>
-      <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
-      <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-      <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFile>..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
     </PropertyGroup>
+  </Target>
 
-    <Warning Condition="!Exists('$(BlazorWebViewJSFile)')" Text="'$(BlazorWebViewJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
-
+  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
     <ItemGroup>
       <EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />
       <EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />

@@ -11,6 +11,11 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
+/// <remarks>
+/// Normally, we avoid the use of <see cref="X509Certificate2.Thumbprint"/> because it's a SHA-1 hash and, therefore,
+/// not adequate for security applications.  However, the MacOS security tool uses SHA-1 hashes for certificate
+/// identification, so we're stuck.
+/// </remarks>
 internal sealed class MacOSCertificateManager : CertificateManager
 {
     // User keychain. Guard with quotes when using in command lines since users may have set

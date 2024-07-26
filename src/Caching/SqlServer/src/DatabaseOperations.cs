@@ -26,6 +26,8 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     /// </summary>
     private const int DuplicateKeyErrorId = 2627;
 
+    private const string UtcNowParameterName = "UtcNow";
+
     public DatabaseOperations(
         string connectionString, string schemaName, string tableName, ISystemClock systemClock)
     {
@@ -118,7 +120,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         using (var connection = new SqlConnection(ConnectionString))
         using (var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection))
         {
-            command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+            command.Parameters.AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
 
             connection.Open();
 
@@ -141,7 +143,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
                 .AddCacheItemValue(value)
                 .AddSlidingExpirationInSeconds(options.SlidingExpiration)
                 .AddAbsoluteExpiration(absoluteExpiration)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
 
             connection.Open();
 
@@ -181,7 +183,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
                 .AddCacheItemValue(value)
                 .AddSlidingExpirationInSeconds(options.SlidingExpiration)
                 .AddAbsoluteExpiration(absoluteExpiration)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
 
             await connection.OpenAsync(token).ConfigureAwait(false);
 
@@ -224,7 +226,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         {
             command.Parameters
                 .AddCacheItemId(key)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
 
             connection.Open();
 
@@ -277,7 +279,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         {
             command.Parameters
                 .AddCacheItemId(key)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
 
             await connection.OpenAsync(token).ConfigureAwait(false);
 
