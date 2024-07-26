@@ -35,7 +35,7 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email." />
+                <InputText @bind-Value="Input.Email" id="email" class="form-control" autocomplete="email" placeholder="Please enter your email." />
                 <label for="email" class="form-label">Email</label>
                 <ValidationMessage For="() => Input.Email" />
             </div>
