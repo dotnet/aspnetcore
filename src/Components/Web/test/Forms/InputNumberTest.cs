@@ -74,9 +74,9 @@ public class InputNumberTest
             EditContext = new EditContext(model),
             ValueExpression = () => model.SomeNumber,
             AdditionalAttributes = new Dictionary<string, object>
-        {
-            { "type", "range" }  // User-defined 'type' attribute to override default
-        }
+            {
+                { "type", "range" }  // User-defined 'type' attribute to override default
+            }
         };
 
         // Act
