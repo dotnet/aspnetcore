@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-public class InputNumberTests
+public class InputNumberTest
 {
     private TestRenderer _testRenderer;
 
