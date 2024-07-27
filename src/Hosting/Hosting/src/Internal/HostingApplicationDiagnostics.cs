@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -389,80 +390,23 @@ internal sealed class HostingApplicationDiagnostics
         hasDiagnosticListener = false;
 
         var headers = httpContext.Request.Headers;
-        _propagator.ExtractTraceIdAndState(headers,
+        var activity = ActivityCreator.CreateFromRemote(
+            _activitySource,
+            _propagator,
+            headers,
             static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
             {
                 fieldValues = default;
                 var headers = (IHeaderDictionary)carrier!;
                 fieldValue = headers[fieldName];
             },
-            out var requestId,
-            out var traceState);
-
-        Activity? activity = null;
-        if (_activitySource.HasListeners())
-        {
-            if (ActivityContext.TryParse(requestId, traceState, isRemote: true, out ActivityContext context))
-            {
-                // The requestId used the W3C ID format. Unfortunately, the ActivitySource.CreateActivity overload that
-                // takes a string parentId never sets HasRemoteParent to true. We work around that by calling the
-                // ActivityContext overload instead which sets HasRemoteParent to parentContext.IsRemote.
-                // https://github.com/dotnet/aspnetcore/pull/41568#discussion_r868733305
-                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
-            }
-            else
-            {
-                // Pass in the ID we got from the headers if there was one.
-                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, string.IsNullOrEmpty(requestId) ? null! : requestId);
-            }
-        }
-
+            ActivityName,
+            tags: null,
+            links: null,
+            loggingEnabled || diagnosticListenerActivityCreationEnabled);
         if (activity is null)
         {
-            // CreateActivity didn't create an Activity (this is an optimization for the
-            // case when there are no listeners). Let's create it here if needed.
-            if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
-            {
-                activity = new Activity(ActivityName);
-                if (!string.IsNullOrEmpty(requestId))
-                {
-                    activity.SetParentId(requestId);
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        // The trace id was successfully extracted, so we can set the trace state
-        // https://www.w3.org/TR/trace-context/#tracestate-header
-        if (!string.IsNullOrEmpty(requestId))
-        {
-            if (!string.IsNullOrEmpty(traceState))
-            {
-                activity.TraceStateString = traceState;
-            }
-        }
-
-        // Baggage can be used regardless of whether a distributed trace id was present on the inbound request.
-        // https://www.w3.org/TR/baggage/#abstract
-        var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
-        {
-            fieldValues = default;
-            var headers = (IHeaderDictionary)carrier!;
-            fieldValue = headers[fieldName];
-        });
-
-        // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-        // By contract, the propagator has already reversed the order of items so we need not reverse it again
-        // Order could be important if baggage has two items with the same key (that is allowed by the contract)
-        if (baggage is not null)
-        {
-            foreach (var baggageItem in baggage)
-            {
-                activity.AddBaggage(baggageItem.Key, baggageItem.Value);
-            }
+            return null;
         }
 
         _diagnosticListener.OnActivityImport(activity, httpContext);
