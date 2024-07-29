@@ -62,7 +62,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <OpenApiGenerateDocumentsOptions Condition=" '$(OpenApiGenerateEnvironment)' != '' ">$(OpenApiGenerateDocumentsOptions) --environment &quot;$(OpenApiGenerateEnvironment)&quot;</OpenApiGenerateDocumentsOptions>
+      <OpenApiGenerateDocumentsOptions Condition=" '$(OpenApiGenerateEnvironment)' != '' " > $(OpenApiGenerateDocumentsOptions) --environment &quot;$(OpenApiGenerateEnvironment)&quot;</OpenApiGenerateDocumentsOptions>
     </PropertyGroup>
 
     <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
