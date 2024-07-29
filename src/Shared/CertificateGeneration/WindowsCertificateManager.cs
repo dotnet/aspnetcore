@@ -39,7 +39,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
 #endif
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate)
     {
         return new CheckCertificateStateResult(true, null);
     }
@@ -69,7 +69,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
         return certificate;
     }
 
-    protected override void TrustCertificateCore(X509Certificate2 certificate)
+    protected override TrustLevel TrustCertificateCore(X509Certificate2 certificate)
     {
         using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
@@ -77,7 +77,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
         if (TryFindCertificateInStore(store, certificate, out _))
         {
             Log.WindowsCertificateAlreadyTrusted();
-            return;
+            return TrustLevel.Full;
         }
 
         try
@@ -87,6 +87,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
             using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
             publicCertificate.FriendlyName = certificate.FriendlyName;
             store.Add(publicCertificate);
+            return TrustLevel.Full;
         }
         catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
         {
@@ -114,10 +115,11 @@ internal sealed class WindowsCertificateManager : CertificateManager
         Log.WindowsRemoveCertificateFromRootStoreEnd();
     }
 
-    public override bool IsTrusted(X509Certificate2 certificate)
+    public override TrustLevel GetTrustLevel(X509Certificate2 certificate)
     {
-        return ListCertificates(StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
+        var isTrusted = ListCertificates(StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
             .Any(c => AreCertificatesEqual(c, certificate));
+        return isTrusted ? TrustLevel.Full : TrustLevel.None;
     }
 
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)

@@ -194,8 +194,8 @@ internal abstract class CertificateManager
         var result = EnsureCertificateResult.Succeeded;
 
         var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
-        var trustedCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
-        var certificates = currentUserCertificates.Concat(trustedCertificates);
+        var localMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
+        var certificates = currentUserCertificates.Concat(localMachineCertificates);
 
         var filteredCertificates = certificates.Where(c => c.Subject == Subject);
 
@@ -220,7 +220,7 @@ internal abstract class CertificateManager
                 // as we don't want to prompt on first run experience.
                 foreach (var candidate in currentUserCertificates)
                 {
-                    var status = CheckCertificateState(candidate, true);
+                    var status = CheckCertificateState(candidate);
                     if (!status.Success)
                     {
                         try
@@ -345,7 +345,20 @@ internal abstract class CertificateManager
         {
             try
             {
-                TrustCertificate(certificate);
+                var trustLevel = TrustCertificate(certificate);
+                switch (trustLevel)
+                {
+                    case TrustLevel.Full:
+                        // Leave result as-is.
+                        break;
+                    case TrustLevel.Partial:
+                        result = EnsureCertificateResult.PartiallyFailedToTrustTheCertificate;
+                        return result;
+                    case TrustLevel.None:
+                    default: // Treat unknown status (should be impossible) as failure
+                        result = EnsureCertificateResult.FailedToTrustTheCertificate;
+                        return result;
+                }
             }
             catch (UserCancelledTrustException)
             {
@@ -458,11 +471,12 @@ internal abstract class CertificateManager
         }
     }
 
-    public abstract bool IsTrusted(X509Certificate2 certificate);
+    public abstract TrustLevel GetTrustLevel(X509Certificate2 certificate);
 
     protected abstract X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation);
 
-    protected abstract void TrustCertificateCore(X509Certificate2 certificate);
+    /// <remarks>Implementations may choose to throw, rather than returning <see cref="TrustLevel.None"/>.</remarks>
+    protected abstract TrustLevel TrustCertificateCore(X509Certificate2 certificate);
 
     protected abstract bool IsExportable(X509Certificate2 c);
 
@@ -680,7 +694,7 @@ internal abstract class CertificateManager
         return certificate;
     }
 
-    internal void TrustCertificate(X509Certificate2 certificate)
+    internal TrustLevel TrustCertificate(X509Certificate2 certificate)
     {
         try
         {
@@ -688,8 +702,9 @@ internal abstract class CertificateManager
             {
                 Log.TrustCertificateStart(GetDescription(certificate));
             }
-            TrustCertificateCore(certificate);
+            var trustLevel = TrustCertificateCore(certificate);
             Log.TrustCertificateEnd();
+            return trustLevel;
         }
         catch (Exception ex) when (Log.IsEnabled())
         {
@@ -735,7 +750,7 @@ internal abstract class CertificateManager
         }
     }
 
-    internal abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive);
+    internal abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate);
 
     internal abstract void CorrectCertificateState(X509Certificate2 candidate);
 
@@ -782,7 +797,7 @@ internal abstract class CertificateManager
         }
     }
 
-    protected virtual void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+    protected void RemoveCertificateFromUserStore(X509Certificate2 certificate)
     {
         try
         {
@@ -871,6 +886,9 @@ internal abstract class CertificateManager
         return foundCertificate is not null;
     }
 
+    /// <remarks>
+    /// Note that dotnet-dev-certs won't display any of these, regardless of level, unless --verbose is passed.
+    /// </remarks>
     [EventSource(Name = "Dotnet-dev-certs")]
     public sealed class CertificateManagerEventSource : EventSource
     {
@@ -921,7 +939,7 @@ internal abstract class CertificateManager
         public void CreateDevelopmentCertificateError(string e) => WriteEvent(19, e);
 
         [Event(20, Level = EventLevel.Verbose, Message = "Saving certificate '{0}' to store {2}\\{1}.")]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primitive values.")]
         public void SaveCertificateInStoreStart(string certificate, StoreName name, StoreLocation location) => WriteEvent(20, certificate, name, location);
 
         [Event(21, Level = EventLevel.Verbose, Message = "Finished saving certificate to the store.")]
@@ -1076,6 +1094,142 @@ internal abstract class CertificateManager
 
         [Event(71, Level = EventLevel.Warning, Message = "The on-disk store directory was not found.")]
         internal void MacOSDiskStoreDoesNotExist() => WriteEvent(71);
+
+        [Event(72, Level = EventLevel.Verbose, Message = "Reading OpenSSL trusted certificates location from {0}.")]
+        internal void UnixOpenSslCertificateDirectoryOverridePresent(string nssDbOverrideVariableName) => WriteEvent(72, nssDbOverrideVariableName);
+
+        [Event(73, Level = EventLevel.Verbose, Message = "Reading NSS database locations from {0}.")]
+        internal void UnixNssDbOverridePresent(string environmentVariable) => WriteEvent(73, environmentVariable);
+
+        // Recoverable - just don't use it.
+        [Event(74, Level = EventLevel.Warning, Message = "The NSS database '{0}' provided via {1} does not exist.")]
+        internal void UnixNssDbDoesNotExist(string nssDb, string environmentVariable) => WriteEvent(74, nssDb, environmentVariable);
+
+        [Event(75, Level = EventLevel.Warning, Message = "The certificate is not trusted by .NET. This will likely affect System.Net.Http.HttpClient.")]
+        internal void UnixNotTrustedByDotnet() => WriteEvent(75);
+
+        [Event(76, Level = EventLevel.Warning, Message = "The certificate is not trusted by OpenSSL.  Ensure that the {0} environment variable is set correctly.")]
+        internal void UnixNotTrustedByOpenSsl(string envVarName) => WriteEvent(76, envVarName);
+
+        [Event(77, Level = EventLevel.Warning, Message = "The certificate is not trusted in the NSS database in '{0}'. This will likely affect the {1} family of browsers.")]
+        internal void UnixNotTrustedByNss(string path, string browser) => WriteEvent(77, path, browser);
+
+        // If there's no home directory, there are no NSS DBs to check (barring an override), but this isn't strictly a problem.
+        [Event(78, Level = EventLevel.Verbose, Message = "Home directory '{0}' does not exist. Unable to discover NSS databases for user '{1}'.  This will likely affect browsers.")]
+        internal void UnixHomeDirectoryDoesNotExist(string homeDirectory, string username) => WriteEvent(78, homeDirectory, username);
+
+        // Checking the system-wide OpenSSL directory is only used to make output more helpful - don't warn if it fails.
+        [Event(79, Level = EventLevel.Verbose, Message = "OpenSSL reported its directory in an unexpected format.")]
+        internal void UnixOpenSslVersionParsingFailed() => WriteEvent(79);
+
+        // Checking the system-wide OpenSSL directory is only used to make output more helpful - don't warn if it fails.
+        [Event(80, Level = EventLevel.Verbose, Message = "Unable to determine the OpenSSL directory.")]
+        internal void UnixOpenSslVersionFailed() => WriteEvent(80);
+
+        // Checking the system-wide OpenSSL directory is only used to make output more helpful - don't warn if it fails.
+        [Event(81, Level = EventLevel.Verbose, Message = "Unable to determine the OpenSSL directory: {0}.")]
+        internal void UnixOpenSslVersionException(string exceptionMessage) => WriteEvent(81, exceptionMessage);
+
+        // We'll continue on to NSS DB, but leaving the OpenSSL hash files in a bad state is a real problem.
+        [Event(82, Level = EventLevel.Error, Message = "Unable to compute the hash of certificate {0}. OpenSSL trust is likely in an inconsistent state.")]
+        internal void UnixOpenSslHashFailed(string certificatePath) => WriteEvent(82, certificatePath);
+
+        // We'll continue on to NSS DB, but leaving the OpenSSL hash files in a bad state is a real problem.
+        [Event(83, Level = EventLevel.Error, Message = "Unable to compute the certificate hash: {0}. OpenSSL trust is likely in an inconsistent state.")]
+        internal void UnixOpenSslHashException(string certificatePath, string exceptionMessage) => WriteEvent(83, certificatePath, exceptionMessage);
+
+        // We'll continue on to NSS DB, but leaving the OpenSSL hash files in a bad state is a real problem.
+        [Event(84, Level = EventLevel.Error, Message = "Unable to update certificate '{0}' in the OpenSSL trusted certificate hash collection - {2} certificates have the hash {1}.")]
+        internal void UnixOpenSslRehashTooManyHashes(string fullName, string hash, int maxHashCollisions) => WriteEvent(84, fullName, hash, maxHashCollisions);
+
+        // We'll continue on to NSS DB, but leaving the OpenSSL hash files in a bad state is a real problem.
+        [Event(85, Level = EventLevel.Error, Message = "Unable to update the OpenSSL trusted certificate hash collection: {0}. " +
+            "Manually rehashing may help. See https://aka.ms/dev-certs-trust for more information.")] // This should recommend manually running c_rehash.
+        internal void UnixOpenSslRehashException(string exceptionMessage) => WriteEvent(85, exceptionMessage);
+
+        [Event(86, Level = EventLevel.Warning, Message = "Failed to trust the certificate in .NET: {0}.")]
+        internal void UnixDotnetTrustException(string exceptionMessage) => WriteEvent(86, exceptionMessage);
+
+        [Event(87, Level = EventLevel.Verbose, Message = "Trusted the certificate in .NET.")]
+        internal void UnixDotnetTrustSucceeded() => WriteEvent(87);
+
+        [Event(88, Level = EventLevel.Warning, Message = "Clients that validate certificate trust using OpenSSL will not trust the certificate.")]
+        internal void UnixOpenSslTrustFailed() => WriteEvent(88);
+
+        [Event(89, Level = EventLevel.Verbose, Message = "Trusted the certificate in OpenSSL.")]
+        internal void UnixOpenSslTrustSucceeded() => WriteEvent(89);
+
+        [Event(90, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the NSS database in '{0}'. This will likely affect the {1} family of browsers.")]
+        internal void UnixNssDbTrustFailed(string path, string browser) => WriteEvent(90, path, browser);
+
+        [Event(91, Level = EventLevel.Verbose, Message = "Trusted the certificate in the NSS database in '{0}'.")]
+        internal void UnixNssDbTrustSucceeded(string path) => WriteEvent(91, path);
+
+        [Event(92, Level = EventLevel.Warning, Message = "Failed to untrust the certificate in .NET: {0}.")]
+        internal void UnixDotnetUntrustException(string exceptionMessage) => WriteEvent(92, exceptionMessage);
+
+        [Event(93, Level = EventLevel.Warning, Message = "Failed to untrust the certificate in OpenSSL.")]
+        internal void UnixOpenSslUntrustFailed() => WriteEvent(93);
+
+        [Event(94, Level = EventLevel.Verbose, Message = "Untrusted the certificate in OpenSSL.")]
+        internal void UnixOpenSslUntrustSucceeded() => WriteEvent(94);
+
+        [Event(95, Level = EventLevel.Warning, Message = "Failed to remove the certificate from the NSS database in '{0}'.")]
+        internal void UnixNssDbUntrustFailed(string path) => WriteEvent(95, path);
+
+        [Event(96, Level = EventLevel.Verbose, Message = "Removed the certificate from the NSS database in '{0}'.")]
+        internal void UnixNssDbUntrustSucceeded(string path) => WriteEvent(96, path);
+
+        [Event(97, Level = EventLevel.Warning, Message = "The certificate is only partially trusted - some clients will not accept it.")]
+        internal void UnixTrustPartiallySucceeded() => WriteEvent(97);
+
+        [Event(98, Level = EventLevel.Warning, Message = "Failed to look up the certificate in the NSS database in '{0}': {1}.")]
+        internal void UnixNssDbCheckException(string path, string exceptionMessage) => WriteEvent(98, path, exceptionMessage);
+
+        [Event(99, Level = EventLevel.Warning, Message = "Failed to add the certificate to the NSS database in '{0}': {1}.")]
+        internal void UnixNssDbAdditionException(string path, string exceptionMessage) => WriteEvent(99, path, exceptionMessage);
+
+        [Event(100, Level = EventLevel.Warning, Message = "Failed to remove the certificate from the NSS database in '{0}': {1}.")]
+        internal void UnixNssDbRemovalException(string path, string exceptionMessage) => WriteEvent(100, path, exceptionMessage);
+
+        [Event(101, Level = EventLevel.Warning, Message = "Failed to find the Firefox profiles in directory '{0}': {1}.")]
+        internal void UnixFirefoxProfileEnumerationException(string firefoxDirectory, string message) => WriteEvent(101, firefoxDirectory, message);
+
+        [Event(102, Level = EventLevel.Verbose, Message = "No Firefox profiles found in directory '{0}'.")]
+        internal void UnixNoFirefoxProfilesFound(string firefoxDirectory) => WriteEvent(102, firefoxDirectory);
+
+        [Event(103, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the NSS database in '{0}'. This will likely affect the {1} family of browsers. " +
+            "This likely indicates that the database already contains an entry for the certificate under a different name. Please remove it and try again.")]
+        internal void UnixNssDbTrustFailedWithProbableConflict(string path, string browser) => WriteEvent(103, path, browser);
+
+        // This may be annoying, since anyone setting the variable for un/trust will likely leave it set for --check.
+        // However, it seems important to warn users who set it specifically for --check.
+        [Event(104, Level = EventLevel.Warning, Message = "The {0} environment variable is set but will not be consumed while checking trust.")]
+        internal void UnixOpenSslCertificateDirectoryOverrideIgnored(string openSslCertDirectoryOverrideVariableName) => WriteEvent(104, openSslCertDirectoryOverrideVariableName);
+
+        [Event(105, Level = EventLevel.Warning, Message = "The {0} command is unavailable.  It is required for updating certificate trust in OpenSSL.")]
+        internal void UnixMissingOpenSslCommand(string openSslCommand) => WriteEvent(105, openSslCommand);
+
+        [Event(106, Level = EventLevel.Warning, Message = "The {0} command is unavailable.  It is required for querying and updating NSS databases, which are chiefly used to trust certificates in browsers.")]
+        internal void UnixMissingCertUtilCommand(string certUtilCommand) => WriteEvent(106, certUtilCommand);
+
+        [Event(107, Level = EventLevel.Verbose, Message = "Untrusting the certificate in OpenSSL was skipped since '{0}' does not exist.")]
+        internal void UnixOpenSslUntrustSkipped(string certPath) => WriteEvent(107, certPath);
+
+        [Event(108, Level = EventLevel.Warning, Message = "Failed to delete certificate file '{0}': {1}.")]
+        internal void UnixCertificateFileDeletionException(string certPath, string exceptionMessage) => WriteEvent(108, certPath, exceptionMessage);
+
+        [Event(109, Level = EventLevel.Error, Message = "Unable to export the certificate since '{0}' already exists. Please remove it.")]
+        internal void UnixNotOverwritingCertificate(string certPath) => WriteEvent(109, certPath);
+
+        [Event(110, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
+            "For example, `export SSL_CERT_DIR={0}:{1}`. " +
+            "See https://aka.ms/dev-certs-trust for more information.")]
+        internal void UnixSuggestSettingEnvironmentVariable(string certDir, string openSslDir, string envVarName) => WriteEvent(110, certDir, openSslDir, envVarName);
+
+        [Event(111, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
+            "See https://aka.ms/dev-certs-trust for more information.")]
+        internal void UnixSuggestSettingEnvironmentVariableWithoutExample(string certDir, string envVarName) => WriteEvent(111, certDir, envVarName);
     }
 
     internal sealed class UserCancelledTrustException : Exception
@@ -1100,5 +1254,15 @@ internal abstract class CertificateManager
         Local,
         Trusted,
         All
+    }
+
+    internal enum TrustLevel
+    {
+        /// <summary>No trust has been granted.</summary>
+        None,
+        /// <summary>Trust has been granted in some, but not all, clients.</summary>
+        Partial,
+        /// <summary>Trust has been granted in all clients.</summary>
+        Full,
     }
 }
