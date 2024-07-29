@@ -509,4 +509,27 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             throw new NotImplementedException();
         }
     }
+
+    [Fact]
+    public async Task SupportsParameterWithDynamicType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (dynamic id) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            Assert.NotNull(operation.RequestBody.Content["application/json"]);
+            Assert.NotNull(operation.RequestBody.Content["application/json"].Schema);
+            // Type is null, it's up to the user to configure this via a custom schema
+            // transformer for types with a converter.
+            Assert.Null(operation.RequestBody.Content["application/json"].Schema.Type);
+        });
+    }
 }
