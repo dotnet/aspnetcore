@@ -76,7 +76,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             Log.UnixNotTrustedByDotnet();
         }
 
-        var nickname = GetCertificateNickname(certificate);
+        // Will become the name of the file on disk and the nickname in the NSS DBs
+        var certificateNickname = GetCertificateNickname(certificate);
 
         var sslCertDirString = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
         if (string.IsNullOrEmpty(sslCertDirString))
@@ -90,7 +91,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             var sslCertDirs = sslCertDirString.Split(Path.PathSeparator);
             foreach (var sslCertDir in sslCertDirs)
             {
-                var certPath = Path.Combine(sslCertDir, nickname + ".pem");
+                var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
                     var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
@@ -127,7 +128,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             {
                 foreach (var nssDb in nssDbs)
                 {
-                    if (IsCertificateInNssDb(nickname, nssDb))
+                    if (IsCertificateInNssDb(certificateNickname, nssDb))
                     {
                         sawTrustSuccess = true;
                     }
@@ -140,6 +141,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
         }
 
+        // Success & Failure => Partial; Success => Full; Failure => None
         return sawTrustSuccess
             ? sawTrustFailure
                 ? TrustLevel.Partial
