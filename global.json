@@ -27,7 +27,7 @@
     "jdk": "11"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24368.9",
-    "Microsoft.DotNet.Helix.Sdk": "9.0.0-beta.24368.9"
+    "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24375.3",
+    "Microsoft.DotNet.Helix.Sdk": "9.0.0-beta.24375.3"
   }
 }

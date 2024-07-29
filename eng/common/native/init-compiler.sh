@@ -19,11 +19,9 @@ case "$compiler" in
         # clangx.y or clang-x.y
         version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
         majorVersion="${version%%.*}"
-        [ -z "${version##*.*}" ] && minorVersion="${version#*.}"
 
-        if [ -z "$minorVersion" ] && [ -n "$majorVersion" ] && [ "$majorVersion" -le 6 ]; then
-            minorVersion=0;
-        fi
+        # LLVM based on v18 released in early 2024, with two releases per year
+        maxVersion="$((18 + ((($(date +%Y) - 2024) * 12 + $(date +%m) - 3) / 6)))"
         compiler=clang
         ;;
 
@@ -31,7 +29,9 @@ case "$compiler" in
         # gccx.y or gcc-x.y
         version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
         majorVersion="${version%%.*}"
-        [ -z "${version##*.*}" ] && minorVersion="${version#*.}"
+
+        # GCC based on v14 released in early 2024, with one release per year
+        maxVersion="$((14 + ((($(date +%Y) - 2024) * 12 + $(date +%m) - 3) / 12)))"
         compiler=gcc
         ;;
 esac
@@ -49,12 +49,10 @@ check_version_exists() {
     desired_version=-1
 
     # Set up the environment to be used for building with the desired compiler.
-    if command -v "$compiler-$1.$2" > /dev/null; then
-        desired_version="-$1.$2"
-    elif command -v "$compiler$1$2" > /dev/null; then
-        desired_version="$1$2"
-    elif command -v "$compiler-$1$2" > /dev/null; then
-        desired_version="-$1$2"
+    if command -v "$compiler-$1" > /dev/null; then
+        desired_version="-$1"
+    elif command -v "$compiler$1" > /dev/null; then
+        desired_version="$1"
     fi
 
     echo "$desired_version"
@@ -75,7 +73,7 @@ set_compiler_version_from_CC() {
     fi
 
     # gcc and clang often display 3 part versions. However, gcc can show only 1 part in some environments.
-    IFS=. read -r majorVersion minorVersion _ <<EOF
+    IFS=. read -r majorVersion _ <<EOF
 $version
 EOF
 }
@@ -84,43 +82,29 @@ if [ -z "$CLR_CC" ]; then
 
     # Set default versions
     if [ -z "$majorVersion" ]; then
-        # note: gcc (all versions) and clang versions higher than 6 do not have minor version in file name, if it is zero.
-        if [ "$compiler" = "clang" ]; then versions="18 17 16 15 14 13 12 11 10 9 8 7 6.0 5.0 4.0 3.9 3.8 3.7 3.6 3.5"
-        elif [ "$compiler" = "gcc" ]; then versions="14 13 12 11 10 9 8 7 6 5 4.9"; fi
-
-        for version in $versions; do
-            _major="${version%%.*}"
-            [ -z "${version##*.*}" ] && _minor="${version#*.}"
-            desired_version="$(check_version_exists "$_major" "$_minor")"
-            if [ "$desired_version" != "-1" ]; then majorVersion="$_major"; break; fi
+        minVersion=8
+        maxVersion="$((maxVersion + 1))" # +1 for headspace
+        i="$maxVersion"
+        while [ "$i" -ge $minVersion ]; do
+            desired_version="$(check_version_exists "$i")"
+            if [ "$desired_version" != "-1" ]; then majorVersion="$i"; break; fi
+            i=$((i - 1))
         done
 
         if [ -z "$majorVersion" ]; then
             if ! command -v "$compiler" > /dev/null; then
-                echo "Error: No usable version of $compiler found."
+                echo "Error: No compatible version of $compiler was found within the range of $minVersion to $maxVersion. Please upgrade your toolchain or specify the compiler explicitly using CLR_CC and CLR_CXX environment variables."
                 exit 1
             fi
 
             CC="$(command -v "$compiler" 2> /dev/null)"
             CXX="$(command -v "$cxxCompiler" 2> /dev/null)"
             set_compiler_version_from_CC
-        else
-            if [ "$compiler" = "clang" ] && [ "$majorVersion" -lt 5 ] && { [ "$build_arch" = "arm" ] || [ "$build_arch" = "armel" ]; }; then
-                # If a major version was provided explicitly, and it was too old, find a newer compiler instead
-                if ! command -v "$compiler" > /dev/null; then
-                    echo "Error: Found clang version $majorVersion which is not supported on arm/armel architectures, and there is no clang in PATH."
-                    exit 1
-                fi
-
-                CC="$(command -v "$compiler" 2> /dev/null)"
-                CXX="$(command -v "$cxxCompiler" 2> /dev/null)"
-                set_compiler_version_from_CC
-            fi
         fi
     else
-        desired_version="$(check_version_exists "$majorVersion" "$minorVersion")"
+        desired_version="$(check_version_exists "$majorVersion")"
         if [ "$desired_version" = "-1" ]; then
-            echo "Error: Could not find specific version of $compiler: $majorVersion $minorVersion."
+            echo "Error: Could not find specific version of $compiler: $majorVersion."
             exit 1
         fi
     fi
