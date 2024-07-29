@@ -248,7 +248,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         if (needToExport)
         {
             // Security: we don't need the private key for trust, so we don't export it.
-            // Note that this will create directories as needed.
+            // Note that this will create directories as needed.  We control `certPath`, so the permissions should be fine.
             ExportCertificate(certificate, certPath, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
         }
 
