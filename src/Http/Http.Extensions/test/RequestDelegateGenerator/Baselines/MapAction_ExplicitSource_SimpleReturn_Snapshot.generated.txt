@@ -69,7 +69,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("queryValue", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("queryValue", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
@@ -182,7 +183,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("headerValue", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("headerValue", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
@@ -295,7 +297,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("routeValue", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("routeValue", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
@@ -417,7 +420,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("value", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("value", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };

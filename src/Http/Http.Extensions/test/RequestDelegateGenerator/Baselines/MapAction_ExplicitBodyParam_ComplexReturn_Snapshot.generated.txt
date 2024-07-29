@@ -70,7 +70,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("todo", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("todo", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
@@ -177,7 +178,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("todo", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: true));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("todo", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: true));
                 PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };

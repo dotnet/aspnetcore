@@ -366,6 +366,7 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static void EmitParameterBindingMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
+        var emitParametersLocal = true;
         foreach (var parameter in endpoint.Parameters)
         {
             endpoint.EmitterContext.RequiresParameterBindingMetadataClass = true;
@@ -378,6 +379,11 @@ internal static class StaticRouteHandlerModelEmitter
             }
             else
             {
+                if (emitParametersLocal)
+                {
+                    codeWriter.WriteLine("var parameters = methodInfo.GetParameters();");
+                    emitParametersLocal = false;
+                }
                 EmitParameterBindingMetadataForParameter(parameter, codeWriter);
             }
         }
@@ -385,7 +391,7 @@ internal static class StaticRouteHandlerModelEmitter
         static void EmitParameterBindingMetadataForParameter(EndpointParameter parameter, CodeWriter codeWriter)
         {
             var parameterName = SymbolDisplay.FormatLiteral(parameter.SymbolName, true);
-            var parameterInfo = parameter.IsProperty ? parameter.PropertyAsParameterInfoConstruction : $"methodInfo.GetParameters()[{parameter.Ordinal}]";
+            var parameterInfo = parameter.IsProperty ? parameter.PropertyAsParameterInfoConstruction : $"parameters[{parameter.Ordinal}]";
             var hasTryParse = parameter.IsParsable ? "true" : "false";
             var hasBindAsync = parameter.Source == EndpointParameterSource.BindAsync ? "true" : "false";
             var isOptional = parameter.IsOptional ? "true" : "false";
