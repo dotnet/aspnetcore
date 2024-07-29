@@ -509,7 +509,7 @@ public class CertFixture : IDisposable
     internal void CleanupCertificates()
     {
         Manager.RemoveAllCertificates(StoreName.My, StoreLocation.CurrentUser);
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             Manager.RemoveAllCertificates(StoreName.Root, StoreLocation.CurrentUser);
         }

@@ -69,12 +69,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         "To fix this issue, run 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' " +
         "to remove all existing ASP.NET Core development certificates " +
         "and create a new untrusted developer certificate. " +
-        "On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.";
-
-    public const string KeyNotAccessibleWithoutUserInteraction =
-        "The application is trying to access the ASP.NET Core developer certificate key. " +
-        "A prompt might appear to ask for permission to access the key. " +
-        "When that happens, select 'Always Allow' to grant 'dotnet' access to the certificate key in the future.";
+        "Use 'dotnet dev-certs https --trust' to trust the new certificate.";
 
     public MacOSCertificateManager()
     {
@@ -85,12 +80,14 @@ internal sealed class MacOSCertificateManager : CertificateManager
     {
     }
 
-    protected override void TrustCertificateCore(X509Certificate2 publicCertificate)
+    protected override TrustLevel TrustCertificateCore(X509Certificate2 publicCertificate)
     {
-        if (IsTrusted(publicCertificate))
+        var oldTrustLevel = GetTrustLevel(publicCertificate);
+        if (oldTrustLevel != TrustLevel.None)
         {
+            Debug.Assert(oldTrustLevel == TrustLevel.Full); // Mac trust is all or nothing
             Log.MacOSCertificateAlreadyTrusted();
-            return;
+            return oldTrustLevel;
         }
 
         var tmpFile = Path.GetTempFileName();
@@ -111,6 +108,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 }
             }
             Log.MacOSTrustCommandEnd();
+            return TrustLevel.Full;
         }
         finally
         {
@@ -125,7 +123,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate)
     {
         return File.Exists(GetCertificateFilePath(candidate)) ?
             new CheckCertificateStateResult(true, null) :
@@ -149,7 +147,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     }
 
     // Use verify-cert to verify the certificate for the SSL and X.509 Basic Policy.
-    public override bool IsTrusted(X509Certificate2 certificate)
+    public override TrustLevel GetTrustLevel(X509Certificate2 certificate)
     {
         var tmpFile = Path.GetTempFileName();
         try
@@ -166,7 +164,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 RedirectStandardError = true,
             });
             checkTrustProcess!.WaitForExit();
-            return checkTrustProcess.ExitCode == 0;
+            return checkTrustProcess.ExitCode == 0 ? TrustLevel.Full : TrustLevel.None;
         }
         finally
         {
