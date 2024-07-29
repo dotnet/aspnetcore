@@ -34,10 +34,12 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        image: windows.vs2022.amd64.open
+        image: 1es-windows-2022-open
+        os: windows
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        image: windows.vs2022.amd64
+        image: 1es-windows-2022
+        os: windows
 
   steps:
   - ${{ if eq(parameters.is1ESPipeline, '') }}:

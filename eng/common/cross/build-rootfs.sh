@@ -605,18 +605,18 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     fi
     echo "Building binutils. Please wait.."
     if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
+        wget -O- https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz | tar -xJf -
     else
-        curl -SL https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
+        curl -SL https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz | tar -xJf -
     fi
     mkdir build-binutils && cd build-binutils
-    ../binutils-2.33.1/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.10" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir"
+    ../binutils-2.42/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.11" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir"
     make -j "$JOBS" && make install && cd ..
     echo "Building gcc. Please wait.."
     if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
+        wget -O- https://ftp.gnu.org/gnu/gcc/gcc-13.3.0/gcc-13.3.0.tar.xz | tar -xJf -
     else
-        curl -SL https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
+        curl -SL https://ftp.gnu.org/gnu/gcc/gcc-13.3.0/gcc-13.3.0.tar.xz | tar -xJf -
     fi
     CFLAGS="-fPIC"
     CXXFLAGS="-fPIC"
@@ -624,7 +624,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     CFLAGS_FOR_TARGET="-fPIC"
     export CFLAGS CXXFLAGS CXXFLAGS_FOR_TARGET CFLAGS_FOR_TARGET
     mkdir build-gcc && cd build-gcc
-    ../gcc-8.4.0/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.10" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir" --with-gnu-as       \
+    ../gcc-13.3.0/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.11" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir" --with-gnu-as       \
         --with-gnu-ld --disable-nls --disable-libgomp --disable-libquadmath --disable-libssp --disable-libvtv --disable-libcilkrts --disable-libada --disable-libsanitizer \
         --disable-libquadmath-support --disable-shared --enable-tls
     make -j "$JOBS" && make install && cd ..
@@ -632,7 +632,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     if [[ "$__UseMirror" == 1 ]]; then
         BaseUrl=https://pkgsrc.smartos.skylime.net
     fi
-    BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
+    BaseUrl="$BaseUrl/packages/SmartOS/2019Q4/${__illumosArch}/All"
     echo "Downloading manifest"
     if [[ "$__hasWget" == 1 ]]; then
         wget "$BaseUrl"
