@@ -28,6 +28,11 @@ internal
 #endif
 static class WebEncoders
 {
+#if NET9_0_OR_GREATER
+    /// <summary>SearchValues for the two Base64 and two Base64Url chars that differ from each other.</summary>
+    private static readonly SearchValues<char> s_base64vsBase64UrlDifferentiators = SearchValues.Create("+/-_");
+#endif
+
     /// <summary>
     /// Decodes a base64url-encoded string.
     /// </summary>
@@ -69,9 +74,11 @@ static class WebEncoders
 
 #if NET9_0_OR_GREATER
         // Legacy behavior of Base64UrlDecode supports either Base64 or Base64Url input.
-        // If it doesn't have + or /, it can be treated as Base64Url.
+        // If it has a - or _, or if it doesn't have + or /, it can be treated as Base64Url.
+        // Searching for any of them allows us to stop the search as early as we know Base64Url should be used.
         ReadOnlySpan<char> inputSpan = input.AsSpan(offset, count);
-        if (!inputSpan.ContainsAny('+', '/'))
+        int indexOfFirstDifferentiator = inputSpan.IndexOfAny(s_base64vsBase64UrlDifferentiators);
+        if (indexOfFirstDifferentiator < 0 || inputSpan[indexOfFirstDifferentiator] is '-' or '_')
         {
             return Base64Url.DecodeFromChars(inputSpan);
         }
@@ -124,9 +131,11 @@ static class WebEncoders
 
 #if NET9_0_OR_GREATER
         // Legacy behavior of Base64UrlDecode supports either Base64 or Base64Url input.
-        // If it doesn't have + or /, it can be treated as Base64Url.
+        // If it has a - or _, or if it doesn't have + or /, it can be treated as Base64Url.
+        // Searching for any of them allows us to stop the search as early as we know Base64Url should be used.
         ReadOnlySpan<char> inputSpan = input.AsSpan(offset, count);
-        if (!inputSpan.ContainsAny('+', '/'))
+        int indexOfFirstDifferentiator = inputSpan.IndexOfAny(s_base64vsBase64UrlDifferentiators);
+        if (indexOfFirstDifferentiator < 0 || inputSpan[indexOfFirstDifferentiator] is '-' or '_')
         {
             return Base64Url.DecodeFromChars(inputSpan);
         }
