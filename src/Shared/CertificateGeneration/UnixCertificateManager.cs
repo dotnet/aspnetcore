@@ -33,6 +33,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private const string OpenSslCommand = "openssl";
     private const string CertUtilCommand = "certutil";
 
+    private const string NicknamePrefix = "aspnetcore-localhost-";
+
     private const int MaxHashCollisions = 10; // Something is going badly wrong if we have this many dev certs with the same hash
 
     private HashSet<string>? _availableCommands;
@@ -520,7 +522,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
     private static string GetCertificateNickname(X509Certificate2 certificate)
     {
-        return $"aspnetcore-localhost-{certificate.Thumbprint}";
+        return $"{NicknamePrefix}{certificate.Thumbprint}";
     }
 
     /// <remarks>
@@ -785,56 +787,21 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         }
     }
 
-    /// <remarks>
-    /// It is the caller's responsibility to ensure that <see cref="OpenSslCommand"/> is available.
-    /// </remarks>
-    private static bool TryGetOpenSslHash(string certificatePath, [NotNullWhen(true)] out string? hash)
-    {
-        hash = null;
-
-        try
-        {
-            // c_rehash actually does this twice: once with -subject_hash (equivalent to -hash) and again
-            // with -subject_hash_old.  Old hashes are only  needed for pre-1.0.0, so we skip that.
-            var processInfo = new ProcessStartInfo(OpenSslCommand, $"x509 -hash -noout -in {certificatePath}")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-            {
-                Log.UnixOpenSslHashFailed(certificatePath);
-                return false;
-            }
-
-            hash = stdout.Trim();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.UnixOpenSslHashException(certificatePath, ex.Message);
-            return false;
-        }
-    }
-
-    [GeneratedRegex("^[0-9a-f]+\\.[0-9]+$")]
+    [GeneratedRegex("^" + LocalhostHttpsDistinguishedNameHash + "\\.[0-9]+$")]
     private static partial Regex OpenSslHashFilenameRegex();
 
     /// <remarks>
     /// We only ever use .pem, but someone will eventually put their own cert in this directory,
     /// so we should handle the same extensions as c_rehash (other than .crl).
     /// </remarks>
-    [GeneratedRegex("\\.(pem|crt|cer)$")]
+    [GeneratedRegex(NicknamePrefix + "[a-fA-F0-9]+\\.pem$")]
     private static partial Regex OpenSslCertificateExtensionRegex();
 
     /// <remarks>
     /// This is a simplified version of c_rehash from OpenSSL.  Using the real one would require
     /// installing the OpenSSL perl tools and perl itself, which might be annoying in a container.
+    ///
+    /// NB: This implementation only rehashes our own dev certs, so as not to impact real certs.
     /// </remarks>
     private static bool TryRehashOpenSslCertificates(string certificateDirectory)
     {
@@ -869,15 +836,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
             foreach (var cert in certs)
             {
-                if (!TryGetOpenSslHash(cert.FullName, out var hash))
-                {
-                    return false;
-                }
-
                 var linkCreated = false;
                 for (var i = 0; i < MaxHashCollisions; i++)
                 {
-                    var linkPath = Path.Combine(certificateDirectory, $"{hash}.{i}");
+                    var linkPath = Path.Combine(certificateDirectory, $"{LocalhostHttpsDistinguishedNameHash}.{i}");
                     if (!File.Exists(linkPath))
                     {
                         // As in c_rehash, we link using a relative path.
@@ -889,7 +851,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
                 if (!linkCreated)
                 {
-                    Log.UnixOpenSslRehashTooManyHashes(cert.FullName, hash, MaxHashCollisions);
+                    Log.UnixOpenSslRehashTooManyHashes(cert.FullName, LocalhostHttpsDistinguishedNameHash, MaxHashCollisions);
                     return false;
                 }
             }
