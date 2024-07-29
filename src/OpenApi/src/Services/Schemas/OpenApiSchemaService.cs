@@ -82,9 +82,9 @@ internal sealed class OpenApiSchemaService(
                 };
             }
             // STJ uses `true` in place of an empty object to represent a schema that matches
-            // anything. We override this default behavior here to match the style traditionally
-            // expected in OpenAPI documents.
-            if (type == typeof(object))
+            // anything (like the `object` type) or types with user-defined converters. We override
+            // this default behavior here to match the style traditionally expected in OpenAPI documents.
+            if (schema.GetValueKind() == JsonValueKind.True)
             {
                 schema = new JsonObject();
             }

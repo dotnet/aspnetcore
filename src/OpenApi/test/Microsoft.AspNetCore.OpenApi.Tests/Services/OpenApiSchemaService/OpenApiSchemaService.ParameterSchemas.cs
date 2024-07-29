@@ -3,9 +3,13 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -461,5 +465,48 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [FromRoute]
         [MaxLength(5)]
         public string Name { get; set; }
+    }
+
+    [Fact]
+    public async Task SupportsParametersWithTypeConverter()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new CustomTypeConverter());
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act
+        builder.MapPost("/api", (CustomType id) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            Assert.NotNull(operation.RequestBody.Content["application/json"]);
+            Assert.NotNull(operation.RequestBody.Content["application/json"].Schema);
+            // Type is null, it's up to the user to configure this via a custom schema
+            // transformer for types with a converter.
+            Assert.Null(operation.RequestBody.Content["application/json"].Schema.Type);
+        });
+    }
+
+    public struct CustomType { }
+
+    public class CustomTypeConverter : JsonConverter<CustomType>
+    {
+        public override CustomType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new CustomType();
+        }
+
+        public override void Write(Utf8JsonWriter writer, CustomType value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
