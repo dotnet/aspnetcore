@@ -102,6 +102,8 @@ internal sealed class SegmentWriteStream : Stream
         // No-op
     }
 
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
     public override int Read(byte[] buffer, int offset, int count)
     {
         throw new NotSupportedException("The stream does not support reading.");

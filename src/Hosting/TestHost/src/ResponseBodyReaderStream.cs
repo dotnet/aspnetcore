@@ -53,7 +53,7 @@ internal sealed class ResponseBodyReaderStream : Stream
         // No-op
     }
 
-    public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     // Write with count 0 will still trigger OnFirstWrite
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();

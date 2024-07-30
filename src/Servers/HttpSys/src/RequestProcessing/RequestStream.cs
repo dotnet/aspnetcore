@@ -82,8 +82,7 @@ internal sealed partial class RequestStream : Stream
         // No-op
     }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-        => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     internal void SwitchToOpaqueMode()
     {

@@ -41,6 +41,8 @@ public class NonSeekableReadStream : Stream
         // No-op
     }
 
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
     public override long Seek(long offset, SeekOrigin origin)
     {
         throw new NotSupportedException();
