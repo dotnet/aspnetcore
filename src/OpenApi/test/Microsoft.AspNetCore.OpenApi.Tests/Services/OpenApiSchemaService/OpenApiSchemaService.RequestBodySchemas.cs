@@ -60,14 +60,23 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
-    [Fact]
-    public async Task GetOpenApiRequestBody_GeneratesSchemaForPoco_WithValidationAttributes()
+    [Theory]
+    [InlineData(false, "application/json")]
+    [InlineData(true, "application/x-www-form-urlencoded")]
+    public async Task GetOpenApiRequestBody_GeneratesSchemaForPoco_WithValidationAttributes(bool isFromForm, string targetContentType)
     {
         // Arrange
         var builder = CreateBuilder();
 
         // Act
-        builder.MapPost("/", (ProjectBoard todo) => { });
+        if (isFromForm)
+        {
+            builder.MapPost("/", ([FromForm] ProjectBoard todo) => { });
+        }
+        else
+        {
+            builder.MapPost("/", (ProjectBoard todo) => { });
+        }
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -76,10 +85,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
-            var content = Assert.Single(requestBody.Content);
-            Assert.Equal("application/json", content.Key);
-            Assert.NotNull(content.Value.Schema);
-            var effectiveSchema = content.Value.Schema.GetEffective(document);
+            var content = requestBody.Content[targetContentType];
+            Assert.NotNull(content.Schema);
+            var effectiveSchema = content.Schema.GetEffective(document);
             Assert.Equal("object", effectiveSchema.Type);
             Assert.Collection(effectiveSchema.Properties,
                 property =>

@@ -77,12 +77,6 @@
                     "type": "boolean"
                   }
                 }
-              },
-              "encoding": {
-                "application/x-www-form-urlencoded": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             }
           }

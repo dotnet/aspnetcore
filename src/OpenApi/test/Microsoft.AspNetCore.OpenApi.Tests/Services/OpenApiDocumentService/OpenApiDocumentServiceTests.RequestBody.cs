@@ -10,31 +10,6 @@ using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
-    [Fact]
-    public async Task GetRequestBody_VerifyDefaultFormEncoding()
-    {
-        // Arrange
-        var builder = CreateBuilder();
-
-        // Act
-        builder.MapPost("/", (IFormFile formFile) => { });
-
-        // Assert -- The defaults for form encoding are Explode = true and Style = Form
-        // which align with the encoding formats that are used by ASP.NET Core's binding layer.
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
-            Assert.NotNull(operation.RequestBody);
-            Assert.NotNull(operation.RequestBody.Content);
-            var content = Assert.Single(operation.RequestBody.Content);
-            Assert.Equal("multipart/form-data", content.Key);
-            var encoding = content.Value.Encoding["multipart/form-data"];
-            Assert.True(encoding.Explode);
-            Assert.Equal(ParameterStyle.Form, encoding.Style);
-        });
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -681,6 +656,37 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         public string Name { get; set; }
     }
 
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithNullableProperties_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithFormModelNullableProps));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Get];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            // Assert that all properties within the form schema are not marked as nullable
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.Properties);
+                Assert.All(item.Schema.Properties,
+                    property =>
+                    {
+                        Assert.False(property.Value.Nullable);
+                    });
+            }
+        });
+    }
+
     [Route("/form-model-nullable")]
     private void ActionWithFormModelNullableProps([FromForm] ModelWithNullableProperties model) { }
 
@@ -688,6 +694,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     private class ModelWithNullableProperties
     {
         public string? Name { get; set; }
+        public int? Age { get; set; }
     }
 #nullable restore
 

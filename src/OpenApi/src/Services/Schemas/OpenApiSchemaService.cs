@@ -66,7 +66,8 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                    [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                    [OpenApiConstants.SchemaId] = "IFormFile"
                 };
             }
             else if (type == typeof(IFormFileCollection))
@@ -77,7 +78,8 @@ internal sealed class OpenApiSchemaService(
                     [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                        [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                        [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                        [OpenApiConstants.SchemaId] = "IFormFile"
                     }
                 };
             }

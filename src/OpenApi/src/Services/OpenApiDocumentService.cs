@@ -38,8 +38,6 @@ internal sealed class OpenApiDocumentService(
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
     private readonly OpenApiSchemaReferenceTransformer _schemaReferenceTransformer = new();
 
-    private static readonly OpenApiEncoding _defaultFormEncoding = new() { Style = ParameterStyle.Form, Explode = true };
-
     /// <summary>
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
     /// `ApiDescription.ActionDescriptor.Id` of the associated operation. ActionDescriptor IDs
@@ -495,8 +493,7 @@ internal sealed class OpenApiDocumentService(
             var contentType = requestFormat.MediaType;
             requestBody.Content[contentType] = new OpenApiMediaType
             {
-                Schema = schema,
-                Encoding = new Dictionary<string, OpenApiEncoding>() { [contentType] = _defaultFormEncoding }
+                Schema = schema
             };
         }
 
