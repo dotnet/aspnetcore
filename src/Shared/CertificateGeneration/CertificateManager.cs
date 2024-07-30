@@ -328,7 +328,7 @@ internal abstract class CertificateManager
                 var exportDir = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(exportDir) && !Directory.Exists(exportDir))
                 {
-                    throw new InvalidOperationException($"The directory '{exportDir}' does not exist.");
+                    throw new InvalidOperationException($"The directory '{exportDir}' does not exist.  Choose permissions carefully when creating it.");
                 }
 
                 ExportCertificate(certificate, path, includePrivateKey, password, keyExportFormat);
