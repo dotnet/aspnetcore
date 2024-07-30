@@ -29,20 +29,18 @@
 
   <Target Name="Build">
     <PropertyGroup>
-      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     </PropertyGroup>
     <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
 
     <Message Text="Building NPM packages..." Importance="high" />
 
     <Exec
-      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
-      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
-
-    <Exec
       Command="npm run build"
       WorkingDirectory="$(MSBuildThisFileDirectory).."
       />
+
   </Target>
 
   <Target Name="_Test" BeforeTargets="Test">
@@ -52,7 +50,8 @@
 
   <Target Name="Pack">
     <PropertyGroup>
-      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
