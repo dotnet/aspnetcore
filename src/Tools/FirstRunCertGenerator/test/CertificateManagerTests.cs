@@ -357,7 +357,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
     public void EnsureCreateHttpsCertificate_CannotExportToNonExistentDirectory()
     {
         // Arrange
-        const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pem";
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_CannotExportToNonExistentDirectory) + ".pem";
 
         _fixture.CleanupCertificates();
 
