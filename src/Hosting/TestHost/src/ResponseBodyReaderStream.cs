@@ -48,7 +48,10 @@ internal sealed class ResponseBodyReaderStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException();
 
-    public override void Flush() => throw new NotSupportedException();
+    public override void Flush()
+    {
+        // No-op
+    }
 
     public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 

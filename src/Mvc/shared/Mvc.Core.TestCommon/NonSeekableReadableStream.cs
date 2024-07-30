@@ -38,7 +38,7 @@ public class NonSeekableReadStream : Stream
 
     public override void Flush()
     {
-        throw new NotImplementedException();
+        // No-op
     }
 
     public override long Seek(long offset, SeekOrigin origin)

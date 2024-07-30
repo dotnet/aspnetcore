@@ -99,10 +99,7 @@ internal sealed class SegmentWriteStream : Stream
 
     public override void Flush()
     {
-        if (!CanWrite)
-        {
-            throw new ObjectDisposedException(nameof(SegmentWriteStream), "The stream has been closed for writing.");
-        }
+        // No-op
     }
 
     public override int Read(byte[] buffer, int offset, int count)
