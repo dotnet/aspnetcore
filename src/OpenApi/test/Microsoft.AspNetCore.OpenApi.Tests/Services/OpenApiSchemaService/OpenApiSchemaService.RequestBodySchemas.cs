@@ -546,4 +546,35 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         public string Name { get; set; }
         public NestedType Nested { get; set; }
     }
+
+    [Fact]
+    public async Task ExcludesNullabilityInFormParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api", ([FromForm] string? name, [FromForm] int? number) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.Collection(operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.AllOf,
+                schema =>
+                {
+                    var property = schema.Properties["name"];
+                    Assert.Equal("string", property.Type);
+                    Assert.False(property.Nullable);
+                },
+                schema =>
+                {
+                    var property = schema.Properties["number"];
+                    Assert.Equal("integer", property.Type);
+                    Assert.False(property.Nullable);
+                });
+        });
+    }
 }

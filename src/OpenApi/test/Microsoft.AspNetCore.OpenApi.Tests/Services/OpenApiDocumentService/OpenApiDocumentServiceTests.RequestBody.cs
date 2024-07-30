@@ -681,6 +681,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         public string Name { get; set; }
     }
 
+    [Route("/form-model-nullable")]
+    private void ActionWithFormModelNullableProps([FromForm] ModelWithNullableProperties model) { }
+
+#nullable enable
+    private class ModelWithNullableProperties
+    {
+        public string? Name { get; set; }
+    }
+#nullable restore
+
     [Fact]
     public async Task GetOpenApiRequestBody_HandlesFormModelWithFile_MvcAction()
     {
