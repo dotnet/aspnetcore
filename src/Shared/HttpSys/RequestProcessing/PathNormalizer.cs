@@ -121,41 +121,4 @@ internal static class PathNormalizer
         }
         return writtenLength;
     }
-
-    public static bool ContainsDotSegments(Span<byte> src)
-    {
-        Debug.Assert(src[0] == '/', "Path segment must always start with a '/'");
-        ReadOnlySpan<byte> slashDot = "/."u8;
-        ReadOnlySpan<byte> dotSlash = "./"u8;
-        while (src.Length > 0)
-        {
-            var nextSlashDotIndex = src.IndexOf(slashDot);
-            if (nextSlashDotIndex < 0)
-            {
-                return false;
-            }
-            else
-            {
-                src = src[(nextSlashDotIndex + 2)..];
-            }
-            switch (src.Length)
-            {
-                case 0: // Case of /.
-                    return true;
-                case 1: // Case of /.. or /./
-                    if (src[0] == ByteDot || src[0] == ByteSlash)
-                    {
-                        return true;
-                    }
-                    break;
-                default: // Case of /../ or /./ 
-                    if (dotSlash.SequenceEqual(src[..2]) || src[0] == ByteSlash)
-                    {
-                        return true;
-                    }
-                    break;
-            }
-        }
-        return false;
-    }
 }
