@@ -368,6 +368,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         ListCertificates();
 
         // Act
+        // Export the certificate (same method, but this time with an output path)
         var result = _manager
             .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), Path.Combine("NoSuchDirectory", CertificateName));
 
