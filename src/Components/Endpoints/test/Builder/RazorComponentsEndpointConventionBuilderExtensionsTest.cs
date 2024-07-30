@@ -216,6 +216,31 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         });
     }
 
+    [Fact]
+    public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        // Act
+        var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
+        var obj = new object();
+        builder.Add(e =>
+        {
+            if (e is RouteEndpointBuilder rb)
+            {
+                if (rb.RoutePattern.RawText == "/_framework/blazor.web.js")
+                {
+                    rb.Metadata.Add(obj);
+                }
+            }
+        });
+
+        // Assert
+        var endpoints = endpointBuilder.DataSources.Single().Endpoints;
+        var webJSEndpoint = Assert.Single(endpoints, e => e.Metadata.Contains(obj));
+        Assert.Equal("/_framework/blazor.web.js", ((RouteEndpoint)webJSEndpoint).RoutePattern.RawText);
+    }
+
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)
     {
         var builder = endpointBuilder.MapRazorComponents<App>();
