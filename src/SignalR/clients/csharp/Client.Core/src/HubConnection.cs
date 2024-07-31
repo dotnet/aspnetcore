@@ -59,6 +59,8 @@ public partial class HubConnection : IAsyncDisposable
     // Default amount of bytes we'll buffer when using Stateful Reconnect until applying backpressure to sends from the client.
     internal const long DefaultStatefulReconnectBufferSize = 100_000;
 
+    internal const string ActivityName = "Microsoft.AspNetCore.SignalR.Client.InvocationOut";
+
     // The receive loop has a single reader and single writer at a time so optimize the channel for that
     private static readonly UnboundedChannelOptions _receiveLoopOptions = new UnboundedChannelOptions
     {
@@ -73,11 +75,13 @@ public partial class HubConnection : IAsyncDisposable
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly ConnectionLogScope _logScope;
+    private readonly ActivitySource _activitySource;
     private readonly IHubProtocol _protocol;
     private readonly IServiceProvider _serviceProvider;
     private readonly IConnectionFactory _connectionFactory;
     private readonly IRetryPolicy? _reconnectPolicy;
     private readonly EndPoint _endPoint;
+    private readonly string? _serviceName;
     private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
     // Holds all mutable state other than user-defined handlers and settable properties.
@@ -234,6 +238,10 @@ public partial class HubConnection : IAsyncDisposable
         _state = new ReconnectingConnectionState(_logger);
 
         _logScope = new ConnectionLogScope();
+
+        // ActivitySource can be resolved from the service provider when unit testing.
+        _activitySource = (serviceProvider.GetService<SignalRClientActivitySource>() ?? SignalRClientActivitySource.Instance).ActivitySource;
+        _serviceName = (_endPoint is UriEndPoint e) ? e.Uri.AbsolutePath.Trim('/') : null;
 
         var options = serviceProvider.GetService<IOptions<HubConnectionOptions>>();
 
@@ -720,7 +728,9 @@ public partial class HubConnection : IAsyncDisposable
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(StreamAsChannelCoreAsync), token: cancellationToken).ConfigureAwait(false);
+
+        var activity = StartActivity(methodName);
+        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(StreamAsChannelCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
 
         ChannelReader<object?> channel;
         try
@@ -731,7 +741,7 @@ public partial class HubConnection : IAsyncDisposable
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
             // I just want an excuse to use 'irq' as a variable name...
-            var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out channel);
+            var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out channel);
             await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             if (cancellationToken.CanBeCanceled)
@@ -1003,12 +1013,34 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
+    private async Task<ConnectionState> WaitForActiveConnectionWithActivityAsync(string methodName, Activity? activity, CancellationToken token)
+    {
+        try
+        {
+            return await _state.WaitForActiveConnectionAsync(methodName, token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // If there is an error getting an active connection then the invocation has failed.
+            if (activity is not null)
+            {
+                activity.SetStatus(ActivityStatusCode.Error);
+                activity.SetTag("error.type", ex.GetType().FullName);
+                activity.Stop();
+            }
+
+            throw;
+        }
+    }
+
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
     {
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(InvokeCoreAsync), token: cancellationToken).ConfigureAwait(false);
+
+        var activity = StartActivity(methodName);
+        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(InvokeCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
 
         Task<object?> invocationTask;
         try
@@ -1017,7 +1049,7 @@ public partial class HubConnection : IAsyncDisposable
 
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
-            var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out invocationTask);
+            var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out invocationTask);
             await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
@@ -1031,13 +1063,51 @@ public partial class HubConnection : IAsyncDisposable
         return await invocationTask.ConfigureAwait(false);
     }
 
+    private Activity? StartActivity(string methodName)
+    {
+        var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Client);
+        if (activity is null && Activity.Current is not null && _logger.IsEnabled(LogLevel.Critical))
+        {
+            activity = new Activity(ActivityName);
+        }
+
+        if (activity is not null)
+        {
+            if (!string.IsNullOrEmpty(_serviceName))
+            {
+                activity.DisplayName = $"{_serviceName}/{methodName}";
+                activity.SetTag("rpc.service", _serviceName);
+            }
+            else
+            {
+                activity.DisplayName = methodName;
+            }
+
+            activity.SetTag("rpc.system", "signalr");
+            activity.SetTag("rpc.method", methodName);
+
+            if (_endPoint is UriEndPoint e)
+            {
+                activity.SetTag("server.address", e.Uri.Host);
+                activity.SetTag("server.port", e.Uri.Port);
+            }
+
+            activity.Start();
+        }
+
+        return activity;
+    }
+
     private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)
     {
         Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName!, args.Length);
 
         // Client invocations are always blocking
         var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, args, streams);
-        InjectHeaders(invocationMessage);
+        if (irq.Activity is not null)
+        {
+            InjectHeaders(irq.Activity, invocationMessage);
+        }
 
         Log.RegisteringInvocation(_logger, irq.InvocationId);
         connectionState.AddInvocation(irq);
@@ -1064,7 +1134,10 @@ public partial class HubConnection : IAsyncDisposable
         Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName!, args.Length);
 
         var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, args, streams);
-        InjectHeaders(invocationMessage);
+        if (irq.Activity is not null)
+        {
+            InjectHeaders(irq.Activity, invocationMessage);
+        }
 
         Log.RegisteringInvocation(_logger, irq.InvocationId);
 
@@ -1085,23 +1158,16 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-    private static void InjectHeaders(HubInvocationMessage invocationMessage)
+    private static void InjectHeaders(Activity currentActivity, HubInvocationMessage invocationMessage)
     {
-        // TODO: Change when SignalR client has an activity.
-        // This sends info about the current activity, regardless of the activity source, to the SignalR server.
-        // When SignalR client supports client activities this logic should be updated to only send headers
-        // if the SignalR client activity is created. The goal is to match the behavior of distributed tracing in HttpClient.
-        if (Activity.Current is { } currentActivity)
+        DistributedContextPropagator.Current.Inject(currentActivity, invocationMessage, static (carrier, key, value) =>
         {
-            DistributedContextPropagator.Current.Inject(currentActivity, invocationMessage, static (carrier, key, value) =>
+            if (carrier is HubInvocationMessage invocationMessage)
             {
-                if (carrier is HubInvocationMessage invocationMessage)
-                {
-                    invocationMessage.Headers ??= new Dictionary<string, string>();
-                    invocationMessage.Headers[key] = value;
-                }
-            });
-        }
+                invocationMessage.Headers ??= new Dictionary<string, string>();
+                invocationMessage.Headers[key] = value;
+            }
+        });
     }
 
     private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
@@ -1131,7 +1197,9 @@ public partial class HubConnection : IAsyncDisposable
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(SendCoreAsync), token: cancellationToken).ConfigureAwait(false);
+
+        var activity = StartActivity(methodName);
+        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(SendCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
         try
         {
             CheckDisposed();
@@ -1140,12 +1208,27 @@ public partial class HubConnection : IAsyncDisposable
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
             var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
+            if (activity is not null)
+            {
+                InjectHeaders(activity, invocationMessage);
+            }
             await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
         }
+        catch (Exception ex)
+        {
+            if (activity is not null)
+            {
+                activity.SetStatus(ActivityStatusCode.Error);
+                activity.SetTag("error.type", ex.GetType().FullName);
+                activity.Stop();
+            }
+            throw;
+        }
         finally
         {
+            activity?.Stop();
             _state.ReleaseConnectionLock();
         }
     }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public partial class HubConnectionTests
 {
-    private static HubConnection CreateHubConnection(TestConnection connection, IHubProtocol protocol = null, ILoggerFactory loggerFactory = null)
+    private static HubConnection CreateHubConnection(
+        TestConnection connection,
+        IHubProtocol protocol = null,
+        ILoggerFactory loggerFactory = null,
+        SignalRClientActivitySource clientActivitySource = null)
     {
         var builder = new HubConnectionBuilder().WithUrl("http://example.com");
 
@@ -28,6 +33,11 @@ public partial class HubConnectionTests
         if (protocol != null)
         {
             builder.Services.AddSingleton(protocol);
+        }
+
+        if (clientActivitySource != null)
+        {
+            builder.Services.AddSingleton(clientActivitySource);
         }
 
         return builder.Build();

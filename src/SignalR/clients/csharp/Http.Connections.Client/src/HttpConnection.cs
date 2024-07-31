@@ -148,6 +148,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _url = _httpConnectionOptions.Url;
 
+        RemoteEndPoint = new UriEndPoint(_url);
+
         if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
         {
             _httpClient = CreateHttpClient();

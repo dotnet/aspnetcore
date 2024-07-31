@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -12,7 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -28,7 +27,7 @@ public class HubConnectionTestsCollection : ICollectionFixture<InProcessTestServ
 }
 
 [Collection(HubConnectionTestsCollection.Name)]
-public class HubConnectionTests : FunctionalTestBase
+public partial class HubConnectionTests : FunctionalTestBase
 {
     private const string DefaultHubDispatcherLoggerName = "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
 
@@ -38,7 +37,8 @@ public class HubConnectionTests : FunctionalTestBase
         HttpTransportType? transportType = null,
         IHubProtocol protocol = null,
         ILoggerFactory loggerFactory = null,
-        bool withAutomaticReconnect = false)
+        bool withAutomaticReconnect = false,
+        SignalRClientActivitySource activitySourceContainer = null)
     {
         var hubConnectionBuilder = new HubConnectionBuilder();
 
@@ -62,6 +62,10 @@ public class HubConnectionTests : FunctionalTestBase
         var delegateConnectionFactory = new DelegateConnectionFactory(
             GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
         hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+        if (activitySourceContainer != null)
+        {
+            hubConnectionBuilder.Services.AddSingleton(activitySourceContainer);
+        }
 
         return hubConnectionBuilder.Build();
     }
@@ -112,131 +116,11 @@ public class HubConnectionTests : FunctionalTestBase
             {
                 await connection.DisposeAsync().DefaultTimeout();
             }
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
-    public async Task InvokeAsync_SendTraceHeader(string protocolName, HttpTransportType transportType, string path)
-    {
-        var protocol = HubProtocols[protocolName];
-        await using (var server = await StartServer<Startup>())
-        {
-            var channel = Channel.CreateUnbounded<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
-
-            using var listener = new ActivityListener
-            {
-                ShouldListenTo = activitySource => ReferenceEquals(activitySource, serverSource),
-                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activity => channel.Writer.TryWrite(activity)
-            };
-            ActivitySource.AddActivityListener(listener);
-
-            var connectionBuilder = new HubConnectionBuilder()
-                .WithLoggerFactory(LoggerFactory)
-                .WithUrl(server.Url + path, transportType);
-            connectionBuilder.Services.AddSingleton(protocol);
-
-            var connection = connectionBuilder.Build();
-
-            Activity clientActivity1 = null;
-            Activity clientActivity2 = null;
-            try
-            {
-                await connection.StartAsync().DefaultTimeout();
-
-                // Invocation 1
-                try
-                {
-                    clientActivity1 = new Activity("ClientActivity1");
-                    clientActivity1.AddBaggage("baggage-1", "value-1");
-                    clientActivity1.Start();
-
-                    var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).DefaultTimeout();
-
-                    Assert.Equal("Hello World!", result);
-                }
-                finally
-                {
-                    clientActivity1?.Stop();
-                }
-
-                // Invocation 2
-                try
-                {
-                    clientActivity2 = new Activity("ClientActivity2");
-                    clientActivity2.AddBaggage("baggage-2", "value-2");
-                    clientActivity2.Start();
-
-                    var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).DefaultTimeout();
-
-                    Assert.Equal("Hello World!", result);
-                }
-                finally
-                {
-                    clientActivity2?.Stop();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                throw;
-            }
-            finally
-            {
-                await connection.DisposeAsync().DefaultTimeout();
-            }
-
-            var activities = await channel.Reader.ReadAtLeastAsync(minimumCount: 4).DefaultTimeout();
-
-            var hubName = path switch
-            {
-                "/default" => typeof(TestHub).FullName,
-                "/hubT" => typeof(TestHubT).FullName,
-                "/dynamic" => typeof(DynamicTestHub).FullName,
-                _ => throw new InvalidOperationException("Unexpected path: " + path)
-            };
-
-            Assert.Collection(activities,
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
-                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.False(a.HasRemoteParent);
-                    Assert.Empty(a.Baggage);
-                },
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
-                    Assert.Equal(clientActivity1.Id, a.ParentId);
-                    Assert.True(a.HasRemoteParent);
-                    Assert.Collection(a.Baggage,
-                        b =>
-                        {
-                            Assert.Equal("baggage-1", b.Key);
-                            Assert.Equal("value-1", b.Value);
-                        });
-                },
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
-                    Assert.Equal(clientActivity2.Id, a.ParentId);
-                    Assert.True(a.HasRemoteParent);
-                    Assert.Collection(a.Baggage,
-                        b =>
-                        {
-                            Assert.Equal("baggage-2", b.Key);
-                            Assert.Equal("value-2", b.Value);
-                        });
-                },
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
-                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.False(a.HasRemoteParent);
-                    Assert.Empty(a.Baggage);
-                });
+            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
+                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
+                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
         }
     }
 
@@ -597,97 +481,10 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Theory]
-    [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
-    public async Task StreamAsyncCore_SendTraceHeader(string protocolName, HttpTransportType transportType, string path)
-    {
-        var protocol = HubProtocols[protocolName];
-        await using (var server = await StartServer<Startup>())
-        {
-            var channel = Channel.CreateUnbounded<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
-
-            using var listener = new ActivityListener
-            {
-                ShouldListenTo = activitySource => ReferenceEquals(activitySource, serverSource),
-                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activity => channel.Writer.TryWrite(activity)
-            };
-            ActivitySource.AddActivityListener(listener);
-
-            var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
-
-            Activity clientActivity = null;
-            try
-            {
-                await connection.StartAsync().DefaultTimeout();
-
-                clientActivity = new Activity("ClientActivity");
-                clientActivity.AddBaggage("baggage-1", "value-1");
-                clientActivity.Start();
-
-                var expectedValue = 0;
-                var streamTo = 5;
-                var asyncEnumerable = connection.StreamAsyncCore<int>("Stream", new object[] { streamTo });
-                await foreach (var streamValue in asyncEnumerable)
-                {
-                    Assert.Equal(expectedValue, streamValue);
-                    expectedValue++;
-                }
-
-                Assert.Equal(streamTo, expectedValue);
-            }
-            catch (Exception ex)
-            {
-                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                throw;
-            }
-            finally
-            {
-                clientActivity?.Stop();
-                await connection.DisposeAsync().DefaultTimeout();
-            }
-
-            var activities = await channel.Reader.ReadAtLeastAsync(minimumCount: 3).DefaultTimeout();
-
-            var hubName = path switch
-            {
-                "/default" => typeof(TestHub).FullName,
-                "/hubT" => typeof(TestHubT).FullName,
-                "/dynamic" => typeof(DynamicTestHub).FullName,
-                _ => throw new InvalidOperationException("Unexpected path: " + path)
-            };
-
-            Assert.Collection(activities,
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
-                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.False(a.HasRemoteParent);
-                    Assert.Empty(a.Baggage);
-                },
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
-                    Assert.Equal(clientActivity.Id, a.ParentId);
-                    Assert.True(a.HasRemoteParent);
-                    Assert.Collection(a.Baggage,
-                        b =>
-                        {
-                            Assert.Equal("baggage-1", b.Key);
-                            Assert.Equal("value-1", b.Value);
-                        });
-                },
-                a =>
-                {
-                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
-                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.False(a.HasRemoteParent);
-                    Assert.Empty(a.Baggage);
-                });
-        }
-    }
-
-    [Theory]
+            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal($"{hubName}/Stream", a.OperationName);
+                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
     [InlineData("json")]
     [InlineData("messagepack")]
     public async Task CanStreamToHubWithIAsyncEnumerableMethodArg(string protocolName)
