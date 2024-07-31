@@ -63,6 +63,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [Theory]
     [InlineData(false, "application/json")]
     [InlineData(true, "application/x-www-form-urlencoded")]
+    [InlineData(true, "multipart/form-data")]
     public async Task GetOpenApiRequestBody_GeneratesSchemaForPoco_WithValidationAttributes(bool isFromForm, string targetContentType)
     {
         // Arrange
@@ -563,7 +564,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         // Act
 #nullable enable
-        builder.MapPost("/api", ([FromForm] string? name, [FromForm] int? number) => { });
+        builder.MapPost("/api", ([FromForm] string? name, [FromForm] int? number, [FromForm] int[]? ids) => { });
 #nullable restore
 
         // Assert
@@ -581,6 +582,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     var property = schema.Properties["number"];
                     Assert.Equal("integer", property.Type);
+                    Assert.False(property.Nullable);
+                },
+                schema =>
+                {
+                    var property = schema.Properties["ids"];
+                    Assert.Equal("array", property.Type);
                     Assert.False(property.Nullable);
                 });
         });
