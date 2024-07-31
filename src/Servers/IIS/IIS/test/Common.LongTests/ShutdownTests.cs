@@ -256,7 +256,7 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
 
         // Shutdown should be graceful here!
-        await EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -293,7 +293,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        await EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -330,7 +330,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        await EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 

@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 public class EventLogHelpers
 {
-    public static async Task VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
+    public static async Task VerifyEventLogEventAsync(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
     {
         Assert.True(deploymentResult.HostProcess.HasExited);
 
         try
         {
-            await AssertEntry(expectedRegexMatchString, deploymentResult, allowMultiple);
+            await AssertEntryAsync(expectedRegexMatchString, deploymentResult, allowMultiple);
         }
         catch (Exception)
         {
@@ -41,7 +41,7 @@ public class EventLogHelpers
         var entries = GetEntries(deploymentResult).ToList();
         for (var i = 0; i < expectedRegexMatchString.Length; i++)
         {
-            var matchedEntries = await AssertEntry(expectedRegexMatchString[i], deploymentResult);
+            var matchedEntries = await AssertEntryAsync(expectedRegexMatchString[i], deploymentResult);
             Assert.True(matchedEntries is not null, $"Regex {expectedRegexMatchString[i]} was not found.");
         }
     }
@@ -59,28 +59,33 @@ public class EventLogHelpers
         }
     }
 
-    private static async Task<EventLogEntry[]> AssertEntry(string regexString, IISDeploymentResult deploymentResult, bool allowMultiple = false)
+    private static async Task<EventLogEntry[]> AssertEntryAsync(string regexString, IISDeploymentResult deploymentResult, bool allowMultiple = false)
     {
-        // EventLogs don't seem to be instant, add retries to attempt to reduce test failures when looking for logs.
-        var retryCount = 10;
         EventLogEntry[] matchedEntries = [];
-        while (retryCount > 0)
+        var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
+
+        // EventLogs don't seem to be instant, add retries to attempt to reduce test failures when looking for logs.
+        for (var i = 10; i > 0; i--)
         {
-            retryCount--;
             var entries = GetEntries(deploymentResult);
-            var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
             matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
-            if (matchedEntries.Length == 0 && retryCount > 0)
+            if (matchedEntries.Length == 0)
             {
                 await Task.Delay(100);
                 continue;
             }
-            Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
-            Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+            AssertEntries();
             return matchedEntries;
         }
 
+        AssertEntries();
         return matchedEntries;
+
+        void AssertEntries()
+        {
+            Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
+            Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+        }
     }
 
     private static string FormatEntries(IEnumerable<EventLogEntry> entries)

@@ -57,11 +57,11 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
 
             await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
             StopServer();
-            await EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
 
             if (delayShutdown)
             {
-                await EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.ShutdownMessage(result), Logger);
+                await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
             }
             else
             {
@@ -101,8 +101,8 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
 
             await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
             StopServer();
-            await EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
-            await EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.ShutdownMessage(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
         }
     }
 
