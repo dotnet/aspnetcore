@@ -228,6 +228,13 @@ internal sealed class ApiResponseTypeProvider
 
         foreach (var metadata in responseMetadata)
         {
+            // `IResult` metadata inserted for awaitable types should
+            // not be considered for response metadata.
+            if (typeof(IResult).IsAssignableFrom(metadata.Type))
+            {
+                continue;
+            }
+
             var statusCode = metadata.StatusCode;
 
             var apiResponseType = new ApiResponseType
