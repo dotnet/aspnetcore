@@ -14,26 +14,26 @@
     chalk "^4.0.0"
 
 "@types/eventsource@^1.1.8":
-  version "1.1.11"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/eventsource/-/eventsource-1.1.11.tgz#a2c0bfd0436b7db42ed1b2b2117f7ec2e8478dc7"
-  integrity sha1-osC/0ENrfbQu0bKyEX9+wuhHjcc=
+  version "1.1.15"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/eventsource/-/eventsource-1.1.15.tgz#949383d3482e20557cbecbf3b038368d94b6be27"
+  integrity sha1-lJOD00guIFV8vsvzsDg2jZS2vic=
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0":
-  version "2.0.4"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.4.tgz#8467d4b3c087805d63580480890791277ce35c44"
-  integrity sha1-hGfUs8CHgF1jWASAiQeRJ3zjXEQ=
+  version "2.0.6"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.6.tgz#7739c232a1fee9b4d3ce8985f314c0c6d33549d7"
+  integrity sha1-dznCMqH+6bTTzomF8xTAxtM1Sdc=
 
 "@types/istanbul-lib-report@*":
-  version "3.0.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-lib-report/-/istanbul-lib-report-3.0.0.tgz#c14c24f18ea8190c118ee7562b7ff99a36552686"
-  integrity sha1-wUwk8Y6oGQwRjudWK3/5mjZVJoY=
+  version "3.0.3"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-lib-report/-/istanbul-lib-report-3.0.3.tgz#53047614ae72e19fc0401d872de3ae2b4ce350bf"
+  integrity sha1-UwR2FK5y4Z/AQB2HLeOuK0zjUL8=
   dependencies:
     "@types/istanbul-lib-coverage" "*"
 
 "@types/istanbul-reports@^3.0.0":
-  version "3.0.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-reports/-/istanbul-reports-3.0.1.tgz#9153fe98bba2bd565a63add9436d6f0d7f8468ff"
-  integrity sha1-kVP+mLuivVZaY63ZQ21vDX+EaP8=
+  version "3.0.4"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/istanbul-reports/-/istanbul-reports-3.0.4.tgz#0f03e3d2f670fbdac586e34b433783070cc16f54"
+  integrity sha1-DwPj0vZw+9rFhuNLQzeDBwzBb1Q=
   dependencies:
     "@types/istanbul-lib-report" "*"
 
@@ -46,29 +46,31 @@
     pretty-format "^26.0.0"
 
 "@types/node@*":
-  version "18.13.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-18.13.0.tgz#0400d1e6ce87e9d3032c19eb6c58205b0d3f7850"
-  integrity sha1-BADR5s6H6dMDLBnrbFggWw0/eFA=
+  version "22.0.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-22.0.0.tgz#04862a2a71e62264426083abe1e27e87cac05a30"
+  integrity sha1-BIYqKnHmImRCYIOr4eJ+h8rAWjA=
+  dependencies:
+    undici-types "~6.11.1"
 
 "@types/node@^14.14.31":
-  version "14.18.36"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-14.18.36.tgz#c414052cb9d43fab67d679d5f3c641be911f5835"
-  integrity sha1-xBQFLLnUP6tn1nnV88ZBvpEfWDU=
+  version "14.18.63"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-14.18.63.tgz#1788fa8da838dbb5f9ea994b834278205db6ca2b"
+  integrity sha1-F4j6jag427X56plLg0J4IF22yis=
 
 "@types/tough-cookie@^4.0.0":
-  version "4.0.2"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/tough-cookie/-/tough-cookie-4.0.2.tgz#6286b4c7228d58ab7866d19716f3696e03a09397"
-  integrity sha1-Yoa0xyKNWKt4ZtGXFvNpbgOgk5c=
+  version "4.0.5"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/tough-cookie/-/tough-cookie-4.0.5.tgz#cb6e2a691b70cb177c6e3ae9c1d2e8b2ea8cd304"
+  integrity sha1-y24qaRtwyxd8bjrpwdLosuqM0wQ=
 
 "@types/yargs-parser@*":
-  version "21.0.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs-parser/-/yargs-parser-21.0.0.tgz#0c60e537fa790f5f9472ed2776c2b71ec117351b"
-  integrity sha1-DGDlN/p5D1+Ucu0ndsK3HsEXNRs=
+  version "21.0.3"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs-parser/-/yargs-parser-21.0.3.tgz#815e30b786d2e8f0dcd85fd5bcf5e1a04d008f15"
+  integrity sha1-gV4wt4bS6PDc2F/VvPXhoE0AjxU=
 
 "@types/yargs@^15.0.0":
-  version "15.0.15"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs/-/yargs-15.0.15.tgz#e609a2b1ef9e05d90489c2f5f45bbfb2be092158"
-  integrity sha1-5gmise+eBdkEicL19Fu/sr4JIVg=
+  version "15.0.19"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs/-/yargs-15.0.19.tgz#328fb89e46109ecbdb70c295d96ff2f46dfd01b9"
+  integrity sha1-Mo+4nkYQnsvbcMKV2W/y9G39Abk=
   dependencies:
     "@types/yargs-parser" "*"
 
@@ -127,9 +129,9 @@ eventsource@^2.0.2:
   integrity sha1-dt/MApMPsv8zlSC20pDaVzqehQg=
 
 fetch-cookie@^2.0.3:
-  version "2.1.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/fetch-cookie/-/fetch-cookie-2.1.0.tgz#6e127909912f9e527533b045aab555c06b33801b"
-  integrity sha1-bhJ5CZEvnlJ1M7BFqrVVwGszgBs=
+  version "2.2.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/fetch-cookie/-/fetch-cookie-2.2.0.tgz#01086b6b5b1c3e08f15ffd8647b02ca100377365"
+  integrity sha1-AQhra1scPgjxX/2GR7AsoQA3c2U=
   dependencies:
     set-cookie-parser "^2.4.8"
     tough-cookie "^4.0.0"
@@ -155,9 +157,9 @@ jest-get-type@^26.3.0:
   integrity sha1-6X3Dw/U8K0Bsp6+u1Ek7HQmRmeA=
 
 node-fetch@^2.6.7:
-  version "2.6.9"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
-  integrity sha1-fH90S1zG61/UBODHqf7GMKVWV+Y=
+  version "2.7.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
+  integrity sha1-0PD6bj4twdJ+/NitmdVQvalNGH0=
   dependencies:
     whatwg-url "^5.0.0"
 
@@ -182,9 +184,9 @@ psl@^1.1.33:
   integrity sha1-0N8qE38AeUVl/K87LADNCfjVpac=
 
 punycode@^2.1.1:
-  version "2.3.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
-  integrity sha1-9n+mfJTaj00M//mBruQRgGQZm48=
+  version "2.3.1"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.3.1.tgz#027422e2faec0b25e1549c3e1bd8309b9133b6e5"
+  integrity sha1-AnQi4vrsCyXhVJw+G9gwm5EztuU=
 
 querystringify@^2.1.1:
   version "2.2.0"
@@ -202,9 +204,9 @@ requires-port@^1.0.0:
   integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
 
 set-cookie-parser@^2.4.8:
-  version "2.5.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/set-cookie-parser/-/set-cookie-parser-2.5.1.tgz#ddd3e9a566b0e8e0862aca974a6ac0e01349430b"
-  integrity sha1-3dPppWaw6OCGKsqXSmrA4BNJQws=
+  version "2.6.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/set-cookie-parser/-/set-cookie-parser-2.6.0.tgz#131921e50f62ff1a66a461d7d62d7b21d5d15a51"
+  integrity sha1-Exkh5Q9i/xpmpGHX1i17IdXRWlE=
 
 supports-color@^7.1.0:
   version "7.2.0"
@@ -214,9 +216,9 @@ supports-color@^7.1.0:
     has-flag "^4.0.0"
 
 tough-cookie@^4.0.0:
-  version "4.1.2"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/tough-cookie/-/tough-cookie-4.1.2.tgz#e53e84b85f24e0b65dd526f46628db6c85f6b874"
-  integrity sha1-5T6EuF8k4LZd1Sb0ZijbbIX2uHQ=
+  version "4.1.4"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/tough-cookie/-/tough-cookie-4.1.4.tgz#945f1461b45b5a8c76821c33ea49c3ac192c1b36"
+  integrity sha1-lF8UYbRbWox2ghwz6knDrBksGzY=
   dependencies:
     psl "^1.1.33"
     punycode "^2.1.1"
@@ -227,6 +229,11 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=
+
+undici-types@~6.11.1:
+  version "6.11.1"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/undici-types/-/undici-types-6.11.1.tgz#432ea6e8efd54a48569705a699e62d8f4981b197"
+  integrity sha1-Qy6m6O/VSkhWlwWmmeYtj0mBsZc=
 
 universalify@^0.2.0:
   version "0.2.0"
@@ -255,6 +262,6 @@ whatwg-url@^5.0.0:
     webidl-conversions "^3.0.0"
 
 ws@^7.4.5:
-  version "7.5.9"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-7.5.9.tgz#54fa7db29f4c7cec68b1ddd3a89de099942bb591"
-  integrity sha1-VPp9sp9MfOxosd3TqJ3gmZQrtZE=
+  version "7.5.10"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-7.5.10.tgz#58b5c20dc281633f6c19113f39b349bd8bd558d9"
+  integrity sha1-WLXCDcKBYz9sGRE/ObNJvYvVWNk=
