@@ -91,7 +91,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 var certPath = Path.Combine(sslCertDir, nickname + ".pem");
                 if (File.Exists(certPath))
                 {
-                    var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                    var candidate = new X509Certificate2(certPath);
                     if (AreCertificatesEqual(certificate, candidate))
                     {
                         foundCert = true;
@@ -193,7 +193,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         {
             try
             {
-                using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+                using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
                 // FriendlyName is Windows-only, so we don't set it here.
                 store.Add(publicCertificate);
                 Log.UnixDotnetTrustSucceeded();
@@ -224,7 +224,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         {
             try
             {
-                using var existingCert = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                using var existingCert = new X509Certificate2(certPath);
                 if (!AreCertificatesEqual(existingCert, certificate))
                 {
                     Log.UnixNotOverwritingCertificate(certPath);

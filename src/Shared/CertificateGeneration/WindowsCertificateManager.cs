@@ -84,7 +84,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
         {
             Log.WindowsAddCertificateToRootStore();
 
-            using var publicCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+            using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
             publicCertificate.FriendlyName = certificate.FriendlyName;
             store.Add(publicCertificate);
             return TrustLevel.Full;
