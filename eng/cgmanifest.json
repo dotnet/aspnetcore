@@ -1,9 +1,87 @@
-Grpc.AspNetCore" Version="${GrpcAspNetCoreVersion}"
-Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}"
-Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerVersion}"
-Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsVersion}"
-Microsoft.Extensions.Hosting" Version="${MicrosoftExtensionsHostingVersion}"
-Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}"
-Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}"
-Microsoft.Identity.Web.GraphServiceClient" Version="${MicrosoftIdentityWebGraphServiceClientVersion}"
-Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}"
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Grpc.AspNetCore",
+                    "version": "{GrpcAspNetCoreVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.EntityFrameworkCore.Sqlite",
+                    "version": "{MicrosoftEntityFrameworkCoreSqliteVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.EntityFrameworkCore.SqlServer",
+                    "version": "{MicrosoftEntityFrameworkCoreSqlServerVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.EntityFrameworkCore.Tools",
+                    "version": "{MicrosoftEntityFrameworkCoreToolsVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Extensions.Hosting",
+                    "version": "{MicrosoftExtensionsHostingVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Identity.Web",
+                    "version": "{MicrosoftIdentityWebVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Identity.Web.DownstreamApi",
+                    "version": "{MicrosoftIdentityWebDownstreamApiVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Identity.Web.GraphServiceClient",
+                    "version": "{MicrosoftIdentityWebGraphServiceClientVersion}"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Identity.Web.UI",
+                    "version": "{MicrosoftIdentityWebUIVersion}"
+                }
+            }
+        }
+    ]
+}
