@@ -93,7 +93,7 @@ internal sealed class OpenApiSchemaService(
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
             schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
-            schema.ApplyPolymorphismOptions(context, createSchemaReferenceId);
+            schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 // Short-circuit STJ's handling of nested properties, which uses a reference to the

@@ -334,21 +334,23 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Applies the polymorphism options to the target schema following OpenAPI v3's conventions.
+    /// Applies the polymorphism options defined by System.Text.Json to the target schema following OpenAPI v3's
+    /// conventions for the discriminator property.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
     /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
+    internal static void MapPolymorphismOptionsToDiscriminator(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
         // The `context.BaseTypeInfo == null` check is used to ensure that we only apply the polymorphism options
         // to the top-level schema and not to any nested schemas that are generated.
         if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.BaseTypeInfo == null)
         {
             // System.Text.Json supports serializing to a non-abstract base class if no discriminator is provided.
-            // OpenAPI requires that all polymorphic sub-schemas have an associated discriminator. To maintain accuracy,
-            // with the actual implementation and comply with the limitations of the OpenAPI schema we do not emit
-            // a `discriminator` property for types that are represented this way.
+            // OpenAPI requires that all polymorphic sub-schemas have an associated discriminator. If the base type
+            // doesn't declare itself as its own derived type via [JsonDerived], then it can't have a discriminator,
+            // which OpenAPI requires. In that case, we don't exit early to avoid mapping the polymorphism options
+            // to the `discriminator` property and return an un-discriminated `anyOf` schema instead.
             if (!context.TypeInfo.Type.IsAbstract &&
                 !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type))
             {

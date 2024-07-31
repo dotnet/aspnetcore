@@ -219,4 +219,39 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("pet", ((OpenApiString)petSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
         });
     }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithNoExplicitDiscriminators()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Organism color) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema.GetEffective(document);
+            // Assert discriminator mappings are not configured for this type since we
+            // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
+            // property associated with them.
+            Assert.Null(schema.Discriminator);
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("OrganismAnimal", schema.Reference.Id),
+                schema => Assert.Equal("OrganismPlant", schema.Reference.Id),
+                schema => Assert.Equal("OrganismBase", schema.Reference.Id));
+            // Assert that schemas without discriminators have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismAnimal", out var animalSchema));
+            Assert.DoesNotContain("$type", animalSchema.Properties.Keys);
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismPlant", out var plantSchema));
+            Assert.DoesNotContain("$type", plantSchema.Properties.Keys);
+            Assert.True(document.Components.Schemas.TryGetValue("OrganismBase", out var baseSchema));
+            Assert.DoesNotContain("$type", plantSchema.Properties.Keys);
+        });
+    }
 }
