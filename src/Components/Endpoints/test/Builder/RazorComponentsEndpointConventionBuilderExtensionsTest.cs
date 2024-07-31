@@ -26,7 +26,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.First().Endpoints, e =>
         {
             if (e.Metadata.GetMetadata<ComponentTypeMetadata>() == null)
             {
@@ -50,7 +50,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.Null(metadata);
@@ -69,7 +69,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -90,7 +90,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -112,7 +112,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -134,7 +134,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -157,7 +157,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -183,7 +183,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;
-        Assert.All(groupEndpoints.Skip(2).First().Endpoints, e =>
+        Assert.All(groupEndpoints.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -209,7 +209,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;
-        Assert.All(groupEndpoints.Skip(2).First().Endpoints, e =>
+        Assert.All(groupEndpoints.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.Null(metadata);

@@ -53,7 +53,10 @@ internal partial class OpaqueRedirection
         var routeEndpointBuidler = new RouteEndpointBuilder(
             OpaqueRedirect,
             RoutePatternFactory.Parse($"/{RedirectionEndpointBaseRelativeUrl}"),
-            0);
+            0)
+        {
+            DisplayName = "Blazor Opaque Redirection",
+        };
 
         routeEndpointBuidler.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get]));
 
