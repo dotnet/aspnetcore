@@ -323,6 +323,14 @@ internal abstract class CertificateManager
         {
             try
             {
+                // If the user specified a non-existent directory, we don't want to be responsible
+                // for setting the permissions appropriately, so we'll bail.
+                var exportDir = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(exportDir) && !Directory.Exists(exportDir))
+                {
+                    throw new InvalidOperationException($"The directory '{exportDir}' does not exist.  Choose permissions carefully when creating it.");
+                }
+
                 ExportCertificate(certificate, path, includePrivateKey, password, keyExportFormat);
             }
             catch (Exception e)
@@ -484,7 +492,13 @@ internal abstract class CertificateManager
 
     protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-    internal static void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
+    protected abstract void CreateDirectoryWithPermissions(string directoryPath);
+
+    /// <remarks>
+    /// Will create directories to make it possible to write to <paramref name="path"/>.
+    /// If you don't want that, check for existence before calling this method.
+    /// </remarks>
+    internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
     {
         if (Log.IsEnabled())
         {
@@ -500,7 +514,7 @@ internal abstract class CertificateManager
         if (!string.IsNullOrEmpty(targetDirectoryPath))
         {
             Log.CreateExportCertificateDirectory(targetDirectoryPath);
-            Directory.CreateDirectory(targetDirectoryPath);
+            CreateDirectoryWithPermissions(targetDirectoryPath);
         }
 
         byte[] bytes;
@@ -1230,6 +1244,9 @@ internal abstract class CertificateManager
         [Event(111, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
             "See https://aka.ms/dev-certs-trust for more information.")]
         internal void UnixSuggestSettingEnvironmentVariableWithoutExample(string certDir, string envVarName) => WriteEvent(111, certDir, envVarName);
+
+        [Event(112, Level = EventLevel.Warning, Message = "Directory '{0}' may be readable by other users.")]
+        internal void DirectoryPermissionsNotSecure(string directoryPath) => WriteEvent(112, directoryPath);
     }
 
     internal sealed class UserCancelledTrustException : Exception

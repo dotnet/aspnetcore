@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 /// </remarks>
 internal sealed partial class UnixCertificateManager : CertificateManager
 {
+	private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     /// <summary>The name of an environment variable consumed by OpenSSL to locate certificates.</summary>
     private const string OpenSslCertificateDirectoryVariableName = "SSL_CERT_DIR";
 
@@ -74,7 +76,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             Log.UnixNotTrustedByDotnet();
         }
 
-        var nickname = GetCertificateNickname(certificate);
+        // Will become the name of the file on disk and the nickname in the NSS DBs
+        var certificateNickname = GetCertificateNickname(certificate);
 
         var sslCertDirString = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
         if (string.IsNullOrEmpty(sslCertDirString))
@@ -88,7 +91,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             var sslCertDirs = sslCertDirString.Split(Path.PathSeparator);
             foreach (var sslCertDir in sslCertDirs)
             {
-                var certPath = Path.Combine(sslCertDir, nickname + ".pem");
+                var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
                     var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
@@ -125,7 +128,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             {
                 foreach (var nssDb in nssDbs)
                 {
-                    if (IsCertificateInNssDb(nickname, nssDb))
+                    if (IsCertificateInNssDb(certificateNickname, nssDb))
                     {
                         sawTrustSuccess = true;
                     }
@@ -138,6 +141,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
         }
 
+        // Success & Failure => Partial; Success => Full; Failure => None
         return sawTrustSuccess
             ? sawTrustFailure
                 ? TrustLevel.Partial
@@ -244,7 +248,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         if (needToExport)
         {
             // Security: we don't need the private key for trust, so we don't export it.
-            // Note that this will create directories as needed.
+            // Note that this will create directories as needed.  We control `certPath`, so the permissions should be fine.
             ExportCertificate(certificate, certPath, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
         }
 
@@ -447,6 +451,24 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
     {
         return ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: false);
+    }
+
+    protected override void CreateDirectoryWithPermissions(string directoryPath)
+    {
+#pragma warning disable CA1416 // Validate platform compatibility (not supported on Windows)
+        var dirInfo = new DirectoryInfo(directoryPath);
+        if (dirInfo.Exists)
+        {
+            if ((dirInfo.UnixFileMode & ~DirectoryPermissions) != 0)
+            {
+                Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(directoryPath, DirectoryPermissions);
+        }
+#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     private static string GetChromiumNssDb(string homeDirectory)
