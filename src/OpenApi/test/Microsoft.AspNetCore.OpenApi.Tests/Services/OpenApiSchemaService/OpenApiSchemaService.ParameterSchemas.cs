@@ -18,46 +18,46 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 #nullable enable
     public static object?[][] RouteParametersWithPrimitiveTypes =>
     [
-        [(int id) => {}, "integer", "int32", false],
-        [(long id) => {}, "integer", "int64", false],
-        [(float id) => {}, "number", "float", false],
-        [(double id) => {}, "number", "double", false],
-        [(decimal id) => {}, "number", "double", false],
-        [(bool id) => {}, "boolean", null, false],
-        [(string id) => {}, "string", null, false],
-        [(char id) => {}, "string", "char", false],
-        [(byte id) => {}, "integer", "uint8", false],
-        [(byte[] id) => {}, "string", "byte", false],
-        [(short id) => {}, "integer", "int16", false],
-        [(ushort id) => {}, "integer", "uint16", false],
-        [(uint id) => {}, "integer", "uint32", false],
-        [(ulong id) => {}, "integer", "uint64", false],
-        [(Uri id) => {}, "string", "uri", false],
-        [(TimeOnly id) => {}, "string", "time", false],
-        [(DateOnly id) => {}, "string", "date", false],
-        [(int? id) => {}, "integer", "int32", true],
-        [(long? id) => {}, "integer", "int64", true],
-        [(float? id) => {}, "number", "float", true],
-        [(double? id) => {}, "number", "double", true],
-        [(decimal? id) => {}, "number", "double", true],
-        [(bool? id) => {}, "boolean", null, true],
-        [(string? id) => {}, "string", null, true],
-        [(char? id) => {}, "string", "char", true],
-        [(byte? id) => {}, "integer", "uint8", true],
-        [(byte[]? id) => {}, "string", "byte", true],
-        [(short? id) => {}, "integer", "int16", true],
-        [(ushort? id) => {}, "integer", "uint16", true],
-        [(uint? id) => {}, "integer", "uint32", true],
-        [(ulong? id) => {}, "integer", "uint64", true],
-        [(Uri? id) => {}, "string", "uri", true],
-        [(TimeOnly? id) => {}, "string", "time", true],
-        [(DateOnly? id) => {}, "string", "date", true]
+        [(int id) => {}, "integer", "int32"],
+        [(long id) => {}, "integer", "int64"],
+        [(float id) => {}, "number", "float"],
+        [(double id) => {}, "number", "double"],
+        [(decimal id) => {}, "number", "double"],
+        [(bool id) => {}, "boolean", null],
+        [(string id) => {}, "string", null],
+        [(char id) => {}, "string", "char"],
+        [(byte id) => {}, "integer", "uint8"],
+        [(byte[] id) => {}, "string", "byte"],
+        [(short id) => {}, "integer", "int16"],
+        [(ushort id) => {}, "integer", "uint16"],
+        [(uint id) => {}, "integer", "uint32"],
+        [(ulong id) => {}, "integer", "uint64"],
+        [(Uri id) => {}, "string", "uri"],
+        [(TimeOnly id) => {}, "string", "time"],
+        [(DateOnly id) => {}, "string", "date"],
+        [(int? id) => {}, "integer", "int32"],
+        [(long? id) => {}, "integer", "int64"],
+        [(float? id) => {}, "number", "float"],
+        [(double? id) => {}, "number", "double"],
+        [(decimal? id) => {}, "number", "double"],
+        [(bool? id) => {}, "boolean", null],
+        [(string? id) => {}, "string", null],
+        [(char? id) => {}, "string", "char"],
+        [(byte? id) => {}, "integer", "uint8"],
+        [(byte[]? id) => {}, "string", "byte"],
+        [(short? id) => {}, "integer", "int16"],
+        [(ushort? id) => {}, "integer", "uint16"],
+        [(uint? id) => {}, "integer", "uint32"],
+        [(ulong? id) => {}, "integer", "uint64"],
+        [(Uri? id) => {}, "string", "uri"],
+        [(TimeOnly? id) => {}, "string", "time"],
+        [(DateOnly? id) => {}, "string", "date"]
     ];
 #nullable restore
 
     [Theory]
     [MemberData(nameof(RouteParametersWithPrimitiveTypes))]
-    public async Task GetOpenApiParameters_HandlesRouteParameterWithPrimitiveType(Delegate requestHandler, string schemaType, string schemaFormat, bool isNullable)
+    public async Task GetOpenApiParameters_HandlesRouteParameterWithPrimitiveType(Delegate requestHandler, string schemaType, string schemaFormat)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -72,7 +72,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
-            Assert.Equal(isNullable, parameter.Schema.Nullable);
+            Assert.False(parameter.Schema.Nullable);
         });
     }
 
@@ -420,6 +420,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal("array", parameter.Schema.Type);
             Assert.Equal(innerSchemaType, parameter.Schema.Items.Type);
+            // Array items can be serialized to nullable values when the element
+            // type is nullable. For example, array-of-ints?ints=1&ints=2&ints=&ints=4
+            // will produce [1, 2, null, 4] when the parameter is int?[] ints.
+            // When the element type is not nullable (int[] ints), the binding
+            // will produce [1, 2, 0, 4]
             Assert.Equal(isNullable, parameter.Schema.Items.Nullable);
         });
     }
