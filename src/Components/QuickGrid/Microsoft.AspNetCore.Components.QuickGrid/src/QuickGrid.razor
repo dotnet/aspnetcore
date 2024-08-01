@@ -6,14 +6,10 @@
 @typeparam TGridItem
 
 <CascadingValue TValue="InternalGridContext<TGridItem>" IsFixed="true" Value="@_internalGridContext">
-    @{
-        StartCollectingColumns();
-    }
+    @{StartCollectingColumns(); }
     @ChildContent
     <Defer>
-        @{
-            FinishCollectingColumns();
-        }
+        @{FinishCollectingColumns(); }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
         <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions" @attributes="AdditionalAttributes" class="@GridClass()">
@@ -26,12 +22,12 @@
                 @if (Virtualize)
                 {
                     <Virtualize @ref="@_virtualizeComponent"
-                                TItem="(int RowIndex, TGridItem Data)"
-                                ItemSize="@ItemSize"
-                                OverscanCount="@OverscanCount"
-                                ItemsProvider="@ProvideVirtualizedItems"
-                                ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                        TItem="(int RowIndex, TGridItem Data)"
+                        ItemSize="@ItemSize"
+                        OverscanCount="@OverscanCount"
+                        ItemsProvider="@ProvideVirtualizedItems"
+                        ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                        Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
                 }
                 else
                 {
