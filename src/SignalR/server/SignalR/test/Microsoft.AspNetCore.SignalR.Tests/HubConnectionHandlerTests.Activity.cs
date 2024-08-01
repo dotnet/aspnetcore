@@ -29,7 +29,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -100,7 +100,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -165,7 +165,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -212,7 +212,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -263,7 +263,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -313,7 +313,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -348,7 +348,9 @@ public partial class HubConnectionHandlerTests
     {
         Assert.Null(activity.Parent);
         Assert.True(activity.IsStopped);
-        Assert.Equal($"{typeof(THub).FullName}/{methodName}", activity.OperationName);
+        Assert.Equal(SignalRServerActivitySource.Name, activity.Source.Name);
+        Assert.Equal(SignalRServerActivitySource.InvocationIn, activity.OperationName);
+        Assert.Equal($"{typeof(THub).FullName}/{methodName}", activity.DisplayName);
 
         var tags = activity.Tags.ToArray();
         if (exceptionType is not null)
