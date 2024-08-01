@@ -2,12 +2,18 @@
 @using Microsoft.AspNetCore.Components.Rendering
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+
 @typeparam TGridItem
+
 <CascadingValue TValue="InternalGridContext<TGridItem>" IsFixed="true" Value="@_internalGridContext">
-    @{ StartCollectingColumns(); }
+    @{
+        StartCollectingColumns();
+    }
     @ChildContent
     <Defer>
-        @{ FinishCollectingColumns(); }
+        @{
+            FinishCollectingColumns();
+        }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
         <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions" @attributes="AdditionalAttributes" class="@GridClass()">
@@ -20,12 +26,12 @@
                 @if (Virtualize)
                 {
                     <Virtualize @ref="@_virtualizeComponent"
-                        TItem="(int RowIndex, TGridItem Data)"
-                        ItemSize="@ItemSize"
-                        OverscanCount="@OverscanCount"
-                        ItemsProvider="@ProvideVirtualizedItems"
-                        ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                        Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                                TItem="(int RowIndex, TGridItem Data)"
+                                ItemSize="@ItemSize"
+                                OverscanCount="@OverscanCount"
+                                ItemsProvider="@ProvideVirtualizedItems"
+                                ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
                 }
                 else
                 {
@@ -53,51 +59,78 @@
         {
             while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
             {
-                <tr>
-                    @foreach (var col in _columns)
-                    {
-                        <td class="@ColumnClass(col)" @key="@col"></td>
-                    }
-                </tr>
+                __builder.OpenElement(0, "tr");
+                foreach (var col in _columns)
+                {
+                    __builder.OpenElement(1, "td");
+                    __builder.AddAttribute(2, "class", ColumnClass(col));
+                    __builder.CloseElement();
+                }
+                __builder.CloseElement();
             }
         }
     }
 
-
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" @onclick="@(async () => await HandleRowClick(item))">
-            @foreach (var col in _columns)
-            {
-                <td class="@ColumnClass(col)" @key="@col">@{
-                        col.CellContent(__builder, item);
-                    }</td>
-            }
-        </tr>
+        __builder.OpenElement(0, "tr");
+        __builder.AddAttribute(1, "key", ItemKey(item));
+        __builder.AddAttribute(2, "aria-rowindex", rowIndex);
+
+        if (OnRowClicked.HasDelegate)
+        {
+            __builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => HandleRowClick(item)));
+        }
+
+        foreach (var col in _columns)
+        {
+            __builder.OpenElement(4, "td");
+            __builder.AddAttribute(5, "class", ColumnClass(col));
+            col.CellContent(__builder, item);
+            __builder.CloseElement();
+        }
+
+        __builder.CloseElement();
     }
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
     {
-        <tr aria-rowindex="@(placeholderContext.Index + 1)">
-            @foreach (var col in _columns)
-            {
-                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
-            }
-        </tr>
+        __builder.OpenElement(0, "tr");
+        __builder.AddAttribute(1, "aria-rowindex", placeholderContext.Index + 1);
+        foreach (var col in _columns)
+        {
+            __builder.OpenElement(2, "td");
+            __builder.AddAttribute(3, "class", "grid-cell-placeholder " + ColumnClass(col));
+            col.RenderPlaceholderContent(__builder, placeholderContext);
+            __builder.CloseElement();
+        }
+        __builder.CloseElement();
     }
 
     private void RenderColumnHeaders(RenderTreeBuilder __builder)
     {
         foreach (var col in _columns)
         {
-            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
-                <div class="col-header-content">@col.HeaderContent</div>
+            __builder.OpenElement(0, "th");
+            __builder.AddAttribute(1, "class", ColumnHeaderClass(col));
+            __builder.AddAttribute(2, "aria-sort", AriaSortValue(col));
+            __builder.AddAttribute(3, "key", col);
+            __builder.AddAttribute(4, "scope", "col");
 
-                @if (col == _displayOptionsForColumn)
-                {
-                    <div class="col-options">@col.ColumnOptions</div>
-                }
-            </th>
+            __builder.OpenElement(5, "div");
+            __builder.AddAttribute(6, "class", "col-header-content");
+            __builder.AddContent(7, col.HeaderContent);
+            __builder.CloseElement();
+
+            if (col == _displayOptionsForColumn)
+            {
+                __builder.OpenElement(8, "div");
+                __builder.AddAttribute(9, "class", "col-options");
+                __builder.AddContent(10, col.ColumnOptions);
+                __builder.CloseElement();
+            }
+
+            __builder.CloseElement();
         }
     }
 }
