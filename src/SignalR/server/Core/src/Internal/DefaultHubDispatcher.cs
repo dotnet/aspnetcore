@@ -808,12 +808,12 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
     private static Activity? StartActivity(HubConnectionContext connectionContext, IServiceProvider serviceProvider, string methodName)
     {
-        if (serviceProvider.GetService<SignalRActivitySource>() is SignalRActivitySource signalRActivitySource
+        if (serviceProvider.GetService<SignalRServerActivitySource>() is SignalRServerActivitySource signalRActivitySource
             && signalRActivitySource.ActivitySource.HasListeners())
         {
             var requestContext = connectionContext.OriginalActivity?.Context;
 
-            return signalRActivitySource.ActivitySource.StartActivity($"{_fullHubName}/{methodName}", ActivityKind.Server, parentId: null,
+            var activity = signalRActivitySource.ActivitySource.CreateActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, parentId: null,
                 // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#server-attributes
                 tags: [
                     new("rpc.method", methodName),
@@ -824,6 +824,13 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                     //new("server.address", ...),
                     ],
                 links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
+            if (activity != null)
+            {
+                activity.DisplayName = $"{_fullHubName}/{methodName}";
+                activity.Start();
+            }
+
+            return activity;
         }
 
         return null;
