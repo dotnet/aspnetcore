@@ -84,6 +84,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         break;
                     }
                 }
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("p", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(global::System.Int32), contentTypes: GeneratedMetadataConstants.JsonContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
@@ -334,6 +336,33 @@ namespace Microsoft.AspNetCore.Http.Generated
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+    %GENERATEDCODEATTRIBUTE%
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
+    {
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
+
+        public string Name { get; }
+
+        public bool HasTryParse { get; }
+
+        public bool HasBindAsync { get; }
+
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
+    }
 
     %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper

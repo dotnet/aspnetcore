@@ -154,10 +154,11 @@ internal sealed class HostingApplicationDiagnostics
 
             if (context.MetricsEnabled)
             {
-                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
-                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-
                 Debug.Assert(context.MetricsTagsFeature != null, "MetricsTagsFeature should be set if MetricsEnabled is true.");
+
+                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var disableHttpRequestDurationMetric = endpoint?.Metadata.GetMetadata<IDisableHttpMetricsMetadata>() != null || context.MetricsTagsFeature.MetricsDisabled;
+                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
 
                 _metrics.RequestEnd(
                     context.MetricsTagsFeature.Protocol!,
@@ -169,7 +170,8 @@ internal sealed class HostingApplicationDiagnostics
                     exception,
                     context.MetricsTagsFeature.TagsList,
                     startTimestamp,
-                    currentTimestamp);
+                    currentTimestamp,
+                    disableHttpRequestDurationMetric);
             }
 
             if (reachedPipelineEnd)
@@ -208,7 +210,10 @@ internal sealed class HostingApplicationDiagnostics
         }
 
         var activity = context.Activity;
-        // Always stop activity if it was started
+        // Always stop activity if it was started.
+        // The HTTP activity must be stopped after the HTTP request duration metric is recorded.
+        // This order means the activity is ongoing while the metric is recorded and libraries like OTEL
+        // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
             StopActivity(httpContext, activity, context.HasDiagnosticListener);
@@ -430,28 +435,33 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
+        // The trace id was successfully extracted, so we can set the trace state
+        // https://www.w3.org/TR/trace-context/#tracestate-header
         if (!string.IsNullOrEmpty(requestId))
         {
             if (!string.IsNullOrEmpty(traceState))
             {
                 activity.TraceStateString = traceState;
             }
-            var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
-            {
-                fieldValues = default;
-                var headers = (IHeaderDictionary)carrier!;
-                fieldValue = headers[fieldName];
-            });
+        }
 
-            // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-            // By contract, the propagator has already reversed the order of items so we need not reverse it again
-            // Order could be important if baggage has two items with the same key (that is allowed by the contract)
-            if (baggage is not null)
+        // Baggage can be used regardless of whether a distributed trace id was present on the inbound request.
+        // https://www.w3.org/TR/baggage/#abstract
+        var baggage = _propagator.ExtractBaggage(headers, static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+        {
+            fieldValues = default;
+            var headers = (IHeaderDictionary)carrier!;
+            fieldValue = headers[fieldName];
+        });
+
+        // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+        // By contract, the propagator has already reversed the order of items so we need not reverse it again
+        // Order could be important if baggage has two items with the same key (that is allowed by the contract)
+        if (baggage is not null)
+        {
+            foreach (var baggageItem in baggage)
             {
-                foreach (var baggageItem in baggage)
-                {
-                    activity.AddBaggage(baggageItem.Key, baggageItem.Value);
-                }
+                activity.AddBaggage(baggageItem.Key, baggageItem.Value);
             }
         }
 

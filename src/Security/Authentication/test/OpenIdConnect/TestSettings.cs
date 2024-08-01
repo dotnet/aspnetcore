@@ -26,13 +26,17 @@ internal class TestSettings
     {
     }
 
-    public TestSettings(Action<OpenIdConnectOptions> configure)
+    public TestSettings(Action<OpenIdConnectOptions> configure, HttpMessageHandler backchannel = null)
     {
+        if (backchannel == null)
+        {
+            backchannel = new MockBackchannel();
+        }
         _configureOptions = o =>
         {
             configure?.Invoke(o);
             _options = o;
-            _options.BackchannelHttpHandler = new MockBackchannel();
+            _options.BackchannelHttpHandler = backchannel;
         };
     }
 

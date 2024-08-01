@@ -18,14 +18,19 @@
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
     <script src="_content/TestContentPackage/counterInterop.js"></script>
     <script>
-        function appendHiddenParagraph(id) {
-            const paragraph = document.createElement('p');
-            paragraph.id = id;
-            paragraph.style = 'display: none;';
-            document.body.appendChild(paragraph);
+        // This is called by the Components.WasmMinimal project.
+        function getQueryParam(key) {
+            return new URLSearchParams(location.search).get(key);
         }
 
         function callBlazorStart() {
+            function appendHiddenParagraph(id) {
+                const paragraph = document.createElement('p');
+                paragraph.id = id;
+                paragraph.style = 'display: none;';
+                document.body.appendChild(paragraph);
+            }
+
             const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
             const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
@@ -86,6 +91,13 @@
                                     return response;
                                 });
                         }
+                    },
+                },
+                circuit: {
+                    reconnectionOptions: {
+                        // It's easier to test the reconnection logic if we wait a bit
+                        // before attempting to reconnect
+                        retryIntervalMilliseconds: 5000,
                     },
                 },
             }).then(() => appendHiddenParagraph('blazor-started'));

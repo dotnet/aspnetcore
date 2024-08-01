@@ -208,4 +208,9 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> enumerable)
+    {
+        return enumerable == null || !enumerable.Any();
+    }
 }

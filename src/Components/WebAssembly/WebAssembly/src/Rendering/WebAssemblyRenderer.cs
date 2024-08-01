@@ -23,10 +23,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
     private readonly Dispatcher _dispatcher;
+    private readonly ResourceAssetCollection _resourceCollection;
     private readonly IInternalJSImportMethods _jsMethods;
-    private static readonly ComponentPlatform _componentPlatform = new("WebAssembly", isInteractive: true);
+    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
@@ -36,6 +37,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
             ? NullDispatcher.Instance
             : new WebAssemblyDispatcher();
+
+        _resourceCollection = resourceCollection;
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
@@ -80,7 +83,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         _jsMethods.EndUpdateRootComponents(batchId);
     }
 
-    protected override ComponentPlatform ComponentPlatform => _componentPlatform;
+    protected override ResourceAssetCollection Assets => _resourceCollection;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
 
     public override Dispatcher Dispatcher => _dispatcher;
 

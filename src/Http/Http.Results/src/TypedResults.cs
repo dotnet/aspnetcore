@@ -755,12 +755,35 @@ public static class TypedResults
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
     public static ProblemHttpResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return Problem(detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ProblemHttpResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         var problemDetails = new ProblemDetails
         {
@@ -774,17 +797,6 @@ public static class TypedResults
         CopyExtensions(extensions, problemDetails);
 
         return new(problemDetails);
-    }
-
-    private static void CopyExtensions(IDictionary<string, object?>? extensions, ProblemDetails problemDetails)
-    {
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
-        }
     }
 
     /// <summary>
@@ -811,11 +823,34 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
     public static ValidationProblem ValidationProblem(
         IDictionary<string, string[]> errors,
+        string? detail,
+        string? instance,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return ValidationProblem(errors, detail, instance, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response with an <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ValidationProblem ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         ArgumentNullException.ThrowIfNull(errors);
 
@@ -831,6 +866,17 @@ public static class TypedResults
         CopyExtensions(extensions, problemDetails);
 
         return new(problemDetails);
+    }
+
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, ProblemDetails problemDetails)
+    {
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                problemDetails.Extensions.Add(extension);
+            }
+        }
     }
 
     /// <summary>

@@ -17,7 +17,7 @@ public sealed class ExcludeFromDescriptionAttribute : Attribute, IExcludeFromDes
     /// <inheritdoc />
     public bool ExcludeFromDescription => true;
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(ExcludeFromDescription), ExcludeFromDescription);

@@ -83,10 +83,11 @@ public class TestingInfrastructureInheritanceTests
     {
         // Arrange
         using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
-        var sink = factory.Services.GetRequiredService<DisposableService>();
+        using var scope = factory.Services.CreateAsyncScope();
+        var sink = scope.ServiceProvider.GetRequiredService<DisposableService>();
 
         // Act
-        await factory.DisposeAsync();
+        await scope.DisposeAsync();
 
         // Assert
         Assert.True(sink._asyncDisposed);
@@ -97,10 +98,11 @@ public class TestingInfrastructureInheritanceTests
     {
         // Arrange
         using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
-        var sink = factory.Services.GetRequiredService<DisposableService>();
+        using var scope = factory.Services.CreateScope();
+        var sink = scope.ServiceProvider.GetRequiredService<DisposableService>();
 
         // Act
-        factory.Dispose();
+        scope.Dispose();
 
         // Assert
         Assert.True(sink._asyncDisposed);
@@ -110,13 +112,17 @@ public class TestingInfrastructureInheritanceTests
         builder.UseStartup<GenericHostWebSite.Startup>()
         .ConfigureServices(s => s.AddScoped<DisposableService>());
 
-    private class DisposableService : IAsyncDisposable
+    private class DisposableService : IAsyncDisposable, IDisposable
     {
         public bool _asyncDisposed = false;
         public ValueTask DisposeAsync()
         {
             _asyncDisposed = true;
             return ValueTask.CompletedTask;
+        }
+        public void Dispose()
+        {
+            _asyncDisposed = true;
         }
     }
 

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -236,7 +235,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         {
             var endpoint = endpoints[i];
             var metadata = GetMetadataValue(endpoint) ?? DefaultNegotiationValue;
-            if (!edges.TryGetValue(metadata, out var endpointsForType))
+            if (!edges.TryGetValue(metadata, out var _))
             {
                 edges.Add(metadata, []);
             }
@@ -286,11 +285,21 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         {
             result[index] = new PolicyNodeEdge(
                 // Metadata quality is 0 for the edges that don't have metadata as we prefer serving from the endpoints that have metadata
-                new NegotiationEdgeKey(kvp.Key, kvp.Value.Select(e => GetMetadataQuality(e) ?? 0).ToArray()),
+                new NegotiationEdgeKey(kvp.Key, CalculateEndpointQualities(kvp.Value)),
                 kvp.Value);
             index++;
         }
 
+        return result;
+    }
+
+    private double[] CalculateEndpointQualities(List<Endpoint> values)
+    {
+        var result = new double[values.Count];
+        for (var i = 0; i < values.Count; i++)
+        {
+            result[i] = GetMetadataQuality(values[i]) ?? 0;
+        }
         return result;
     }
 
@@ -326,7 +335,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         {
             var e = edges[i];
             var key = (NegotiationEdgeKey)e.State;
-            destinations[i] = (negotiationValue: key.NegotiationValue, quality: key.EndpointsQuality.Max(), destination: e.Destination);
+            destinations[i] = (negotiationValue: key.NegotiationValue, quality: Max(key.EndpointsQuality), destination: e.Destination);
         }
 
         // If any edge matches all negotiation values, then treat that as the 'exit'. This will
@@ -345,6 +354,22 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         }
 
         return CreateTable(exitDestination, destinations, noNegotiationHeaderDestination);
+    }
+
+    private static double Max(double[] endpointsQuality)
+    {
+        if (endpointsQuality.Length == 0)
+        {
+            throw new InvalidOperationException("No quality values found.");
+        }
+
+        var result = endpointsQuality[0];
+        for (var i = 1; i < endpointsQuality.Length; i++)
+        {
+            result = Math.Max(result, endpointsQuality[i]);
+        }
+
+        return result;
     }
 
     private protected abstract NegotiationPolicyJumpTable CreateTable(int exitDestination, (string negotiationValue, double quality, int destination)[] destinations, int noNegotiationHeaderDestination);

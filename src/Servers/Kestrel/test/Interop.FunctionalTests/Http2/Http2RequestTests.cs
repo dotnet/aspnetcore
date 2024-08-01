@@ -89,6 +89,46 @@ public class Http2RequestTests : LoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task GET_LargeResponseHeader_Success(bool largeValue, bool largeKey)
+    {
+        // Arrange
+        var longKey = "key-" + new string('$', largeKey ? 128 * 1024 : 1);
+        var longValue = "value-" + new string('!', largeValue ? 128 * 1024 : 1);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                c.Response.Headers["test"] = "abc";
+                c.Response.Headers[longKey] = longValue;
+                return Task.CompletedTask;
+            },
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient(maxResponseHeadersLength: 1024);
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version20;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response = await client.SendAsync(request1, CancellationToken.None);
+            response.EnsureSuccessStatusCode();
+
+            // Assert
+            Assert.Equal("abc", response.Headers.GetValues("test").Single());
+            Assert.Equal(longValue, response.Headers.GetValues(longKey).Single());
+
+            await host.StopAsync();
+        }
+    }
+
     [Fact]
     public async Task GET_NoTLS_Http11RequestToHttp2Endpoint_400Result()
     {
