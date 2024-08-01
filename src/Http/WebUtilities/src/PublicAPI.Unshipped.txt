@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.ReadOnlySpan<byte> input, System.Span<char> output) -> int

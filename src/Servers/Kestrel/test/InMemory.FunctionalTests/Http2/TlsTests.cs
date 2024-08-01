@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2;
 
@@ -33,6 +35,9 @@ public class TlsTests : LoggedTest
         SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
     public async Task TlsHandshakeRejectsTlsLessThan12()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         await using (var server = new TestServer(context =>
         {
             var tlsFeature = context.Features.Get<ITlsApplicationProtocolFeature>();
@@ -41,7 +46,7 @@ public class TlsTests : LoggedTest
 
             return context.Response.WriteAsync("hello world " + context.Request.Protocol);
         },
-        new TestServiceContext(LoggerFactory),
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
         listenOptions =>
         {
             listenOptions.Protocols = HttpProtocols.Http2;
@@ -71,6 +76,8 @@ public class TlsTests : LoggedTest
                 reader.Complete();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InsufficientTlsVersion, m.Tags));
     }
 
     private async Task WaitForConnectionErrorAsync(PipeReader reader, bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)

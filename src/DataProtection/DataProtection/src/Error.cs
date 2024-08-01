@@ -102,4 +102,9 @@ internal static class Error
     {
         return new InvalidOperationException(Resources.KeyRingProvider_RefreshFailedOnOtherThread, inner);
     }
+
+    public static NotSupportedException XmlKeyManager_DoesNotSupportKeyDeletion()
+    {
+        return new NotSupportedException(Resources.XmlKeyManager_DoesNotSupportKeyDeletion);
+    }
 }

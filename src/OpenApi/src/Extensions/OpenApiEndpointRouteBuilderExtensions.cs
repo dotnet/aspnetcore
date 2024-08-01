@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -49,9 +48,10 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     using var writer = Utf8BufferTextWriter.Get(output);
                     try
                     {
-                        document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                        await context.Response.BodyWriter.WriteAsync(output.ToArray());
-                        await context.Response.BodyWriter.FlushAsync();
+                        document.Serialize(new ScrubbingOpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
+                        context.Response.ContentType = "application/json;charset=utf-8";
+                        await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
+                        await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                     }
                     finally
                     {

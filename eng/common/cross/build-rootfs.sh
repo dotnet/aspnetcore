@@ -30,7 +30,8 @@ __IllumosArch=arm7
 __HaikuArch=arm
 __QEMUArch=arm
 __UbuntuArch=armhf
-__UbuntuRepo="http://ports.ubuntu.com/"
+__UbuntuRepo=
+__UbuntuSuites="updates security backports"
 __LLDB_Package="liblldb-3.9-dev"
 __SkipUnmount=0
 
@@ -71,7 +72,7 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="13.2-RELEASE"
+__FreeBSDBase="13.3-RELEASE"
 __FreeBSDPkg="1.17.0"
 __FreeBSDABI="13"
 __FreeBSDPackages="libunwind"
@@ -129,6 +130,7 @@ __AlpineKeys='
 616db30d:MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnpUpyWDWjlUk3smlWeA0\nlIMW+oJ38t92CRLHH3IqRhyECBRW0d0aRGtq7TY8PmxjjvBZrxTNDpJT6KUk4LRm\na6A6IuAI7QnNK8SJqM0DLzlpygd7GJf8ZL9SoHSH+gFsYF67Cpooz/YDqWrlN7Vw\ntO00s0B+eXy+PCXYU7VSfuWFGK8TGEv6HfGMALLjhqMManyvfp8hz3ubN1rK3c8C\nUS/ilRh1qckdbtPvoDPhSbTDmfU1g/EfRSIEXBrIMLg9ka/XB9PvWRrekrppnQzP\nhP9YE3x/wbFc5QqQWiRCYyQl/rgIMOXvIxhkfe8H5n1Et4VAorkpEAXdsfN8KSVv\nLSMazVlLp9GYq5SUpqYX3KnxdWBgN7BJoZ4sltsTpHQ/34SXWfu3UmyUveWj7wp0\nx9hwsPirVI00EEea9AbP7NM2rAyu6ukcm4m6ATd2DZJIViq2es6m60AE6SMCmrQF\nwmk4H/kdQgeAELVfGOm2VyJ3z69fQuywz7xu27S6zTKi05Qlnohxol4wVb6OB7qG\nLPRtK9ObgzRo/OPumyXqlzAi/Yvyd1ZQk8labZps3e16bQp8+pVPiumWioMFJDWV\nGZjCmyMSU8V6MB6njbgLHoyg2LCukCAeSjbPGGGYhnKLm1AKSoJh3IpZuqcKCk5C\n8CM1S15HxV78s9dFntEqIokCAwEAAQ==
 '
 __Keyring=
+__KeyringFile="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 __SkipSigCheck=0
 __UseMirror=0
 
@@ -162,6 +164,7 @@ while :; do
             __UbuntuArch=armel
             __UbuntuRepo="http://ftp.debian.org/debian/"
             __CodeName=jessie
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
             ;;
         armv6)
             __BuildArch=armv6
@@ -169,10 +172,12 @@ while :; do
             __QEMUArch=arm
             __UbuntuRepo="http://raspbian.raspberrypi.org/raspbian/"
             __CodeName=buster
+            __KeyringFile="/usr/share/keyrings/raspbian-archive-keyring.gpg"
             __LLDB_Package="liblldb-6.0-dev"
+            __UbuntuSuites=
 
-            if [[ -e "/usr/share/keyrings/raspbian-archive-keyring.gpg" ]]; then
-                __Keyring="--keyring /usr/share/keyrings/raspbian-archive-keyring.gpg"
+            if [[ -e "$__KeyringFile" ]]; then
+                __Keyring="--keyring $__KeyringFile"
             fi
             ;;
         riscv64)
@@ -181,13 +186,8 @@ while :; do
             __AlpinePackages="${__AlpinePackages// lldb-dev/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
-            __UbuntuRepo="http://deb.debian.org/debian"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             unset __LLDB_Package
-
-            if [[ -e "/usr/share/keyrings/debian-archive-keyring.gpg" ]]; then
-                __Keyring="--keyring /usr/share/keyrings/debian-archive-keyring.gpg --include=debian-archive-keyring"
-            fi
             ;;
         ppc64le)
             __BuildArch=ppc64le
@@ -288,8 +288,17 @@ while :; do
                 __CodeName=jammy
             fi
             ;;
+        noble) # Ubuntu 24.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=noble
+            fi
+            if [[ -n "$__LLDB_Package" ]]; then
+                __LLDB_Package="liblldb-18-dev"
+            fi
+            ;;
         jessie) # Debian 8
             __CodeName=jessie
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -298,6 +307,7 @@ while :; do
         stretch) # Debian 9
             __CodeName=stretch
             __LLDB_Package="liblldb-6.0-dev"
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -306,6 +316,7 @@ while :; do
         buster) # Debian 10
             __CodeName=buster
             __LLDB_Package="liblldb-6.0-dev"
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -313,6 +324,15 @@ while :; do
             ;;
         bullseye) # Debian 11
             __CodeName=bullseye
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
+
+            if [[ -z "$__UbuntuRepo" ]]; then
+                __UbuntuRepo="http://ftp.debian.org/debian/"
+            fi
+            ;;
+        bookworm) # Debian 12
+            __CodeName=bookworm
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -320,6 +340,7 @@ while :; do
             ;;
         sid) # Debian sid
             __CodeName=sid
+            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
                 __UbuntuRepo="http://ftp.debian.org/debian/"
@@ -428,6 +449,10 @@ if [[ "$__CodeName" == "xenial" && "$__UbuntuArch" == "armhf" ]]; then
 fi
 
 __UbuntuPackages+=" ${__LLDB_Package:-}"
+
+if [[ -z "$__UbuntuRepo" ]]; then
+    __UbuntuRepo="http://ports.ubuntu.com/"
+fi
 
 if [[ -n "$__LLVM_MajorVersion" ]]; then
     __UbuntuPackages+=" libclang-common-${__LLVM_MajorVersion}${__LLVM_MinorVersion:+.$__LLVM_MinorVersion}-dev"
@@ -580,18 +605,18 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     fi
     echo "Building binutils. Please wait.."
     if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
+        wget -O- https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz | tar -xJf -
     else
-        curl -SL https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
+        curl -SL https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz | tar -xJf -
     fi
     mkdir build-binutils && cd build-binutils
-    ../binutils-2.33.1/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.10" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir"
+    ../binutils-2.42/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.11" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir"
     make -j "$JOBS" && make install && cd ..
     echo "Building gcc. Please wait.."
     if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
+        wget -O- https://ftp.gnu.org/gnu/gcc/gcc-13.3.0/gcc-13.3.0.tar.xz | tar -xJf -
     else
-        curl -SL https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
+        curl -SL https://ftp.gnu.org/gnu/gcc/gcc-13.3.0/gcc-13.3.0.tar.xz | tar -xJf -
     fi
     CFLAGS="-fPIC"
     CXXFLAGS="-fPIC"
@@ -599,7 +624,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     CFLAGS_FOR_TARGET="-fPIC"
     export CFLAGS CXXFLAGS CXXFLAGS_FOR_TARGET CFLAGS_FOR_TARGET
     mkdir build-gcc && cd build-gcc
-    ../gcc-8.4.0/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.10" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir" --with-gnu-as       \
+    ../gcc-13.3.0/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.11" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir" --with-gnu-as       \
         --with-gnu-ld --disable-nls --disable-libgomp --disable-libquadmath --disable-libssp --disable-libvtv --disable-libcilkrts --disable-libada --disable-libsanitizer \
         --disable-libquadmath-support --disable-shared --enable-tls
     make -j "$JOBS" && make install && cd ..
@@ -607,7 +632,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     if [[ "$__UseMirror" == 1 ]]; then
         BaseUrl=https://pkgsrc.smartos.skylime.net
     fi
-    BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
+    BaseUrl="$BaseUrl/packages/SmartOS/2019Q4/${__illumosArch}/All"
     echo "Downloading manifest"
     if [[ "$__hasWget" == 1 ]]; then
         wget "$BaseUrl"
@@ -725,8 +750,18 @@ elif [[ -n "$__CodeName" ]]; then
     fi
 
     # shellcheck disable=SC2086
+    echo running debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
     debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
-    cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list"
+
+    mkdir -p "$__RootfsDir/etc/apt/sources.list.d/"
+    cat > "$__RootfsDir/etc/apt/sources.list.d/$__CodeName.sources" <<EOF
+Types: deb
+URIs: $__UbuntuRepo
+Suites: $__CodeName $(echo $__UbuntuSuites | xargs -n 1 | xargs -I {} echo -n "$__CodeName-{} ")
+Components: main universe
+Signed-By: $__KeyringFile
+EOF
+
     chroot "$__RootfsDir" apt-get update
     chroot "$__RootfsDir" apt-get -f -y install
     # shellcheck disable=SC2086

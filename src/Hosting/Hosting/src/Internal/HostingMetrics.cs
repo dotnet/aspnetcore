@@ -29,7 +29,8 @@ internal sealed class HostingMetrics : IDisposable
         _requestDuration = _meter.CreateHistogram<double>(
             "http.server.request.duration",
             unit: "s",
-            description: "Duration of HTTP server requests.");
+            description: "Duration of HTTP server requests.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
     }
 
     // Note: Calling code checks whether counter is enabled.
@@ -41,7 +42,7 @@ internal sealed class HostingMetrics : IDisposable
         _activeRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, string scheme, string method, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, string scheme, string method, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp, bool disableHttpRequestDurationMetric)
     {
         var tags = new TagList();
         InitializeRequestTags(ref tags, scheme, method);
@@ -52,7 +53,7 @@ internal sealed class HostingMetrics : IDisposable
             _activeRequestsCounter.Add(-1, tags);
         }
 
-        if (_requestDuration.Enabled)
+        if (!disableHttpRequestDurationMetric && _requestDuration.Enabled)
         {
             if (TryGetHttpVersion(protocol, out var httpVersion))
             {

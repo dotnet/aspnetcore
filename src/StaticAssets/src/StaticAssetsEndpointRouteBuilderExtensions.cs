@@ -56,7 +56,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
 
         var manifest = ResolveManifest(manifestPath);
 
-        var dataSource = manifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints);
+        var dataSource = StaticAssetsManifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints);
         return dataSource.DefaultBuilder;
     }
 
@@ -89,7 +89,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var environment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        var result = manifest.CreateDataSource(endpoints, "", manifest.Endpoints).DefaultBuilder;
+        var result = StaticAssetsManifest.CreateDataSource(endpoints, "", manifest.Endpoints).DefaultBuilder;
 
         if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
         {

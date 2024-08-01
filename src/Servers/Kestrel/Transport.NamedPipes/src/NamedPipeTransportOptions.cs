@@ -56,9 +56,65 @@ public sealed class NamedPipeTransportOptions
     public bool CurrentUserOnly { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the security information that determines the access control and audit security for pipes.
+    /// Gets or sets the security information that determines the default access control and audit security for pipes.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Defaults to <c>null</c>, which is no pipe security.
+    /// </para>
+    /// <para>
+    /// Configuring <see cref="PipeSecurity"/> sets the default access control and audit security for pipes.
+    /// If per-endpoint security is needed then <see cref="CreateNamedPipeServerStream"/> can be configured
+    /// to create streams with different security settings.</para>
+    /// </remarks>
     public PipeSecurity? PipeSecurity { get; set; }
+
+    /// <summary>
+    /// A function used to create a new <see cref="NamedPipeServerStream"/> to listen with. If
+    /// not set, <see cref="CreateDefaultNamedPipeServerStream" /> is used.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="CreateDefaultNamedPipeServerStream"/>.
+    /// </remarks>
+    public Func<CreateNamedPipeServerStreamContext, NamedPipeServerStream> CreateNamedPipeServerStream { get; set; } = CreateDefaultNamedPipeServerStream;
+
+    /// <summary>
+    /// Creates a default instance of <see cref="NamedPipeServerStream"/> for the given
+    /// <see cref="CreateNamedPipeServerStreamContext"/> that can be used by a connection listener
+    /// to listen for inbound requests.
+    /// </summary>
+    /// <param name="context">A <see cref="CreateNamedPipeServerStreamContext"/>.</param>
+    /// <returns>
+    /// A <see cref="NamedPipeServerStream"/> instance.
+    /// </returns>
+    public static NamedPipeServerStream CreateDefaultNamedPipeServerStream(CreateNamedPipeServerStreamContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (context.PipeSecurity != null)
+        {
+            return NamedPipeServerStreamAcl.Create(
+                context.NamedPipeEndPoint.PipeName,
+                PipeDirection.InOut,
+                NamedPipeServerStream.MaxAllowedServerInstances,
+                PipeTransmissionMode.Byte,
+                context.PipeOptions,
+                inBufferSize: 0, // Buffer in System.IO.Pipelines
+                outBufferSize: 0, // Buffer in System.IO.Pipelines
+                context.PipeSecurity);
+        }
+        else
+        {
+            return new NamedPipeServerStream(
+                context.NamedPipeEndPoint.PipeName,
+                PipeDirection.InOut,
+                NamedPipeServerStream.MaxAllowedServerInstances,
+                PipeTransmissionMode.Byte,
+                context.PipeOptions,
+                inBufferSize: 0,
+                outBufferSize: 0);
+        }
+    }
 
     internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = PinnedBlockMemoryPoolFactory.Create;
 }

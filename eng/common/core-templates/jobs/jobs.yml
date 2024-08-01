@@ -21,7 +21,7 @@ parameters:
     # Optional: Include toolset dependencies in the generated graph files
     includeToolset: false
     
-  # Required: A collection of jobs to run - https://learn.microsoft.com/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+  # Required: A collection of jobs to run - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   jobs: []
 
   # Optional: Override automatically derived dependsOn value for "publish build assets" job
@@ -51,7 +51,7 @@ jobs:
 - ${{ each job in parameters.jobs }}:
   - ${{ if eq(parameters.is1ESPipeline, 'true') }}:
     - template: /eng/common/templates-official/job/job.yml
-      parameters:
+      parameters: 
         # pass along parameters
         ${{ each parameter in parameters }}:
           ${{ if ne(parameter.key, 'jobs') }}:
@@ -66,7 +66,7 @@ jobs:
 
   - ${{ else }}:
     - template: /eng/common/templates/job/job.yml
-      parameters:
+      parameters: 
         # pass along parameters
         ${{ each parameter in parameters }}:
           ${{ if ne(parameter.key, 'jobs') }}:

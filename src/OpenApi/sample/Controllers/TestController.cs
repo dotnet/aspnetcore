@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
+[ApiExplorerSettings(GroupName = "controllers")]
 public class TestController : ControllerBase
 {
     [HttpGet]

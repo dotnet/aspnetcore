@@ -32,7 +32,6 @@ steps:
       '$(MaestroAccessToken)'
       '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
-      '$(akams-client-secret)'
       '$(microsoft-symbol-server-pat)'
       '$(symweb-symbol-server-pat)'
       '$(dn-bot-all-orgs-build-rw-code-rw)'
