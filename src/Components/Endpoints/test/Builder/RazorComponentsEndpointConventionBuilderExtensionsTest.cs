@@ -216,8 +216,10 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         });
     }
 
-    [Fact]
-    public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints()
+    [Theory]
+    [InlineData("/_framework/blazor.web.js")]
+    [InlineData("/_framework/opaque-redirect")]
+    public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints(string frameworkEndpoint)
     {
         // Arrange
         var endpointBuilder = new TestEndpointRouteBuilder();
@@ -228,7 +230,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         {
             if (e is RouteEndpointBuilder rb)
             {
-                if (rb.RoutePattern.RawText == "/_framework/blazor.web.js")
+                if (rb.RoutePattern.RawText == frameworkEndpoint)
                 {
                     rb.Metadata.Add(obj);
                 }
@@ -238,7 +240,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         // Assert
         var endpoints = endpointBuilder.DataSources.Single().Endpoints;
         var webJSEndpoint = Assert.Single(endpoints, e => e.Metadata.Contains(obj));
-        Assert.Equal("/_framework/blazor.web.js", ((RouteEndpoint)webJSEndpoint).RoutePattern.RawText);
+        Assert.Equal(frameworkEndpoint, ((RouteEndpoint)webJSEndpoint).RoutePattern.RawText);
     }
 
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)
