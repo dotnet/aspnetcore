@@ -11,7 +11,7 @@
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <FocusOnNavigate RouteData="@routeData" Selector="#test-element" />
         </Found>
         <NotFound>There's nothing here</NotFound>
     </Router>

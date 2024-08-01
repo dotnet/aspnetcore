@@ -42,6 +42,7 @@ let performingEnhancedPageLoad: boolean;
 let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
+  enhancedNavigationStarted: (method: string) => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -185,6 +186,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListners(internalDestinationHref, interceptedLink);
 
+  // Invoke other enhanced navigation handlers
+  const requestMethod = fetchOptions?.method ?? 'get';
+  navigationEnhancementCallbacks.enhancedNavigationStarted(requestMethod);
+
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
@@ -201,7 +206,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
-      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
+      const isGetRequest = requestMethod === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
@@ -267,7 +272,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           // we can navigate back to (as we don't know if the location supports GET) and we are not able to replicate the Resubmit form?
           // browser behavior.
           // The only case where this is acceptable is when the last content URL, is the same as the URL for the form we posted to.
-          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form's 'action' attribute, or change its method to 'get', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
         } else {
           if (location.href !== currentContentUrl) {
             // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
@@ -301,7 +306,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           retryEnhancedNavAsFullPageLoad(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
-          replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
+          replaceDocumentWithPlainText(`Error: ${requestMethod} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
         }
       }
     },
