@@ -70,10 +70,10 @@ internal static class PathNormalizer
                 }
                 else
                 {
-                    // Not a dot segment e.g. /.a, copy the matched /. and bump the read pointer
-                    slashDot.CopyTo(src[writtenLength..]);
-                    writtenLength += 2;
-                    readPointer = nextIndex;
+                    // Not a dot segment e.g. /.a, copy the matched /. and the next character then bump the read pointer
+                    src.Slice(readPointer, 3).CopyTo(src[writtenLength..]);
+                    writtenLength += 3;
+                    readPointer = nextIndex + 1;
                 }
             }
 
@@ -106,10 +106,9 @@ internal static class PathNormalizer
                 }
                 else
                 {
-                    // Not a dot segment e.g. /.a, copy the /. and bump the read pointer.
-                    slashDot.CopyTo(src[writtenLength..]);
-                    writtenLength += 2;
-                    readPointer = nextIndex;
+                    // Not a dot segment e.g. /.a, copy the remaining part.
+                    src[readPointer..].CopyTo(src[writtenLength..]);
+                    return writtenLength + 3;
                 }
             }
             // Ending with /.
