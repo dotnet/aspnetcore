@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -37,6 +39,9 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user unhandled.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DebuggerDisableUserUnhandledExceptions]
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
         // Important: do not introduce any 'await' statements in this method above the point where we write
@@ -80,6 +85,10 @@ internal partial class EndpointHtmlRenderer
             HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
             await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
             await _httpContext.Response.CompleteAsync();
+
+            // We need to inform the debugger that this exception should be considered user unhandled unlike the NavigationException.
+            // Review: Is this necessary if the method attributed with [DebuggerDisableUserUnhandledExceptions] rethrows like this does?
+            Debugger.BreakForUserUnhandledException(ex);
             throw;
         }
     }
