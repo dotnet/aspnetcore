@@ -116,11 +116,6 @@ public partial class HubConnectionTests : FunctionalTestBase
             {
                 await connection.DisposeAsync().DefaultTimeout();
             }
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
-                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
-                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
-                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
-                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
         }
     }
 
@@ -481,10 +476,6 @@ public partial class HubConnectionTests : FunctionalTestBase
     }
 
     [Theory]
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
-                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
-                    Assert.Equal($"{hubName}/Stream", a.OperationName);
-                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
     [InlineData("json")]
     [InlineData("messagepack")]
     public async Task CanStreamToHubWithIAsyncEnumerableMethodArg(string protocolName)

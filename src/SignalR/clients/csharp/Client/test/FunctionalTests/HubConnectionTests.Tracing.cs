@@ -34,7 +34,7 @@ partial class HubConnectionTests : FunctionalTestBase
         {
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientChannel = Channel.CreateUnbounded<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
@@ -140,16 +140,18 @@ partial class HubConnectionTests : FunctionalTestBase
             Assert.Collection(serverActivities,
                 a =>
                 {
-                    Assert.Equal($"{serverHubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
+                    Assert.Equal($"{serverHubName}/OnConnectedAsync", a.DisplayName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.Equal(ActivityKind.Server, a.Kind);
+                    Assert.Equal(ActivityKind.Internal, a.Kind);
                     Assert.False(a.HasRemoteParent);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
                     Assert.Empty(a.Baggage);
                 },
                 a =>
                 {
-                    Assert.Equal($"{serverHubName}/HelloWorld", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
+                    Assert.Equal($"{serverHubName}/HelloWorld", a.DisplayName);
                     Assert.Equal(clientActivity1.Id, a.ParentId);
                     Assert.Equal(ActivityKind.Server, a.Kind);
                     Assert.True(a.HasRemoteParent);
@@ -160,7 +162,8 @@ partial class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{serverHubName}/HelloWorld", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
+                    Assert.Equal($"{serverHubName}/HelloWorld", a.DisplayName);
                     Assert.Equal(clientActivity2.Id, a.ParentId);
                     Assert.Equal(ActivityKind.Server, a.Kind);
                     Assert.True(a.HasRemoteParent);
@@ -171,9 +174,10 @@ partial class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{serverHubName}/OnDisconnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
+                    Assert.Equal($"{serverHubName}/OnDisconnectedAsync", a.DisplayName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
-                    Assert.Equal(ActivityKind.Server, a.Kind);
+                    Assert.Equal(ActivityKind.Internal, a.Kind);
                     Assert.False(a.HasRemoteParent);
                     Assert.Empty(a.Baggage);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
@@ -225,7 +229,7 @@ partial class HubConnectionTests : FunctionalTestBase
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientActivityTcs = new TaskCompletionSource<Activity>();
             Activity clientActivity = null;
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
@@ -308,9 +312,9 @@ partial class HubConnectionTests : FunctionalTestBase
             Assert.Collection(serverActivities,
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
                     Assert.Equal($"{hubName}/OnConnectedAsync", a.DisplayName);
-                    Assert.Equal(ActivityKind.Server, a.Kind);
+                    Assert.Equal(ActivityKind.Internal, a.Kind);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
                     Assert.False(a.HasRemoteParent);
@@ -319,7 +323,7 @@ partial class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/Stream", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
                     Assert.Equal($"{hubName}/Stream", a.DisplayName);
                     Assert.Equal(ActivityKind.Server, a.Kind);
                     Assert.Equal(clientActivity.Id, a.ParentId);
@@ -332,9 +336,9 @@ partial class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
                     Assert.Equal($"{hubName}/OnDisconnectedAsync", a.DisplayName);
-                    Assert.Equal(ActivityKind.Server, a.Kind);
+                    Assert.Equal(ActivityKind.Internal, a.Kind);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
                     Assert.False(a.HasRemoteParent);
@@ -371,7 +375,7 @@ partial class HubConnectionTests : FunctionalTestBase
         {
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientActivityTcs = new TaskCompletionSource<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
@@ -447,7 +451,7 @@ partial class HubConnectionTests : FunctionalTestBase
                     var tags = clientActivity.TagObjects.ToDictionary();
                     Assert.Equal(typeof(OperationCanceledException).FullName, tags["error.type"]);
                 },
-                a => Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName));
+                a => Assert.Equal($"{hubName}/OnDisconnectedAsync", a.DisplayName));
 
             Assert.Equal($"{clientHubName}/Stream", clientActivity.DisplayName);
             Assert.Equal(ActivityKind.Client, clientActivity.Kind);
@@ -474,7 +478,7 @@ partial class HubConnectionTests : FunctionalTestBase
         {
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientActivityTcs = new TaskCompletionSource<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
@@ -570,7 +574,7 @@ partial class HubConnectionTests : FunctionalTestBase
         {
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientActivityTcs = new TaskCompletionSource<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
@@ -660,7 +664,7 @@ partial class HubConnectionTests : FunctionalTestBase
         {
             var serverChannel = Channel.CreateUnbounded<Activity>();
             var clientActivityTcs = new TaskCompletionSource<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
             var clientSourceContainer = new SignalRClientActivitySource();
 
             using var listener = new ActivityListener
