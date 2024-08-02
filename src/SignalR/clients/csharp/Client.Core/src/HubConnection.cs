@@ -1037,6 +1037,7 @@ public partial class HubConnection : IAsyncDisposable
 
         // Client invocations are always blocking
         var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, args, streams);
+        InjectHeaders(invocationMessage);
 
         Log.RegisteringInvocation(_logger, irq.InvocationId);
         connectionState.AddInvocation(irq);
@@ -1063,6 +1064,7 @@ public partial class HubConnection : IAsyncDisposable
         Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName!, args.Length);
 
         var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, args, streams);
+        InjectHeaders(invocationMessage);
 
         Log.RegisteringInvocation(_logger, irq.InvocationId);
 
@@ -1080,6 +1082,25 @@ public partial class HubConnection : IAsyncDisposable
             Log.FailedToSendInvocation(_logger, irq.InvocationId, ex);
             connectionState.TryRemoveInvocation(irq.InvocationId, out _);
             irq.Fail(ex);
+        }
+    }
+
+    private static void InjectHeaders(HubInvocationMessage invocationMessage)
+    {
+        // TODO: Change when SignalR client has an activity.
+        // This sends info about the current activity, regardless of the activity source, to the SignalR server.
+        // When SignalR client supports client activities this logic should be updated to only send headers
+        // if the SignalR client activity is created. The goal is to match the behavior of distributed tracing in HttpClient.
+        if (Activity.Current is { } currentActivity)
+        {
+            DistributedContextPropagator.Current.Inject(currentActivity, invocationMessage, static (carrier, key, value) =>
+            {
+                if (carrier is HubInvocationMessage invocationMessage)
+                {
+                    invocationMessage.Headers ??= new Dictionary<string, string>();
+                    invocationMessage.Headers[key] = value;
+                }
+            });
         }
     }
 
