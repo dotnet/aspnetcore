@@ -14,6 +14,21 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Encodes HTTP/2 stream responses as frames and sends them over the wire.
+/// </summary>
+/// <remarks>
+/// Owned by <see cref="Http2Connection"/>.
+///
+/// Since a connection has multiple streams, this class maintains a <see cref="Channel{T}"/> (i.e. bounded queue)
+/// of <see cref="Http2OutputProducer"/> instances (each of which is owned by a stream) that want to write frames.
+///
+/// Reuses a single <see cref="Http2Frame"/>, which it populates based on the next <see cref="Http2OutputProducer"/>
+/// (and corresponding <see cref="Http2Stream{TContext}"/>) and then serializes to binary in
+/// <see cref="WriteToOutputPipe"/>.
+///
+/// Tracks the outgoing connection window size while <see cref="Http2OutputProducer"/> tracks the stream window size.
+/// </remarks>
 internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
