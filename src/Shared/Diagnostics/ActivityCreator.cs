@@ -16,6 +16,7 @@ internal static class ActivityCreator
         object distributedContextCarrier,
         DistributedContextPropagator.PropagatorGetterCallback propagatorGetter,
         string activityName,
+        ActivityKind kind,
         IEnumerable<KeyValuePair<string, object?>>? tags,
         IEnumerable<ActivityLink>? links,
         bool diagnosticsOrLoggingEnabled)
@@ -38,12 +39,12 @@ internal static class ActivityCreator
                 // takes a string parentId never sets HasRemoteParent to true. We work around that by calling the
                 // ActivityContext overload instead which sets HasRemoteParent to parentContext.IsRemote.
                 // https://github.com/dotnet/aspnetcore/pull/41568#discussion_r868733305
-                activity = activitySource.CreateActivity(activityName, ActivityKind.Server, context, tags: tags, links: links);
+                activity = activitySource.CreateActivity(activityName, kind, context, tags: tags, links: links);
             }
             else
             {
                 // Pass in the ID we got from the headers if there was one.
-                activity = activitySource.CreateActivity(activityName, ActivityKind.Server, string.IsNullOrEmpty(requestId) ? null : requestId, tags: tags, links: links);
+                activity = activitySource.CreateActivity(activityName, kind, string.IsNullOrEmpty(requestId) ? null : requestId, tags: tags, links: links);
             }
         }
 

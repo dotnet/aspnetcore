@@ -92,7 +92,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
 
-            activity = StartActivity(connection.OriginalActivity, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger);
 
             if (_onConnectedMiddleware != null)
             {
@@ -127,7 +127,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         {
             InitializeHub(hub, connection);
 
-            activity = StartActivity(connection.OriginalActivity, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger);
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -404,7 +404,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                         // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
-                        var activity = StartActivity(connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger);
+                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger);
 
                         object? result;
                         try
@@ -522,7 +522,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             Activity.Current = null;
         }
 
-        var activity = StartActivity(connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger);
+        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger);
 
         try
         {
@@ -831,9 +831,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     // Starts an Activity for a Hub method invocation and sets up all the tags and other state.
     // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
-    private static Activity? StartActivity(Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger)
+    private static Activity? StartActivity(string operationName, ActivityKind kind, Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger)
     {
-        var activitySource = serviceProvider.GetService<SignalRActivitySource>()?.ActivitySource;
+        var activitySource = serviceProvider.GetService<SignalRServerActivitySource>()?.ActivitySource;
         if (activitySource is null)
         {
             return null;
@@ -871,14 +871,15 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                     var headers = (IDictionary<string, string>)carrier!;
                     headers.TryGetValue(fieldName, out fieldValue);
                 },
-                SignalRServerActivitySource.InvocationIn,
+                operationName,
+                kind,
                 tags,
                 links,
                 loggingEnabled);
         }
         else
         {
-            activity = activitySource.CreateActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, parentId: null, tags: tags, links: links);
+            activity = activitySource.CreateActivity(operationName, kind, parentId: null, tags: tags, links: links);
         }
 
         if (activity is not null)

@@ -12,6 +12,8 @@ internal sealed class SignalRServerActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.SignalR.Server";
     internal const string InvocationIn = $"{Name}.InvocationIn";
+    internal const string OnConnected = $"{Name}.OnConnected";
+    internal const string OnDisconnected = $"{Name}.OnDisconnected";
 
     public ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 }

@@ -401,6 +401,7 @@ internal sealed class HostingApplicationDiagnostics
                 fieldValue = headers[fieldName];
             },
             ActivityName,
+            ActivityKind.Server,
             tags: null,
             links: null,
             loggingEnabled || diagnosticListenerActivityCreationEnabled);

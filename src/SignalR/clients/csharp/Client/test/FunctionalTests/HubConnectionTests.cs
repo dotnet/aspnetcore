@@ -123,7 +123,7 @@ public class HubConnectionTests : FunctionalTestBase
         await using (var server = await StartServer<Startup>())
         {
             var channel = Channel.CreateUnbounded<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -201,14 +201,14 @@ public class HubConnectionTests : FunctionalTestBase
             Assert.Collection(activities,
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.False(a.HasRemoteParent);
                     Assert.Empty(a.Baggage);
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
                     Assert.Equal(clientActivity1.Id, a.ParentId);
                     Assert.True(a.HasRemoteParent);
                     Assert.Collection(a.Baggage,
@@ -220,7 +220,7 @@ public class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/HelloWorld", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
                     Assert.Equal(clientActivity2.Id, a.ParentId);
                     Assert.True(a.HasRemoteParent);
                     Assert.Collection(a.Baggage,
@@ -232,7 +232,7 @@ public class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.False(a.HasRemoteParent);
                     Assert.Empty(a.Baggage);
@@ -604,7 +604,7 @@ public class HubConnectionTests : FunctionalTestBase
         await using (var server = await StartServer<Startup>())
         {
             var channel = Channel.CreateUnbounded<Activity>();
-            var serverSource = server.Services.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -660,14 +660,14 @@ public class HubConnectionTests : FunctionalTestBase
             Assert.Collection(activities,
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnConnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnConnected, a.OperationName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.False(a.HasRemoteParent);
                     Assert.Empty(a.Baggage);
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/Stream", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.InvocationIn, a.OperationName);
                     Assert.Equal(clientActivity.Id, a.ParentId);
                     Assert.True(a.HasRemoteParent);
                     Assert.Collection(a.Baggage,
@@ -679,7 +679,7 @@ public class HubConnectionTests : FunctionalTestBase
                 },
                 a =>
                 {
-                    Assert.Equal($"{hubName}/OnDisconnectedAsync", a.OperationName);
+                    Assert.Equal(SignalRServerActivitySource.OnDisconnected, a.OperationName);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.False(a.HasRemoteParent);
                     Assert.Empty(a.Baggage);

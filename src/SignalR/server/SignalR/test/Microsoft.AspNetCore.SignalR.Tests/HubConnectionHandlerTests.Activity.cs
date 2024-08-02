@@ -51,7 +51,7 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), mockHttpRequestActivity);
+                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 await client.SendInvocationAsync(nameof(MethodHub.Echo), "test").DefaultTimeout();
 
@@ -83,7 +83,7 @@ public partial class HubConnectionHandlerTests
             }
 
             Assert.Equal(6, activities.Count);
-            AssertHubMethodActivity<MethodHub>(activities[5], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), mockHttpRequestActivity);
+            AssertHubMethodActivity<MethodHub>(activities[5], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -103,7 +103,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -125,7 +125,7 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), mockHttpRequestActivity);
+                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 var headers = new Dictionary<string, string>
                 {
@@ -156,7 +156,7 @@ public partial class HubConnectionHandlerTests
             }
 
             Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity<MethodHub>(activities[2], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), mockHttpRequestActivity);
+            AssertHubMethodActivity<MethodHub>(activities[2], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -197,7 +197,7 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), mockHttpRequestActivity);
+                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 _ = await client.StreamAsync(nameof(StreamingHub.CounterChannel), 3).DefaultTimeout();
 
@@ -215,7 +215,7 @@ public partial class HubConnectionHandlerTests
             }
 
             Assert.Equal(4, activities.Count);
-            AssertHubMethodActivity<StreamingHub>(activities[3], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), mockHttpRequestActivity);
+            AssertHubMethodActivity<StreamingHub>(activities[3], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -232,7 +232,7 @@ public partial class HubConnectionHandlerTests
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
             }, LoggerFactory);
-            var signalrSource = serviceProvider.GetRequiredService<SignalRActivitySource>().ActivitySource;
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
 
             using var listener = new ActivityListener
             {
@@ -256,7 +256,7 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), mockHttpRequestActivity);
+                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 var headers = new Dictionary<string, string>
                 {
@@ -283,7 +283,7 @@ public partial class HubConnectionHandlerTests
             }
 
             Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity<StreamingHub>(activities[2], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), mockHttpRequestActivity);
+            AssertHubMethodActivity<StreamingHub>(activities[2], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -329,7 +329,7 @@ public partial class HubConnectionHandlerTests
 
                 var activity = Assert.Single(activities);
                 AssertHubMethodActivity<OnConnectedThrowsHub>(activity, mockHttpRequestActivity, nameof(OnConnectedThrowsHub.OnConnectedAsync),
-                    mockHttpRequestActivity, exceptionType: typeof(InvalidOperationException));
+                    linkedActivity: null, exceptionType: typeof(InvalidOperationException), activityName: SignalRServerActivitySource.OnConnected);
             }
         }
     }
@@ -381,7 +381,7 @@ public partial class HubConnectionHandlerTests
             Assert.Equal(2, activities.Count);
             var activity = activities[1];
             AssertHubMethodActivity<OnDisconnectedThrowsHub>(activity, mockHttpRequestActivity, nameof(OnDisconnectedThrowsHub.OnDisconnectedAsync),
-                mockHttpRequestActivity, exceptionType: typeof(InvalidOperationException));
+                linkedActivity: null, exceptionType: typeof(InvalidOperationException), activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -485,12 +485,12 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    private static void AssertHubMethodActivity<THub>(Activity activity, Activity parent, string methodName, Activity httpActivity, Type exceptionType = null)
+    private static void AssertHubMethodActivity<THub>(Activity activity, Activity parent, string methodName, Activity linkedActivity, Type exceptionType = null, string activityName = null)
     {
         Assert.Equal(parent, activity.Parent);
         Assert.True(activity.IsStopped);
         Assert.Equal(SignalRServerActivitySource.Name, activity.Source.Name);
-        Assert.Equal(SignalRServerActivitySource.InvocationIn, activity.OperationName);
+        Assert.Equal(activityName ?? SignalRServerActivitySource.InvocationIn, activity.OperationName);
         Assert.Equal($"{typeof(THub).FullName}/{methodName}", activity.DisplayName);
 
         var tags = activity.Tags.ToArray();
@@ -515,6 +515,9 @@ public partial class HubConnectionHandlerTests
         Assert.Equal(typeof(THub).FullName, tags[2].Value);
 
         // Linked to original http request span
-        Assert.Equal(httpActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
+        if (linkedActivity != null)
+        {
+            Assert.Equal(linkedActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
+        }
     }
 }
