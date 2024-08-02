@@ -145,14 +145,14 @@
     <MicrosoftExtensionsDiagnosticsTestingVersion>9.0.0-preview.7.24370.1</MicrosoftExtensionsDiagnosticsTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>9.0.0-preview.7.24370.1</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>9.0.0-preview.7.24377.1</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>9.0.0-preview.7.24377.1</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>9.0.0-preview.7.24402.4</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>9.0.0-preview.7.24402.4</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftCodeAnalysisCommonVersion>4.11.0-1.24218.5</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.11.0-1.24218.5</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
