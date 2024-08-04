@@ -32,7 +32,7 @@ internal sealed class ProjectOptions
         command.Option("--output <Directory>", Resources.OutputDescription);
         command.Option("--openapi-version <Version>", Resources.OpenApiVersionDescription);
         command.Option("--document-name <Name>", Resources.DocumentNameDescription);
-        command.Option("--projectName-override <Name>", Resources.ProjectNameOverrideDescription);
+        command.Option("--file-name-override <Name>", Resources.FileNameDescription);
     }
 
     public void Validate()

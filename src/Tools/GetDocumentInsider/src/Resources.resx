@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -209,7 +209,10 @@
   <data name="VersionedGenerateMethod" xml:space="preserve">
     <value>Using discovered `GenerateAsync` overload with version parameter.</value>
   </data>
-  <data name="ProjectNameOverrideDescription" xml:space="preserve">
-    <value>Custom projectName that replace the default one, used to generate OpenAPI JSON file</value>
+  <data name="FileNameDescription" xml:space="preserve">
+    <value>Custom file name that replace the default one, used to generate OpenAPI JSON file</value>
+  </data>
+  <data name="FileNameFormatInvalid" xml:space="preserve">
+    <value>FileName format invalid, only Alphanumeric and "_ -" authorized</value>
   </data>
 </root>

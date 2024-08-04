@@ -30,10 +30,13 @@ public class GetDocumentCommandContext
     // Generates all documents if not provided.
     public string DocumentName { get; set; }
 
-    //Override the default projectName
-    //By default if document name == v1 => output = projectName.json
-    //else projectName_documentName.json
-    public string ProjectNameOverride { get; set; }
+    /// <summary>
+    /// The name of the generated OpenAPI document.
+    /// When the default document (v1) is generated, this maps
+    /// to {FileName}.json. For custom file names, this maps to
+    /// {FileName}_{DocumentName}.json.
+    /// </summary>
+    public string FileName { get; set; }
 
     public IReporter Reporter { get; set; }
 }
