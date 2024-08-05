@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.HttpSys.Internal;
+namespace Microsoft.AspNetCore.Internal;
 
 internal static class PathNormalizer
 {

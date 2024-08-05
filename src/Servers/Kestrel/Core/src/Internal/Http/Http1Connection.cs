@@ -416,7 +416,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             else
             {
                 var path = target[..pathLength];
-                Path = _parsedPath = PathNormalizer.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength);
+                Path = _parsedPath = PathDecoder.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength);
             }
         }
         catch (InvalidOperationException)
