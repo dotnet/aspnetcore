@@ -51,8 +51,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   const jsEventRegistry = JSEventRegistry.create(Blazor);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
-    enhancedNavigationStarted: (method) => {
-      jsEventRegistry.dispatchEvent('enhancednavigationstart', { method });
+    enhancedNavigationStarted: (resource, options) => {
+      jsEventRegistry.dispatchEvent('enhancednavigationstart', { resource, options });
     },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();

@@ -32,7 +32,7 @@ function afterInitialPageLoad() {
 
 function onEnhancedNavigationStart(ev: EnhancedNavigationStartEvent) {
   // Only focus on enhanced load if the enhanced navigation is not a form post.
-  allowFocusOnEnhancedLoad = ev.method !== 'post';
+  allowFocusOnEnhancedLoad = ev.options.method !== 'post';
 }
 
 function onEnhancedLoad() {

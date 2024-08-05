@@ -5,7 +5,7 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 
 let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
-let enhancedNavigationListener: typeof notifyEnhancedNavigationListners | undefined;
+let enhancedNavigationListener: typeof notifyEnhancedNavigationListeners | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -70,7 +70,7 @@ export function attachEnhancedNavigationListener(listener: typeof enhancedNaviga
   enhancedNavigationListener = listener;
 }
 
-export function notifyEnhancedNavigationListners(internalDestinationHref: string, interceptedLink: boolean) {
+export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean) {
   enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
 }
 

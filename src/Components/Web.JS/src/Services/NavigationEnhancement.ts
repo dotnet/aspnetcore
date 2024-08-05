@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -42,7 +42,7 @@ let performingEnhancedPageLoad: boolean;
 let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
-  enhancedNavigationStarted: (method: string) => void;
+  enhancedNavigationStarted: (resource: string | URL | Request, options: RequestInit) => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -184,17 +184,13 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   currentEnhancedNavigationAbortController?.abort();
 
   // Notify any interactive runtimes that an enhanced navigation is starting
-  notifyEnhancedNavigationListners(internalDestinationHref, interceptedLink);
-
-  // Invoke other enhanced navigation handlers
-  const requestMethod = fetchOptions?.method ?? 'get';
-  navigationEnhancementCallbacks.enhancedNavigationStarted(requestMethod);
+  notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
+  const requestInit = Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
     headers: {
@@ -202,11 +198,16 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // enhanced nav as a MIME type parameter
       'accept': acceptHeader,
     },
-  }, fetchOptions));
+  }, fetchOptions);
+  const responsePromise = fetch(internalDestinationHref, requestInit);
+
+  // Notify handlers that enhanced navigation has started
+  navigationEnhancementCallbacks.enhancedNavigationStarted(internalDestinationHref, requestInit);
+
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
-      const isGetRequest = requestMethod === 'get';
+      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
@@ -306,7 +307,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           retryEnhancedNavAsFullPageLoad(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
-          replaceDocumentWithPlainText(`Error: ${requestMethod} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
+          replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
         }
       }
     },
