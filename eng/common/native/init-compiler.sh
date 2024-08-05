@@ -21,7 +21,7 @@ case "$compiler" in
         majorVersion="${version%%.*}"
 
         # LLVM based on v18 released in early 2024, with two releases per year
-        maxVersion="$((18 + ((($(date +%Y) - 2024) * 12 + $(date +%m) - 3) / 6)))"
+        maxVersion="$((18 + ((($(date +%Y) - 2024) * 12 + $(date +%-m) - 3) / 6)))"
         compiler=clang
         ;;
 
@@ -31,7 +31,7 @@ case "$compiler" in
         majorVersion="${version%%.*}"
 
         # GCC based on v14 released in early 2024, with one release per year
-        maxVersion="$((14 + ((($(date +%Y) - 2024) * 12 + $(date +%m) - 3) / 12)))"
+        maxVersion="$((14 + ((($(date +%Y) - 2024) * 12 + $(date +%-m) - 3) / 12)))"
         compiler=gcc
         ;;
 esac
