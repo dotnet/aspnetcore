@@ -26,7 +26,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.First().Endpoints, e =>
         {
             if (e.Metadata.GetMetadata<ComponentTypeMetadata>() == null)
             {
@@ -50,7 +50,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.Null(metadata);
@@ -69,7 +69,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -90,7 +90,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -112,7 +112,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets();
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -134,7 +134,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -157,7 +157,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
         // Assert
-        Assert.All(endpointBuilder.DataSources.Skip(3).First().Endpoints, e =>
+        Assert.All(endpointBuilder.DataSources.Skip(2).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -183,7 +183,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;
-        Assert.All(groupEndpoints.Skip(2).First().Endpoints, e =>
+        Assert.All(groupEndpoints.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
@@ -209,11 +209,38 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
 
         // Assert
         var groupEndpoints = Assert.IsAssignableFrom<IEndpointRouteBuilder>(group).DataSources;
-        Assert.All(groupEndpoints.Skip(2).First().Endpoints, e =>
+        Assert.All(groupEndpoints.Skip(1).First().Endpoints, e =>
         {
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.Null(metadata);
         });
+    }
+
+    [Theory]
+    [InlineData("/_framework/blazor.web.js")]
+    [InlineData("/_framework/opaque-redirect")]
+    public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints(string frameworkEndpoint)
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        // Act
+        var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
+        var obj = new object();
+        builder.Add(e =>
+        {
+            if (e is RouteEndpointBuilder rb)
+            {
+                if (rb.RoutePattern.RawText == frameworkEndpoint)
+                {
+                    rb.Metadata.Add(obj);
+                }
+            }
+        });
+
+        // Assert
+        var endpoints = endpointBuilder.DataSources.Single().Endpoints;
+        var webJSEndpoint = Assert.Single(endpoints, e => e.Metadata.Contains(obj));
+        Assert.Equal(frameworkEndpoint, ((RouteEndpoint)webJSEndpoint).RoutePattern.RawText);
     }
 
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)

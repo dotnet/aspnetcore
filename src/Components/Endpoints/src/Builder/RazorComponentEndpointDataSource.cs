@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -115,6 +118,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
             DefaultBuilder.OnBeforeCreateEndpoints(endpointContext);
 
+            AddBlazorWebEndpoints(endpoints);
+
             foreach (var definition in context.Pages)
             {
                 _factory.AddEndpoints(
@@ -170,6 +175,78 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 _disposableChangeToken = SetDisposableChangeTokenAction(ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints));
             }
         }
+    }
+
+    private void AddBlazorWebEndpoints(List<Endpoint> endpoints)
+    {
+        List<EndpointBuilder> blazorWebEndpoints = [
+            ..GetBlazorWebJsEndpoint(_endpointRouteBuilder),
+            OpaqueRedirection.GetBlazorOpaqueRedirectionEndpoint()];
+
+        foreach (var endpoint in blazorWebEndpoints)
+        {
+            foreach (var convention in _conventions)
+            {
+                convention(endpoint);
+            }
+
+            foreach (var convention in _finallyConventions)
+            {
+                convention(endpoint);
+            }
+
+            endpoints.Add(endpoint.Build());
+        }
+    }
+
+    private static IEnumerable<EndpointBuilder> GetBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
+    {
+        var app = endpoints.CreateApplicationBuilder();
+
+        var options = new StaticFileOptions
+        {
+            FileProvider = new ManifestEmbeddedFileProvider(typeof(RazorComponentsEndpointRouteBuilderExtensions).Assembly),
+            OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders
+        };
+
+        app.Use(next => context =>
+        {
+            // Set endpoint to null so the static files middleware will handle the request.
+            context.SetEndpoint(null);
+
+            return next(context);
+        });
+
+        app.UseStaticFiles(options);
+
+        var requestDelegate = app.Build();
+
+        var blazorWebJsBuilder = new RouteEndpointBuilder(
+            requestDelegate,
+            RoutePatternFactory.Parse("/_framework/blazor.web.js"),
+            int.MinValue)
+        {
+            DisplayName = "Blazor web static files"
+        };
+
+        var allowedHttpMethods = new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Head]);
+        blazorWebJsBuilder.Metadata.Add(allowedHttpMethods);
+
+#if !DEBUG
+        return [blazorWebJsBuilder];
+#else
+        // We only need to serve the sourcemap when working on the framework, not in the distributed packages
+        var blazorWebJsDebugBuilder = new RouteEndpointBuilder(
+            requestDelegate,
+            RoutePatternFactory.Parse("/_framework/blazor.web.js.map"),
+            int.MinValue)
+        {
+            DisplayName = "Blazor web static files sourcemap"
+        };
+        blazorWebJsDebugBuilder.Metadata.Add(allowedHttpMethods);
+
+        return [blazorWebJsBuilder, blazorWebJsDebugBuilder];
+#endif
     }
 
     public void OnHotReloadClearCache(Type[]? types)
