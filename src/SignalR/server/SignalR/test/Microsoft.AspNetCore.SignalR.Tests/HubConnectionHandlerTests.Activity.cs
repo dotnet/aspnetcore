@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -18,7 +19,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
             var hubMethodTestSource = new TestActivitySource() { ActivitySource = new ActivitySource("test_custom") };
 
@@ -36,7 +37,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, hubMethodTestSource.ActivitySource) || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -50,8 +51,8 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var activity = Assert.Single(activities);
-                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(connectActivity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 await client.SendInvocationAsync(nameof(MethodHub.Echo), "test").DefaultTimeout();
 
@@ -59,31 +60,32 @@ public partial class HubConnectionHandlerTests
                 var res = (string)completionMessage.Result;
                 Assert.Equal("test", res);
 
-                Assert.Equal(2, activities.Count);
-                AssertHubMethodActivity<MethodHub>(activities[1], parent: null, nameof(MethodHub.Echo), mockHttpRequestActivity);
+                var invocation1Activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(invocation1Activity, parent: null, nameof(MethodHub.Echo), mockHttpRequestActivity);
 
                 await client.SendInvocationAsync("RenamedMethod").DefaultTimeout();
                 Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
 
-                Assert.Equal(3, activities.Count);
-                AssertHubMethodActivity<MethodHub>(activities[2], parent: null, "RenamedMethod", mockHttpRequestActivity);
+                var invocation2Activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(invocation2Activity, parent: null, "RenamedMethod", mockHttpRequestActivity);
 
                 await client.SendInvocationAsync(nameof(MethodHub.ActivityMethod)).DefaultTimeout();
                 Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
 
-                Assert.Equal(5, activities.Count);
-                AssertHubMethodActivity<MethodHub>(activities[3], parent: null, nameof(MethodHub.ActivityMethod), mockHttpRequestActivity);
-                Assert.NotNull(activities[4].Parent);
-                Assert.Equal("inner", activities[4].OperationName);
-                Assert.Equal(activities[3], activities[4].Parent);
+                var invocation3Activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(invocation3Activity, parent: null, nameof(MethodHub.ActivityMethod), mockHttpRequestActivity);
+
+                var userCodeActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                Assert.Equal("inner", userCodeActivity.OperationName);
+                Assert.Equal(invocation3Activity, userCodeActivity.Parent);
 
                 client.Dispose();
 
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(6, activities.Count);
-            AssertHubMethodActivity<MethodHub>(activities[5], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
+            var disconnectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<MethodHub>(disconnectActivity, mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -92,7 +94,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
             var hubMethodTestSource = new TestActivitySource() { ActivitySource = new ActivitySource("test_custom") };
 
@@ -110,7 +112,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, hubMethodTestSource.ActivitySource) || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -124,8 +126,8 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var activity = Assert.Single(activities);
-                AssertHubMethodActivity<MethodHub>(activity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(connectActivity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 var headers = new Dictionary<string, string>
                 {
@@ -140,8 +142,7 @@ public partial class HubConnectionHandlerTests
                 var res = (string)completionMessage.Result;
                 Assert.Equal("test", res);
 
-                Assert.Equal(2, activities.Count);
-                var invocationActivity = activities[1];
+                var invocationActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
                 AssertHubMethodActivity<MethodHub>(invocationActivity, parent: null, nameof(MethodHub.Echo), mockHttpRequestActivity);
 
                 Assert.True(invocationActivity.HasRemoteParent);
@@ -155,8 +156,8 @@ public partial class HubConnectionHandlerTests
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity<MethodHub>(activities[2], mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
+            var disconnectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<MethodHub>(disconnectActivity, mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -165,7 +166,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -180,7 +181,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -196,26 +197,26 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var activity = Assert.Single(activities);
-                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<StreamingHub>(connectActivity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 _ = await client.StreamAsync(nameof(StreamingHub.CounterChannel), 3).DefaultTimeout();
 
-                Assert.Equal(2, activities.Count);
-                AssertHubMethodActivity<StreamingHub>(activities[1], parent: null, nameof(StreamingHub.CounterChannel), mockHttpRequestActivity);
+                var invocation1Activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<StreamingHub>(invocation1Activity, parent: null, nameof(StreamingHub.CounterChannel), mockHttpRequestActivity);
 
                 _ = await client.StreamAsync("RenamedCounterChannel", 3).DefaultTimeout();
 
-                Assert.Equal(3, activities.Count);
-                AssertHubMethodActivity<StreamingHub>(activities[2], parent: null, "RenamedCounterChannel", mockHttpRequestActivity);
+                var invocation2Activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<StreamingHub>(invocation2Activity, parent: null, "RenamedCounterChannel", mockHttpRequestActivity);
 
                 client.Dispose();
 
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(4, activities.Count);
-            AssertHubMethodActivity<StreamingHub>(activities[3], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
+            var disconnectedActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<StreamingHub>(disconnectedActivity, mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -224,7 +225,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -239,7 +240,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -255,8 +256,8 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var activity = Assert.Single(activities);
-                AssertHubMethodActivity<StreamingHub>(activity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<StreamingHub>(connectActivity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
 
                 var headers = new Dictionary<string, string>
                 {
@@ -267,8 +268,7 @@ public partial class HubConnectionHandlerTests
 
                 _ = await client.StreamAsync(nameof(StreamingHub.CounterChannel), streamIds: null, headers: headers, 3).DefaultTimeout();
 
-                Assert.Equal(2, activities.Count);
-                var invocationActivity = activities[1];
+                var invocationActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
                 AssertHubMethodActivity<StreamingHub>(invocationActivity, parent: null, nameof(StreamingHub.CounterChannel), mockHttpRequestActivity);
 
                 Assert.True(invocationActivity.HasRemoteParent);
@@ -282,8 +282,8 @@ public partial class HubConnectionHandlerTests
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity<StreamingHub>(activities[2], mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
+            var disconnectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<StreamingHub>(disconnectActivity, mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
@@ -298,7 +298,7 @@ public partial class HubConnectionHandlerTests
 
         using (StartVerifiableLog(ExpectedErrors))
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -313,7 +313,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -327,7 +327,7 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var activity = Assert.Single(activities);
+                var activity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
                 AssertHubMethodActivity<OnConnectedThrowsHub>(activity, mockHttpRequestActivity, nameof(OnConnectedThrowsHub.OnConnectedAsync),
                     linkedActivity: null, exceptionType: typeof(InvalidOperationException), activityName: SignalRServerActivitySource.OnConnected);
             }
@@ -345,7 +345,7 @@ public partial class HubConnectionHandlerTests
 
         using (StartVerifiableLog(ExpectedErrors))
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -360,7 +360,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -378,7 +378,8 @@ public partial class HubConnectionHandlerTests
                 await connectionHandlerTask.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             }
 
-            Assert.Equal(2, activities.Count);
+            var activities = await serverChannel.Reader.ReadAtLeastAsync(minimumCount: 2);
+
             var activity = activities[1];
             AssertHubMethodActivity<OnDisconnectedThrowsHub>(activity, mockHttpRequestActivity, nameof(OnDisconnectedThrowsHub.OnDisconnectedAsync),
                 linkedActivity: null, exceptionType: typeof(InvalidOperationException), activityName: SignalRServerActivitySource.OnDisconnected);
@@ -396,7 +397,7 @@ public partial class HubConnectionHandlerTests
 
         using (StartVerifiableLog(ExpectedErrors))
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -411,7 +412,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -427,7 +428,8 @@ public partial class HubConnectionHandlerTests
 
                 _ = await client.StreamAsync(nameof(StreamingHub.ExceptionAsyncEnumerable)).DefaultTimeout();
 
-                Assert.Equal(2, activities.Count);
+                var activities = await serverChannel.Reader.ReadAtLeastAsync(minimumCount: 2);
+
                 var activity = activities[1];
                 AssertHubMethodActivity<StreamingHub>(activity, parent: null, nameof(StreamingHub.ExceptionAsyncEnumerable),
                     mockHttpRequestActivity, exceptionType: typeof(Exception));
@@ -446,7 +448,7 @@ public partial class HubConnectionHandlerTests
 
         using (StartVerifiableLog(ExpectedErrors))
         {
-            var activities = new List<Activity>();
+            var serverChannel = Channel.CreateUnbounded<Activity>();
             var testSource = new ActivitySource("test_source");
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
@@ -461,7 +463,7 @@ public partial class HubConnectionHandlerTests
                 ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
                     || ReferenceEquals(activitySource, signalrSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-                ActivityStarted = activities.Add
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
             };
             ActivitySource.AddActivityListener(listener);
 
@@ -477,7 +479,8 @@ public partial class HubConnectionHandlerTests
 
                 _ = await client.InvokeAsync(nameof(MethodHub.MethodThatThrows)).DefaultTimeout();
 
-                Assert.Equal(2, activities.Count);
+                var activities = await serverChannel.Reader.ReadAtLeastAsync(minimumCount: 2);
+
                 var activity = activities[1];
                 AssertHubMethodActivity<MethodHub>(activity, parent: null, nameof(MethodHub.MethodThatThrows),
                     mockHttpRequestActivity, exceptionType: typeof(InvalidOperationException));
