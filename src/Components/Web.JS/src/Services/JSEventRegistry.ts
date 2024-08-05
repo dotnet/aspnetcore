@@ -17,7 +17,6 @@ export interface EnhancedNavigationStartEvent extends BlazorEvent {
 export interface BlazorEventMap {
   'enhancedload': BlazorEvent,
   'enhancednavigationstart': EnhancedNavigationStartEvent,
-  'enhancednavigationend': BlazorEvent,
 }
 
 export class JSEventRegistry {

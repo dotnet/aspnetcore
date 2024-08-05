@@ -60,7 +60,6 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     },
     enhancedNavigationCompleted() {
       rootComponentManager.onEnhancedNavigationCompleted();
-      jsEventRegistry.dispatchEvent('enhancednavigationend', {});
     },
   };
 

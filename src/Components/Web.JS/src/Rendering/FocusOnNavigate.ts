@@ -7,72 +7,75 @@ import { EnhancedNavigationStartEvent, JSEventRegistry } from '../Services/JSEve
 const customElementName = 'blazor-focus-on-navigate';
 const focusOnNavigateRegistrations: FocusOnNavigateRegistration[] = [];
 
+let allowFocusOnEnhancedLoad = false;
+
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   customElements.define(customElementName, FocusOnNavigate);
   jsEventRegistry.addEventListener('enhancednavigationstart', onEnhancedNavigationStart);
-  jsEventRegistry.addEventListener('enhancednavigationend', onEnhancedNavigationEnd);
   jsEventRegistry.addEventListener('enhancedload', onEnhancedLoad);
   document.addEventListener('focusin', onFocusIn);
   document.addEventListener('focusout', onFocusOut);
 
   // Focus the element on the initial page load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryApplyFocus);
+    allowFocusOnEnhancedLoad = true;
+    document.addEventListener('DOMContentLoaded', afterInitialPageLoad);
   } else {
-    tryApplyFocus();
+    afterInitialPageLoad();
   }
 }
 
-let shouldFocusOnEnhancedLoad = false;
-let isNavigating = false;
+function afterInitialPageLoad() {
+  tryApplyFocus(/* forceMoveFocus */ false);
+}
 
 function onEnhancedNavigationStart(ev: EnhancedNavigationStartEvent) {
   // Only focus on enhanced load if the enhanced navigation is not a form post.
-  shouldFocusOnEnhancedLoad = ev.method !== 'post';
-  isNavigating = true;
-}
-
-function onEnhancedNavigationEnd() {
-  isNavigating = false;
+  allowFocusOnEnhancedLoad = ev.method !== 'post';
 }
 
 function onEnhancedLoad() {
-  if (shouldFocusOnEnhancedLoad) {
-    tryApplyFocus();
+  if (allowFocusOnEnhancedLoad) {
+    tryApplyFocus(/* forceMoveFocus */ true);
   }
 }
 
 function onFocusIn() {
   // As soon as an element get successfully focused, don't attempt to focus again on future
   // enhanced page updates.
-  shouldFocusOnEnhancedLoad = false;
+  allowFocusOnEnhancedLoad = false;
 }
+
+let lastFocusedElement: Element | null = null;
 
 function onFocusOut(ev: FocusEvent) {
   // It's possible that the element lost focus because it was removed from the page,
   // and now the document doesn't have an active element.
-  // There are two variations of this case that we care about:
-  // [1] This happens during enhanced navigation. In this case, we'll attempt to re-apply focus to
-  //     the element specified by the active <blazor-focus-on-navigate>, because we're still navigating.
-  // [2] This happens after an enhanced navigation. One common cause of this is when the focused element
-  //     gets replaced in the transition to interactivity. In this case, we'll only attempt to re-apply
-  //     focus if the removed element is the same one we manually applied focus to.
+  // This could have happened either because an enhanced page update removed the element or
+  // because the focused element was replaced during the transition to interactivity
+  // (see https://github.com/dotnet/aspnetcore/issues/42561).
+  // In either case, we'll attempt to reapply focus only if:
+  // [1] that element was the one we last focused programmatically, and
+  // [2] it's about to get removed from the DOM.
   const target = ev.target;
-  if (target instanceof Element && (isNavigating || target === lastFocusedElement)) {
+  if (target instanceof Element && target === lastFocusedElement) {
     // We want to apply focus after all synchronous changes to the DOM have completed,
     // including the potential removal of this element.
     setTimeout(() => {
-      const documentHasNoFocusedElement = document.activeElement === null || document.activeElement === document.body;
-      if (documentHasNoFocusedElement && !document.contains(target)) {
-        tryApplyFocus();
+      if (!document.contains(target)) {
+        tryApplyFocus(/* forceMoveFocus */ false);
       }
     }, 0);
   }
 }
 
-let lastFocusedElement: Element | null = null;
+function tryApplyFocus(forceMoveFocus: boolean) {
+  // Don't apply focus if there's already a focused element and 'forceMoveFocus' is false.
+  // See also: https://developer.mozilla.org/docs/Web/API/Document/activeElement#value
+  if (!forceMoveFocus && document.activeElement !== null && document.activeElement !== document.body) {
+    return;
+  }
 
-function tryApplyFocus() {
   lastFocusedElement = null;
 
   const selector = findActiveSelector();

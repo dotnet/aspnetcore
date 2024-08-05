@@ -11,10 +11,16 @@
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="#test-element" />
+            <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
         </Found>
         <NotFound>There's nothing here</NotFound>
     </Router>
+    <script>
+        const elementToFocus = document.querySelector('[data-focus-on-load]');
+        if (elementToFocus) {
+            elementToFocus.focus();
+        }
+    </script>
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
     <script src="_content/TestContentPackage/counterInterop.js"></script>
     <script>
