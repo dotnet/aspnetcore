@@ -61,7 +61,7 @@ internal class Teacher : Person
 }
 
 // Type hierarchy for validating non-abstract base-type that is not explicitly
-// registered as a derived type. This should produce an OpenAPI schema with
+// registered as its own derived type. This should produce an OpenAPI schema with
 // `anyOf` set and no `discriminator` property.
 [JsonDerivedType(typeof(PaintColor), typeDiscriminator: "paint")]
 [JsonDerivedType(typeof(FabricColor), typeDiscriminator: "fabric")]
@@ -80,7 +80,7 @@ internal class FabricColor : Color
 }
 
 // Type hierarchy for validating non-abstract base type that is
-// explicitly defined as a derived type. This should produce an OpenAPI
+// explicitly defined as its own derived type. This should produce an OpenAPI
 // with `discriminator` property.
 [JsonDerivedType(typeof(Cat), typeDiscriminator: "cat")]
 [JsonDerivedType(typeof(Dog), typeDiscriminator: "dog")]
@@ -118,3 +118,18 @@ internal class Plant : Organism
 {
     public bool IsEdible { get; set; }
 }
+
+// Type hierarchy for validating polymorphic types with self-references.
+[JsonDerivedType(typeof(Manager), typeDiscriminator: "manager")]
+[JsonDerivedType(typeof(Employee), typeDiscriminator: "employee")]
+internal class Employee
+{
+    public required string Name { get; set; }
+    public required Employee Manager { get; set; }
+}
+
+internal class Manager : Employee
+{
+    public required string Department { get; set; }
+}
+

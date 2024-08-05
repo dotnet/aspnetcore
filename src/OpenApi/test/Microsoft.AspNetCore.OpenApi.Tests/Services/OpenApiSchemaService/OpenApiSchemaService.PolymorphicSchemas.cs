@@ -251,7 +251,49 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.True(document.Components.Schemas.TryGetValue("OrganismPlant", out var plantSchema));
             Assert.DoesNotContain("$type", plantSchema.Properties.Keys);
             Assert.True(document.Components.Schemas.TryGetValue("OrganismBase", out var baseSchema));
-            Assert.DoesNotContain("$type", plantSchema.Properties.Keys);
+            Assert.DoesNotContain("$type", baseSchema.Properties.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Employee color) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+            Assert.Equal("Employee", mediaType.Schema.Reference.Id);
+            var schema = mediaType.Schema.GetEffective(document);
+            // Assert that discriminator mappings are configured correctly for type.
+            Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("manager", item.Key),
+                item => Assert.Equal("employee", item.Key)
+            );
+            Assert.Collection(schema.Discriminator.Mapping,
+                item => Assert.Equal("#/components/schemas/EmployeeManager", item.Value),
+                item => Assert.Equal("#/components/schemas/EmployeeEmployee", item.Value)
+            );
+            // Assert that anyOf schemas use the correct reference IDs.
+            Assert.Collection(schema.AnyOf,
+                schema => Assert.Equal("EmployeeManager", schema.Reference.Id),
+                schema => Assert.Equal("EmployeeEmployee", schema.Reference.Id));
+            // Assert that schemas without discriminators have been inserted into the components
+            Assert.True(document.Components.Schemas.TryGetValue("EmployeeManager", out var managerSchema));
+            Assert.Equal("manager", ((OpenApiString)managerSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.True(document.Components.Schemas.TryGetValue("EmployeeEmployee", out var employeeSchema));
+            Assert.Equal("employee", ((OpenApiString)employeeSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            // Assert that the schema has a correct self-reference to the base-type. This points to the schema that contains the discriminator.
+            Assert.Equal("Employee", employeeSchema.Properties["manager"].Reference.Id);
         });
     }
 }
