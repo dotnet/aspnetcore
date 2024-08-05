@@ -58,6 +58,11 @@ public class FocusOnNavigate : ComponentBase
     {
         if (AssignedRenderMode is not null)
         {
+            // When interactivity is enabled, functionality is handled via JS interop.
+            // We don't need to render anything to the page in that case.
+            // In non-interactive scenarios, a custom element is rendered so that
+            // JS logic can find it and focus the element matching the specified
+            // selector.
             return;
         }
 

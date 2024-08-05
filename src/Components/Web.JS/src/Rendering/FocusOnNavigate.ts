@@ -5,19 +5,20 @@ import { domFunctions } from '../DomWrapper';
 import { EnhancedNavigationStartEvent, JSEventRegistry } from '../Services/JSEventRegistry';
 
 const customElementName = 'blazor-focus-on-navigate';
-const focusOnNavigateRegistrations: FocusOnNavigateRegistration[] = [];
-
+let currentFocusOnNavigateElement: FocusOnNavigateElement | null = null;
 let allowFocusOnEnhancedLoad = false;
 
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
-  customElements.define(customElementName, FocusOnNavigate);
+  customElements.define(customElementName, FocusOnNavigateElement);
   jsEventRegistry.addEventListener('enhancednavigationstart', onEnhancedNavigationStart);
   jsEventRegistry.addEventListener('enhancedload', onEnhancedLoad);
   document.addEventListener('focusin', onFocusIn);
   document.addEventListener('focusout', onFocusOut);
 
-  // Focus the element on the initial page load
+  // Focus the element on the initial page load.
   if (document.readyState === 'loading') {
+    // There may be streaming updates on the initial page load, so we want to allow
+    // those to add elements matching the active selector.
     allowFocusOnEnhancedLoad = true;
     document.addEventListener('DOMContentLoaded', afterInitialPageLoad);
   } else {
@@ -78,53 +79,21 @@ function tryApplyFocus(forceMoveFocus: boolean) {
 
   lastFocusedElement = null;
 
-  const selector = findActiveSelector();
+  const selector = currentFocusOnNavigateElement?.getAttribute('selector');
   if (selector) {
     lastFocusedElement = domFunctions.focusBySelector(selector);
   }
 }
 
-function findActiveSelector(): string | null {
-  // It's unlikely that there will be more than one <blazor-focus-on-navigate> registered
-  // at a time. But if there is, we'll prefer the one most recently added to the DOM,
-  // keeping a stack of all previous registrations to fall back on if the current one
-  // gets removed.
-  let registration: FocusOnNavigateRegistration | undefined;
-  while ((registration = focusOnNavigateRegistrations.at(-1)) !== undefined) {
-    if (registration.isConnected) {
-      return registration.selector;
-    }
-
-    focusOnNavigateRegistrations.pop();
-  }
-
-  return null;
-}
-
-type FocusOnNavigateRegistration = {
-  isConnected: boolean;
-  selector: string | null;
-}
-
-class FocusOnNavigate extends HTMLElement {
-  static observedAttributes = ['selector'];
-
-  private readonly _registration: FocusOnNavigateRegistration = {
-    isConnected: true,
-    selector: null,
-  };
-
+class FocusOnNavigateElement extends HTMLElement {
   connectedCallback() {
-    focusOnNavigateRegistrations.push(this._registration);
-  }
-
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    if (name === 'selector') {
-      this._registration.selector = newValue;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    currentFocusOnNavigateElement = this;
   }
 
   disconnectedCallback() {
-    this._registration.isConnected = false;
+    if (currentFocusOnNavigateElement === this) {
+      currentFocusOnNavigateElement = null;
+    }
   }
 }

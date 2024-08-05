@@ -16,6 +16,8 @@
         <NotFound>There's nothing here</NotFound>
     </Router>
     <script>
+        // This script must come before blazor.web.js to test that
+        // the framework does the right then when an element is already focused.
         const elementToFocus = document.querySelector('[data-focus-on-load]');
         if (elementToFocus) {
             elementToFocus.focus();
