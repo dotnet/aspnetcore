@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
