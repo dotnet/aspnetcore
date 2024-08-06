@@ -135,8 +135,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             Assert.True(GetRequestBodyForPath(document, "/required-poco").Required);
             Assert.False(GetRequestBodyForPath(document, "/non-required-poco").Required);
+            // Form bodies are always required for form-based requests Individual elements
+            // within the form can be optional.
             Assert.True(GetRequestBodyForPath(document, "/required-form").Required);
-            Assert.False(GetRequestBodyForPath(document, "/non-required-form").Required);
+            Assert.True(GetRequestBodyForPath(document, "/non-required-form").Required);
         });
 
         static OpenApiRequestBody GetRequestBodyForPath(OpenApiDocument document, string path)

@@ -381,7 +381,10 @@ internal sealed class OpenApiDocumentService(
 
         var requestBody = new OpenApiRequestBody
         {
-            Required = formParameters.Any(IsRequired),
+            // Form bodies are always required because the framework doesn't support
+            // serializing a form collection from an empty body. Instead, requiredness
+            // must be set on a per-parameter basis. See below.
+            Required = true,
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
@@ -410,6 +413,10 @@ internal sealed class OpenApiDocumentService(
                 // as a property in the schema.
                 if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
                 {
+                    if (IsRequired(description))
+                    {
+                        schema.Required.Add(description.Name);
+                    }
                     if (hasMultipleFormParameters)
                     {
                         schema.AllOf.Add(new OpenApiSchema
@@ -444,6 +451,10 @@ internal sealed class OpenApiDocumentService(
                         }
                         else
                         {
+                            if (IsRequired(description))
+                            {
+                                schema.Required.Add(description.Name);
+                            }
                             schema.AllOf.Add(new OpenApiSchema
                             {
                                 Type = "object",
@@ -462,6 +473,10 @@ internal sealed class OpenApiDocumentService(
                         }
                         else
                         {
+                            if (IsRequired(description))
+                            {
+                                schema.Required.Add(description.Name);
+                            }
                             schema.Properties[description.Name] = parameterSchema;
                         }
                     }
