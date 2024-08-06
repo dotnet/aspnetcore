@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal static class PathDecoder
 {
-    public static string DecodePath(Span<byte> path, bool pathEncoded, string rawTarget, int queryLength)
+    public static string DecodePath(ReadOnlySpan<byte> path, bool pathEncoded, string rawTarget, int queryLength)
     {
         int pathLength;
         if (pathEncoded)
