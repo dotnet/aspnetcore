@@ -633,7 +633,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.Empty(description.SupportedResponseTypes);
     }
 
-    public static TheoryData ReturnsActionResultWithProducesAndProducesContentTypeData
+    public static TheoryData<Type, string, List<FilterDescriptor>> ReturnsActionResultWithProducesAndProducesContentTypeData
     {
         get
         {

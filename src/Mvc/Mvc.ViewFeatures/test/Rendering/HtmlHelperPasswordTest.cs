@@ -320,7 +320,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    public static TheoryData PasswordFor_WithComplexExpressionsData
+    public static TheoryData<Expression<Func<PasswordModel, string>>, string> PasswordFor_WithComplexExpressionsData
     {
         get
         {
@@ -468,7 +468,7 @@ public class HtmlHelperPasswordTest
         return viewData;
     }
 
-    public static TheoryData PasswordFor_IgnoresExpressionValueForComplexExpressionsData
+    public static TheoryData<Expression<Func<PasswordModel, string>>, string> PasswordFor_IgnoresExpressionValueForComplexExpressionsData
     {
         get
         {

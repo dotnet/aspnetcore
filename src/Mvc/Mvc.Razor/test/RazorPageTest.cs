@@ -940,7 +940,7 @@ public class RazorPageTest
         Assert.Same(HtmlString.Empty, actual);
     }
 
-    public static TheoryData AddHtmlAttributeValues_ValueData
+    public static TheoryData<string, int, object, int, bool, string> AddHtmlAttributeValues_ValueData
     {
         get
         {
@@ -1165,7 +1165,7 @@ public class RazorPageTest
         Assert.Equal(HtmlAttributeValueStyle.NoQuotes, allAttribute.ValueStyle);
     }
 
-    public static TheoryData WriteAttributeData
+    public static TheoryData<string, int, object, int, bool, string> WriteAttributeData
     {
         get
         {

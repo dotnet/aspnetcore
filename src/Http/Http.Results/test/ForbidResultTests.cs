@@ -56,7 +56,7 @@ public class ForbidResultTests
         auth.Verify();
     }
 
-    public static TheoryData ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData =>
+    public static TheoryData<AuthenticationProperties> ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData =>
         new TheoryData<AuthenticationProperties>
         {
                 null,

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers;
 
 public class ReadOnlyTagHelperAttributeListTest
 {
-    public static TheoryData IndexOfNameData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, string, int> IndexOfNameData
     {
         get
         {
@@ -51,7 +51,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expectedIndex, index);
     }
 
-    public static TheoryData IntIndexerData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, int, TagHelperAttribute> IntIndexerData
     {
         get
         {
@@ -91,7 +91,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expectedAttribute, attribute, CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    public static TheoryData IntIndexerThrowData
+    public static TheoryData<int> IntIndexerThrowData
     {
         get
         {
@@ -115,7 +115,7 @@ public class ReadOnlyTagHelperAttributeListTest
         var exception = Assert.Throws<ArgumentOutOfRangeException>("index", () => attributes[index]);
     }
 
-    public static TheoryData StringIndexerData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, string, TagHelperAttribute> StringIndexerData
     {
         get
         {
@@ -202,7 +202,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(3, count);
     }
 
-    public static TheoryData ContainsData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, TagHelperAttribute, bool> ContainsData
     {
         get
         {
@@ -310,7 +310,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expected, contains);
     }
 
-    public static TheoryData ContainsNameData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, string, bool> ContainsNameData
     {
         get
         {
@@ -386,7 +386,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expected, contains);
     }
 
-    public static TheoryData IndexOfData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, TagHelperAttribute, int> IndexOfData
     {
         get
         {
@@ -494,7 +494,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expected, index);
     }
 
-    public static TheoryData TryGetAttributeData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, string, TagHelperAttribute, bool> TryGetAttributeData
     {
         get
         {
@@ -566,7 +566,7 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(expectedAttribute, attribute, CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    public static TheoryData TryGetAttributesData
+    public static TheoryData<IEnumerable<TagHelperAttribute>, string, IEnumerable<TagHelperAttribute>, bool> TryGetAttributesData
     {
         get
         {
