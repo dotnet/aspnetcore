@@ -2986,7 +2986,8 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("Cus\0tom", "value"),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
