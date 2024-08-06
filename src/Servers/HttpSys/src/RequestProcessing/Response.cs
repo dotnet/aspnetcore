@@ -423,7 +423,7 @@ internal sealed class Response
             // HTTP/1.0 clients upon receipt of a Keep-Alive connection token.
             // However, a persistent connection with an HTTP/1.0 client cannot make
             // use of the chunked transfer-coding. From: https://www.rfc-editor.org/rfc/rfc2068#section-19.7.1
-            keepConnectionAlive = _respectHttp10KeepAlive && (requestConnectionKeepAliveSet && !responseChunkedSet);
+            keepConnectionAlive = _respectHttp10KeepAlive && requestConnectionKeepAliveSet && !responseChunkedSet;
         }
 
         // Determine the body format. If the user asks to do something, let them, otherwise choose a good default for the scenario.
