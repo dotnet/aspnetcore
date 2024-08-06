@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         break;
                     }
                 }
-                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("x", methodInfo.GetParameters()[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("x", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 var parameterInfos = methodInfo.GetParameters();
                 var x_ParameterInfo = parameterInfos[0];
                 PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);

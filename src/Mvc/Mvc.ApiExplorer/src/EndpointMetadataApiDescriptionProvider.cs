@@ -324,12 +324,6 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
     {
         var responseType = returnType;
 
-        // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.
-        if (typeof(IResult).IsAssignableFrom(responseType))
-        {
-            responseType = typeof(void);
-        }
-
         // We support attributes (which implement the IApiResponseMetadataProvider) interface
         // and types added via the extension methods (which implement IProducesResponseTypeMetadata).
         var responseProviderMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
@@ -337,6 +331,14 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
         var defaultErrorType = errorMetadata?.Type ?? typeof(void);
         var contentTypes = new MediaTypeCollection();
+
+        // If the return type is an IResult or an awaitable IResult, then we should treat it as a void return type
+        // since we can't infer anything without additional metadata.
+        if (typeof(IResult).IsAssignableFrom(responseType) ||
+            producesResponseMetadata.Any(metadata => typeof(IResult).IsAssignableFrom(metadata.Type)))
+        {
+            responseType = typeof(void);
+        }
 
         var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
             responseProviderMetadata, responseType, defaultErrorType, contentTypes, out var errorSetByDefault);

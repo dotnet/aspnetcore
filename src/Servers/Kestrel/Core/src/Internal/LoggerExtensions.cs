@@ -40,4 +40,7 @@ internal static partial class LoggerExtensions
 
     [LoggerMessage(8, LogLevel.Warning, "The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert", EventName = "DeveloperCertificateNotTrusted")]
     public static partial void DeveloperCertificateNotTrusted(this ILogger<KestrelServer> logger);
+
+    [LoggerMessage(9, LogLevel.Warning, "The ASP.NET Core developer certificate is only trusted by some clients. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert", EventName = "DeveloperCertificatePartiallyTrusted")]
+    public static partial void DeveloperCertificatePartiallyTrusted(this ILogger<KestrelServer> logger);
 }

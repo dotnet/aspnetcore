@@ -71,7 +71,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
         if (DeployerSelector.HasNewShim)
         {
             Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
@@ -180,7 +180,7 @@ public class StartupTests : IISFunctionalTestBase
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled", Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, "AspNetCore Module is disabled", Logger);
         }
     }
 
@@ -230,7 +230,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadException(deploymentResult, ".*?Application is running inside IIS process but is not configured to use IIS server"));
     }
@@ -248,7 +248,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadException(deploymentResult, ", exception code = '0xe0434352'"));
     }
@@ -265,7 +265,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadExit(deploymentResult, "12"));
     }
@@ -291,7 +291,7 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -354,7 +354,7 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -373,7 +373,7 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -393,7 +393,7 @@ public class StartupTests : IISFunctionalTestBase
 
         await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31", "Provided application path does not exist, or isn't a .dll or .exe.");
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
     }
 
     [ConditionalFact]
@@ -450,13 +450,13 @@ public class StartupTests : IISFunctionalTestBase
         {
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.33");
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
         }
         else
         {
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
         }
     }
 
@@ -482,7 +482,7 @@ public class StartupTests : IISFunctionalTestBase
             // Startup timeout now recycles process.
             deploymentResult.AssertWorkerProcessStop();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
                 Logger);
 
@@ -514,7 +514,7 @@ public class StartupTests : IISFunctionalTestBase
 
             StopServer(gracefulShutdown: false);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
                 Logger);
 
@@ -540,7 +540,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.ConfigurationLoadError(deploymentResult, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.")
             );
     }
@@ -564,7 +564,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.ConfigurationLoadError(deploymentResult, expectedError)
         );
     }
@@ -1006,7 +1006,7 @@ public class StartupTests : IISFunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedLogString));
         var expectedEventLogString = new string('a', 30000);
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
     }
 
     [ConditionalTheory]
@@ -1032,7 +1032,7 @@ public class StartupTests : IISFunctionalTestBase
 
         var expectedEventLogString = new string('a', 30000);
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
     }
 
     [ConditionalFact]

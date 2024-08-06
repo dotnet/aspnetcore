@@ -8,7 +8,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 // Internal for now so we don't need API review.
 // Just a wrapper for the ActivitySource
 // don't want to put ActivitySource directly in DI as hosting already does that and it could get overwritten.
-internal sealed class SignalRActivitySource
+internal sealed class SignalRServerActivitySource
 {
-    public ActivitySource ActivitySource { get; } = new ActivitySource("Microsoft.AspNetCore.SignalR.Server");
+    internal const string Name = "Microsoft.AspNetCore.SignalR.Server";
+    internal const string InvocationIn = $"{Name}.InvocationIn";
+    internal const string OnConnected = $"{Name}.OnConnected";
+    internal const string OnDisconnected = $"{Name}.OnDisconnected";
+
+    public ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 }

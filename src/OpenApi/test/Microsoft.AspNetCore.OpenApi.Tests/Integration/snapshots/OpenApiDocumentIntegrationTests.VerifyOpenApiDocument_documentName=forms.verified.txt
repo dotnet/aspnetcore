@@ -20,12 +20,6 @@
                     "$ref": "#/components/schemas/IFormFile"
                   }
                 }
-              },
-              "encoding": {
-                "multipart/form-data": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             }
           },
@@ -52,12 +46,6 @@
                   "files": {
                     "$ref": "#/components/schemas/IFormFileCollection"
                   }
-                }
-              },
-              "encoding": {
-                "multipart/form-data": {
-                  "style": "form",
-                  "explode": true
                 }
               }
             }
@@ -99,12 +87,6 @@
                     }
                   }
                 ]
-              },
-              "encoding": {
-                "multipart/form-data": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             }
           },
@@ -127,23 +109,11 @@
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/Todo"
-              },
-              "encoding": {
-                "multipart/form-data": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
                 "$ref": "#/components/schemas/Todo"
-              },
-              "encoding": {
-                "application/x-www-form-urlencoded": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             }
           },
@@ -179,12 +149,6 @@
                     }
                   }
                 ]
-              },
-              "encoding": {
-                "multipart/form-data": {
-                  "style": "form",
-                  "explode": true
-                }
               }
             }
           },

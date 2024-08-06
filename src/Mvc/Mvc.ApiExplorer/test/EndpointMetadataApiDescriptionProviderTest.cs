@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -252,6 +253,144 @@ public class EndpointMetadataApiDescriptionProviderTest
             [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         () => Results.Ok(new InferredJsonClass()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void AddsMultipleResponseFormatsForTypedResults()
+    {
+        var apiDescription = GetApiDescription(Results<Created<InferredJsonClass>, BadRequest> () =>
+            TypedResults.Created("https://example.com", new InferredJsonClass()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void AddsResponseFormatsForTypedResultWithoutReturnType()
+    {
+        var apiDescription = GetApiDescription(() => TypedResults.Created("https://example.com", new InferredJsonClass()));
+
+        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+    }
+
+    [Fact]
+    public void HandlesTypedResultsWithoutIEndpointMetadataProviderImplementation()
+    {
+        // TypedResults for ProblemDetails doesn't implement IEndpointMetadataProvider
+        var apiDescription = GetApiDescription(() => TypedResults.Problem());
+
+        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+
+        var responseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(typeof(void), responseType.Type);
+        Assert.Equal(typeof(void), responseType.ModelMetadata?.ModelType);
+    }
+
+    [Fact]
+    public void AddsResponseFormatsForAwaitableTypedResultWithoutReturnType()
+    {
+        var apiDescription = GetApiDescription(() =>
+            Task.FromResult(TypedResults.Created("https://example.com", new InferredJsonClass())));
+
+        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+    }
+
+    // Coverage for https://github.com/dotnet/aspnetcore/issues/56975
+    [Fact]
+    public void AddsMultipleResponseFormatsFromMetadataWithAwaitableIResult()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => Task.FromResult(Results.Ok(new InferredJsonClass())));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void AddsMultipleResponseFormatsFromMetadataWithAwaitableResultType()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        async Task<Results<Created<InferredJsonClass>, ProblemHttpResult>> () => {
+            await Task.CompletedTask;
+            return Random.Shared.Next() % 2 == 0
+                ? TypedResults.Created<InferredJsonClass>("/", new InferredJsonClass())
+                : TypedResults.Problem();
+        });
 
         Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 

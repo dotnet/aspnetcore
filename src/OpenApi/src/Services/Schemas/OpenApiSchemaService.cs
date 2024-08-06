@@ -66,7 +66,8 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                    [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                    [OpenApiConstants.SchemaId] = "IFormFile"
                 };
             }
             else if (type == typeof(IFormFileCollection))
@@ -77,14 +78,15 @@ internal sealed class OpenApiSchemaService(
                     [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                        [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                        [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                        [OpenApiConstants.SchemaId] = "IFormFile"
                     }
                 };
             }
             // STJ uses `true` in place of an empty object to represent a schema that matches
-            // anything. We override this default behavior here to match the style traditionally
-            // expected in OpenAPI documents.
-            if (type == typeof(object))
+            // anything (like the `object` type) or types with user-defined converters. We override
+            // this default behavior here to match the format expected in OpenAPI v3.
+            if (schema.GetValueKind() == JsonValueKind.True)
             {
                 schema = new JsonObject();
             }
