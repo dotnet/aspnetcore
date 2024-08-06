@@ -40,9 +40,6 @@ public class OpenApiAnyComparerTests
         [new OpenApiArray { new OpenApiString("value") }, new OpenApiArray { new OpenApiString("value2") }, false],
         [new OpenApiArray { new OpenApiString("value2"), new OpenApiString("value") }, new OpenApiArray { new OpenApiString("value"), new OpenApiString("value2") }, false],
         [new OpenApiArray { new OpenApiString("value"), new OpenApiString("value") }, new OpenApiArray { new OpenApiString("value"), new OpenApiString("value") }, true],
-        [new ScrubbedOpenApiAny("value"), new ScrubbedOpenApiAny("value"), true],
-        [new ScrubbedOpenApiAny("value"), new ScrubbedOpenApiAny("value2"), false],
-        [new ScrubbedOpenApiAny(null), new ScrubbedOpenApiAny(null), true]
     ];
 
     [Theory]

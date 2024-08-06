@@ -99,9 +99,9 @@ internal sealed class OpenApiDocumentService(
                     continue;
                 }
 
-                if (operation.Extensions.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionIdExtension) &&
-                    descriptionIdExtension is ScrubbedOpenApiAny { Value: string descriptionId } &&
-                    TryGetCachedOperationTransformerContext(descriptionId, out var operationContext))
+                if (operation.Annotations.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionId) &&
+                    descriptionId is string descriptionIdString &&
+                    TryGetCachedOperationTransformerContext(descriptionIdString, out var operationContext))
                 {
                     await callback(operation, operationContext, cancellationToken);
                 }
@@ -169,7 +169,8 @@ internal sealed class OpenApiDocumentService(
         foreach (var description in descriptions)
         {
             var operation = await GetOperationAsync(description, capturedTags, cancellationToken);
-            operation.Extensions.Add(OpenApiConstants.DescriptionId, new ScrubbedOpenApiAny(description.ActionDescriptor.Id));
+            operation.Annotations ??= new Dictionary<string, object>();
+            operation.Annotations.Add(OpenApiConstants.DescriptionId, description.ActionDescriptor.Id);
 
             var operationContext = new OpenApiOperationTransformerContext
             {

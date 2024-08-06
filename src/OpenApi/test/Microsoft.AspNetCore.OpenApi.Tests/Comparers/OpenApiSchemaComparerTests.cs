@@ -144,6 +144,7 @@ public class OpenApiSchemaComparerTests
             UnresolvedReference = true,
             WriteOnly = true,
             Xml = new OpenApiXml { Name = "Name" },
+            Annotations = new Dictionary<string, object> { ["key"] = "value" }
         };
 
         OpenApiSchema modifiedSchema = new(originalSchema) { AdditionalProperties = new OpenApiSchema { Type = "string" } };
@@ -301,6 +302,11 @@ public class OpenApiSchemaComparerTests
         modifiedSchema = new(originalSchema) { Xml = new OpenApiXml { Name = "Another Name" } };
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Xml)));
+
+        modifiedSchema = new(originalSchema);
+        modifiedSchema.Annotations["key"] = "another value";
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Annotations)));
 
         Assert.Empty(propertyNames);
     }
