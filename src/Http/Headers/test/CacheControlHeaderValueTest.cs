@@ -468,7 +468,7 @@ public class CacheControlHeaderValueTest
     [InlineData("s-maxage=1.5")]
     // Invalid Extension values
     [InlineData("custom value")]
-    public void TryParse_DifferentInvalidScenarios_ReturnsFalse(string input)
+    public void TryParse_DifferentInvalidScenarios_ReturnsFalse(string? input)
     {
         CheckInvalidTryParse(input);
     }

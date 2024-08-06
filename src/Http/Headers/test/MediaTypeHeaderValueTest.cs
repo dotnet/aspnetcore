@@ -49,7 +49,7 @@ public class MediaTypeHeaderValueTest
 
     [Theory]
     [MemberData(nameof(MediaTypesWithSuffixes))]
-    public void Ctor_CanParseSuffixedMediaTypes(string mediaType, string expectedSubTypeWithoutSuffix, string expectedSubTypeSuffix)
+    public void Ctor_CanParseSuffixedMediaTypes(string mediaType, string expectedSubTypeWithoutSuffix, string? expectedSubTypeSuffix)
     {
         var result = new MediaTypeHeaderValue(mediaType);
 
