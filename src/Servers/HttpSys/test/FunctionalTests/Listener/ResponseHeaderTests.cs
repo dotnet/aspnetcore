@@ -208,8 +208,9 @@ public class ResponseHeaderTests : IDisposable
     }
 
     [ConditionalFact]
-    public async Task ResponseHeaders_HTTP10KeepAliveRequest_KeepAliveHeader_Gets11NoClose()
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_KeepAliveHeader_RespectsSwitch()
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive", true);
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
         {
@@ -247,6 +248,32 @@ public class ResponseHeaderTests : IDisposable
 
             // Verify that ConnectCallback was only called once
             Assert.Equal(1, connectCallbackInvocations);
+        }
+
+        AppContext.SetSwitch("Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive", false);
+        using (var server = Utilities.CreateHttpServer(out address))
+        {
+            // Track the number of times ConnectCallback is invoked to ensure the underlying socket wasn't closed.
+            int connectCallbackInvocations = 0;
+            var handler = new SocketsHttpHandler();
+            handler.ConnectCallback = (context, cancellationToken) =>
+            {
+                Interlocked.Increment(ref connectCallbackInvocations);
+                return ConnectCallback(context, cancellationToken);
+            };
+
+            using (var client = new HttpClient(handler))
+            {
+                // Send the first request
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true, httpClient: client);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.True(response.Headers.ConnectionClose.Value);
+            }
         }
     }
 
