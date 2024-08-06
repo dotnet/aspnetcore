@@ -91,13 +91,15 @@ internal static partial class HttpUtilities
 
         var str = string.Create(span.Length, span, static (destination, source) =>
         {
-            if (Ascii.ToUtf16(source, destination, out var written) != OperationStatus.Done
-                || destination.Contains('\0'))
+            if (source.Contains((byte)0)
+                || Ascii.ToUtf16(source, destination, out var written) != OperationStatus.Done)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
             }
-
-            Debug.Assert(written == destination.Length);
+            else
+            {
+                Debug.Assert(written == destination.Length);
+            }
         });
 
         return str;
@@ -125,28 +127,28 @@ internal static partial class HttpUtilities
 
         // New Line characters (CR, LF) are considered invalid at this point.
         // Null characters are also not allowed.
-        var invalidCharIndex = checkForNewlineChars ?
-            ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n', '\0')
-            : ((ReadOnlySpan<char>)result).IndexOf('\0');
+        var hasInvalidChar = checkForNewlineChars ?
+            ((ReadOnlySpan<char>)result).ContainsAny('\r', '\n', '\0')
+            : ((ReadOnlySpan<char>)result).Contains('\0');
 
-        if (invalidCharIndex >= 0)
+        if (hasInvalidChar)
         {
-            ThrowForInvalidCharacter(result[invalidCharIndex]);
+            ThrowForInvalidCharacter(checkForNewlineChars);
         }
 
         return result;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowForInvalidCharacter(char invalidCharacter)
+    private static void ThrowForInvalidCharacter(bool checkForNewlines)
     {
-        if (invalidCharacter == 0)
+        if (checkForNewlines)
         {
-            throw new InvalidOperationException("Null characters are not allowed in request headers.");
+            throw new InvalidOperationException("Newline characters (CR/LF) or Null are not allowed in request headers.");
         }
         else
         {
-            throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            throw new InvalidOperationException("Null characters are not allowed in request headers.");
         }
     }
 
