@@ -148,8 +148,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _url = _httpConnectionOptions.Url;
 
-        RemoteEndPoint = new UriEndPoint(_url);
-
         if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
         {
             _httpClient = CreateHttpClient();
@@ -353,6 +351,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 throw new InvalidOperationException("Negotiate redirection limit exceeded.");
             }
 
+            // Set the final negotiated URI as the endpoint.
+            RemoteEndPoint = new UriEndPoint(Utils.CreateEndPointUri(uri));
+
             // This should only need to happen once
             var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
 
@@ -405,6 +406,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                             _httpConnectionOptions.UseStatefulReconnect = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseStatefulReconnect : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
+
+                            // Set the final negotiated URI as the endpoint.
+                            RemoteEndPoint = new UriEndPoint(Utils.CreateEndPointUri(uri));
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);

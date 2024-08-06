@@ -21,7 +21,11 @@ public partial class HubConnectionTests
         var builder = new HubConnectionBuilder().WithUrl("http://example.com");
 
         var delegateConnectionFactory = new DelegateConnectionFactory(
-            endPoint => connection.StartAsync());
+            async endPoint =>
+            {
+                connection.RemoteEndPoint = endPoint;
+                return await connection.StartAsync();
+            });
 
         builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 

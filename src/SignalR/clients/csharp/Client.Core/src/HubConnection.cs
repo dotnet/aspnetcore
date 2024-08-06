@@ -729,8 +729,7 @@ public partial class HubConnection : IAsyncDisposable
 
         CheckDisposed();
 
-        var activity = StartActivity(methodName);
-        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(StreamAsChannelCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
+        var (connectionState, activity) = await WaitForActiveConnectionWithActivityAsync(nameof(StreamAsChannelCoreAsync), methodName, token: cancellationToken).ConfigureAwait(false);
 
         ChannelReader<object?> channel;
         try
@@ -1013,11 +1012,40 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-    private async Task<ConnectionState> WaitForActiveConnectionWithActivityAsync(string methodName, Activity? activity, CancellationToken token)
+    private async Task<(ConnectionState, Activity?)> WaitForActiveConnectionWithActivityAsync(string sendingMethodName, string invokedMethodName, CancellationToken token)
     {
+        // Start the activity before waiting on the connection.
+        // Starting the activity here means time to connect or reconnect is included in the invoke.
+        var activity = CreateActivity(invokedMethodName);
+
         try
         {
-            return await _state.WaitForActiveConnectionAsync(methodName, token).ConfigureAwait(false);
+            ConnectionState connectionState;
+            var connectionStateTask = _state.WaitForActiveConnectionAsync(sendingMethodName, token);
+            if (connectionStateTask.Status == TaskStatus.RanToCompletion)
+            {
+                // Attempt to get already connected connection and set server tags using it.
+                connectionState = connectionStateTask.Result;
+                SetServerTags(activity, connectionState.ConnectionUrl);
+                activity?.Start();
+            }
+            else
+            {
+                // Fallback to using configured endpoint.
+                var initialUri = (_endPoint as UriEndPoint)?.Uri;
+                SetServerTags(activity, initialUri);
+                activity?.Start();
+
+                connectionState = await connectionStateTask.ConfigureAwait(false);
+
+                // After connection is returned, check if URL is different. If so, update activity server tags.
+                if (connectionState.ConnectionUrl != null && connectionState.ConnectionUrl != initialUri)
+                {
+                    SetServerTags(activity, connectionState.ConnectionUrl);
+                }
+            }
+
+            return (connectionState, activity);
         }
         catch (Exception ex)
         {
@@ -1031,6 +1059,15 @@ public partial class HubConnection : IAsyncDisposable
 
             throw;
         }
+
+        static void SetServerTags(Activity? activity, Uri? uri)
+        {
+            if (activity != null && uri != null)
+            {
+                activity.SetTag("server.address", uri.Host);
+                activity.SetTag("server.port", uri.Port);
+            }
+        }
     }
 
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
@@ -1039,8 +1076,7 @@ public partial class HubConnection : IAsyncDisposable
 
         CheckDisposed();
 
-        var activity = StartActivity(methodName);
-        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(InvokeCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
+        var (connectionState, activity) = await WaitForActiveConnectionWithActivityAsync(nameof(InvokeCoreAsync), methodName, token: cancellationToken).ConfigureAwait(false);
 
         Task<object?> invocationTask;
         try
@@ -1063,7 +1099,7 @@ public partial class HubConnection : IAsyncDisposable
         return await invocationTask.ConfigureAwait(false);
     }
 
-    private Activity? StartActivity(string methodName)
+    private Activity? CreateActivity(string methodName)
     {
         var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Client);
         if (activity is null && Activity.Current is not null && _logger.IsEnabled(LogLevel.Critical))
@@ -1085,14 +1121,6 @@ public partial class HubConnection : IAsyncDisposable
 
             activity.SetTag("rpc.system", "signalr");
             activity.SetTag("rpc.method", methodName);
-
-            if (_endPoint is UriEndPoint e)
-            {
-                activity.SetTag("server.address", e.Uri.Host);
-                activity.SetTag("server.port", e.Uri.Port);
-            }
-
-            activity.Start();
         }
 
         return activity;
@@ -1198,8 +1226,7 @@ public partial class HubConnection : IAsyncDisposable
 
         CheckDisposed();
 
-        var activity = StartActivity(methodName);
-        var connectionState = await WaitForActiveConnectionWithActivityAsync(nameof(SendCoreAsync), activity, token: cancellationToken).ConfigureAwait(false);
+        var (connectionState, activity) = await WaitForActiveConnectionWithActivityAsync(nameof(SendCoreAsync), methodName, token: cancellationToken).ConfigureAwait(false);
         try
         {
             CheckDisposed();
@@ -2101,6 +2128,7 @@ public partial class HubConnection : IAsyncDisposable
         private long _nextActivationSendPing;
 
         public ConnectionContext Connection { get; }
+        public Uri? ConnectionUrl { get; }
         public Task? ReceiveTask { get; set; }
         public Exception? CloseException { get; set; }
         public CancellationToken UploadStreamToken { get; set; }
@@ -2119,6 +2147,7 @@ public partial class HubConnection : IAsyncDisposable
         public ConnectionState(ConnectionContext connection, HubConnection hubConnection)
         {
             Connection = connection;
+            ConnectionUrl = (connection.RemoteEndPoint is UriEndPoint ep) ? ep.Uri : null;
 
             _hubConnection = hubConnection;
             _hubConnection._logScope.ConnectionId = connection.ConnectionId;

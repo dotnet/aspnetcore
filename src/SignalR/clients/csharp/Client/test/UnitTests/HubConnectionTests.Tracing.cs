@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -42,6 +44,7 @@ public partial class HubConnectionTests
                 var traceParent = (string)invokeMessage["headers"]["traceparent"];
 
                 Assert.Equal(clientActivity.Id, traceParent);
+                Assert.Equal("example.com", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
 
                 Assert.Equal(TaskStatus.WaitingForActivation, invokeTask.Status);
             }
@@ -124,5 +127,91 @@ public partial class HubConnectionTests
             }
         }
 
+        [Fact]
+        public async Task InvokeSendsAnInvocationMessage_ConnectionRemoteEndPointChanged_UseRemoteEndpointUrl()
+        {
+            var clientSourceContainer = new SignalRClientActivitySource();
+            Activity clientActivity = null;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, clientSourceContainer.ActivitySource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = activity => clientActivity = activity
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            TestConnection connection = null;
+            connection = new TestConnection(onStart: () =>
+            {
+                connection.RemoteEndPoint = new UriEndPoint(new Uri("http://example.net"));
+                return Task.CompletedTask;
+            });
+            var hubConnection = CreateHubConnection(connection, clientActivitySource: clientSourceContainer);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                _ = hubConnection.InvokeAsync("Foo");
+
+                await connection.ReadSentJsonAsync().DefaultTimeout();
+
+                Assert.Equal("example.net", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvokeSendsAnInvocationMessage_ConnectionRemoteEndPointChangedDuringConnect_UseRemoteEndpointUrl()
+        {
+            var clientSourceContainer = new SignalRClientActivitySource();
+            var clientActivityTcs = new TaskCompletionSource<Activity>(TaskCreationOptions.RunContinuationsAsynchronously); ;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, clientSourceContainer.ActivitySource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = clientActivityTcs.SetResult
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var syncPoint = new SyncPoint();
+            TestConnection connection = null;
+            connection = new TestConnection(onStart: async () =>
+            {
+                await syncPoint.WaitToContinue();
+                connection.RemoteEndPoint = new UriEndPoint(new Uri("http://example.net"));
+            });
+            var hubConnection = CreateHubConnection(connection, clientActivitySource: clientSourceContainer);
+            try
+            {
+                var startTask = hubConnection.StartAsync();
+
+                _ = hubConnection.InvokeAsync("Foo");
+
+                var clientActivity = await clientActivityTcs.Task.DefaultTimeout();
+
+                // Initial server.address uses configured HubConnection URL.
+                Assert.Equal("example.com", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
+
+                syncPoint.Continue();
+
+                await startTask.DefaultTimeout();
+
+                await connection.ReadSentJsonAsync().DefaultTimeout();
+
+                // After connection is started, server.address is updated to the connection's remote endpoint.
+                Assert.Equal("example.net", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
     }
 }
