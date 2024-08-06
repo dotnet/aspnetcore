@@ -253,15 +253,7 @@ public class ResponseHeaderTests : IDisposable
         AppContext.SetSwitch("Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive", false);
         using (var server = Utilities.CreateHttpServer(out address))
         {
-            // Track the number of times ConnectCallback is invoked to ensure the underlying socket wasn't closed.
-            int connectCallbackInvocations = 0;
             var handler = new SocketsHttpHandler();
-            handler.ConnectCallback = (context, cancellationToken) =>
-            {
-                Interlocked.Increment(ref connectCallbackInvocations);
-                return ConnectCallback(context, cancellationToken);
-            };
-
             using (var client = new HttpClient(handler))
             {
                 // Send the first request
