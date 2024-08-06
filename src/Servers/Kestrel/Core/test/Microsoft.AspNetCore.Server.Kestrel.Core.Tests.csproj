@@ -19,6 +19,7 @@
     <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http2\*.cs" LinkBase="Shared\runtime\Http2" />
     <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http3\*.cs" LinkBase="Shared\runtime\Http3" />
     <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\PathNormalizerTests.cs" LinkBase="/" />
 
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
