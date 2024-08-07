@@ -16,7 +16,7 @@ public class OpenApiSchemaComparerBenchmark
 
     private OpenApiSchema _schema;
 
-    [GlobalSetup(Target = nameof(OpenApiSchema_GetHashCode))]
+    [GlobalSetup]
     public void OpenApiSchema_Setup()
     {
         _schema = new OpenApiSchema
@@ -59,5 +59,11 @@ public class OpenApiSchemaComparerBenchmark
     public void OpenApiSchema_GetHashCode()
     {
         OpenApiSchemaComparer.Instance.GetHashCode(_schema);
+    }
+
+    [Benchmark]
+    public void OpenApiSchema_Clone()
+    {
+        _ = OpenApiSchemaExtensions.Clone(_schema);
     }
 }

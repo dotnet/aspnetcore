@@ -32,7 +32,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
                 // the transformation process are consistent.
                 document.Components.Schemas.Add(
                     referenceId,
-                    ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, isTopLevel: true));
+                    ResolveReferenceForSchema(schema.Clone(), schemasByReference, isTopLevel: true));
             }
         }
 
