@@ -31,7 +31,7 @@ internal sealed class OpenApiXmlComparer : IEqualityComparer<OpenApiXml>
             x.Attribute == y.Attribute &&
             x.Wrapped == y.Wrapped &&
             x.Extensions.Count == y.Extensions.Count
-            && x.Extensions.Keys.All(k => y.Extensions.ContainsKey(k) && y.Extensions[k] == x.Extensions[k]);
+            && x.Extensions.Keys.All(k => y.Extensions.TryGetValue(k, out var yValue) && yValue == x.Extensions[k]);
     }
 
     public int GetHashCode(OpenApiXml obj)

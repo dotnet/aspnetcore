@@ -37,8 +37,8 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             OpenApiAnyComparer.Instance.Equals(x.Example, y.Example) &&
             x.ExclusiveMaximum == y.ExclusiveMaximum &&
             x.ExclusiveMinimum == y.ExclusiveMinimum &&
-            x.Extensions.Count == y.Extensions.Count
-            && x.Extensions.Keys.All(k => y.Extensions.ContainsKey(k) && x.Extensions[k] is IOpenApiAny anyX && y.Extensions[k] is IOpenApiAny anyY && OpenApiAnyComparer.Instance.Equals(anyX, anyY)) &&
+            x.Extensions.Count == y.Extensions.Count &&
+            x.Extensions.Keys.All(k => y.Extensions.TryGetValue(k, out var yValue) && x.Extensions[k] is IOpenApiAny anyX && yValue is IOpenApiAny anyY && OpenApiAnyComparer.Instance.Equals(anyX, anyY)) &&
             OpenApiExternalDocsComparer.Instance.Equals(x.ExternalDocs, y.ExternalDocs) &&
             x.Enum.SequenceEqual(y.Enum, OpenApiAnyComparer.Instance) &&
             x.Format == y.Format &&
@@ -58,7 +58,7 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             Instance.Equals(x.Not, y.Not) &&
             x.Nullable == y.Nullable &&
             x.Pattern == y.Pattern &&
-            x.Properties.Keys.All(k => y.Properties.ContainsKey(k) && Instance.Equals(x.Properties[k], y.Properties[k])) &&
+            x.Properties.Keys.All(k => y.Properties.TryGetValue(k, out var yValue) && Instance.Equals(x.Properties[k], yValue)) &&
             x.ReadOnly == y.ReadOnly &&
             x.Required.Order().SequenceEqual(y.Required.Order()) &&
             OpenApiReferenceComparer.Instance.Equals(x.Reference, y.Reference) &&
