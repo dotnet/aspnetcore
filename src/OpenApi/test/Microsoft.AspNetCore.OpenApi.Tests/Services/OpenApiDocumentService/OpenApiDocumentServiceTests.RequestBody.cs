@@ -34,7 +34,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[OperationType.Post];
             Assert.NotNull(operation.RequestBody);
-            Assert.False(operation.RequestBody.Required);
+            Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
@@ -72,7 +72,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[OperationType.Post];
             Assert.NotNull(operation.RequestBody);
-            Assert.Equal(!isOptional, operation.RequestBody.Required);
+            Assert.True(operation.RequestBody.Required);
+            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            if (!isOptional)
+            {
+                Assert.Contains("formFile", schema.Required);
+            }
+            else
+            {
+                Assert.DoesNotContain("formFile", schema.Required);
+            }
         });
     }
 #nullable restore
@@ -101,7 +110,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[OperationType.Post];
             Assert.NotNull(operation.RequestBody);
-            Assert.False(operation.RequestBody.Required);
+            Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
@@ -140,7 +149,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[OperationType.Post];
             Assert.NotNull(operation.RequestBody);
-            Assert.Equal(!isOptional, operation.RequestBody.Required);
+            Assert.True(operation.RequestBody.Required);
+            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            if (!isOptional)
+            {
+                Assert.Contains("formFile", schema.Required);
+            }
+            else
+            {
+                Assert.DoesNotContain("formFile", schema.Required);
+            }
         });
     }
 #nullable restore
@@ -401,6 +419,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 Assert.NotNull(item.Schema);
                 Assert.Equal("object", item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
+                Assert.Contains("id", item.Schema.Required);
+                Assert.Contains("title", item.Schema.Required);
+                Assert.Contains("completed", item.Schema.Required);
+                Assert.Contains("createdAt", item.Schema.Required);
                 Assert.Collection(item.Schema.Properties,
                     property =>
                     {
@@ -422,6 +444,57 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Equal("createdAt", property.Key);
                         Assert.Equal("string", property.Value.Type);
                         Assert.Equal("date-time", property.Value.Format);
+                    });
+            }
+        });
+    }
+
+    // Test coverage for https://github.com/dotnet/aspnetcore/issues/57112
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithRequiredPrimitive()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form", ([FromForm] int id, [FromForm] DateTime date, [FromForm] short? value) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            // Same schema should be produced for both content-types
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.Properties);
+                // Assert that requiredness has been set for primitives
+                Assert.Contains("id", item.Schema.Required);
+                Assert.Contains("date", item.Schema.Required);
+                Assert.DoesNotContain("value", item.Schema.Required);
+                Assert.Collection(item.Schema.AllOf,
+                    subSchema =>
+                    {
+                        Assert.Contains("id", subSchema.Properties);
+                        Assert.Equal("integer", subSchema.Properties["id"].Type);
+                    },
+                    subSchema =>
+                    {
+                        Assert.Contains("date", subSchema.Properties);
+                        Assert.Equal("string", subSchema.Properties["date"].Type);
+                        Assert.Equal("date-time", subSchema.Properties["date"].Format);
+                    },
+                    subSchema =>
+                    {
+                        Assert.Contains("value", subSchema.Properties);
+                        Assert.Equal("integer", subSchema.Properties["value"].Type);
                     });
             }
         });
