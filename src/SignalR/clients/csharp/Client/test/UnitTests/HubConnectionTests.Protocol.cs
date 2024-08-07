@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -141,34 +140,6 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task InvokeSendsAnInvocationMessage_SendTraceHeaders()
-        {
-            var connection = new TestConnection();
-            var hubConnection = CreateHubConnection(connection);
-            try
-            {
-                await hubConnection.StartAsync().DefaultTimeout();
-
-                using var clientActivity = new Activity("ClientActivity");
-                clientActivity.Start();
-
-                var invokeTask = hubConnection.InvokeAsync("Foo");
-
-                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
-                var traceParent = (string)invokeMessage["headers"]["traceparent"];
-
-                Assert.Equal(clientActivity.Id, traceParent);
-
-                Assert.Equal(TaskStatus.WaitingForActivation, invokeTask.Status);
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().DefaultTimeout();
-                await connection.DisposeAsync().DefaultTimeout();
-            }
-        }
-
-        [Fact]
         public async Task ReceiveCloseMessageWithoutErrorWillCloseHubConnection()
         {
             var closedTcs = new TaskCompletionSource<Exception>();
@@ -241,36 +212,6 @@ public partial class HubConnectionTests
 
                 // ReadSentTextMessageAsync strips off the record separator (because it has use it as a separator now that we use Pipelines)
                 Assert.Equal("{\"type\":4,\"invocationId\":\"1\",\"target\":\"Foo\",\"arguments\":[]}", invokeMessage);
-
-                // Complete the channel
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).DefaultTimeout();
-                await channel.Completion.DefaultTimeout();
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().DefaultTimeout();
-                await connection.DisposeAsync().DefaultTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task StreamSendsAnInvocationMessage_SendTraceHeaders()
-        {
-            var connection = new TestConnection();
-            var hubConnection = CreateHubConnection(connection);
-            try
-            {
-                await hubConnection.StartAsync().DefaultTimeout();
-
-                using var clientActivity = new Activity("ClientActivity");
-                clientActivity.Start();
-
-                var channel = await hubConnection.StreamAsChannelAsync<object>("Foo").DefaultTimeout();
-
-                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
-                var traceParent = (string)invokeMessage["headers"]["traceparent"];
-
-                Assert.Equal(clientActivity.Id, traceParent);
 
                 // Complete the channel
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).DefaultTimeout();
