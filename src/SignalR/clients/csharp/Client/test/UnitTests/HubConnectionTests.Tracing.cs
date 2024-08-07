@@ -184,7 +184,7 @@ public partial class HubConnectionTests
             connection = new TestConnection(onStart: async () =>
             {
                 await syncPoint.WaitToContinue();
-                connection.RemoteEndPoint = new UriEndPoint(new Uri("http://example.net"));
+                connection.RemoteEndPoint = new UriEndPoint(new Uri("http://example.net:5050"));
             });
             var hubConnection = CreateHubConnection(connection, clientActivitySource: clientSourceContainer);
             try
@@ -197,6 +197,7 @@ public partial class HubConnectionTests
 
                 // Initial server.address uses configured HubConnection URL.
                 Assert.Equal("example.com", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
+                Assert.Equal(80, (int)clientActivity.TagObjects.Single(t => t.Key == "server.port").Value);
 
                 syncPoint.Continue();
 
@@ -206,6 +207,7 @@ public partial class HubConnectionTests
 
                 // After connection is started, server.address is updated to the connection's remote endpoint.
                 Assert.Equal("example.net", clientActivity.TagObjects.Single(t => t.Key == "server.address").Value);
+                Assert.Equal(5050, (int)clientActivity.TagObjects.Single(t => t.Key == "server.port").Value);
             }
             finally
             {
