@@ -584,7 +584,13 @@ public class BadHttpRequestTests : LoggedTest
 
             foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
             {
-                data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()));
+                var line = requestLine;
+                var nullIndex = line.IndexOf('\0');
+                if (nullIndex >= 0)
+                {
+                    line = line.AsSpan().Slice(0, nullIndex + 2).ToString();
+                }
+                data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(line[..^1].EscapeNonPrintable()));
             }
 
             foreach (var target in HttpParsingData.TargetWithEncodedNullCharData)
@@ -594,7 +600,8 @@ public class BadHttpRequestTests : LoggedTest
 
             foreach (var target in HttpParsingData.TargetWithNullCharData)
             {
-                data.Add($"GET {target} HTTP/1.1\r\n", CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()));
+                var printableTarget = target.AsSpan().Slice(0, target.IndexOf('\0') + 1).ToString();
+                data.Add($"GET {target} HTTP/1.1\r\n", CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"GET {printableTarget.EscapeNonPrintable()}"));
             }
 
             return data;

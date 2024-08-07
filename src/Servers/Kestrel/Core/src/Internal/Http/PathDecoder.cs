@@ -42,6 +42,6 @@ internal static class PathDecoder
             return rawTarget;
         }
 
-        return path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
+        return path.Slice(0, pathLength).GetAsciiString();
     }
 }
