@@ -22,7 +22,7 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
   }
 }
 
-function focusBySelector(selector: string): Element | null {
+function focusBySelector(selector: string) {
   const element = document.querySelector(selector) as HTMLElement;
   if (element) {
     // If no explicit tabindex is defined, mark it as programmatically-focusable.
@@ -33,8 +33,5 @@ function focusBySelector(selector: string): Element | null {
     }
 
     element.focus({ preventScroll: true });
-    return element;
   }
-
-  return null;
 }

@@ -3,61 +3,40 @@
 @using System.Diagnostics
 @attribute [StreamRendering]
 
-<h1>Stream rendered element to focus</h1>
+<h1 data-focus-on-navigate>Stream rendered element to focus</h1>
+
+<input type="text" id="focusable-input" placeholder="Focusable element" />
 
 <p id="streaming-status">@(_doneStreaming ? "Complete" : "Streaming...")</p>
 
-@for (var i = 0; i < _elements.Count; i++)
-{
-    var wantsFocus = _elements[i].WantsFocus;
-    <input
-        type="text"
-        id="input-element-@i"
-        placeholder="Element @i (Wants focus: @wantsFocus)"
-        data-focus-on-navigate="@wantsFocus" />
-    <br />
-}
-
 @code {
-    private static Channel<object> s_clientMessageChannel;
+    private static Task? s_streamingTask;
 
-    private readonly List<Element> _elements = [];
     private bool _doneStreaming;
 
     protected override async Task OnInitializedAsync()
     {
-        s_clientMessageChannel = Channel.CreateUnbounded<object>();
-
-        await foreach (var message in s_clientMessageChannel.Reader.ReadAllAsync())
+        if (s_streamingTask is not null)
         {
-            switch (message)
-            {
-                case AddElementMessage addElement:
-                    _elements.Add(addElement.Element);
-                    break;
-                case RemoveElementMessage removeElement:
-                    _elements.RemoveAt(removeElement.index);
-                    break;
-                default:
-                    throw new UnreachableException($"Unknown message '{message}'");
-            }
-
-            StateHasChanged();
+            // Running in a test, so wait for the test to signal completion.
+            // Tests that rely on delays tend to be flaky, and we can't require
+            // a page interaction to end streaming because that moves focus.
+            // So, we allow tests to configure a task that controls the completion
+            // of streaming.
+            await s_streamingTask;
+            s_streamingTask = null;
+        }
+        else
+        {
+            // Not running in a test, so simulate a delay.
+            await Task.Delay(1000);
         }
 
         _doneStreaming = true;
     }
 
-    public static void AddElement(Element element)
-        => s_clientMessageChannel.Writer.TryWrite(new AddElementMessage(element));
-
-    public static void RemoveElement(int index)
-        => s_clientMessageChannel.Writer.TryWrite(new RemoveElementMessage(index));
-
-    public static void EndResponse()
-        => s_clientMessageChannel.Writer.Complete();
-
-    private record class AddElementMessage(Element Element);
-    private record class RemoveElementMessage(int index);
-    public record struct Element(bool WantsFocus);
+    public static void SetStreamingTask(Task task)
+    {
+        s_streamingTask = task;
+    }
 }

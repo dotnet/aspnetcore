@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -42,7 +42,7 @@ let performingEnhancedPageLoad: boolean;
 let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
-  enhancedNavigationStarted: (resource: string | URL | Request, options: RequestInit) => void;
+  enhancedNavigationStarted: () => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -168,7 +168,7 @@ function onDocumentSubmit(event: SubmitEvent) {
         fetchOptions.headers = {
           'content-type': enctype,
           // Setting Accept header here as well so it wouldn't be lost when coping headers
-          'accept': acceptHeader
+          'accept': acceptHeader,
         };
       }
     }
@@ -186,11 +186,14 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
 
+  // Notify handlers that enhanced navigation is starting
+  navigationEnhancementCallbacks.enhancedNavigationStarted();
+
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const requestInit = Object.assign(<RequestInit>{
+  const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
     headers: {
@@ -198,12 +201,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // enhanced nav as a MIME type parameter
       'accept': acceptHeader,
     },
-  }, fetchOptions);
-  const responsePromise = fetch(internalDestinationHref, requestInit);
-
-  // Notify handlers that enhanced navigation has started
-  navigationEnhancementCallbacks.enhancedNavigationStarted(internalDestinationHref, requestInit);
-
+  }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
@@ -268,7 +266,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
       if (!response.redirected && !isGetRequest && isSuccessResponse) {
         // If this is the result of a form post that didn't trigger a redirection.
-        if (!isForSamePath(response)) {
+        if (!isForSamePath(response.url, currentContentUrl)) {
           // In this case we don't want to push the currentContentUrl to the history stack because we don't know if this is a location
           // we can navigate back to (as we don't know if the location supports GET) and we are not able to replicate the Resubmit form?
           // browser behavior.
@@ -340,20 +338,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     if (isNonRedirectedPostToADifferentUrlMessage) {
       throw new Error(isNonRedirectedPostToADifferentUrlMessage);
     }
-  }
-
-  function isForSamePath(response: Response) {
-    // We are trying to determine if the response URL is compatible with the last content URL that was successfully loaded on to
-    // the page.
-    // We are going to use the scheme, host, port and path to determine if they are compatible. We do not account for the query string
-    // as we want to allow for the query string to change. (Blazor doesn't use the query string for routing purposes).
-
-    const responseUrl = new URL(response.url);
-    const currentContentUrlParsed = new URL(currentContentUrl!);
-    return responseUrl.protocol === currentContentUrlParsed.protocol
-      && responseUrl.host === currentContentUrlParsed.host
-      && responseUrl.port === currentContentUrlParsed.port
-      && responseUrl.pathname === currentContentUrlParsed.pathname;
   }
 }
 

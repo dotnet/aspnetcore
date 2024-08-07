@@ -9,15 +9,11 @@ interface BlazorEvent {
   type: keyof BlazorEventMap;
 }
 
-export interface EnhancedNavigationStartEvent extends BlazorEvent {
-  resource: string | URL | Request;
-  options: RequestInit;
-}
-
 // Maps Blazor event names to the argument type passed to registered listeners.
 export interface BlazorEventMap {
   'enhancedload': BlazorEvent,
-  'enhancednavigationstart': EnhancedNavigationStartEvent,
+  'enhancednavigationstart': BlazorEvent,
+  'enhancednavigationend': BlazorEvent,
 }
 
 export class JSEventRegistry {
