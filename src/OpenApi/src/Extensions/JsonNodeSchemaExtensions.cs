@@ -334,17 +334,27 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Applies the polymorphism options to the target schema following OpenAPI v3's conventions.
+    /// Applies the polymorphism options defined by System.Text.Json to the target schema following OpenAPI v3's
+    /// conventions for the discriminator property.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
     /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
+    internal static void MapPolymorphismOptionsToDiscriminator(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
+        // The `context.BaseTypeInfo == null` check is used to ensure that we only apply the polymorphism options
         // to the top-level schema and not to any nested schemas that are generated.
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.Path.Length == 0)
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.BaseTypeInfo == null)
         {
+            // System.Text.Json supports serializing to a non-abstract base class if no discriminator is provided.
+            // OpenAPI requires that all polymorphic sub-schemas have an associated discriminator. If the base type
+            // doesn't declare itself as its own derived type via [JsonDerived], then it can't have a discriminator,
+            // which OpenAPI requires. In that case, we exit early to avoid mapping the polymorphism options
+            // to the `discriminator` property and return an un-discriminated `anyOf` schema instead.
+            if (IsNonAbstractTypeWithoutDerivedTypeReference(context))
+            {
+                return;
+            }
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -376,6 +386,24 @@ internal static class JsonNodeSchemaExtensions
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }
+        // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
+        if (context.BaseTypeInfo == context.TypeInfo &&
+            IsNonAbstractTypeWithoutDerivedTypeReference(context))
+        {
+            schema[OpenApiConstants.SchemaId] = "Base";
+        }
+    }
+
+    /// <summary>
+    /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is not defined as its
+    /// own derived type.
+    /// </summary>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithoutDerivedTypeReference(JsonSchemaExporterContext context)
+    {
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type);
     }
 
     /// <summary>
