@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             return listener;
         }
 
-        internal static HttpSysListener CreateHttpServer(out string baseAddress)
+        internal static HttpSysListener CreateHttpServer(out string baseAddress, bool respectHttp10KeepAlive = false)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress);
+            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, respectHttp10KeepAlive);
         }
 
         internal static HttpSysListener CreateHttpServerReturnRoot(string path, out string root)
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             return CreateDynamicHttpServer(path, out root, out baseAddress);
         }
 
-        internal static HttpSysListener CreateDynamicHttpServer(string basePath, out string root, out string baseAddress)
+        internal static HttpSysListener CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, bool respectHttp10KeepAlive = false)
         {
             lock (PortLock)
             {
@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var options = new HttpSysOptions();
                     options.UrlPrefixes.Add(prefix);
                     options.RequestQueueName = prefix.Port; // Convention for use with CreateServerOnExistingQueue
+                    options.RespectHttp10KeepAlive = respectHttp10KeepAlive;
                     var listener = new HttpSysListener(options, new LoggerFactory());
                     try
                     {
