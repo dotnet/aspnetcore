@@ -26,7 +26,13 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             return true;
         }
 
-        return Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
+        // Compare property equality in an order that should help us find inequality faster
+        return
+            x.Type == y.Type &&
+            x.Format == y.Format &&
+            SchemaIdEquals(x, y) &&
+            x.Properties.Keys.All(k => y.Properties.TryGetValue(k, out var yValue) && Instance.Equals(x.Properties[k], yValue)) &&
+            Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
             x.AdditionalPropertiesAllowed == y.AdditionalPropertiesAllowed &&
             x.AllOf.SequenceEqual(y.AllOf, Instance) &&
             x.AnyOf.SequenceEqual(y.AnyOf, Instance) &&
@@ -41,10 +47,8 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.Extensions.Keys.All(k => y.Extensions.TryGetValue(k, out var yValue) && x.Extensions[k] is IOpenApiAny anyX && yValue is IOpenApiAny anyY && OpenApiAnyComparer.Instance.Equals(anyX, anyY)) &&
             OpenApiExternalDocsComparer.Instance.Equals(x.ExternalDocs, y.ExternalDocs) &&
             x.Enum.SequenceEqual(y.Enum, OpenApiAnyComparer.Instance) &&
-            x.Format == y.Format &&
             Instance.Equals(x.Items, y.Items) &&
             x.Title == y.Title &&
-            x.Type == y.Type &&
             x.Maximum == y.Maximum &&
             x.MaxItems == y.MaxItems &&
             x.MaxLength == y.MaxLength &&
@@ -58,15 +62,13 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             Instance.Equals(x.Not, y.Not) &&
             x.Nullable == y.Nullable &&
             x.Pattern == y.Pattern &&
-            x.Properties.Keys.All(k => y.Properties.TryGetValue(k, out var yValue) && Instance.Equals(x.Properties[k], yValue)) &&
             x.ReadOnly == y.ReadOnly &&
             x.Required.Order().SequenceEqual(y.Required.Order()) &&
             OpenApiReferenceComparer.Instance.Equals(x.Reference, y.Reference) &&
             x.UniqueItems == y.UniqueItems &&
             x.UnresolvedReference == y.UnresolvedReference &&
             x.WriteOnly == y.WriteOnly &&
-            OpenApiXmlComparer.Instance.Equals(x.Xml, y.Xml) &&
-            SchemaIdEquals(x, y);
+            OpenApiXmlComparer.Instance.Equals(x.Xml, y.Xml);
     }
 
     private static bool SchemaIdEquals(OpenApiSchema x, OpenApiSchema y)
