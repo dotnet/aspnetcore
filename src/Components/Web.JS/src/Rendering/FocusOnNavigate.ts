@@ -8,45 +8,60 @@ import { isForSamePath } from '../Services/NavigationUtils';
 const customElementName = 'blazor-focus-on-navigate';
 let currentFocusOnNavigateElement: FocusOnNavigateElement | null = null;
 let locationOnLastNavigation = location.href;
-
-// On the initial page load, we only want to apply focus if there isn't already a focused element.
-// https://developer.mozilla.org/docs/Web/API/Document/activeElement#value
-let allowChangeFocus = document.activeElement === null || document.activeElement === document.body;
+let allowApplyFocusAfterEnhancedNavigation = false;
 
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   customElements.define(customElementName, FocusOnNavigateElement);
   jsEventRegistry.addEventListener('enhancednavigationstart', onEnhancedNavigationStart);
-  jsEventRegistry.addEventListener('enhancednavigationend', tryApplyFocus);
+  jsEventRegistry.addEventListener('enhancednavigationend', onEnhancedNavigationEnd);
   document.addEventListener('focusin', onFocusIn);
 
-  // Focus the element on the initial page load.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryApplyFocus, { once: true });
+    document.addEventListener('DOMContentLoaded', onInitialPageLoad, { once: true });
   } else {
-    tryApplyFocus();
+    onInitialPageLoad();
   }
 }
 
+function onInitialPageLoad() {
+  // On the initial page load, we only want to apply focus if there isn't already
+  // a focused element.
+  // See also: https://developer.mozilla.org/docs/Web/API/Document/activeElement#value
+  if (document.activeElement !== null && document.activeElement !== document.body) {
+    return;
+  }
+
+  // If an element on the page is requesting autofocus, but hasn't yet been focused,
+  // we'll respect that.
+  if (document.querySelector('[autofocus]')) {
+    return;
+  }
+
+  tryApplyFocus();
+}
+
 function onEnhancedNavigationStart() {
-  // Only focus on enhanced load when navigating to a new page.
+  // Only move focus when navigating to a new page.
   if (!isForSamePath(locationOnLastNavigation, location.href)) {
-    allowChangeFocus = true;
+    allowApplyFocusAfterEnhancedNavigation = true;
   }
 
   locationOnLastNavigation = location.href;
 }
 
+function onEnhancedNavigationEnd() {
+  if (allowApplyFocusAfterEnhancedNavigation) {
+    tryApplyFocus();
+  }
+}
+
 function onFocusIn() {
   // If the user explicitly focuses a different element before a navigation completes,
   // don't move focus again.
-  allowChangeFocus = false;
+  allowApplyFocusAfterEnhancedNavigation = false;
 }
 
 function tryApplyFocus() {
-  if (!allowChangeFocus) {
-    return;
-  }
-
   const selector = currentFocusOnNavigateElement?.getAttribute('selector');
   if (selector) {
     domFunctions.focusBySelector(selector);

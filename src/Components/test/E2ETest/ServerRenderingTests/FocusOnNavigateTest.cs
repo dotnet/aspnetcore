@@ -40,6 +40,13 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Fact]
+    public void FocusIsPreserved_AfterInitialPageLoad_WhenAutofocusedElementIsPresent()
+    {
+        Navigate($"{ServerPathBase}/focus-on-navigate/autofocus");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("autofocus") is not null);
+    }
+
+    [Fact]
     public void FocusIsPreserved_OnEnhancedNavigation_WhenNoElementMatchesSelector()
     {
         Navigate($"{ServerPathBase}/focus-on-navigate/static");
