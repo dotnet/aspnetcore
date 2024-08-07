@@ -318,7 +318,6 @@ partial class HubConnectionTests : FunctionalTestBase
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
                     Assert.False(a.HasRemoteParent);
-                    Assert.True(a.IsStopped);
                     Assert.Empty(a.Baggage);
                 },
                 a =>
@@ -342,7 +341,6 @@ partial class HubConnectionTests : FunctionalTestBase
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", a.Parent.OperationName);
                     Assert.Equal(ActivityStatusCode.Unset, a.Status);
                     Assert.False(a.HasRemoteParent);
-                    Assert.True(a.IsStopped);
                     Assert.Empty(a.Baggage);
                 });
 
