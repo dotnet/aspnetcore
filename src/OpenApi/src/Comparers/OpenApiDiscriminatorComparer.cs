@@ -27,7 +27,7 @@ internal sealed class OpenApiDiscriminatorComparer : IEqualityComparer<OpenApiDi
 
         return x.PropertyName == y.PropertyName &&
             x.Mapping.Count == y.Mapping.Count &&
-            x.Mapping.Keys.All(key => y.Mapping.ContainsKey(key) && x.Mapping[key] == y.Mapping[key]);
+            x.Mapping.Keys.All(key => y.Mapping.TryGetValue(key, out var yValue) && x.Mapping[key] == yValue);
     }
 
     public int GetHashCode(OpenApiDiscriminator obj)
