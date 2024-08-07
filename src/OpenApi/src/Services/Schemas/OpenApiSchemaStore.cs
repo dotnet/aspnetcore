@@ -104,9 +104,7 @@ internal sealed class OpenApiSchemaStore
             // AnyOf schemas in a polymorphic type should contain a reference to the parent schema
             // ID to support disambiguating between a derived type on its own and a derived type
             // as part of a polymorphic schema.
-            var baseTypeSchemaId = schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var schemaId)
-                ? ((ScrubbedOpenApiAny)schemaId).Value
-                : null;
+            var baseTypeSchemaId = schema.Annotations is not null && schema.Annotations.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) ? schemaId?.ToString() : null;
             foreach (var anyOfSchema in schema.AnyOf)
             {
                 AddOrUpdateSchemaByReference(anyOfSchema, baseTypeSchemaId);
@@ -176,8 +174,8 @@ internal sealed class OpenApiSchemaStore
 
     private static string? GetSchemaReferenceId(OpenApiSchema schema)
     {
-        if (schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var referenceIdAny)
-            && referenceIdAny is ScrubbedOpenApiAny { Value: string referenceId })
+        if (schema.Annotations?.TryGetValue(OpenApiConstants.SchemaId, out var referenceIdObject) == true
+            && referenceIdObject is string referenceId)
         {
             return referenceId;
         }

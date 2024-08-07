@@ -42,7 +42,6 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
                 OpenApiByte byteX => y is OpenApiByte byteY && byteX.Value.SequenceEqual(byteY.Value),
                 OpenApiDate dateX => y is OpenApiDate dateY && dateX.Value == dateY.Value,
                 OpenApiDateTime dateTimeX => y is OpenApiDateTime dateTimeY && dateTimeX.Value == dateTimeY.Value,
-                ScrubbedOpenApiAny scrubbedX => y is ScrubbedOpenApiAny scrubbedY && scrubbedX.Value == scrubbedY.Value,
                 _ => x.Equals(y)
             });
     }
@@ -74,7 +73,6 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
             OpenApiPassword password => password.Value,
             OpenApiDate date => date.Value,
             OpenApiDateTime dateTime => dateTime.Value,
-            ScrubbedOpenApiAny scrubbed => scrubbed.Value,
             _ => null
         });
 
