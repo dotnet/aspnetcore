@@ -30,9 +30,7 @@ internal sealed class Response
     private BoundaryType _boundaryType;
     private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
     private HeaderCollection? _trailers;
-
-    private const string RespectHttp10KeepAliveSwitch = "Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive";
-    private readonly bool _respectHttp10KeepAlive = AppContext.TryGetSwitch(RespectHttp10KeepAliveSwitch, out var enabled) && enabled;
+    private readonly bool _respectHttp10KeepAlive;
 
     internal Response(RequestContext requestContext)
     {
@@ -54,6 +52,7 @@ internal sealed class Response
         _nativeStream = null;
         _cacheTtl = null;
         _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+        _respectHttp10KeepAlive = RequestContext.Server.Options.RespectHttp10KeepAlive;
     }
 
     private enum ResponseState

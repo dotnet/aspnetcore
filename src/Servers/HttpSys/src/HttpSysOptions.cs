@@ -29,6 +29,9 @@ public class HttpSysOptions
     private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
     private string? _requestQueueName;
 
+    private const string RespectHttp10KeepAliveSwitch = "Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive";
+    internal bool RespectHttp10KeepAlive = AppContext.TryGetSwitch(RespectHttp10KeepAliveSwitch, out var enabled) && enabled;
+
     /// <summary>
     /// Initializes a new <see cref="HttpSysOptions"/>.
     /// </summary>

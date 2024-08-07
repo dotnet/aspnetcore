@@ -210,9 +210,8 @@ public class ResponseHeaderTests : IDisposable
     [ConditionalFact]
     public async Task ResponseHeaders_HTTP10KeepAliveRequest_KeepAliveHeader_RespectsSwitch()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive", true);
         string address;
-        using (var server = Utilities.CreateHttpServer(out address))
+        using (var server = Utilities.CreateHttpServer(out address, respectHttp10KeepAlive: true))
         {
             // Track the number of times ConnectCallback is invoked to ensure the underlying socket wasn't closed.
             int connectCallbackInvocations = 0;
@@ -250,8 +249,7 @@ public class ResponseHeaderTests : IDisposable
             Assert.Equal(1, connectCallbackInvocations);
         }
 
-        AppContext.SetSwitch("Microsoft.AspNetCore.Server.HttpSys.RespectHttp10KeepAlive", false);
-        using (var server = Utilities.CreateHttpServer(out address))
+        using (var server = Utilities.CreateHttpServer(out address, respectHttp10KeepAlive: false))
         {
             var handler = new SocketsHttpHandler();
             using (var client = new HttpClient(handler))
