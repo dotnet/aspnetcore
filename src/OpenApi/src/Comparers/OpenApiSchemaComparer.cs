@@ -32,6 +32,7 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.Format == y.Format &&
             SchemaIdEquals(x, y) &&
             x.Properties.Keys.All(k => y.Properties.TryGetValue(k, out var yValue) && Instance.Equals(x.Properties[k], yValue)) &&
+            OpenApiDiscriminatorComparer.Instance.Equals(x.Discriminator, y.Discriminator) &&
             Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
             x.AdditionalPropertiesAllowed == y.AdditionalPropertiesAllowed &&
             x.AllOf.SequenceEqual(y.AllOf, Instance) &&
@@ -39,7 +40,6 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.Deprecated == y.Deprecated &&
             OpenApiAnyComparer.Instance.Equals(x.Default, y.Default) &&
             x.Description == y.Description &&
-            OpenApiDiscriminatorComparer.Instance.Equals(x.Discriminator, y.Discriminator) &&
             OpenApiAnyComparer.Instance.Equals(x.Example, y.Example) &&
             x.ExclusiveMaximum == y.ExclusiveMaximum &&
             x.ExclusiveMinimum == y.ExclusiveMinimum &&
