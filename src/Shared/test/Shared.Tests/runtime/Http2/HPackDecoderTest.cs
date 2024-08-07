@@ -152,6 +152,27 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesIndexedHeaderField_DynamicTable_ReferencedEntryRemovedOnInsertion()
+        {
+            // Pre-populate the dynamic table so we'll have something to reference.
+            // This entry will have index 62 (0x3E).
+            _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
+            Assert.Equal(1, _dynamicTable.Count);
+
+            Assert.InRange(_dynamicTable.MaxSize, 1, 4096); // Assert that our string will be too big
+
+            var newHeaderValue = new string('a', 4096);
+            byte[] encoded = (new byte[] { 0x40 | 0x3E }) // Indexing enabled (0x40) | dynamic table (62 = 0x3E) as a 6-integer, 
+                .Concat(new byte[] { 0x7F, 0x81, 0x1F }) // 0 Huffman bit | header value length (4096) as a 7-integer
+                .Concat(Encoding.ASCII.GetBytes(newHeaderValue)) // Non-Huffman encoded literal header value
+                .ToArray();
+
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+            Assert.Equal(0, _dynamicTable.Count); // The large entry caused the table to be wiped
+            Assert.Equal(newHeaderValue, _handler.DecodedHeaders[_headerNameString]); // but we got the header anyway
+        }
+
+        [Fact]
         public void DecodesIndexedHeaderField_OutOfRange_Error()
         {
             HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
