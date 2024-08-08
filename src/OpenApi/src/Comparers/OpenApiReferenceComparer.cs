@@ -24,6 +24,9 @@ internal sealed class OpenApiReferenceComparer : IEqualityComparer<OpenApiRefere
             return true;
         }
 
+        // We avoid comparing the HostDocument that a reference is associated with
+        // so that the same schema in the OpenApiSchemaStore cache and embedded in
+        // an OpenAPI document is considered equal.
         return x.ExternalResource == y.ExternalResource &&
             x.Id == y.Id &&
             x.Type == y.Type;
