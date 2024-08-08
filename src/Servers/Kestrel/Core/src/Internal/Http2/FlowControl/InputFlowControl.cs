@@ -25,7 +25,7 @@ internal sealed class InputFlowControl
     private FlowControl _flow;
     private int _pendingUpdateSize;
     private bool _windowUpdatesDisabled;
-    private readonly object _flowLock = new object();
+    private readonly Lock _flowLock = new();
 
     public InputFlowControl(uint initialWindowSize, uint minWindowSizeIncrement)
     {

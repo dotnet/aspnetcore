@@ -34,7 +34,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private readonly TimingPipeFlusher _flusher;
 
     // This locks access to all of the below fields
-    private readonly object _contextLock = new object();
+    private readonly Lock _contextLock = new();
 
     private bool _pipeWriterCompleted;
     private bool _aborted;

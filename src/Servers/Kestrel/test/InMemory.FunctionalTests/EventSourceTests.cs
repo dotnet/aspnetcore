@@ -423,7 +423,7 @@ public class EventSourceTests : LoggedTest
         private readonly ConcurrentQueue<EventSnapshot> _events = new ConcurrentQueue<EventSnapshot>();
         private readonly ILogger _logger;
 
-        private readonly object _disposeLock = new object();
+        private readonly Lock _disposeLock = new();
         private bool _disposed;
 
         public TestEventListener()

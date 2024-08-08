@@ -25,7 +25,7 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
     private bool _connectionShutdown;
     private bool _streamDisconnected;
     private Exception? _shutdownReason;
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
 
     // Internal for testing.
     internal Task _receivingTask = Task.CompletedTask;

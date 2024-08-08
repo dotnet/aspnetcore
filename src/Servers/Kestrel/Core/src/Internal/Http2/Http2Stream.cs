@@ -44,7 +44,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     internal long DrainExpirationTimestamp { get; set; }
 
     private StreamCompletionFlags _completionState;
-    private readonly object _completionLock = new object();
+    private readonly Lock _completionLock = new();
 
     public void Initialize(Http2StreamContext context)
     {

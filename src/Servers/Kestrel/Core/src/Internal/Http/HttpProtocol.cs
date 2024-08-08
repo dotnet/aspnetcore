@@ -43,7 +43,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private Stack<KeyValuePair<Func<object, Task>, object>>? _onStarting;
     private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
 
-    private readonly object _abortLock = new object();
+    private readonly Lock _abortLock = new();
     protected volatile bool _connectionAborted;
     private bool _preventRequestAbortedCancellation;
     private CancellationTokenSource? _abortedCts;
