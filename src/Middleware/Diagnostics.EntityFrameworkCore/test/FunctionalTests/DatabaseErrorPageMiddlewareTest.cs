@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests;
 
@@ -538,7 +539,9 @@ public class DatabaseErrorPageMiddlewareTest
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
+                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder
+                        .UseSqlite(database.ConnectionString)
+                        .ConfigureWarnings(w => w.Log(RelationalEventId.PendingModelChangesWarning)));
                 });
             }).Build();
 
