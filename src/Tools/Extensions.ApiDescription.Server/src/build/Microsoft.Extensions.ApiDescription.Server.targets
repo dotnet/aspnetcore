@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
   <PropertyGroup>
     <_IsMicrosoftNETCoreApp20OrOlder>false</_IsMicrosoftNETCoreApp20OrOlder>
@@ -61,6 +61,10 @@
       <_DotNetGetDocumentCommand Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_DotNetGetDocumentCommand) --platform "$(Platform)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand Condition=" '$(RuntimeIdentifier)' != '' ">$(_DotNetGetDocumentCommand) --runtime "$(RuntimeIdentifier) --self-contained"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) $(OpenApiGenerateDocumentsOptions)</_DotNetGetDocumentCommand>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <OpenApiGenerateDocumentsOptions Condition=" '$(OpenApiGenerateEnvironment)' != '' " >$(OpenApiGenerateDocumentsOptions) --environment &quot;$(OpenApiGenerateEnvironment)&quot;</OpenApiGenerateDocumentsOptions>
     </PropertyGroup>
 
     <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
