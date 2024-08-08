@@ -34,6 +34,11 @@ export interface WebAssemblyStartOptions {
    * Allows to override .NET runtime configuration.
    */
   configureRuntime(builder: DotnetHostBuilder): void;
+
+  /**
+   * Allows to use the same structure as WebStartOptions
+   */
+  webAssembly?: WebAssemblyStartOptions
 }
 
 // This type doesn't have to align with anything in BootConfig.
