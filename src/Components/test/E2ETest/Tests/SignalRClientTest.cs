@@ -35,7 +35,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
         Browser.Exists(By.Id("signalr-client"));
     }
 
-    public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+    public override Task InitializeAsync() => base.InitializeAsync(null);
 
     [Fact]
     public void SignalRClientWorksWithLongPolling()

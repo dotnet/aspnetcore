@@ -33,7 +33,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         // instance across tests (One of the tests closes the browser). For that reason we simply create
         // a new browser instance for every test in this class sos that there are no issues when running
         // them together.
-        await base.InitializeAsync(Guid.NewGuid().ToString());
+        await base.InitializeAsync(null);
     }
 
     protected override void InitializeAsyncCore()
