@@ -21,27 +21,4 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 
-  <Target Name="FixDevelopmentManifest" AfterTargets="GenerateStaticWebAssetsManifest">
-    <ComputeStaticWebAssetsTargetPaths
-      Assets="@(StaticWebAsset)"
-      PathPrefix=""
-      UseAlternatePathDirectorySeparator="true">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_FixedAssets" />
-    </ComputeStaticWebAssetsTargetPaths>
-
-    <ItemGroup>
-      <_FixedAssets>
-        <RelativePath>$([System.String]::Copy('%(_FixedAssets.TargetPath)').Replace('%(_FixedAssets.BasePath)', ''))</RelativePath>
-      </_FixedAssets>
-    </ItemGroup>
-
-    <GenerateStaticWebAssetsDevelopmentManifest
-      DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
-      Assets="@(_FixedAssets)"
-      Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
-    </GenerateStaticWebAssetsDevelopmentManifest>
-
-  </Target>
-
 </Project>
