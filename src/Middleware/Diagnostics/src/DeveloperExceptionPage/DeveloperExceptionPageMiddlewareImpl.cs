@@ -181,7 +181,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
             }
 
             _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
-            Debugger.BreakForUserUnhandledException(ex);
+
+            // Rethrowing informs the debugger that this exception should be considered user-unhandled.
             throw;
         }
 
