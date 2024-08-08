@@ -25,7 +25,6 @@ internal sealed class OpenApiReferenceComparer : IEqualityComparer<OpenApiRefere
         }
 
         return x.ExternalResource == y.ExternalResource &&
-            x.HostDocument?.HashCode == y.HostDocument?.HashCode &&
             x.Id == y.Id &&
             x.Type == y.Type;
     }

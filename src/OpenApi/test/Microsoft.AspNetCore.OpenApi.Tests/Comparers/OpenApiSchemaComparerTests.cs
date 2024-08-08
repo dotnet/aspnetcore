@@ -303,9 +303,10 @@ public class OpenApiSchemaComparerTests
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Xml)));
 
+        // Disregard annotations in comparison checks since they are in-memory constructs
         modifiedSchema = new(originalSchema);
         modifiedSchema.Annotations["key"] = "another value";
-        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+        Assert.True(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Annotations)));
 
         Assert.Empty(propertyNames);

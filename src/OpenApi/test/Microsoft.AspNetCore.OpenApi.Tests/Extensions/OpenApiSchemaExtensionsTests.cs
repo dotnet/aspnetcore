@@ -54,7 +54,7 @@ public class OpenApiSchemaExtensionsTests
             UnresolvedReference = true,
             WriteOnly = true,
             Xml = new OpenApiXml { Name = "Name" },
-            Annotations = new Dictionary<string, object> { ["key"] = "value" }
+            Annotations = new Dictionary<string, object> { ["x-schema-id"] = "value" }
         };
 
         var modifiedSchema = originalSchema.Clone();
@@ -113,7 +113,7 @@ public class OpenApiSchemaExtensionsTests
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.ExclusiveMinimum)));
 
         modifiedSchema = originalSchema.Clone();
-        originalSchema.Extensions = new Dictionary<string, IOpenApiExtension> { ["key"] = new OpenApiString("value") };
+        originalSchema.Extensions = new Dictionary<string, IOpenApiExtension> { ["key"] = new OpenApiString("another value") };
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Extensions)));
 
@@ -252,8 +252,10 @@ public class OpenApiSchemaExtensionsTests
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Xml)));
 
+        // Although annotations are not part of the OpenAPI schema, we care specifically about
+        // x-schema-id annotation which is used to identify schemas in the document.
         modifiedSchema = originalSchema.Clone();
-        modifiedSchema.Annotations["key"] = "another value";
+        modifiedSchema.Annotations["x-schema-id"] = "another value";
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Annotations)));
 
@@ -304,6 +306,29 @@ public class OpenApiSchemaExtensionsTests
 
         var modifiedSchema = originalSchema.Clone();
         modifiedSchema.Properties["name"].Reference = new OpenApiReference { Id = "Another Id", Type = ReferenceType.Schema };
+        Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
+    }
+
+    [Fact]
+    public void ValidateDeepCopyOnSchemasWithOpenApiAny()
+    {
+        var originalSchema = new OpenApiSchema
+        {
+            Properties = new Dictionary<string, OpenApiSchema>
+            {
+                ["name"] = new OpenApiSchema
+                {
+                    Default = new OpenApiString("default"),
+                    Example = new OpenApiString("example"),
+                    Enum = [new OpenApiString("enum")],
+                    ExternalDocs = new OpenApiExternalDocs(),
+                    Xml = new OpenApiXml { Name = "Name" }
+                }
+            }
+        };
+
+        var modifiedSchema = originalSchema.Clone();
+        modifiedSchema.Properties["name"].Default = new OpenApiString("another default");
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
     }
 }
