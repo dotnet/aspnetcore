@@ -11,7 +11,7 @@ public class NavigationException : Exception
     /// <summary>
     /// Initializes a new <see cref="NavigationException"/> instance.
     /// </summary>
-    public NavigationException(string uri)
+    public NavigationException(string uri) : base($"Could not navigate to {uri}")
     {
         Location = uri;
     }
