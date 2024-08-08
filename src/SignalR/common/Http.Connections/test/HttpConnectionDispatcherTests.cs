@@ -159,7 +159,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
 
             var error = negotiateResponse.Value<string>("error");
-            Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+            Assert.Equal("The client requested a non-integer protocol version.", error);
 
             var connectionId = negotiateResponse.Value<string>("connectionId");
             Assert.Null(connectionId);

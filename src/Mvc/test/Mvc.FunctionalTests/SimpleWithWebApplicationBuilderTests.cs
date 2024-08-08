@@ -4,38 +4,46 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program>>
+public class SimpleWithWebApplicationBuilderTests : LoggedTest
 {
-    private readonly MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> _fixture;
-
-    public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        _fixture = fixture;
-        Client = _fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task HelloWorld()
     {
         // Arrange
         var expected = "Hello World";
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var content = await client.GetStringAsync("http://localhost/");
+        var content = await Client.GetStringAsync("http://localhost/");
 
         // Assert
         Assert.Equal(expected, content);
@@ -46,10 +54,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     {
         // Arrange
         var expected = "{\"name\":\"John\",\"age\":42}";
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/json");
+        var response = await Client.GetAsync("/json");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -62,10 +69,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     {
         // Arrange
         var expected = "{\"name\":\"John\",\"age\":42}";
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/ok-object");
+        var response = await Client.GetAsync("/ok-object");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -78,10 +84,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     {
         // Arrange
         var expected = "{\"name\":\"John\",\"age\":42}";
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/accepted-object");
+        var response = await Client.GetAsync("/accepted-object");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.Accepted);
@@ -94,10 +99,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     public async Task ActionReturningMoreThanOneResult_NotFound()
     {
         // Arrange
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/many-results?id=-1");
+        var response = await Client.GetAsync("/many-results?id=-1");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
@@ -107,10 +111,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     public async Task ActionReturningMoreThanOneResult_Found()
     {
         // Arrange
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/many-results?id=7");
+        var response = await Client.GetAsync("/many-results?id=7");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.MovedPermanently);
@@ -121,10 +124,9 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     public async Task MvcControllerActionWorks()
     {
         // Arrange
-        using var client = _fixture.CreateDefaultClient();
 
         // Act
-        var response = await client.GetAsync("/greet");
+        var response = await Client.GetAsync("/greet");
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -150,7 +152,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     public async Task Configuration_Can_Be_Overridden()
     {
         // Arrange
-        var fixture = _fixture.WithWebHostBuilder(builder =>
+        var fixture = Factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureAppConfiguration(builder =>
             {
@@ -177,7 +179,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     public async Task Environment_Can_Be_Overridden()
     {
         // Arrange
-        var fixture = _fixture.WithWebHostBuilder(builder =>
+        var fixture = Factory.WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(Environments.Staging);
         });
@@ -198,7 +200,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         var webRoot = "foo";
         var expectedWebRoot = "";
         // Arrange
-        var fixture = _fixture.WithWebHostBuilder(builder =>
+        var fixture = Factory.WithWebHostBuilder(builder =>
         {
             expectedWebRoot = Path.GetFullPath(Path.Combine(builder.GetSetting(WebHostDefaults.ContentRootKey), webRoot));
             builder.UseSetting(WebHostDefaults.WebRootKey, webRoot);
@@ -261,15 +263,14 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         var content = new MultipartFormDataContent();
         content.Add(new StringContent(new string('a', 42)), "file", "file.txt");
 
-        using var client = _fixture.CreateDefaultClient();
-        var antiforgery = _fixture.Services.GetRequiredService<IAntiforgery>();
-        var antiforgeryOptions = _fixture.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var antiforgery = Factory.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = Factory.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
         var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
-        client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(antiforgeryOptions.Value.Cookie.Name, tokens.CookieToken).ToString());
-        client.DefaultRequestHeaders.Add(tokens.HeaderName, tokens.RequestToken);
+        Client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(antiforgeryOptions.Value.Cookie.Name, tokens.CookieToken).ToString());
+        Client.DefaultRequestHeaders.Add(tokens.HeaderName, tokens.RequestToken);
 
         // Act
-        var response = await client.PostAsync("/fileupload", content);
+        var response = await Client.PostAsync("/fileupload", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -284,10 +285,8 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         var content = new MultipartFormDataContent();
         content.Add(new StringContent(new string('a', 42)), "file", "file.txt");
 
-        using var client = _fixture.CreateDefaultClient();
-
         // Act
-        var response = await client.PostAsync("/fileupload", content);
+        var response = await Client.PostAsync("/fileupload", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);

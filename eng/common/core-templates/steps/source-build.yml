@@ -19,18 +19,10 @@ steps:
     set -x
     df -h
 
-    # If building on the internal project, the artifact feeds variable may be available (usually only if needed)
-    # In that case, call the feed setup script to add internal feeds corresponding to public ones.
-    # In addition, add an msbuild argument to copy the WIP from the repo to the target build location.
-    # This is because SetupNuGetSources.sh will alter the current NuGet.config file, and we need to preserve those
-    # changes.
+    # If file changes are detected, set CopyWipIntoInnerSourceBuildRepo to copy the WIP changes into the inner source build repo.
     internalRestoreArgs=
-    if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
-      # Temporarily work around https://github.com/dotnet/arcade/issues/7709
-      chmod +x $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-      $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
+    if ! git diff --quiet; then
       internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
-
       # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
       # This only works if there is a username/email configured, which won't be the case in most CI runs.
       git config --get user.email
@@ -123,12 +115,15 @@ steps:
       artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: succeededOrFailed()
+      sbomEnabled: false  # we don't need SBOM for logs
 
 # Manually inject component detection so that we can ignore the source build upstream cache, which contains
 # a nupkg cache of input packages (a local feed).
 # This path must match the upstream cache path in property 'CurrentRepoSourceBuiltNupkgCacheDir'
 # in src\Microsoft.DotNet.Arcade.Sdk\tools\SourceBuild\SourceBuildArcade.targets
-- task: ComponentGovernanceComponentDetection@0
-  displayName: Component Detection (Exclude upstream cache)
-  inputs:
-    ignoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
+- template: /eng/common/core-templates/steps/component-governance.yml
+  parameters:
+    displayName: Component Detection (Exclude upstream cache)
+    is1ESPipeline: ${{ parameters.is1ESPipeline }}
+    componentGovernanceIgnoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
+    disableComponentGovernance: ${{ eq(variables['System.TeamProject'], 'public') }}

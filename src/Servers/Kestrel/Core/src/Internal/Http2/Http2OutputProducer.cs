@@ -239,9 +239,9 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    // This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
-    // For HTTP/2 we abort the stream.
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
+    // This is called when a CancellationToken fires mid-write.
+    // In HTTP/1.x, this aborts the entire connection. For HTTP/2 we abort the stream.
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
     }
@@ -468,6 +468,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
             EnqueueDataWrite(bytes);
         }
     }
+
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
 
     public Span<byte> GetSpan(int sizeHint = 0)
     {

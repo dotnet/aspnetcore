@@ -87,7 +87,13 @@ public class HttpParserTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
         ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        var line = requestLine;
+        var nullIndex = line.IndexOf('\0');
+        if (nullIndex >= 0)
+        {
+            line = line.AsSpan().Slice(0, nullIndex + 2).ToString();
+        }
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(line[..^1].EscapeNonPrintable()), exception.Message);
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
@@ -134,7 +140,16 @@ public class HttpParserTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
             ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D"), exception.Message);
+        var nullIndex = method.IndexOf('\0');
+        if (nullIndex >= 0)
+        {
+            var line = method.AsSpan().Slice(0, nullIndex + 1).ToString();
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(line.EscapeNonPrintable()), exception.Message);
+        }
+        else
+        {
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D"), exception.Message);
+        }
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
@@ -871,18 +886,18 @@ public class HttpParserTests : LoggedTest
 
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            Headers[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
+            Headers[name.GetAsciiString()] = value.GetAsciiString();
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
-            Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
+            Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiString();
             Version = HttpUtilities.VersionToString(version);
-            RawTarget = target.GetAsciiStringNonNullCharacters();
-            RawPath = path.GetAsciiStringNonNullCharacters();
-            Query = query.GetAsciiStringNonNullCharacters();
+            RawTarget = target.GetAsciiString();
+            RawPath = path.GetAsciiString();
+            Query = query.GetAsciiString();
             PathEncoded = pathEncoded;
         }
 
@@ -896,11 +911,11 @@ public class HttpParserTests : LoggedTest
             var path = target[..targetPath.Length];
             var query = target[targetPath.Length..];
 
-            Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
+            Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiString();
             Version = HttpUtilities.VersionToString(version);
-            RawTarget = target.GetAsciiStringNonNullCharacters();
-            RawPath = path.GetAsciiStringNonNullCharacters();
-            Query = query.GetAsciiStringNonNullCharacters();
+            RawTarget = target.GetAsciiString();
+            RawPath = path.GetAsciiString();
+            Query = query.GetAsciiString();
             PathEncoded = targetPath.IsEncoded;
         }
 

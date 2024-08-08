@@ -384,13 +384,16 @@ public class KestrelServerOptions
                 return null;
             }
 
-            var status = CertificateManager.Instance.CheckCertificateState(cert, interactive: false);
+            var status = CertificateManager.Instance.CheckCertificateState(cert);
             if (!status.Success)
             {
-                // Display a warning indicating to the user that a prompt might appear and provide instructions on what to do in that
-                // case. The underlying implementation of this check is specific to Mac OS and is handled within CheckCertificateState.
-                // Kestrel must NEVER cause a UI prompt on a production system. We only attempt this here because Mac OS is not supported
-                // in production.
+                // Failure is only possible on MacOS and indicates that, if there is a dev cert, it must be from
+                // a dotnet version prior to 7.0 - newer versions store it in such a way that this check succeeds.
+                // (Success does not mean that the dev cert has been trusted).
+                // In practice, success.FailureMessage will always be MacOSCertificateManager.InvalidCertificateState.
+                // Basically, we're just going to encourage the user to generate and trust the dev cert.  We support
+                // these older certificates not by accepting them as-is, but by modernizing them when dev-certs is run.
+                // If we detect an issue here, we can avoid a UI prompt below.
                 Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                 logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
@@ -398,9 +401,17 @@ public class KestrelServerOptions
                 return null;
             }
 
-            if (!CertificateManager.Instance.IsTrusted(cert))
+            // On MacOS, this may cause a UI prompt, since it requires accessing the keychain.  Kestrel must NEVER
+            // cause a UI prompt on a production system. We only attempt this here because MacOS is not supported
+            // in production.
+            switch (CertificateManager.Instance.GetTrustLevel(cert))
             {
-                logger.DeveloperCertificateNotTrusted();
+                case CertificateManager.TrustLevel.Partial:
+                    logger.DeveloperCertificatePartiallyTrusted();
+                    break;
+                case CertificateManager.TrustLevel.None:
+                    logger.DeveloperCertificateNotTrusted();
+                    break;
             }
 
             return cert;

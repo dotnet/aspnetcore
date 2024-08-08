@@ -1,4 +1,8 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+ 'PSAvoidUsingConvertToSecureStringWithPlainText',
+ '',
+ Justification='$accountPassword is a script parameter so it needs to be plain-text')]
+[CmdletBinding()]
 param(
 	[Parameter(Mandatory=$true)]
 	[string]$serverName,

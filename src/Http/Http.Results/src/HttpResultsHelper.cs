@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static partial class HttpResultsHelper
 {
-    internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
@@ -54,7 +53,7 @@ internal static partial class HttpResultsHelper
         // call WriteAsJsonAsync<object>() rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        // https://learn.microsoft.com/dotnet/standard/serialization/system-text-json-polymorphism
         return httpContext.Response.WriteAsJsonAsync<object>(
            value,
            jsonSerializerOptions,
@@ -71,7 +70,7 @@ internal static partial class HttpResultsHelper
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
             contentType,
             response.ContentType,
-            (DefaultContentType, DefaultEncoding),
+            (ContentTypeConstants.DefaultContentType, DefaultEncoding),
             ResponseContentTypeHelper.GetEncoding,
             out var resolvedContentType,
             out var resolvedContentTypeEncoding);

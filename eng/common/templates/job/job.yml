@@ -1,5 +1,11 @@
 parameters: 
   enablePublishBuildArtifacts: false
+  disableComponentGovernance: ''
+  componentGovernanceIgnoreDirectories: ''
+# Sbom related params
+  enableSbom: true
+  PackageVersion: 9.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
 
 jobs:
 - template: /eng/common/core-templates/job/job.yml
@@ -13,6 +19,26 @@ jobs:
     steps:
     - ${{ each step in parameters.steps }}:
       - ${{ step }}
+    
+    componentGovernanceSteps:
+      - template: /eng/common/templates/steps/component-governance.yml
+        parameters:
+          ${{ if eq(parameters.disableComponentGovernance, '') }}:
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+              disableComponentGovernance: false
+            ${{ else }}:
+              disableComponentGovernance: true
+          ${{ else }}:
+            disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
+          componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
+
+      - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+        - template: /eng/common/templates/steps/generate-sbom.yml
+          parameters:
+            PackageVersion: ${{ parameters.packageVersion }}
+            BuildDropPath: ${{ parameters.buildDropPath }}
+            publishArtifacts: false
+
 
     artifactPublishSteps:
       - ${{ if ne(parameters.artifacts.publish, '') }}:
@@ -37,6 +63,7 @@ jobs:
                 displayName: 'Publish logs'
                 continueOnError: true
                 condition: always()
+                sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
         - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
@@ -59,3 +86,4 @@ jobs:
               artifactName: 'BuildConfiguration'
               displayName: 'Publish build retry configuration'
               continueOnError: true
+              sbomEnabled: false  # we don't need SBOM for BuildConfiguration

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -47,37 +48,49 @@ internal partial class OpaqueRedirection
         return $"{RedirectionEndpointBaseRelativeUrl}?url={UrlEncoder.Default.Encode(protectedUrl)}";
     }
 
-    public static void AddBlazorOpaqueRedirectionEndpoint(IEndpointRouteBuilder endpoints)
+    public static EndpointBuilder GetBlazorOpaqueRedirectionEndpoint()
     {
-        endpoints.MapGet($"/{RedirectionEndpointBaseRelativeUrl}", httpContext =>
+        var routeEndpointBuidler = new RouteEndpointBuilder(
+            OpaqueRedirect,
+            RoutePatternFactory.Parse($"/{RedirectionEndpointBaseRelativeUrl}"),
+            0)
         {
-            if (!httpContext.Request.Query.TryGetValue("url", out var protectedUrl))
-            {
-                httpContext.Response.StatusCode = 400;
-                return Task.CompletedTask;
-            }
+            DisplayName = "Blazor Opaque Redirection",
+        };
 
-            var protector = CreateProtector(httpContext);
-            string url;
+        routeEndpointBuidler.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get]));
 
-            try
-            {
-                url = protector.Unprotect(protectedUrl[0]!);
-            }
-            catch (CryptographicException ex)
-            {
-                if (httpContext.RequestServices.GetService<ILogger<OpaqueRedirection>>() is { } logger)
-                {
-                    Log.OpaqueUrlUnprotectionFailed(logger, ex);
-                }
+        return routeEndpointBuidler;
+    }
 
-                httpContext.Response.StatusCode = 400;
-                return Task.CompletedTask;
-            }
-
-            httpContext.Response.Redirect(url);
+    private static Task OpaqueRedirect(HttpContext httpContext)
+    {
+        if (!httpContext.Request.Query.TryGetValue("url", out var protectedUrl))
+        {
+            httpContext.Response.StatusCode = 400;
             return Task.CompletedTask;
-        });
+        }
+
+        var protector = CreateProtector(httpContext);
+        string url;
+
+        try
+        {
+            url = protector.Unprotect(protectedUrl[0]!);
+        }
+        catch (CryptographicException ex)
+        {
+            if (httpContext.RequestServices.GetService<ILogger<OpaqueRedirection>>() is { } logger)
+            {
+                Log.OpaqueUrlUnprotectionFailed(logger, ex);
+            }
+
+            httpContext.Response.StatusCode = 400;
+            return Task.CompletedTask;
+        }
+
+        httpContext.Response.Redirect(url);
+        return Task.CompletedTask;
     }
 
     private static ITimeLimitedDataProtector CreateProtector(HttpContext httpContext)

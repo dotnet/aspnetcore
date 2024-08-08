@@ -49,7 +49,9 @@ internal sealed class Startup
             });
         }
 
-        app.UseBlazorFrameworkFiles();
+        //app.UseBlazorFrameworkFiles();
+        app.UseRouting();
+
         app.UseStaticFiles(new StaticFileOptions
         {
             // In development, serve everything, as there's no other way to configure it.
@@ -57,10 +59,10 @@ internal sealed class Startup
             ServeUnknownFileTypes = true,
         });
 
-        app.UseRouting();
-
         app.UseEndpoints(endpoints =>
         {
+            var manifest = configuration["staticAssets"]!;
+            endpoints.MapStaticAssets(manifest);
             endpoints.MapFallbackToFile("index.html", new StaticFileOptions
             {
                 OnPrepareResponse = fileContext =>

@@ -11,6 +11,10 @@ using System.Linq;
 
 namespace Microsoft.Extensions.ApiDescriptions;
 
+/// <summary>
+/// Provides an implementation of <see cref="IDocumentProvider"/> to use for build-time generation of OpenAPI documents.
+/// </summary>
+/// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use.</param>
 internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) : IDocumentProvider
 {
     /// <summary>
