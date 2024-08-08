@@ -806,6 +806,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
     {
+        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
+        // state and is available on the circuit whether or not is used by a component on the first
+        // render.
         var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
         _ = antiforgery?.GetAntiforgeryToken();
     }
