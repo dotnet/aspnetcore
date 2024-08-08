@@ -237,7 +237,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private void RestoreAntiforgeryToken()
     {
         // The act of instantiating the DefaultAntiforgeryStateProvider will automatically
-        // will retrieve the antiforgery token from the persistent state
+        // retrieve the antiforgery token from the persistent state
         _scope.ServiceProvider.GetRequiredService<AntiforgeryStateProvider>();
     }
 }
