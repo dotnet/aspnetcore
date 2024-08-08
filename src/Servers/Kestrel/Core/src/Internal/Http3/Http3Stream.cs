@@ -579,7 +579,130 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return false;
     }
 
+    private async ValueTask<long> TryReadStreamHeaderAsync(Http3StreamType? advanceOn)
+    {
+        var advance = false;
+        SequencePosition consumed = default;
+        SequencePosition start = default;
+        try
+        {
+            while (_isClosed == 0)
+            {
+                var result = await Input.ReadAsync();
+
+                if (result.IsCanceled)
+                {
+                    throw new OperationCanceledException("The read operation was canceled.");
+                }
+
+                var readableBuffer = result.Buffer;
+                consumed = readableBuffer.Start;
+                start = readableBuffer.Start;
+
+                if (!readableBuffer.IsEmpty)
+                {
+                    var value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
+                    if (value != -1)
+                    {
+                        if (!advanceOn.HasValue || value == (long)advanceOn)
+                        {
+                            advance = true;
+                        }
+                        return value;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1L;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw new Http3PendingStreamException(CoreStrings.AttemptedToReadHeaderOnAbortedStream, StreamId);
+        }
+        finally
+        {
+            if (_isClosed == 0)
+            {
+                if (advance)
+                {
+                    Input.AdvanceTo(consumed);
+                }
+                else
+                {
+                    Input.AdvanceTo(start);
+                }
+            }
+
+            StreamTimeoutTimestamp = default;
+        }
+
+        return -1L;
+    }
+
     public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+    {
+        var streamType = await TryReadStreamHeaderAsync(Http3StreamType.WebTransportBidirectional);
+        switch (streamType)
+        {
+            case (long)Http3StreamType.WebTransportBidirectional:
+                if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                {
+                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(streamType), Http3ErrorCode.StreamCreationError);
+                }
+                await HandleWebTransportBidirectionalStream();
+                break;
+            default:
+                await OnRequestStreamHandle(application);
+                break;
+        }
+    }
+    private async ValueTask<long> TryReadWebTransportStreamSessionIdAsync()
+    {
+        // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#section-4.1-1
+        while (_isClosed == 0)
+        {
+            var result = await Input.ReadAsync();
+            var readableBuffer = result.Buffer;
+            var consumed = readableBuffer.Start;
+            var examined = readableBuffer.End;
+
+            try
+            {
+                if (!readableBuffer.IsEmpty)
+                {
+                    var id = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    if (id != -1)
+                    {
+                        return id;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1;
+                }
+            }
+            finally
+            {
+                Input.AdvanceTo(consumed, examined);
+            }
+        }
+
+        return -1;
+    }
+
+    private async Task HandleWebTransportBidirectionalStream()
+    {
+        Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
+
+        var correspondingSessionId = await TryReadWebTransportStreamSessionIdAsync();
+        _context.Connection.OnWebTransportStreamCreation(this, _context, correspondingSessionId, Core.WebTransport.WebTransportStreamType.Input);
+    }
+
+    private async Task OnRequestStreamHandle<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         Exception? error = null;
 
