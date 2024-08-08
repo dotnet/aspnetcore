@@ -24,7 +24,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     private readonly Pipe _pipe;
     private readonly PipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
-    private readonly object _dataWriterLock = new object();
+    private readonly Lock _dataWriterLock = new();
     private ValueTask<FlushResult> _dataWriteProcessingTask;
     private bool _startedWritingDataFrames;
     private bool _streamCompleted;
