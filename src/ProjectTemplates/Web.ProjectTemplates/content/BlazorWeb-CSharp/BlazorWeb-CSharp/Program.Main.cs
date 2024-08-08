@@ -5,12 +5,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
-#if (UseWebAssembly && SampleContent)
-using BlazorWeb_CSharp.Client.Pages;
-#endif
 using BlazorWeb_CSharp.Components;
 #if (IndividualLocalAuth)
 using BlazorWeb_CSharp.Components.Account;
+#endif
+#if (IndividualLocalAuth || WeatherForecastApi)
 using BlazorWeb_CSharp.Data;
 #endif
 
@@ -79,6 +78,10 @@ public class Program
         builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
         #endif
+        #if (WeatherForecastApi)
+        builder.Services.AddScoped<WeatherForecastService>();
+
+        #endif
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -110,6 +113,10 @@ public class Program
         #endif
         app.UseAntiforgery();
 
+        #if (WeatherForecastApi)
+        app.MapGet("/api/weather", async (WeatherForecastService wfs) => await wfs.GetWeatherForecastAsync());
+
+        #endif
         app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
