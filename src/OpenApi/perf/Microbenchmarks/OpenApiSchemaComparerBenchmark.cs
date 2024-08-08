@@ -56,14 +56,8 @@ public class OpenApiSchemaComparerBenchmark
     }
 
     [Benchmark]
-    public void OpenApiSchema_GetHashCode()
-    {
-        OpenApiSchemaComparer.Instance.GetHashCode(_schema);
-    }
+    public int OpenApiSchema_GetHashCode() => OpenApiSchemaComparer.Instance.GetHashCode(_schema);
 
     [Benchmark]
-    public void OpenApiSchema_Clone()
-    {
-        _ = OpenApiSchemaExtensions.Clone(_schema);
-    }
+    public OpenApiSchema OpenApiSchema_Clone() => OpenApiSchemaExtensions.Clone(_schema);
 }
