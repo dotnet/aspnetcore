@@ -20,7 +20,7 @@ public class CacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisCache(options => { });
+        services.AddStackExchangeRedisCache();
 
         // Assert
         var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
@@ -37,7 +37,7 @@ public class CacheServiceExtensionsTests
         services.AddScoped(typeof(IDistributedCache), sp => Mock.Of<IDistributedCache>());
 
         // Act
-        services.AddStackExchangeRedisCache(options => { });
+        services.AddStackExchangeRedisCache();
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
@@ -54,7 +54,7 @@ public class CacheServiceExtensionsTests
     {
         var services = new ServiceCollection();
 
-        Assert.Same(services, services.AddStackExchangeRedisCache(_ => { }));
+        Assert.Same(services, services.AddStackExchangeRedisCache());
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class CacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisCache(options => { });
+        services.AddStackExchangeRedisCache();
 
         // Assert
         using var serviceProvider = services.BuildServiceProvider();
@@ -80,7 +80,7 @@ public class CacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisCache(options => { });
+        services.AddStackExchangeRedisCache();
         services.AddLogging();
 
         // Assert
@@ -108,7 +108,7 @@ public class CacheServiceExtensionsTests
 
         // Act
         services.AddLogging();
-        services.AddStackExchangeRedisCache(options => { });
+        services.AddStackExchangeRedisCache();
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
