@@ -54,7 +54,8 @@
   },
   "resolutions": {
     "lodash": ">=4.17.21",
-    "node-fetch": ">=2.6.7"
+    "node-fetch": ">=2.6.7",
+    "ws": ">=7.5.10 <8"
   },
   "author": "",
   "license": "MIT"
