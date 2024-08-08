@@ -6,6 +6,8 @@ using Grpc.AspNetCore.Server.Model;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +29,7 @@ public static class GrpcJsonTranscodingServiceExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, JsonOptionsSetup>());
         builder.Services.TryAddSingleton<DescriptorRegistry>();
 
         return builder;
@@ -61,6 +64,27 @@ public static class GrpcJsonTranscodingServiceExtensions
             ArgumentNullException.ThrowIfNull(options);
 
             options.DescriptorRegistry = _descriptorRegistry;
+        }
+    }
+
+    private sealed class JsonOptionsSetup : IConfigureOptions<JsonOptions>
+    {
+        private readonly DescriptorRegistry _descriptorRegistry;
+        private readonly GrpcJsonTranscodingOptions _transcodingOptions;
+
+        public JsonOptionsSetup(DescriptorRegistry descriptorRegistry, IOptions<GrpcJsonTranscodingOptions> transcodingOptions)
+        {
+            _descriptorRegistry = descriptorRegistry;
+            _transcodingOptions = transcodingOptions.Value;
+        }
+
+        public void Configure(JsonOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            var context = new JsonContext(_transcodingOptions.JsonSettings, _transcodingOptions.TypeRegistry, _descriptorRegistry);
+
+            JsonConverterHelper.ApplyConverterAndTypeInfoSerializerOptions(options.SerializerOptions, context);
         }
     }
 }
