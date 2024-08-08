@@ -295,4 +295,68 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.False(responseSchema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var _));
         });
     }
+
+    [Fact]
+    public static async Task ProducesStableSchemaRefsForListOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", () => new TodoListContainer());
+        builder.MapPost("/api-2", () => new TodoListContainer());
+        builder.MapPost("/api-3", (Todo todo) => { });
+
+        // Assert -- call twice to ensure the schema reference is stable
+        await VerifyOpenApiDocument(builder, VerifyDocument);
+        await VerifyOpenApiDocument(builder, VerifyDocument);
+
+        static void VerifyDocument(OpenApiDocument document)
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.Responses["200"].Content["application/json"];
+            var requestBodySchema = requestBody.Schema;
+
+            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var requestBody2 = operation2.Responses["200"].Content["application/json"];
+            var requestBodySchema2 = requestBody2.Schema;
+
+            // {
+            //   "$ref": "#/components/schemas/TodoListContainer"
+            // }
+            // {
+            //   "$ref": "#/components/schemas/TodoListContainer"
+            // }
+            // {
+            //   "components": {
+            //     "schemas": {
+            //       "TodoListContainer": {
+            //         "properties": {
+            //              "type": "array",
+            //              "items": {
+            //                  "$ref": "#/components/schemas/Todo"
+            //              }
+            //           }
+            //       }
+            //     }
+            //   }
+            // }
+
+            // Both container types should point to the same reference ID
+            Assert.Equal("TodoListContainer", requestBodySchema.Reference.Id);
+            Assert.Equal(requestBodySchema.Reference.Id, requestBodySchema2.Reference.Id);
+            // The referenced schema should have an array type with items pointing to Todo
+            var effectiveSchema = requestBodySchema.GetEffective(document);
+            var todosProperty = effectiveSchema.Properties["todos"];
+            Assert.Equal("array", todosProperty.Type);
+            var itemsSchema = todosProperty.Items;
+            Assert.Equal("Todo", itemsSchema.Reference.Id);
+            Assert.Equal(4, itemsSchema.GetEffective(document).Properties.Count);
+        }
+    }
+
+    private class TodoListContainer
+    {
+        public ICollection<Todo> Todos { get; set; } = [];
+    }
 }
