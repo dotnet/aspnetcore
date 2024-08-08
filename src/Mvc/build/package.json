@@ -1,0 +1,12 @@
+{
+  "name": "jquery-validation-dependency",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node copy-files.mjs",
+    "update-identity-ui-scripts": "node update-identity-ui-integrity.mjs"
+  },
+  "devDependencies": {
+    "jquery-validation": "1.20.0"
+  }
+}
