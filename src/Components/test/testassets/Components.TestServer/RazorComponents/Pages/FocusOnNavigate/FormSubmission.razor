@@ -1,0 +1,20 @@
+﻿@page "/focus-on-navigate/form-submission"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Form submission</h1>
+
+<p>
+    Submitted value: <span id="submitted-value">@SubmittedValue</span>
+</p>
+
+<form @formname="some-form" method="post" data-enhance>
+    <input type="text" id="value-to-submit" name="value-to-submit" placeholder="Value to submit" data-focus-on-navigate />
+    <br/>
+    <button id="submit-button" type="submit">Submit</button>
+    <AntiforgeryToken />
+</form>
+
+@code {
+    [SupplyParameterFromForm(Name = "value-to-submit")]
+    public string? SubmittedValue { get; set; }
+}

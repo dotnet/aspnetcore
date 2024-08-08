@@ -4,3 +4,4 @@ Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.Invo
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
+override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
