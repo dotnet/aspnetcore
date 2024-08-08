@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -103,11 +102,10 @@ internal class DeveloperExceptionPageMiddlewareImpl
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.NoInlining)]
     [DebuggerDisableUserUnhandledExceptions]
     public async Task Invoke(HttpContext context)
     {
-        // We want to avoid treating exceptions as user unhandled if an exception filter like the DatabaseDeveloperPageExceptionFilter
+        // We want to avoid treating exceptions as user-unhandled if an exception filter like the DatabaseDeveloperPageExceptionFilter
         // handles the exception rather than letting it flow to the default DisplayException method. This is because we don't want to stop the
         // debugger if the developer shouldn't be handling the exception and instead just needs to do something like click a link to run a
         // database migration.
@@ -130,8 +128,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 }
 
                 // Generally speaking, we do not expect application code to handle things like IOExceptions during a request
-                // body read due to a client disconnect. But this kind of thing should be rare in development, and developers
-                // might be surprised if an IOException propagating through user code was not considered user unhandled.
+                // body read due to a client disconnect. But aborted requests should be rare in development, and developers
+                // might be surprised if an IOException propagating through their code was not considered user-unhandled.
                 // That said, if developers complain, we consider removing the following line.
                 Debugger.BreakForUserUnhandledException(ex);
                 return;
@@ -144,7 +142,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 _logger.ResponseStartedErrorPageMiddleware();
                 _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
 
-                Debugger.BreakForUserUnhandledException(ex);
+                // Rethrowing informs the debugger that this exception should be considered user-unhandled.
                 throw;
             }
 
@@ -175,10 +173,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
             }
             catch (Exception ex2)
             {
-                // Inform the debugger that the exception filter itself threw an exception.
-                // REVIEW: Is it okay for the same method to potentially call Debugger.BreakForUserUnhandledException
-                // multiple times with different exceptions in the same invocation?
-                Debugger.BreakForUserUnhandledException(ex2);
+                // It might make sense to call BreakForUserUnhandledException for ex2 after we do the same for the original exception.
+                // But for now, considering the rarity of user-defined IDeveloperPageExceptionFilters, we're not for simplicity.
 
                 // If there's a Exception while generating the error page, re-throw the original exception.
                 _logger.DisplayErrorPageException(ex2);
@@ -198,7 +194,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
     private Task DisplayException(ErrorContext errorContext)
     {
-        // We need to inform the debugger that this exception should be considered user unhandled since it wasn't handled by an exception filter.
+        // We need to inform the debugger that this exception should be considered user-unhandled since it wasn't fully handled by an exception filter.
         Debugger.BreakForUserUnhandledException(errorContext.Exception);
 
         var httpContext = errorContext.HttpContext;

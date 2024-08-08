@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
@@ -34,8 +33,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
-    // We do not want the debugger to consider NavigationExceptions caught by this method as user unhandled.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
     [DebuggerDisableUserUnhandledExceptions]
     private async Task RenderComponentCore(HttpContext context)
     {
