@@ -101,6 +101,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 endpoint.EmitJsonPreparation(codeWriter);
                 endpoint.EmitRouteOrQueryResolver(codeWriter);
                 endpoint.EmitJsonBodyOrServiceResolver(codeWriter);
+                EmitHeaderValueParsing(codeWriter);
+
                 if (endpoint.NeedsParameterArray)
                 {
                     codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
@@ -292,5 +294,25 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
+
+    }
+    private static void EmitHeaderValueParsing(CodeWriter codeWriter)
+    {
+        codeWriter.WriteLine("var headerParameters = handler.Method.GetParameters().Where(p => p.GetCustomAttribute<FromHeaderAttribute>() != null).ToList();");
+        codeWriter.WriteLine("foreach (var param in headerParameters)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("var headerAttribute = param.GetCustomAttribute<FromHeaderAttribute>();");
+        codeWriter.WriteLine("var headerName = headerAttribute?.Name ?? param.Name;");
+        codeWriter.WriteLine("var headerValue = httpContext.Request.Headers[headerName];");
+        codeWriter.WriteLine("if (param.ParameterType == typeof(string[]) || typeof(IEnumerable<string>).IsAssignableFrom(param.ParameterType))");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("var parsedValues = headerValue.SelectMany(v => v.Split(',')).Select(v => v.Trim()).ToArray();");
+        codeWriter.WriteLine("arguments[param.Position] = param.ParameterType == typeof(string[]) ? parsedValues : (object)parsedValues.AsEnumerable();");
+        codeWriter.EndBlock();
+        codeWriter.WriteLine("else if (param.ParameterType == typeof(string))");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("arguments[param.Position] = headerValue.ToString();");
+        codeWriter.EndBlock();
+        codeWriter.EndBlock();
     }
 }
