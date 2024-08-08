@@ -138,8 +138,16 @@ export class HubConnectionBuilder {
         } else {
             this.httpConnectionOptions = {
                 ...this.httpConnectionOptions,
-                transport: transportTypeOrOptions,
             };
+
+            if(this.httpConnectionOptions.transport && transportTypeOrOptions) {
+                this.logger?.log(LogLevel.Debug, `Transport option was specified before and will keep its value. If not intended consider explicitly passing optional transportTypeOrOptions`);
+            }
+
+            // If transportTypeOrOptions were specified on first call on withUrl() but not on second time calling it we stick to the old transport options and just change the URL
+            if (transportTypeOrOptions) {
+                this.httpConnectionOptions.transport = transportTypeOrOptions;
+            }
         }
 
         return this;
