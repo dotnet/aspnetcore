@@ -648,7 +648,7 @@ public class CascadingParameterTest
             RenderWhenEqualTo = "Final value",
         };
 
-        // Act/Assert 1: Initial render
+        // Act/Assert: Initial render
         var componentId = await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
         renderer.RenderRootComponent(componentId);
         var firstBatch = renderer.Batches.Single();
