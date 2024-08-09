@@ -87,7 +87,7 @@ public class ResponseCachingMiddleware
         var context = new ResponseCachingContext(httpContext, _logger);
 
         // Should we attempt any caching logic?
-        if (_policyProvider.AttemptResponseCaching(context))
+        if (_policyProvider.AttemptResponseCaching(context, _options))
         {
             // Can this request be served from cache?
             if (_policyProvider.AllowCacheLookup(context) && await TryServeFromCacheAsync(context))
