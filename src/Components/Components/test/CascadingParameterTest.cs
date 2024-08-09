@@ -827,6 +827,40 @@ public class CascadingParameterTest
         Assert.Equal(2, services.Count());
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity - 1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity + 1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity * 2)]
+    public async Task CanHaveManySubscribers(int numSubscribers)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var paramValue = new MyParamType("Initial value");
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(paramValue, isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var components = Enumerable.Range(0, numSubscribers).Select(_ => new SimpleSubscriberComponent()).ToArray();
+
+        // Act/Assert: Initial render
+        foreach (var component in components)
+        {
+            await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
+            component.TriggerRender();
+            Assert.Equal(1, component.NumRenders);
+        }
+
+        // Act/Assert: All components re-render when the cascading value changes
+        paramValue.ChangeValue("Final value");
+        await cascadingValueSource.NotifyChangedAsync();
+        foreach (var component in components)
+        {
+            Assert.Equal(2, component.NumRenders);
+        }
+    }
+
     private class SingleDeliveryValue(string text)
     {
         public string Text => text;

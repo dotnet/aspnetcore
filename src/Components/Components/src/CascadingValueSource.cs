@@ -186,11 +186,13 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     }
 
     [InlineArray(Capacity)]
-    private struct ComponentStateBuffer
+    internal struct ComponentStateBuffer
     {
         public const int Capacity = 64;
 #pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE0044 // Add readonly modifier
         private ComponentState _values;
+#pragma warning restore IDE0044 // Add readonly modifier
 #pragma warning restore IDE0051 // Remove unused private members
     }
 }
