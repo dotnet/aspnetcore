@@ -4,6 +4,7 @@
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -23,6 +24,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     private readonly IEndpointRouteBuilder _builder = CreateBuilder();
     private readonly OpenApiOptions _options = new();
     private OpenApiDocumentService _documentService;
+    private IServiceProvider _serviceProvider;
 
     [GlobalSetup(Target = nameof(ActivatedOperationTransformer))]
     public void ActivatedOperationTransformer_Setup()
@@ -33,6 +35,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             _options.AddOperationTransformer<OperationTransformer>();
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [GlobalSetup(Target = nameof(OperationTransformerAsDelegate))]
@@ -48,6 +51,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             });
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [GlobalSetup(Target = nameof(ActivatedDocumentTransformer))]
@@ -59,6 +63,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             _options.AddDocumentTransformer<DocumentTransformer>();
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [GlobalSetup(Target = nameof(DocumentTransformerAsDelegate))]
@@ -74,6 +79,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             });
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [GlobalSetup(Target = nameof(ActivatedSchemaTransformer))]
@@ -85,6 +91,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             _options.AddSchemaTransformer<SchemaTransformer>();
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [GlobalSetup(Target = nameof(SchemaTransformerAsDelegate))]
@@ -107,42 +114,43 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
             });
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [Benchmark]
     public async Task ActivatedOperationTransformer()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     [Benchmark]
     public async Task OperationTransformerAsDelegate()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     [Benchmark]
     public async Task ActivatedDocumentTransformer()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     [Benchmark]
     public async Task DocumentTransformerAsDelegate()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     [Benchmark]
     public async Task ActivatedSchemaTransformer()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     [Benchmark]
     public async Task SchemaTransformerAsDelegate()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 
     private class DocumentTransformer : IOpenApiDocumentTransformer

@@ -20,25 +20,13 @@ internal sealed class TypeBasedOpenApiOperationTransformer : IOpenApiOperationTr
         _transformerFactory = ActivatorUtilities.CreateFactory(_transformerType, []);
     }
 
-    public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+    internal IOpenApiOperationTransformer InitializeTransformer(IServiceProvider serviceProvider)
     {
-        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiOperationTransformer;
-        Debug.Assert(transformer is not null, $"The type {_transformerType} does not implement {nameof(IOpenApiOperationTransformer)}.");
-
-        try
-        {
-            await transformer.TransformAsync(operation, context, cancellationToken);
-        }
-        finally
-        {
-            if (transformer is IAsyncDisposable asyncDisposable)
-            {
-                await asyncDisposable.DisposeAsync();
-            }
-            else if (transformer is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
+        var transformer = _transformerFactory.Invoke(serviceProvider, []) as IOpenApiOperationTransformer;
+        Debug.Assert(transformer != null, $"The type {_transformerType} does not implement {nameof(IOpenApiOperationTransformer)}.");
+        return transformer;
     }
+
+    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }

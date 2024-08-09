@@ -43,7 +43,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 }
                 else
                 {
-                    var document = await documentService.GetOpenApiDocumentAsync(context.RequestAborted);
+                    var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.RequestAborted);
                     var documentOptions = options.Get(documentName);
                     using var output = MemoryBufferWriter.Get();
                     using var writer = Utf8BufferTextWriter.Get(output);

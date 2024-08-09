@@ -23,7 +23,7 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer(["http://localhost:5000"]));
 
@@ -47,7 +47,7 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer(["http://localhost:5000", "http://localhost:5002"]));
 
@@ -72,7 +72,7 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer(["http://localhost:5000"]));
 
@@ -96,7 +96,7 @@ public partial class OpenApiDocumentServiceTests
             "v2",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer());
 
