@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
@@ -137,6 +138,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         await manager.RestoreStateAsync(store);
 
+        RestoreAntiforgeryToken();
+
         if (MetadataUpdater.IsSupported)
         {
             await WebAssemblyHotReload.InitializeAsync();
@@ -229,5 +232,12 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
 
         renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
+    }
+
+    private void RestoreAntiforgeryToken()
+    {
+        // The act of instantiating the DefaultAntiforgeryStateProvider will automatically
+        // retrieve the antiforgery token from the persistent state
+        _scope.ServiceProvider.GetRequiredService<AntiforgeryStateProvider>();
     }
 }
