@@ -23,6 +23,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
+/// <remarks>
+/// Request processing code (especially <see cref="ProcessRequestsAsync"/>) shared across HTTP protocols
+/// via inheritance.
+///
+/// HTTP/1.1 uses it at the connection level and resets it between requests.
+/// HTTP/2 and HTTP/3 use it at the stream level.
+/// </remarks>
 internal abstract partial class HttpProtocol : IHttpResponseControl
 {
     private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");

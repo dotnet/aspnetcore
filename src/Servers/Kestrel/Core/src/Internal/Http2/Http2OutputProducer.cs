@@ -12,6 +12,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <remarks>
+/// Owned by <see cref="Http2Stream"/>.
+///
+/// Tracks the outgoing stream flow control window.
+///
+/// Reusable after calling <see cref="StreamReset"/> (<see cref="Reset"/> is unrelated and does nothing).
+/// </remarks>
 internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;

@@ -21,6 +21,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// An HTTP/2 connection - owns the request processing and lifetime.
+/// </summary>
+/// <remarks>
+/// Owned by <see cref="HttpConnection"/>.
+///
+/// Not reusable.
+/// </remarks>
 internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static

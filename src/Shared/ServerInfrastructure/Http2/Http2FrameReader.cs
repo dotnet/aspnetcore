@@ -9,6 +9,12 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Deserializes a binary buffer into an <see cref="Http2Frame"/>.
+/// </summary>
+/// <remarks>
+/// Populates an existing <see cref="Http2Frame"/> instance, rather than creating a new one.
+/// </remarks>
 internal static class Http2FrameReader
 {
     /* https://tools.ietf.org/html/rfc7540#section-4.1
