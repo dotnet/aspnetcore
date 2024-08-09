@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -96,9 +97,16 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
             {
                 tasks.Add(dispatcher.InvokeAsync(() =>
                 {
+                    var subscribersBuffer = new ComponentStateBuffer();
+                    var subscribersCount = subscribers.Count;
+                    var subscribersCopy = subscribersCount <= ComponentStateBuffer.Capacity
+                        ? subscribersBuffer[..subscribersCount]
+                        : new ComponentState[subscribersCount];
+                    subscribers.CopyTo(subscribersCopy);
+
                     // We iterate over a copy of the list because new subscribers might get
                     // added or removed during change notification
-                    foreach (var subscriber in subscribers.ToArray())
+                    foreach (var subscriber in subscribersCopy)
                     {
                         subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                     }
@@ -175,5 +183,14 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
                 _subscribers.Remove(dispatcher, out _);
             }
         }
+    }
+
+    [InlineArray(Capacity)]
+    private struct ComponentStateBuffer
+    {
+        public const int Capacity = 64;
+#pragma warning disable IDE0051 // Remove unused private members
+        private ComponentState _values;
+#pragma warning restore IDE0051 // Remove unused private members
     }
 }
