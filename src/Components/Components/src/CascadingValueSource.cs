@@ -96,8 +96,9 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
             {
                 tasks.Add(dispatcher.InvokeAsync(() =>
                 {
-                    Span<ComponentState> subscribersCopy = [.. subscribers];
-                    foreach (var subscriber in subscribersCopy)
+                    // We iterate over a copy of the list because new subscribers might get
+                    // added or removed during change notification
+                    foreach (var subscriber in subscribers.ToArray())
                     {
                         subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                     }
