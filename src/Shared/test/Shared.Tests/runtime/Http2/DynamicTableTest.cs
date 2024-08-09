@@ -193,6 +193,25 @@ namespace System.Net.Http.Unit.Tests.HPack
             VerifyTableEntries(dynamicTable, _header2);
         }
 
+        // This is a very shallow test for something like https://www.cve.org/CVERecord?id=CVE-2019-11940
+        [Fact]
+        public void DynamicTable_ResizeDownThenUp()
+        {
+            DynamicTable dynamicTable = new DynamicTable(4096);
+            dynamicTable.Insert(_header1.Name, _header1.Value);
+            dynamicTable.Insert(_header2.Name, _header2.Value);
+
+            VerifyTableEntries(dynamicTable, _header2, _header1);
+
+            dynamicTable.Resize(_header2.Length);
+
+            VerifyTableEntries(dynamicTable, _header2);
+
+            dynamicTable.Resize(_header2.Length + _header1.Length);
+
+            VerifyTableEntries(dynamicTable, _header2);
+        }
+
         [Fact]
         public void DynamicTable_ResizingToZeroEvictsAllEntries()
         {
