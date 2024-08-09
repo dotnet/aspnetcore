@@ -28,7 +28,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
     private long _headerType;
-    private readonly object _completionLock = new();
+    private readonly Lock _completionLock = new();
 
     private bool _haveReceivedSettingsFrame;
     private StreamCompletionFlags _completionState;

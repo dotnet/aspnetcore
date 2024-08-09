@@ -56,7 +56,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private Http3MessageBody? _messageBody;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
-    private readonly object _completionLock = new();
+    private readonly Lock _completionLock = new();
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
     protected readonly Http3RawFrame _incomingFrame = new();

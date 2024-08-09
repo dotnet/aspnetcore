@@ -29,7 +29,7 @@ internal sealed class Http3FrameWriter
     private const int MaxDataFrameSize = 16 * 1024;
     private const int HeaderBufferSize = 16 * 1024;
 
-    private readonly object _writeLock = new object();
+    private readonly Lock _writeLock = new();
 
     private readonly int _maxTotalHeaderSize;
     private readonly ConnectionContext _connectionContext;
