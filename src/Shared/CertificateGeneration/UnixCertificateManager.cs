@@ -476,6 +476,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         return Path.Combine(homeDirectory, ".pki", "nssdb");
     }
 
+    private static string GetChromiumSnapNssDb(string homeDirectory)
+    {
+        return Path.Combine(homeDirectory, "snap", "chromium", "current", ".pki", "nssdb");
+    }
+
     private static string GetFirefoxDirectory(string homeDirectory)
     {
         return Path.Combine(homeDirectory, ".mozilla", "firefox");
@@ -732,11 +737,19 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             return nssDbs;
         }
 
-        // Chrome, Chromium, Edge, and their respective snaps all use this directory
+        // Chrome, Chromium, and Edge all use this directory
         var chromiumNssDb = GetChromiumNssDb(homeDirectory);
         if (Directory.Exists(chromiumNssDb))
         {
             nssDbs.Add(new NssDb(chromiumNssDb, isFirefox: false));
+        }
+
+        // Chromium Snap, when launched under snap confinement, uses this directory
+        // (On Ubuntu, the GUI launcher uses confinement, but the terminal does not)
+        var chromiumSnapNssDb = GetChromiumSnapNssDb(homeDirectory);
+        if (Directory.Exists(chromiumSnapNssDb))
+        {
+            nssDbs.Add(new NssDb(chromiumSnapNssDb, isFirefox: false));
         }
 
         var firefoxDir = GetFirefoxDirectory(homeDirectory);
