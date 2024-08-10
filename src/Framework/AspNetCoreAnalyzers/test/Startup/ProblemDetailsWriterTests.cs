@@ -37,6 +37,61 @@ public sealed class ProblemDetailsWriterTests
     [InlineData("AddControllersWithViews")]
     [InlineData("AddMvc")]
     [InlineData("AddRazorPages")]
+    public async Task StartupAnalyzer_ProblemDetailsWriter_AfterChainedMvcServiceCollectionsExtension_ReportsDiagnostic(string methodName)
+    {
+        // Arrange
+        var source = $@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            {{|#0:services.{methodName}()|}}
+                .AddViewLocalization();
+            {{|#1:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriter>()|}};
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource()}
+}}";
+
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+            .WithLocation(1)
+            .WithLocation(0);
+
+        var fixedSource = $@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriter>();
+            services.{methodName}()
+                .AddViewLocalization();
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource()}
+}}";
+
+        // Act + Assert
+        await VerifyCodeFix(source, [diagnostic], fixedSource);
+    }
+
+
+    [Theory]
+    [InlineData("AddControllers")]
+    [InlineData("AddControllersWithViews")]
+    [InlineData("AddMvc")]
+    [InlineData("AddRazorPages")]
     public async Task StartupAnalyzer_ProblemDetailsWriter_AfterMvcServiceCollectionsExtension_ReportsDiagnostic(string methodName)
     {
         // Arrange

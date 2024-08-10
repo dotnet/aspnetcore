@@ -174,11 +174,28 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
 
         var node = root.FindNode(location.SourceSpan, getInnermostNodeForTie: true);
 
-        if (node is InvocationExpressionSyntax invocationExpression &&
-            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement)
+        if (node is not InvocationExpressionSyntax)
         {
-            expressionStatement = invocationExpressionStatement;
-            return true;
+            return false;
+        }
+
+        var parentNode = node.Parent;
+
+        while (parentNode != null)
+        {
+            if (parentNode is ExpressionStatementSyntax expressionStatementSyntax)
+            {
+                expressionStatement = expressionStatementSyntax;
+                return true;
+            }
+
+            if (parentNode is not MemberAccessExpressionSyntax
+                && parentNode is not InvocationExpressionSyntax)
+            {
+                break;
+            }
+
+            parentNode = parentNode.Parent;
         }
 
         return false;
