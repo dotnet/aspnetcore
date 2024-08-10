@@ -11,7 +11,9 @@ interface BlazorEvent {
 
 // Maps Blazor event names to the argument type passed to registered listeners.
 export interface BlazorEventMap {
-  'enhancedload': BlazorEvent;
+  'enhancedload': BlazorEvent,
+  'enhancednavigationstart': BlazorEvent,
+  'enhancednavigationend': BlazorEvent,
 }
 
 export class JSEventRegistry {
@@ -44,7 +46,7 @@ export class JSEventRegistry {
       return;
     }
 
-    const event: BlazorEventMap[K] = {
+    const event = {
       ...ev,
       type,
     };

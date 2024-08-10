@@ -37,49 +37,52 @@ The following contains a description of each sub-directory in the `Components` d
 
 1. Ensure the repository is clean from any asset that could remain from previous version of the repository. This is recommended when switching branches, or after updating the working branch.
 
-```powershell
-git clean -xdff
-```
+    ```powershell
+    git clean -xdff
+    ```
 
-You may need to kill some processes holding on files that are being deleted, like closing Visual Studio and other `msbuild` or `dotnet` processes. There may also be lingering headless `chrome` processes, but they are not included in this command. The following command may help you but be aware that this could also stop other important tasks:
+    You may need to kill some processes holding on files that are being deleted, like closing Visual Studio and other `msbuild` or `dotnet` processes. There may also be lingering headless 
+    `chrome` processes, but they are not included in this command. The following command may help you but be aware that this could also stop other important tasks:
 
-```powershell
-Get-Process dotnet, escape-node-job, msbuild, VBCSCompiler, node, vstest.console, Microsoft.CodeAnalysis.LanguageServer -ErrorAction Continue | Stop-Process;
-```
+    ```powershell
+    Get-Process dotnet, escape-node-job, msbuild, VBCSCompiler, node, vstest.console, Microsoft.CodeAnalysis.LanguageServer -ErrorAction Continue | Stop-Process;
+    ```
 
 1. Use NPM to restore the required JavaScript modules. This doesn't require an Internet connection since the sources are read from a sub-module.
 
-```powershell
-npm ci --offline
-```
+    ```powershell
+    npm ci --offline
+    ```
 
 1. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
+    
+    ```bash
+    # Linux or Mac
+    ./restore.sh
+    ```
 
-```bash
-./restore.sh
-```
-
-```powershell
-./restore.cmd
-```
+    ```powershell
+    # Windows
+    ./restore.cmd
+    ```
 
 1. Now you can build all the JavaScript assets required by the repository (including SignalR for instance) by running the following command:
 
-```powershell
-npm run build
-```
+     ```powershell
+     npm run build
+     ```
 
 1. Build the Components:
 
-```powershell
-./src/Components/build.cmd
-```
+     ```powershell
+     ./src/Components/build.cmd
+     ```
 
 2. Optionally, open the Components in Visual Studio:
 
-```powershell
-./src/Components/startvs.cmd
-```
+     ```powershell
+     ./src/Components/startvs.cmd
+     ```
 
 ### Test
 
@@ -103,19 +106,21 @@ follow the previous build steps and then these commands:
 
 1. Activate the locally installed .NET by running the following command.
 
-```bash
-source activate.sh
-```
+     ```bash
+     # Linux or Mac
+     source activate.sh
+     ```
 
-```powershell
-. ./activate.ps1
-```
+     ```powershell
+     # Windows
+     . ./activate.ps1
+     ```
 
 1. Start the tests.
 
-```powershell
-dotnet test ./src/Components/test/E2ETest
-```
+     ```powershell
+     dotnet test ./src/Components/test/E2ETest
+     ```
 
 Note, you may wish to filter tests using the `--filter` command (ie. `dotnet test --filter <TEST_NAME> ./src/Components/test/E2ETest`).
 

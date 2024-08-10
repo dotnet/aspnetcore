@@ -2,21 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RazorRuntimeCompilationHostingStartupTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.StartupWithHostingStartup>>
+// These tests test razor caching which is affected if the site is built by another test class
+// Use a named Collection to avoid the test classes running in parallel
+[Collection("RazorBuildWebSite")]
+public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
 {
-    public RazorRuntimeCompilationHostingStartupTest(MvcTestFixture<RazorBuildWebSite.StartupWithHostingStartup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.StartupWithHostingStartup>());
-        factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
-
-        Client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RazorBuildWebSite.StartupWithHostingStartup>(LoggerFactory)
+            .WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.StartupWithHostingStartup>())
+            .WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
 
         static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
         {
@@ -27,11 +34,20 @@ public class RazorRuntimeCompilationHostingStartupTest : IClassFixture<MvcTestFi
                 options.AdditionalReferencePaths.Add(path);
             }
         }
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RazorBuildWebSite.StartupWithHostingStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorViews_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange
@@ -69,6 +85,7 @@ public class RazorRuntimeCompilationHostingStartupTest : IClassFixture<MvcTestFi
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange

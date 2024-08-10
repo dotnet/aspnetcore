@@ -435,7 +435,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 pathBuffer[i] = (byte)ch;
             }
 
-            Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
+            Path = PathDecoder.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
 
             return true;
         }

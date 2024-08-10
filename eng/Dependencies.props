@@ -85,6 +85,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />
+    <LatestPackageReference Include="System.Net.ServerSentEvents" />
     <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
@@ -140,15 +141,8 @@ and are generated based on the last package release.
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x64" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />

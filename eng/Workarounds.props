@@ -30,6 +30,11 @@
     <NoWarn>$(NoWarn);NETSDK1138;CS8969</NoWarn>
   </PropertyGroup>
 
+  <!-- Workaround obsolete X509Certificate ctor: https://github.com/dotnet/docs/issues/41662 -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);SYSLIB0057</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>

@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -16,7 +18,7 @@ using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : HubDispatcher<THub> where THub : Hub
 {
     private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
 
@@ -30,6 +32,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
     private readonly Func<HubLifetimeContext, Task>? _onConnectedMiddleware;
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
+
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
+    [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+    [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+    private static bool IsCustomAwaitableSupported { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported", out bool customAwaitableSupport) ? customAwaitableSupport : true;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
         bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
@@ -84,7 +92,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
 
-            activity = StartActivity(connection, scope.ServiceProvider, nameof(hub.OnConnectedAsync));
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger);
 
             if (_onConnectedMiddleware != null)
             {
@@ -119,7 +127,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         {
             InitializeHub(hub, connection);
 
-            activity = StartActivity(connection, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync));
+            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger);
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -387,9 +395,16 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
 
+                        // Hub invocation gets its parent from a remote source. Clear any current activity and restore it later.
+                        var previousActivity = Activity.Current;
+                        if (previousActivity != null)
+                        {
+                            Activity.Current = null;
+                        }
+
                         // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
-                        var activity = StartActivity(connection, scope.ServiceProvider, hubMethodInvocationMessage.Target);
+                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger);
 
                         object? result;
                         try
@@ -409,6 +424,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         finally
                         {
                             activity?.Stop();
+
+                            if (Activity.Current != previousActivity)
+                            {
+                                Activity.Current = previousActivity;
+                            }
 
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
@@ -495,7 +515,14 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         streamCts ??= CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
 
-        var activity = StartActivity(connection, scope.ServiceProvider, hubMethodInvocationMessage.Target);
+        // Hub invocation gets its parent from a remote source. Clear any current activity and restore it later.
+        var previousActivity = Activity.Current;
+        if (previousActivity != null)
+        {
+            Activity.Current = null;
+        }
+
+        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger);
 
         try
         {
@@ -561,6 +588,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         finally
         {
             activity?.Stop();
+
+            if (Activity.Current != previousActivity)
+            {
+                Activity.Current = previousActivity;
+            }
 
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
@@ -761,7 +793,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
             }
 
-            var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
+            var executor = IsCustomAwaitableSupported
+                ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
+                : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
+
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
             _cachedMethodNames.Add(methodName);
@@ -769,6 +804,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             Log.HubMethodBound(_logger, hubName, methodName);
         }
     }
+
+    [RequiresUnreferencedCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not trim compatible.")]
+    [RequiresDynamicCode("Using SignalR with 'Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true' is not native AOT compatible.")]
+    private static ObjectMethodExecutor CreateObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetType)
+       => ObjectMethodExecutor.Create(methodInfo, targetType);
 
     public override IReadOnlyList<Type> GetParameterTypes(string methodName)
     {
@@ -791,27 +831,64 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
     // Starts an Activity for a Hub method invocation and sets up all the tags and other state.
     // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
-    private static Activity? StartActivity(HubConnectionContext connectionContext, IServiceProvider serviceProvider, string methodName)
+    private static Activity? StartActivity(string operationName, ActivityKind kind, Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger)
     {
-        if (serviceProvider.GetService<SignalRActivitySource>() is SignalRActivitySource signalRActivitySource
-            && signalRActivitySource.ActivitySource.HasListeners())
+        var activitySource = serviceProvider.GetService<SignalRServerActivitySource>()?.ActivitySource;
+        if (activitySource is null)
         {
-            var requestContext = connectionContext.OriginalActivity?.Context;
-
-            return signalRActivitySource.ActivitySource.StartActivity($"{_fullHubName}/{methodName}", ActivityKind.Server, parentId: null,
-                // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#server-attributes
-                tags: [
-                    new("rpc.method", methodName),
-                    new("rpc.system", "signalr"),
-                    new("rpc.service", _fullHubName),
-                    // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
-                    // And https://github.com/dotnet/aspnetcore/issues/43786
-                    //new("server.address", ...),
-                    ],
-                links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
+            return null;
         }
 
-        return null;
+        var loggingEnabled = logger.IsEnabled(LogLevel.Critical);
+        if (!activitySource.HasListeners() && !loggingEnabled)
+        {
+            return null;
+        }
+
+        IEnumerable<KeyValuePair<string, object?>> tags =
+        [
+            new("rpc.method", methodName),
+            new("rpc.system", "signalr"),
+            new("rpc.service", _fullHubName),
+            // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
+            // And https://github.com/dotnet/aspnetcore/issues/43786
+            //new("server.address", ...),
+        ];
+        IEnumerable<ActivityLink>? links = (linkedActivity is not null) ? [new ActivityLink(linkedActivity.Context)] : null;
+
+        Activity? activity;
+        if (headers != null)
+        {
+            var propagator = serviceProvider.GetService<DistributedContextPropagator>() ?? DistributedContextPropagator.Current;
+
+            activity = ActivityCreator.CreateFromRemote(
+                activitySource,
+                propagator,
+                headers,
+                static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
+                {
+                    fieldValues = default;
+                    var headers = (IDictionary<string, string>)carrier!;
+                    headers.TryGetValue(fieldName, out fieldValue);
+                },
+                operationName,
+                kind,
+                tags,
+                links,
+                loggingEnabled);
+        }
+        else
+        {
+            activity = activitySource.CreateActivity(operationName, kind, parentId: null, tags: tags, links: links);
+        }
+
+        if (activity is not null)
+        {
+            activity.DisplayName = $"{_fullHubName}/{methodName}";
+            activity.Start();
+        }
+
+        return activity;
     }
 
     private static void SetActivityError(Activity? activity, Exception ex)

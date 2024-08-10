@@ -3,8 +3,10 @@
 
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -28,6 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 [HtmlTargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
 [HtmlTargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
 [HtmlTargetElement("script", Attributes = AppendVersionAttributeName)]
+[HtmlTargetElement("script", Attributes = TypeAttributeName)]
+[HtmlTargetElement("script", Attributes = ImportMapAttributeName)]
 public class ScriptTagHelper : UrlResolutionTagHelper
 {
     private const string SrcIncludeAttributeName = "asp-src-include";
@@ -40,6 +44,9 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     private const string SrcAttributeName = "src";
     private const string IntegrityAttributeName = "integrity";
     private const string AppendVersionAttributeName = "asp-append-version";
+    private const string TypeAttributeName = "type";
+    private const string ImportMapAttributeName = "asp-importmap";
+
     private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
     private StringWriter _stringWriter;
 
@@ -116,6 +123,12 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     public string Src { get; set; }
 
     /// <summary>
+    /// Type of the script.
+    /// </summary>
+    [HtmlAttributeName(TypeAttributeName)]
+    public string Type { get; set; }
+
+    /// <summary>
     /// A comma separated list of globbed file patterns of JavaScript scripts to load.
     /// The glob patterns are assessed relative to the application's 'webroot' setting.
     /// </summary>
@@ -175,6 +188,16 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     public string FallbackTestExpression { get; set; }
 
     /// <summary>
+    /// The <see cref="ImportMapDefinition"/> to use for the document.
+    /// </summary>
+    /// <remarks>
+    /// If this is not set and the type value is "importmap",
+    /// the import map will be retrieved by default from the current <see cref="Endpoint.Metadata"/>.
+    /// </remarks>
+    [HtmlAttributeName(ImportMapAttributeName)]
+    public ImportMapDefinition ImportMap { get; set; }
+
+    /// <summary>
     /// Gets the <see cref="IWebHostEnvironment"/> for the application.
     /// </summary>
     protected internal IWebHostEnvironment HostingEnvironment { get; }
@@ -217,10 +240,34 @@ public class ScriptTagHelper : UrlResolutionTagHelper
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(output);
 
+        if (string.Equals(Type, "importmap", StringComparison.OrdinalIgnoreCase))
+        {
+            // This is an importmap script, we'll write out the import map and
+            // stop processing.
+            var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
+            if (importMap == null)
+            {
+                // No importmap found, nothing to do.
+                output.SuppressOutput();
+                return;
+            }
+
+            output.TagName = "script";
+            output.TagMode = TagMode.StartTagAndEndTag;
+            output.Attributes.SetAttribute("type", "importmap");
+            output.Content.SetHtmlContent(importMap.ToString());
+            return;
+        }
+
         // Pass through attribute that is also a well-known HTML attribute.
         if (Src != null)
         {
             output.CopyHtmlAttribute(SrcAttributeName, context);
+        }
+
+        if (Type != null)
+        {
+            output.CopyHtmlAttribute(TypeAttributeName, context);
         }
 
         // If there's no "src" attribute in output.Attributes this will noop.
@@ -240,14 +287,14 @@ public class ScriptTagHelper : UrlResolutionTagHelper
         if (AppendVersion == true)
         {
             EnsureFileVersionProvider();
-
+            var versionedSrc = GetVersionedSrc(Src);
             if (Src != null)
             {
                 var index = output.Attributes.IndexOfName(SrcAttributeName);
                 var existingAttribute = output.Attributes[index];
                 output.Attributes[index] = new TagHelperAttribute(
                     existingAttribute.Name,
-                    FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src),
+                    versionedSrc,
                     existingAttribute.ValueStyle);
             }
         }
@@ -366,7 +413,17 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     {
         if (AppendVersion == true)
         {
-            srcValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, srcValue);
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, srcValue, out var resolvedUrl))
+            {
+                srcValue = resolvedUrl;
+                return srcValue;
+            }
+
+            if (srcValue != null)
+            {
+                srcValue = FileVersionProvider.AddFileVersionToPath(pathBase, srcValue);
+            }
         }
 
         return srcValue;

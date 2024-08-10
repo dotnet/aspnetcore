@@ -238,8 +238,9 @@ public class KestrelConfigurationLoaderTests
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
-    // On helix retry list - inherently flaky (writes to a well-known path)
     [Fact]
+    // inherently flaky (writes to a well-known path)
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48736")]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try
@@ -1842,6 +1843,23 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added by Reload"));
 
         _ = serverOptions.ConfigurationLoader.Reload();
+    }
+
+    [Fact]
+    public void AddNamedPipeEndpoint()
+    {
+        var serverOptions = CreateServerOptions();
+        var builder = serverOptions.Configure()
+            .NamedPipeEndpoint("abc");
+
+        Assert.Empty(serverOptions.GetListenOptions());
+        Assert.Equal(builder, serverOptions.ConfigurationLoader);
+
+        builder.Load();
+
+        Assert.Single(serverOptions.GetListenOptions());
+        Assert.Equal("abc", serverOptions.CodeBackedListenOptions[0].PipeName);
+        Assert.NotNull(serverOptions.ConfigurationLoader);
     }
 
     private static string GetCertificatePath()

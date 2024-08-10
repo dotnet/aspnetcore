@@ -154,9 +154,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         => _componentStateByComponent.GetValueOrDefault(component);
 
     /// <summary>
-    /// Gets the <see cref="ComponentPlatform"/> associated with this <see cref="Renderer"/>.
+    /// Gets the <see cref="RendererInfo"/> associated with this <see cref="Renderer"/>.
     /// </summary>
-    protected internal virtual ComponentPlatform ComponentPlatform { get; }
+    protected internal virtual RendererInfo RendererInfo { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual ResourceAssetCollection Assets { get; } = ResourceAssetCollection.Empty;
 
     private async void RenderRootComponentsOnHotReload()
     {

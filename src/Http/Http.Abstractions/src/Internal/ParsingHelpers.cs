@@ -57,7 +57,7 @@ internal static class ParsingHelpers
         }
         else
         {
-            headers[key] = string.Join(",", value.Select(QuoteIfNeeded));
+            headers[key] = string.Join(',', value.Select(QuoteIfNeeded));
         }
     }
 
@@ -116,7 +116,7 @@ internal static class ParsingHelpers
         }
         else
         {
-            headers[key] = existing + "," + string.Join(",", values.Select(QuoteIfNeeded));
+            headers[key] = existing + "," + string.Join(',', values.Select(QuoteIfNeeded));
         }
     }
 

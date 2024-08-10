@@ -34,10 +34,12 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        image: windows.vs2022.amd64.open
+        image: 1es-windows-2022-open
+        os: windows
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        image: windows.vs2022.amd64
+        image: 1es-windows-2022
+        os: windows
 
   steps:
   - ${{ if eq(parameters.is1ESPipeline, '') }}:
@@ -69,23 +71,11 @@ jobs:
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - task: AzureCLI@2
-      displayName: Get stage 1 auth token
+      displayName: Log in to Azure and upload stage1 artifacts to source index
       inputs:
         azureSubscription: 'SourceDotNet Stage1 Publish'
         addSpnToEnvironment: true
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
-          echo "##vso[task.setvariable variable=ARM_ID_TOKEN]$env:idToken"
-          echo "##vso[task.setvariable variable=ARM_TENANT_ID]$env:tenantId"
-
-    - script: |
-        echo "Client ID: $(ARM_CLIENT_ID)"
-        echo "ID Token: $(ARM_ID_TOKEN)"
-        echo "Tenant ID: $(ARM_TENANT_ID)"
-        az login --service-principal -u $(ARM_CLIENT_ID) --tenant $(ARM_TENANT_ID) --allow-no-subscriptions --federated-token $(ARM_ID_TOKEN)
-      displayName: "Login to Azure"
-
-    - script: $(Agent.TempDirectory)/.source-index/tools/UploadIndexStage1 -i .source-index/stage1output -n $(Build.Repository.Name) -s netsourceindexstage1 -b stage1
-      displayName: Upload stage1 artifacts to source index
+          $(Agent.TempDirectory)/.source-index/tools/UploadIndexStage1 -i .source-index/stage1output -n $(Build.Repository.Name) -s netsourceindexstage1 -b stage1

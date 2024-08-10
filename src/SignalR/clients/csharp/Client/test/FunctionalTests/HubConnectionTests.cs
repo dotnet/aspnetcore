@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -26,7 +27,7 @@ public class HubConnectionTestsCollection : ICollectionFixture<InProcessTestServ
 }
 
 [Collection(HubConnectionTestsCollection.Name)]
-public class HubConnectionTests : FunctionalTestBase
+public partial class HubConnectionTests : FunctionalTestBase
 {
     private const string DefaultHubDispatcherLoggerName = "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
 
@@ -36,7 +37,8 @@ public class HubConnectionTests : FunctionalTestBase
         HttpTransportType? transportType = null,
         IHubProtocol protocol = null,
         ILoggerFactory loggerFactory = null,
-        bool withAutomaticReconnect = false)
+        bool withAutomaticReconnect = false,
+        SignalRClientActivitySource activitySourceContainer = null)
     {
         var hubConnectionBuilder = new HubConnectionBuilder();
 
@@ -60,6 +62,10 @@ public class HubConnectionTests : FunctionalTestBase
         var delegateConnectionFactory = new DelegateConnectionFactory(
             GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
         hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+        if (activitySourceContainer != null)
+        {
+            hubConnectionBuilder.Services.AddSingleton(activitySourceContainer);
+        }
 
         return hubConnectionBuilder.Build();
     }

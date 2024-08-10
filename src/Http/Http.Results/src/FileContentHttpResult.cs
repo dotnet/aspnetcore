@@ -61,7 +61,7 @@ public sealed partial class FileContentHttpResult : IResult, IFileHttpResult, IC
     {
         FileContents = fileContents;
         FileLength = fileContents.Length;
-        ContentType = contentType ?? "application/octet-stream";
+        ContentType = contentType ?? ContentTypeConstants.BinaryContentType;
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
         LastModified = lastModified;

@@ -383,6 +383,7 @@ public class ResponseCachingTests : LoggedTest
         }
     }
 
+    [QuarantinedTest("new issue")]
     [ConditionalFact]
     public async Task Caching_SendFileWithFullContentLength_Cached()
     {

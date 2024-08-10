@@ -326,7 +326,10 @@ internal sealed class GetDocumentCommandWorker
                 }
                 else
                 {
-                    _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    if (!string.IsNullOrWhiteSpace(_context.OpenApiVersion))
+                    {
+                        _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    }
                     arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
                 }
             }

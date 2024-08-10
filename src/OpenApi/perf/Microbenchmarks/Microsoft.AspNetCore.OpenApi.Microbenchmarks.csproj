@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.OpenApi.Tests.csproj" />
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.OpenApi.Tests\Microsoft.AspNetCore.OpenApi.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

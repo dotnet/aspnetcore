@@ -161,7 +161,11 @@ internal sealed class RemoteJSDataStream : Stream
     }
 
     public override void Flush()
-        => throw new NotSupportedException();
+    {
+        // No-op
+    }
+
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     public override int Read(byte[] buffer, int offset, int count)
         => throw new NotSupportedException("Synchronous reads are not supported.");

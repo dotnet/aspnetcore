@@ -87,7 +87,7 @@ public class StampedeTests
                 Interlocked.Increment(ref executeCount);
                 ct.ThrowIfCancellationRequested(); // assert not cancelled
                 return Guid.NewGuid();
-            }, token: token).AsTask();
+            }, cancellationToken: token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
@@ -121,7 +121,7 @@ public class StampedeTests
                 Interlocked.Increment(ref executeCount);
                 ct.ThrowIfCancellationRequested(); // assert not cancelled
                 return Guid.NewGuid();
-            }, token: token).AsTask();
+            }, cancellationToken: token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
@@ -178,7 +178,7 @@ public class StampedeTests
                 {
                     semaphore.Release(); // handshake so we can check when available again
                 }
-            }, token: cancels[i].Token).AsTask();
+            }, cancellationToken: cancels[i].Token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
@@ -250,7 +250,7 @@ public class StampedeTests
                 {
                     semaphore.Release(); // handshake so we can check when available again
                 }
-            }, token: cancels[i].Token).AsTask();
+            }, cancellationToken: cancels[i].Token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
@@ -299,8 +299,8 @@ public class StampedeTests
         using var semaphore = new SemaphoreSlim(0);
 
         // note AsTask *in this scenario* fetches the underlying incomplete task
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, token: token).AsTask();
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, token: token).AsTask();
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, cancellationToken: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, cancellationToken: token).AsTask();
 
         if (withCancelation)
         {
@@ -325,8 +325,8 @@ public class StampedeTests
         using var semaphore = new SemaphoreSlim(0);
 
         // AsTask *in this scenario* fetches the underlying incomplete task
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token).AsTask();
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token).AsTask();
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, cancellationToken: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, cancellationToken: token).AsTask();
 
         if (withCancelation)
         {
@@ -355,8 +355,8 @@ public class StampedeTests
         using var semaphore = new SemaphoreSlim(0);
 
         // AsTask *in this scenario* fetches the underlying incomplete task
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token).AsTask();
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token).AsTask();
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, cancellationToken: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, cancellationToken: token).AsTask();
 
         Assert.NotSame(first, second);
         semaphore.Release();

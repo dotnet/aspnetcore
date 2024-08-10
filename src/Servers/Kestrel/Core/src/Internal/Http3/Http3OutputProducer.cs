@@ -95,7 +95,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
+    // In HTTP/1.x, this aborts the entire connection. For HTTP/3 we abort the stream.
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _stream.Abort(abortReason, Http3ErrorCode.InternalError);
     }
@@ -121,6 +122,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
             _pipeWriter.Advance(bytes);
         }
     }
+
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
 
     public void CancelPendingFlush()
     {

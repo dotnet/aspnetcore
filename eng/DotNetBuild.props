@@ -103,11 +103,11 @@
 
     <PropertyGroup>
       <!-- Disable installing puppeteer browsers when running in source build -->
-      <_AdditionalEnvironmentVariable Condition="$(ArcadeBuildFromSource) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1;npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_AdditionalEnvironmentVariable>
+      <_AdditionalEnvironmentVariable Condition="$(ArcadeBuildFromSource) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
     </PropertyGroup>
 
     <Exec
-      Command="npm ci --offline"
+      Command="npm ci"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="$(_AdditionalEnvironmentVariable)" />
 
