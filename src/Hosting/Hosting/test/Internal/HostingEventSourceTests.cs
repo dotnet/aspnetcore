@@ -5,6 +5,7 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -174,6 +175,7 @@ public class HostingEventSourceTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57259")]
     public async Task VerifyCountersFireWithCorrectValues()
     {
         // Arrange
