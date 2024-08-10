@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
 }}";
 
         // Act + Assert
-        await VerifyCodeFix(source, diagnostics, fixedSource);
+        await VerifyCodeFixAll(source, diagnostics, fixedSource);
     }
 
     [Theory]
