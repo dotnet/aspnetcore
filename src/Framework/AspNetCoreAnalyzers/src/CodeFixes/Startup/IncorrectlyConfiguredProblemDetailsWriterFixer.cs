@@ -77,6 +77,8 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
             // Ensure that the ProblemDetailsWriter registration appears after the MvcServiceCollectionExtension in source.
             diagnostic.Location.SourceSpan.CompareTo(diagnostic.AdditionalLocations[0].SourceSpan) > 0 &&
             TryGetInvocationExpressionStatement(diagnostic.Location, root, out problemDetailsWriterStatement) &&
+            // Exclude ProblemDetailsWriter registrations that may be part of an invocation chain to avoid moving unrelated code.
+            !IsPotentiallyPartOfInvocationChain(problemDetailsWriterStatement) &&
             TryGetInvocationExpressionStatement(diagnostic.AdditionalLocations[0], root, out mvcServiceCollectionExtensionStatement);
     }
 
@@ -145,7 +147,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
         IDictionary<ExpressionStatementSyntax, IList<ExpressionStatementSyntax>> groupedStatements,
         CancellationToken cancellationToken)
     {
-        var documentEditor = await DocumentEditor.CreateAsync(document, cancellationToken);
+        var documentEditor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
         foreach (var group in groupedStatements)
         {
@@ -173,9 +175,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
         var node = root.FindNode(location.SourceSpan, getInnermostNodeForTie: true);
 
         if (node is InvocationExpressionSyntax invocationExpression &&
-            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement &&
-            // Exclude expressions that may be part of an invocation chain to avoid moving unrelated code.
-            !IsPotentiallyPartOfInvocationChain(invocationExpression))
+            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement)
         {
             expressionStatement = invocationExpressionStatement;
             return true;
@@ -184,9 +184,10 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
         return false;
     }
 
-    private static bool IsPotentiallyPartOfInvocationChain(InvocationExpressionSyntax invocationExpression)
+    private static bool IsPotentiallyPartOfInvocationChain(ExpressionStatementSyntax expressionStatement)
     {
-        if (invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
+        if (expressionStatement.Expression is InvocationExpressionSyntax invocationExpressionSyntax &&
+            invocationExpressionSyntax.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
             memberAccessExpression.Expression is IdentifierNameSyntax)
         {
             return false;
