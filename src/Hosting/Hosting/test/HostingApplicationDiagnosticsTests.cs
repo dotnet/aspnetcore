@@ -19,7 +19,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
 
-public class HostingApplicationDiagnosticsTests
+public class HostingApplicationDiagnosticsTests : LoggedTest
 {
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57259")]
@@ -28,16 +28,17 @@ public class HostingApplicationDiagnosticsTests
         // Arrange
         var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
 
-        var eventListener = new TestCounterListener(new[]
-        {
+        using var eventListener = new TestCounterListener(LoggerFactory, hostingEventSource.Name,
+        [
             "requests-per-second",
             "total-requests",
             "current-requests",
             "failed-requests"
-        });
+        ]);
 
         var timeout = !Debugger.IsAttached ? TimeSpan.FromSeconds(30) : Timeout.InfiniteTimeSpan;
         using CancellationTokenSource timeoutTokenSource = new CancellationTokenSource(timeout);
+        timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
         var rpsValues = eventListener.GetCounterValues("requests-per-second", timeoutTokenSource.Token).GetAsyncEnumerator();
         var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
@@ -53,8 +54,9 @@ public class HostingApplicationDiagnosticsTests
         var testMeterFactory1 = new TestMeterFactory();
         var testMeterFactory2 = new TestMeterFactory();
 
-        var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
-        var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
+        var logger = LoggerFactory.CreateLogger<HostingApplication>();
+        var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1, logger: logger);
+        var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2, logger: logger);
 
         using var activeRequestsCollector1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http.server.active_requests");
         using var activeRequestsCollector2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http.server.active_requests");
@@ -65,18 +67,18 @@ public class HostingApplicationDiagnosticsTests
         var context1 = hostingApplication1.CreateContext(features1);
         var context2 = hostingApplication2.CreateContext(features2);
 
-        Assert.Equal(2, await totalRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(2, await rpsValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(2, await currentRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await totalRequestValues.WaitForSumAsync(2);
+        await rpsValues.WaitForSumAsync(2);
+        await currentRequestValues.WaitForSumAsync(2);
+        await failedRequestValues.WaitForSumAsync(0);
 
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        Assert.Equal(2, await totalRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(0, await rpsValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await totalRequestValues.WaitForSumAsync(2);
+        await rpsValues.WaitForSumAsync(0);
+        await currentRequestValues.WaitForSumAsync(0);
+        await failedRequestValues.WaitForSumAsync(0);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
@@ -93,10 +95,10 @@ public class HostingApplicationDiagnosticsTests
         context1 = hostingApplication1.CreateContext(features1);
         context2 = hostingApplication2.CreateContext(features2);
 
-        Assert.Equal(4, await totalRequestValues.FirstOrDefault(v => v == 4));
-        Assert.Equal(2, await rpsValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(2, await currentRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await totalRequestValues.WaitForSumAsync(4);
+        await rpsValues.WaitForSumAsync(2);
+        await currentRequestValues.WaitForSumAsync(2);
+        await failedRequestValues.WaitForSumAsync(0);
 
         context1.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context2.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -104,10 +106,10 @@ public class HostingApplicationDiagnosticsTests
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        Assert.Equal(4, await totalRequestValues.FirstOrDefault(v => v == 4));
-        Assert.Equal(0, await rpsValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(2, await failedRequestValues.FirstOrDefault(v => v == 2));
+        await totalRequestValues.WaitForSumAsync(4);
+        await rpsValues.WaitForSumAsync(0);
+        await currentRequestValues.WaitForSumAsync(0);
+        await failedRequestValues.WaitForSumAsync(2);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
@@ -133,13 +135,13 @@ public class HostingApplicationDiagnosticsTests
         // Arrange
         var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
 
-        var eventListener = new TestCounterListener(new[]
-        {
+        using var eventListener = new TestCounterListener(LoggerFactory, hostingEventSource.Name,
+        [
             "requests-per-second",
             "total-requests",
             "current-requests",
             "failed-requests"
-        });
+        ]);
 
         eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
@@ -1079,7 +1081,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.IsAssignableFrom<T>(value);
     }
 
-    private static HostingApplication CreateApplication(out FeatureCollection features,
+    private HostingApplication CreateApplication(out FeatureCollection features,
         DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null,
         Action<DefaultHttpContext> configure = null, HostingEventSource eventSource = null, IMeterFactory meterFactory = null)
     {

@@ -4,10 +4,11 @@
 using System.Globalization;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
-public class ConcurrencyLimiterEventSourceTests
+public class ConcurrencyLimiterEventSourceTests : LoggedTest
 {
     [Fact]
     public void MatchesNameAndGuid()
@@ -44,7 +45,7 @@ public class ConcurrencyLimiterEventSourceTests
     public async Task TracksQueueLength()
     {
         // Arrange
-        using var eventListener = new TestCounterListener(new[] {
+        using var eventListener = new TestCounterListener(LoggerFactory, new[] {
                 "queue-length",
                 "queue-duration",
                 "requests-rejected",
@@ -85,7 +86,7 @@ public class ConcurrencyLimiterEventSourceTests
     public async Task TracksDurationSpentInQueue()
     {
         // Arrange
-        using var eventListener = new TestCounterListener(new[] {
+        using var eventListener = new TestCounterListener(LoggerFactory, new[] {
                 "queue-length",
                 "queue-duration",
                 "requests-rejected",
