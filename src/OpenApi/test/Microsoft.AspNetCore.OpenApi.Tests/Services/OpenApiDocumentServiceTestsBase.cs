@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -30,20 +31,22 @@ public abstract class OpenApiDocumentServiceTestBase
     public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
-        var document = await documentService.GetOpenApiDocumentAsync(cancellationToken);
+        var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
     public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument)
     {
-        var documentService = CreateDocumentService(action);
-        var document = await documentService.GetOpenApiDocumentAsync();
+        var builder = CreateBuilder();
+        var documentService = CreateDocumentService(builder, action);
+        var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
         verifyOpenApiDocument(document);
     }
 
-    internal static OpenApiDocumentService CreateDocumentService(ActionDescriptor actionDescriptor)
+    internal static OpenApiDocumentService CreateDocumentService(IEndpointRouteBuilder builder, ActionDescriptor actionDescriptor)
     {
-        var builder = CreateBuilder();
         var context = new ApiDescriptionProviderContext([actionDescriptor]);
         var hostEnvironment = new HostEnvironment
         {
@@ -216,13 +219,15 @@ public abstract class OpenApiDocumentServiceTestBase
         return action;
     }
 
-    private class TestServiceProvider : IServiceProvider, IKeyedServiceProvider
+    private class TestServiceProvider : IServiceProvider, IKeyedServiceProvider, IServiceScope, IServiceScopeFactory
     {
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
         private IKeyedServiceProvider _serviceProvider;
         internal OpenApiDocumentService TestDocumentService { get; set; }
         internal OpenApiSchemaStore TestSchemaStoreService { get; } = new OpenApiSchemaStore();
         internal OpenApiSchemaService TestSchemaService { get; set; }
+
+        public IServiceProvider ServiceProvider => this;
 
         public void SetInternalServiceProvider(IServiceCollection serviceCollection)
         {
@@ -232,6 +237,21 @@ public abstract class OpenApiDocumentServiceTestBase
                 options.DocumentName = "Test";
             });
             _serviceProvider = serviceCollection.BuildServiceProvider();
+        }
+
+        public IServiceScope CreateScope()
+        {
+            var scope = _serviceProvider.CreateScope();
+            // Mock the inner service provider which can contain non-singleton services
+            // that have been configured in the service collection this TestServiceProvider
+            // was instantiated to.
+            if (scope.ServiceProvider is IKeyedServiceProvider scopedServiceProvider)
+            {
+                _serviceProvider = scopedServiceProvider;
+            }
+            // Return this instance as the scope so we can continue to resolve
+            // our mocked types.
+            return this;
         }
 
         public object GetKeyedService(Type serviceType, object serviceKey)
@@ -279,6 +299,8 @@ public abstract class OpenApiDocumentServiceTestBase
 
             return _serviceProvider.GetService(serviceType);
         }
+
+        public void Dispose() { }
     }
 
     internal class OpenApiTestServer(string[] addresses = null) : IServer

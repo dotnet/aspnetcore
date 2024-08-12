@@ -328,39 +328,12 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddOperationTransformer<ActivatedTransformerWithDependency>();
 
-        // Assert that transient dependency is instantiated once for each operation.
-        await VerifyOpenApiDocument(builder, options, document =>
-        {
-            Assert.Collection(document.Paths.OrderBy(p => p.Key),
-                path =>
-                {
-                    Assert.Equal("/todo", path.Key);
-                    var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("1", operation.Description);
-                },
-                path =>
-                {
-                    Assert.Equal("/user", path.Key);
-                    var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("2", operation.Description);
-                });
-        });
-        await VerifyOpenApiDocument(builder, options, document =>
-        {
-            Assert.Collection(document.Paths.OrderBy(p => p.Key),
-                path =>
-                {
-                    Assert.Equal("/todo", path.Key);
-                    var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("3", operation.Description);
-                },
-                path =>
-                {
-                    Assert.Equal("/user", path.Key);
-                    var operation = Assert.Single(path.Value.Operations.Values);
-                    Assert.Equal("4", operation.Description);
-                });
-        });
+        Dependency.InstantiationCount = 0;
+        await VerifyOpenApiDocument(builder, options, document => { });
+        await VerifyOpenApiDocument(builder, options, document => { });
+        // Assert that transient dependency has "scoped" lifetime and is instantiated
+        // once for each request to the document.
+        Assert.Equal(2, Dependency.InstantiationCount);
     }
 
     [Fact]
@@ -391,7 +364,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Operation Description", operation.Description);
                 });
         });
-        Assert.Equal(2, DisposableTransformer.DisposeCount);
+        Assert.Equal(1, DisposableTransformer.DisposeCount);
     }
 
     [Fact]
@@ -422,7 +395,87 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Operation Description", operation.Description);
                 });
         });
-        Assert.Equal(2, AsyncDisposableTransformer.DisposeCount);
+        Assert.Equal(1, AsyncDisposableTransformer.DisposeCount);
+    }
+
+    [Fact]
+    public async Task OperationTransformer_CanAccessSingletonServiceFromContextApplicationServices()
+    {
+        var serviceCollection = new ServiceCollection().AddSingleton<Dependency>();
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        Dependency.InstantiationCount = 0;
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            var service = context.ApplicationServices.GetRequiredService<Dependency>();
+            var sameServiceAgain = context.ApplicationServices.GetRequiredService<Dependency>();
+            service.TestMethod();
+            sameServiceAgain.TestMethod();
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+        await VerifyOpenApiDocument(builder, options, document => { });
+
+        // Assert that the singleton dependency is instantiated only once
+        // for the entire lifetime of the application.
+        Assert.Equal(1, Dependency.InstantiationCount);
+    }
+
+    [Fact]
+    public async Task OperationTransformer_CanAccessScopedServiceFromContextApplicationServices()
+    {
+        var serviceCollection = new ServiceCollection().AddScoped<Dependency>();
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        Dependency.InstantiationCount = 0;
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            var service = context.ApplicationServices.GetRequiredService<Dependency>();
+            var sameServiceAgain = context.ApplicationServices.GetRequiredService<Dependency>();
+            service.TestMethod();
+            sameServiceAgain.TestMethod();
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+        await VerifyOpenApiDocument(builder, options, document => { });
+
+        // Assert that the scoped dependency is instantiated twice. Once for
+        // each request to the document.
+        Assert.Equal(2, Dependency.InstantiationCount);
+    }
+
+    [Fact]
+    public async Task OperationTransformer_CanAccessTransientServiceFromContextApplicationServices()
+    {
+        var serviceCollection = new ServiceCollection().AddTransient<Dependency>();
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+        builder.MapGet("/todo-2", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        Dependency.InstantiationCount = 0;
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            var service = context.ApplicationServices.GetRequiredService<Dependency>();
+            var sameServiceAgain = context.ApplicationServices.GetRequiredService<Dependency>();
+            service.TestMethod();
+            sameServiceAgain.TestMethod();
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+        // Assert that the transient dependency is instantiated four times, twice
+        // within the operation transformer that is invoked for two operations.
+        Assert.Equal(4, Dependency.InstantiationCount);
     }
 
     private class ActivatedTransformer : IOpenApiOperationTransformer

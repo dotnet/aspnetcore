@@ -32,7 +32,6 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
-    private readonly OpenApiOptions _openApiOptions = optionsMonitor.Get(documentName);
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
         // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
@@ -126,7 +125,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -139,13 +138,17 @@ internal sealed class OpenApiSchemaService(
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
+        await ApplySchemaTransformersAsync(schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
         _schemaStore.PopulateSchemaIntoReferenceCache(schema, captureSchemaByRef);
         return schema;
     }
 
-    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        if (schemaTransformers.Count == 0)
+        {
+            return;
+        }
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
@@ -153,31 +156,13 @@ internal sealed class OpenApiSchemaService(
             JsonTypeInfo = jsonTypeInfo,
             JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
-            ApplicationServices = serviceProvider
+            ApplicationServices = scopedServiceProvider
         };
-        for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
+        for (var i = 0; i < schemaTransformers.Count; i++)
         {
             // Reset context object to base state before running each transformer.
-            var transformer = _openApiOptions.SchemaTransformers[i];
-            // If the transformer is a type-based transformer, we need to initialize and finalize it
-            // once in the context of the top-level assembly and not the child properties we are invoking
-            // it on.
-            if (transformer is TypeBasedOpenApiSchemaTransformer typeBasedTransformer)
-            {
-                var initializedTransformer = typeBasedTransformer.InitializeTransformer(serviceProvider);
-                try
-                {
-                    await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, initializedTransformer, cancellationToken);
-                }
-                finally
-                {
-                    await TypeBasedOpenApiSchemaTransformer.FinalizeTransformer(initializedTransformer);
-                }
-            }
-            else
-            {
-                await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
-            }
+            var transformer = schemaTransformers[i];
+            await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
         }
     }
 

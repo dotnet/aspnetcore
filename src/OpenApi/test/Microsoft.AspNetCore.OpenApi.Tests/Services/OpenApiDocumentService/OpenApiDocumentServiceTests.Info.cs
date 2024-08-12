@@ -22,7 +22,7 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer());
 
@@ -45,7 +45,7 @@ public partial class OpenApiDocumentServiceTests
             "v2",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            GetMockOptionsMonitor(),
             new Mock<IKeyedServiceProvider>().Object,
             new OpenApiTestServer());
 
@@ -54,5 +54,12 @@ public partial class OpenApiDocumentServiceTests
 
         // Assert
         Assert.Equal("TestApplication | v2", info.Title);
+    }
+
+    internal IOptionsMonitor<OpenApiOptions> GetMockOptionsMonitor()
+    {
+        var openApiOptions = new Mock<IOptionsMonitor<OpenApiOptions>>();
+        openApiOptions.Setup(o => o.Get(It.IsAny<string>())).Returns(new OpenApiOptions());
+        return openApiOptions.Object;
     }
 }

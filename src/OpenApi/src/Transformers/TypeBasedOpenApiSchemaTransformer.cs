@@ -27,18 +27,6 @@ internal sealed class TypeBasedOpenApiSchemaTransformer : IOpenApiSchemaTransfor
         return transformer;
     }
 
-    internal static async Task FinalizeTransformer(IOpenApiSchemaTransformer transformer)
-    {
-        if (transformer is IAsyncDisposable asyncDisposable)
-        {
-            await asyncDisposable.DisposeAsync();
-        }
-        else if (transformer is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-    }
-
     // No-op because the activate instance is invoked by the OpenApiSchema service.
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         => Task.CompletedTask;

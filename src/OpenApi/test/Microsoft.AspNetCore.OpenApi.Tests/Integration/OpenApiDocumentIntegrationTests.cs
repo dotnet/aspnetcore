@@ -21,7 +21,8 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     public async Task VerifyOpenApiDocument(string documentName)
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
-        var document = await documentService.GetOpenApiDocumentAsync();
+        var scopedServiceProvider = fixture.Services.CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
         await Verifier.Verify(GetOpenApiJson(document))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
