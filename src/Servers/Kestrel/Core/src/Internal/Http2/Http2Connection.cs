@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 /// </summary>
 /// <remarks>
 /// Owned by <see cref="HttpConnection"/>.
-///
+/// <para>
 /// Not reusable.
 /// </remarks>
 internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor

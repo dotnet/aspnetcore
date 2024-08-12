@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 /// </summary>
 /// <remarks>
 /// Owned by <see cref="Http2Connection"/>.
-///
+/// <para>
 /// Since a connection has multiple streams, this class maintains a <see cref="Channel{T}"/> (i.e. bounded queue)
 /// of <see cref="Http2OutputProducer"/> instances (each of which is owned by a stream) that want to write frames.
-///
+/// <para>
 /// Reuses a single <see cref="Http2Frame"/>, which it populates based on the next <see cref="Http2OutputProducer"/>
 /// (and corresponding <see cref="Http2Stream{TContext}"/>) and then serializes to binary in
 /// <see cref="WriteToOutputPipe"/>.
-///
+/// <para>
 /// Tracks the outgoing connection window size while <see cref="Http2OutputProducer"/> tracks the stream window size.
 /// </remarks>
 internal sealed class Http2FrameWriter

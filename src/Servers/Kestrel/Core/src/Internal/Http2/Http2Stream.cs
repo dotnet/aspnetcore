@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 /// In practice, the product code uses <see cref="Http2Stream{TContext}"/>.  This appears to be
 /// a simplified version omitting <see cref="Hosting.Server.IHttpApplication{TContext}"/> that
 /// the tests can subtype for mocking.
-///
+/// <para>
 /// Reusable after calling <see cref="Initialize"/> or <see cref="InitializeWithExistingContext"/>.
-///
+/// <para>
 /// Indirectly owned, via <see cref="PooledStreamStack{TValue}"/>, by an <see cref="Http2Connection"/>.
 /// </remarks>
 internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable, IPooledStream

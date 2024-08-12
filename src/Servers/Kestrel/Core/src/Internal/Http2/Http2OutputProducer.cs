@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 /// <remarks>
 /// Owned by <see cref="Http2Stream"/>.
-///
+/// <para>
 /// Tracks the outgoing stream flow control window.
-///
+/// <para>
 /// Reusable after calling <see cref="StreamReset"/> (<see cref="Reset"/> is unrelated and does nothing).
 /// </remarks>
 internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable

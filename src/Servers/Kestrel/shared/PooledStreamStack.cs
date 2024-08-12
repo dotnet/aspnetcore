@@ -23,9 +23,9 @@ internal interface IPooledStream
 /// <typeparam name="TValue">The type of stream.</typeparam>
 /// <remarks>
 /// Inspired by https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
-///
+/// <para>
 /// We seem to have chosen a stack for its quick insertion and removal, rather than for LIFO semantics.
-///
+/// <para>
 /// Owned by an Http2Connection or QuicConnectionContext.
 /// </remarks>
 internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
