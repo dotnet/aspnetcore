@@ -215,7 +215,7 @@ public partial class WebSocketMiddleware
             {
                 IsServer = true,
                 KeepAliveInterval = keepAliveInterval,
-                KeepAliveTimeout = _options.KeepAliveTimeout,
+                KeepAliveTimeout = keepAliveTimeout,
                 SubProtocol = subProtocol,
                 DangerousDeflateOptions = deflateOptions
             });
