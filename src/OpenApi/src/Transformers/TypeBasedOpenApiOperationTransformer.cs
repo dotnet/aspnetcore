@@ -27,6 +27,9 @@ internal sealed class TypeBasedOpenApiOperationTransformer : IOpenApiOperationTr
         return transformer;
     }
 
+    /// <remarks>
+    /// Throw because the activate instance is invoked by the <see cref="OpenApiDocumentService" />.
+    /// </remarks>
     public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
-        => Task.CompletedTask;
+        => throw new InvalidOperationException("This method should not be called. Only activiated instances of this transformer should be used.");
 }
