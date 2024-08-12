@@ -26,7 +26,7 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 /// <remarks>
 /// Request processing code (especially <see cref="ProcessRequestsAsync"/>) shared across HTTP protocols
 /// via inheritance.
-/// <para>
+/// <para/>
 /// HTTP/1.1 uses it at the connection level and resets it between requests.
 /// HTTP/2 and HTTP/3 use it at the stream level.
 /// </remarks>

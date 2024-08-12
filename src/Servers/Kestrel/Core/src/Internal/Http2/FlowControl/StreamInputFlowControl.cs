@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 /// Owns an <see cref="InputFlowControl"/> for the stream-level flow control and
 /// references another (owned by a <see cref="Http2Connection"/>) for the
 /// connection-level flow control.
-/// <para>
+/// <para/>
 /// <see cref="Http2Stream"/> owns an instance for the stream-level flow control.
-/// <para>
+/// <para/>
 /// Reusable after calling <see cref="Reset"/>.
 /// </remarks>
 /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9113#name-flow-control"/>

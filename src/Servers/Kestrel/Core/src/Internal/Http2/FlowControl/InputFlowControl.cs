@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 /// </summary>
 /// <remarks>
 /// Owns a <see cref="FlowControl"/> that it uses to track the present window size.
-/// <para>
+/// <para/>
 /// <see cref="Http2Connection"/> owns an instance for the connection-level flow control.
 /// <see cref="StreamInputFlowControl"/> owns an instance for the stream-level flow control.
-/// <para>
+/// <para/>
 /// Reusable after calling <see cref="Reset"/>.
 /// </remarks>
 /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9113#name-flow-control"/>
