@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 /// <summary>
-/// Represents an HTTP/2 frame.  The expected use pattern is that it will be instantiated once
+/// Represents an HTTP/2 frame. The expected use pattern is that it will be instantiated once
 /// and then, each time a frame is received or sent, it is reset with a PrepareX method.
 /// This type is not responsible for binary serialization or deserialization.
 /// </summary>

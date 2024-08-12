@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 /// Instantiated by <see cref="HttpConnectionMiddleware{TContext}"/> when a connection is received.
 /// <para>
 /// Not related, type-wise, to <see cref="Http1Connection{TContext}"/>, <see cref="Http2Connection"/>,
-/// or <see cref="Http3Connection"/>.  It does, however, instantiate one of those types as its
+/// or <see cref="Http3Connection"/>. It does, however, instantiate one of those types as its
 /// <see cref="_requestProcessor"/> based on the protocol.
 /// </remarks>
 internal sealed class HttpConnection : ITimeoutHandler

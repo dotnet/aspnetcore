@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 /// A poolable HTTP/2 stream.
 /// </summary>
 /// <remarks>
-/// In practice, the product code uses <see cref="Http2Stream{TContext}"/>.  This appears to be
+/// In practice, the product code uses <see cref="Http2Stream{TContext}"/>. This appears to be
 /// a simplified version omitting <see cref="Hosting.Server.IHttpApplication{TContext}"/> that
 /// the tests can subtype for mocking.
 /// <para>
