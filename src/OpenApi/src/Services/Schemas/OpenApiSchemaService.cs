@@ -125,7 +125,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer>? schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -143,9 +143,9 @@ internal sealed class OpenApiSchemaService(
         return schema;
     }
 
-    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer>? schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
-        if (schemaTransformers is null || schemaTransformers.Count == 0)
+        if (schemaTransformers.Count == 0)
         {
             return;
         }

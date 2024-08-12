@@ -38,8 +38,8 @@ internal sealed class OpenApiDocumentService(
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
     private readonly OpenApiSchemaReferenceTransformer _schemaReferenceTransformer = new();
 
-    private List<IOpenApiSchemaTransformer>? _schemaTransformers;
-    private List<IOpenApiOperationTransformer>? _operationTransformers;
+    private List<IOpenApiSchemaTransformer> _schemaTransformers = [];
+    private List<IOpenApiOperationTransformer> _operationTransformers = [];
 
     /// <summary>
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
@@ -99,7 +99,6 @@ internal sealed class OpenApiDocumentService(
     {
         for (var i = 0; i < _options.SchemaTransformers.Count; i++)
         {
-            _schemaTransformers ??= [];
             var schemaTransformer = _options.SchemaTransformers[i];
             if (schemaTransformer is TypeBasedOpenApiSchemaTransformer typeBasedTransformer)
             {
@@ -113,7 +112,6 @@ internal sealed class OpenApiDocumentService(
 
         for (var i = 0; i < _options.OperationTransformers.Count; i++)
         {
-            _operationTransformers ??= [];
             var operationTransformer = _options.OperationTransformers[i];
             if (operationTransformer is TypeBasedOpenApiOperationTransformer typeBasedTransformer)
             {
@@ -128,22 +126,16 @@ internal sealed class OpenApiDocumentService(
 
     internal async Task FinalizeTransformers()
     {
-        if (_schemaTransformers is not null)
+        for (var i = 0; i < _schemaTransformers.Count; i++)
         {
-            for (var i = 0; i < _schemaTransformers.Count; i++)
-            {
-                await _schemaTransformers[i].FinalizeTransformer();
-            }
+            await _schemaTransformers[i].FinalizeTransformer();
         }
-        if (_operationTransformers is not null)
+        for (var i = 0; i < _operationTransformers.Count; i++)
         {
-            for (var i = 0; i < _operationTransformers.Count; i++)
-            {
-                await _operationTransformers[i].FinalizeTransformer();
-            }
+            await _operationTransformers[i].FinalizeTransformer();
         }
-        _schemaTransformers = null;
-        _operationTransformers = null;
+        _schemaTransformers = [];
+        _operationTransformers = [];
     }
 
     internal async Task ForEachOperationAsync(
