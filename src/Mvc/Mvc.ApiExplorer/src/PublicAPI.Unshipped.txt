@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider.ApiDescriptionGroupCollectionProvider(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider! actionDescriptorCollectionProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider!>! apiDescriptionProviders, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

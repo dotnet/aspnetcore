@@ -1552,6 +1552,19 @@ public class ApiExplorerTest : LoggedTest
             });
     }
 
+    [Fact]
+    public async Task ApiExplorer_LogsInvokedDescriptionProvidersOnStartup()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("http://localhost/ApiExplorerHttpMethod/All");
+
+        // Assert
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name?.Equals("ApiDescriptionProviderExecuting", StringComparison.Ordinal) == true);
+        Assert.Contains(TestSink.Writes, w => w.LoggerName.Equals("Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider", StringComparison.Ordinal));
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'DefaultApiDescriptionProvider' from assembly Microsoft.AspNetCore.Mvc.ApiExplorer.", StringComparison.Ordinal));
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'JsonPatchOperationsArrayProvider' from assembly Microsoft.AspNetCore.Mvc.NewtonsoftJson.", StringComparison.Ordinal));
+    }
+
     private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
     {
         return apiResponseType.ResponseFormats
