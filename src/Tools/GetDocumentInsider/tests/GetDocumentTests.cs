@@ -164,7 +164,7 @@ public class GetDocumentTests(ITestOutputHelper output)
             "--tools-directory", _toolsDirectory,
             "--output", outputPath.FullName,
             "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
-            "--file-name-override", fileName
+            "--file-name", fileName
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
@@ -191,7 +191,7 @@ public class GetDocumentTests(ITestOutputHelper output)
             "--tools-directory", _toolsDirectory,
             "--output", outputPath.FullName,
             "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
-            "--file-name-override", fileName
+            "--file-name", fileName
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
@@ -217,7 +217,7 @@ public class GetDocumentTests(ITestOutputHelper output)
             "--tools-directory", _toolsDirectory,
             "--output", outputPath.FullName,
             "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
-            "--file-name-override", ""
+            "--file-name", ""
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
