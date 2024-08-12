@@ -30,6 +30,7 @@ internal sealed class Response
     private BoundaryType _boundaryType;
     private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
     private HeaderCollection? _trailers;
+    private readonly bool _respectHttp10KeepAlive;
 
     internal Response(RequestContext requestContext)
     {
@@ -51,6 +52,7 @@ internal sealed class Response
         _nativeStream = null;
         _cacheTtl = null;
         _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+        _respectHttp10KeepAlive = RequestContext.Server.Options.RespectHttp10KeepAlive;
     }
 
     private enum ResponseState
@@ -390,6 +392,7 @@ internal sealed class Response
         var requestConnectionString = Request.Headers[HeaderNames.Connection];
         var isHeadRequest = Request.IsHeadMethod;
         var requestCloseSet = Matches(Constants.Close, requestConnectionString);
+        var requestConnectionKeepAliveSet = Matches(Constants.KeepAlive, requestConnectionString);
 
         // Gather everything the app may have set on the response:
         // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
@@ -402,11 +405,24 @@ internal sealed class Response
 
         // Determine if the connection will be kept alive or closed.
         var keepConnectionAlive = true;
-        if (requestVersion <= Constants.V1_0 // Http.Sys does not support "Keep-Alive: true" or "Connection: Keep-Alive"
+
+        if (requestVersion < Constants.V1_0
             || (requestVersion == Constants.V1_1 && requestCloseSet)
             || responseCloseSet)
         {
             keepConnectionAlive = false;
+        }
+        else if (requestVersion == Constants.V1_0)
+        {
+            // In .NET 9, we updated the behavior for 1.0 clients here to match
+            // RFC 2068. The new behavior is available down-level behind an
+            // AppContext switch.
+
+            // An HTTP/1.1 server may also establish persistent connections with
+            // HTTP/1.0 clients upon receipt of a Keep-Alive connection token.
+            // However, a persistent connection with an HTTP/1.0 client cannot make
+            // use of the chunked transfer-coding. From: https://www.rfc-editor.org/rfc/rfc2068#section-19.7.1
+            keepConnectionAlive = _respectHttp10KeepAlive && requestConnectionKeepAliveSet && !responseChunkedSet;
         }
 
         // Determine the body format. If the user asks to do something, let them, otherwise choose a good default for the scenario.
