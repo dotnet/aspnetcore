@@ -21,6 +21,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// An HTTP/2 connection - owns the request processing and lifetime.
+/// <para/>
+/// Responsible for reading incoming HTTP/2 frames. New requests create streams and execution
+/// for the request is dispatched to the thread pool.
+/// <para/>
+/// </summary>
+/// <remarks>
+/// Owned by <see cref="HttpConnection"/>.
+/// <para/>
+/// For performance, streams are pooled when an HTTP/2 request completes gracefully. Future requests
+/// reuse a pooled stream if available. There are limits on the number of pooled streams, and unused
+/// streams are automatically removed from the pool after a timeout.
+/// <para/>
+/// The connection itself is not reusable.
+/// </remarks>
 internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
