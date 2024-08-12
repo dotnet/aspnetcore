@@ -37,6 +37,7 @@ internal sealed class TestCounterListener : EventListener
 
     protected override void OnEventWritten(EventWrittenEventArgs eventData)
     {
+        // Work around https://github.com/dotnet/runtime/issues/31927
         if (eventData.EventSource.Name == _eventSourceName && eventData.EventName == "EventCounters")
         {
             var payload = (IDictionary<string, object>)eventData.Payload[0];

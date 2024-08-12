@@ -47,7 +47,7 @@ internal static class AsyncEnumerableExtensions
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Results ended with final value of {value}. Expected sum value of {expectedValue}.", ex);
+            throw new InvalidOperationException($"Results ended with final sum value of {value}. Expected sum value of {expectedValue}.", ex);
         }
     }
 }

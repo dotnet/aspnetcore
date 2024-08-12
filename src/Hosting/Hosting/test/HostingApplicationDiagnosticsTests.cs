@@ -1081,7 +1081,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.IsAssignableFrom<T>(value);
     }
 
-    private HostingApplication CreateApplication(out FeatureCollection features,
+    private static HostingApplication CreateApplication(out FeatureCollection features,
         DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null,
         Action<DefaultHttpContext> configure = null, HostingEventSource eventSource = null, IMeterFactory meterFactory = null)
     {
