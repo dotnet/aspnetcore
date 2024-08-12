@@ -67,18 +67,18 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var context1 = hostingApplication1.CreateContext(features1);
         var context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumAsync(2);
-        await rpsValues.WaitForSumAsync(2);
-        await currentRequestValues.WaitForSumAsync(2);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(2);
+        await rpsValues.WaitForValueAsync(2);
+        await currentRequestValues.WaitForValueAsync(2);
+        await failedRequestValues.WaitForValueAsync(0);
 
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumAsync(2);
-        await rpsValues.WaitForSumAsync(0);
-        await currentRequestValues.WaitForSumAsync(0);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(2);
+        await rpsValues.WaitForValueAsync(0);
+        await currentRequestValues.WaitForValueAsync(0);
+        await failedRequestValues.WaitForValueAsync(0);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
@@ -95,10 +95,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         context1 = hostingApplication1.CreateContext(features1);
         context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumAsync(4);
-        await rpsValues.WaitForSumAsync(2);
-        await currentRequestValues.WaitForSumAsync(2);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(4);
+        await rpsValues.WaitForValueAsync(2);
+        await currentRequestValues.WaitForValueAsync(2);
+        await failedRequestValues.WaitForValueAsync(0);
 
         context1.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context2.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -106,10 +106,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumAsync(4);
-        await rpsValues.WaitForSumAsync(0);
-        await currentRequestValues.WaitForSumAsync(0);
-        await failedRequestValues.WaitForSumAsync(2);
+        await totalRequestValues.WaitForSumValueAsync(4);
+        await rpsValues.WaitForValueAsync(0);
+        await currentRequestValues.WaitForValueAsync(0);
+        await failedRequestValues.WaitForValueAsync(2);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),

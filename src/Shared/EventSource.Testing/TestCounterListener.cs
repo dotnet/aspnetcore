@@ -41,11 +41,16 @@ internal sealed class TestCounterListener : EventListener
         {
             var payload = (IDictionary<string, object>)eventData.Payload[0];
             var counter = (string)payload["Name"];
-            payload.TryGetValue("Increment", out var increment);
-            payload.TryGetValue("Mean", out var mean);
+            if (payload.TryGetValue("Increment", out var increment))
+            {
+                _logger.LogDebug("Counter {CounterName} on event source {EventSourceName} has increment value {Value}.", counter, eventData.EventSource.Name, increment);
+            }
+            if (payload.TryGetValue("Mean", out var mean))
+            {
+                _logger.LogDebug("Counter {CounterName} on event source {EventSourceName} has mean value {Value}.", counter, eventData.EventSource.Name, mean);
+            }
+
             var value = (double)(increment ?? mean);
-            
-            _logger.LogDebug("Counter {CounterName} on event source {EventSourceName} has value {Value}.", counter, eventData.EventSource.Name, value);
             var writer = _counters[counter].Writer;
             writer.TryWrite(value);
         }

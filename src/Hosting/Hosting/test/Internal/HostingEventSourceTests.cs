@@ -191,6 +191,7 @@ public class HostingEventSourceTests : LoggedTest
         ]);
 
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
         var rpsValues = eventListener.GetCounterValues("requests-per-second", timeoutTokenSource.Token).GetAsyncEnumerator();
         var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
@@ -207,36 +208,36 @@ public class HostingEventSourceTests : LoggedTest
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("GET", "/");
 
-        await totalRequestValues.WaitForSumAsync(1);
-        await rpsValues.WaitForSumAsync(1);
-        await currentRequestValues.WaitForSumAsync(1);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(1);
+        await rpsValues.WaitForValueAsync(1);
+        await currentRequestValues.WaitForValueAsync(1);
+        await failedRequestValues.WaitForValueAsync(0);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumAsync(1);
-        await rpsValues.WaitForSumAsync(0);
-        await currentRequestValues.WaitForSumAsync(0);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(1);
+        await rpsValues.WaitForValueAsync(0);
+        await currentRequestValues.WaitForValueAsync(0);
+        await failedRequestValues.WaitForValueAsync(0);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("POST", "/");
 
-        await totalRequestValues.WaitForSumAsync(2);
-        await rpsValues.WaitForSumAsync(1);
-        await currentRequestValues.WaitForSumAsync(1);
-        await failedRequestValues.WaitForSumAsync(0);
+        await totalRequestValues.WaitForSumValueAsync(2);
+        await rpsValues.WaitForValueAsync(1);
+        await currentRequestValues.WaitForValueAsync(1);
+        await failedRequestValues.WaitForValueAsync(0);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestFailed));
         hostingEventSource.RequestFailed();
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumAsync(2);
-        await rpsValues.WaitForSumAsync(0);
-        await currentRequestValues.WaitForSumAsync(0);
-        await failedRequestValues.WaitForSumAsync(1);
+        await totalRequestValues.WaitForSumValueAsync(2);
+        await rpsValues.WaitForValueAsync(0);
+        await currentRequestValues.WaitForValueAsync(0);
+        await failedRequestValues.WaitForValueAsync(1);
     }
 
     private static HostingEventSource GetHostingEventSource()
