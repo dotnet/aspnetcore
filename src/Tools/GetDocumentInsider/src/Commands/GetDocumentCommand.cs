@@ -33,7 +33,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         _output = command.Option("--output <Directory>", Resources.OutputDescription);
         _openApiVersion = command.Option("--openapi-version <Version>", Resources.OpenApiVersionDescription);
         _documentName = command.Option("--document-name <Name>", Resources.DocumentNameDescription);
-        _fileName = command.Option("--file-name-override <Name>", Resources.FileNameDescription);
+        _fileName = command.Option("--file-name <Name>", Resources.FileNameDescription);
     }
 
     protected override void Validate()
