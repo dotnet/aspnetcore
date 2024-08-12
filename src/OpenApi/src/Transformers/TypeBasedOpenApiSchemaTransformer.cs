@@ -31,5 +31,5 @@ internal sealed class TypeBasedOpenApiSchemaTransformer : IOpenApiSchemaTransfor
     /// Throw because the activate instance is invoked by the <see cref="OpenApiSchemaService" />.
     /// </remarks>
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
-        => throw new InvalidOperationException("This method should not be called. Only activiated instances of this transformer should be used.");
+        => throw new InvalidOperationException("This method should not be called. Only activated instances of this transformer should be used.");
 }

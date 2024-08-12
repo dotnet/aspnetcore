@@ -58,8 +58,8 @@ internal sealed class OpenApiDocumentService(
         // Schema and operation transformers are scoped per-request and can be
         // pre-allocated to hold the same number of transformers as the associated
         // options object.
-        List<IOpenApiSchemaTransformer> schemaTransformers = new(_options.SchemaTransformers.Count);
-        List<IOpenApiOperationTransformer> operationTransformers = new(_options.OperationTransformers.Count);
+        IOpenApiSchemaTransformer[] schemaTransformers = new IOpenApiSchemaTransformer[_options.SchemaTransformers.Count];
+        IOpenApiOperationTransformer[] operationTransformers = new IOpenApiOperationTransformer[_options.OperationTransformers.Count];
         InitializeTransformers(scopedServiceProvider, schemaTransformers, operationTransformers);
         var document = new OpenApiDocument
         {
@@ -97,18 +97,18 @@ internal sealed class OpenApiDocumentService(
         await _schemaReferenceTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
     }
 
-    internal void InitializeTransformers(IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, List<IOpenApiOperationTransformer> operationTransformers)
+    internal void InitializeTransformers(IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, IOpenApiOperationTransformer[] operationTransformers)
     {
         for (var i = 0; i < _options.SchemaTransformers.Count; i++)
         {
             var schemaTransformer = _options.SchemaTransformers[i];
             if (schemaTransformer is TypeBasedOpenApiSchemaTransformer typeBasedTransformer)
             {
-                schemaTransformers.Add(typeBasedTransformer.InitializeTransformer(scopedServiceProvider));
+                schemaTransformers[i] = typeBasedTransformer.InitializeTransformer(scopedServiceProvider);
             }
             else
             {
-                schemaTransformers.Add(schemaTransformer);
+                schemaTransformers[i] = schemaTransformer;
             }
         }
 
@@ -117,22 +117,22 @@ internal sealed class OpenApiDocumentService(
             var operationTransformer = _options.OperationTransformers[i];
             if (operationTransformer is TypeBasedOpenApiOperationTransformer typeBasedTransformer)
             {
-                operationTransformers.Add(typeBasedTransformer.InitializeTransformer(scopedServiceProvider));
+                operationTransformers[i] = typeBasedTransformer.InitializeTransformer(scopedServiceProvider);
             }
             else
             {
-                operationTransformers.Add(operationTransformer);
+                operationTransformers[i] = operationTransformer;
             }
         }
     }
 
-    internal static async Task FinalizeTransformers(List<IOpenApiSchemaTransformer> schemaTransformers, List<IOpenApiOperationTransformer> operationTransformers)
+    internal static async Task FinalizeTransformers(IOpenApiSchemaTransformer[] schemaTransformers, IOpenApiOperationTransformer[] operationTransformers)
     {
-        for (var i = 0; i < schemaTransformers.Count; i++)
+        for (var i = 0; i < schemaTransformers.Length; i++)
         {
             await schemaTransformers[i].FinalizeTransformer();
         }
-        for (var i = 0; i < operationTransformers.Count; i++)
+        for (var i = 0; i < operationTransformers.Length; i++)
         {
             await operationTransformers[i].FinalizeTransformer();
         }
@@ -205,8 +205,8 @@ internal sealed class OpenApiDocumentService(
     private async Task<OpenApiPaths> GetOpenApiPathsAsync(
         HashSet<OpenApiTag> capturedTags,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiOperationTransformer> operationTransformers,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiOperationTransformer[] operationTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
@@ -226,8 +226,8 @@ internal sealed class OpenApiDocumentService(
         IGrouping<string?, ApiDescription> descriptions,
         HashSet<OpenApiTag> capturedTags,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiOperationTransformer> operationTransformers,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiOperationTransformer[] operationTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
@@ -248,13 +248,10 @@ internal sealed class OpenApiDocumentService(
             operations[description.GetOperationType()] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
-            if (operationTransformers.Count > 0)
+            for (var i = 0; i < operationTransformers.Length; i++)
             {
-                for (var i = 0; i < operationTransformers.Count; i++)
-                {
-                    var transformer = operationTransformers[i];
-                    await transformer.TransformAsync(operation, operationContext, cancellationToken);
-                }
+                var transformer = operationTransformers[i];
+                await transformer.TransformAsync(operation, operationContext, cancellationToken);
             }
         }
         return operations;
@@ -264,7 +261,7 @@ internal sealed class OpenApiDocumentService(
         ApiDescription description,
         HashSet<OpenApiTag> capturedTags,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         var tags = GetTags(description);
@@ -313,7 +310,7 @@ internal sealed class OpenApiDocumentService(
     private async Task<OpenApiResponses> GetResponsesAsync(
         ApiDescription description,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         // OpenAPI requires that each operation have a response, usually a successful one.
@@ -347,7 +344,7 @@ internal sealed class OpenApiDocumentService(
         int statusCode,
         ApiResponseType apiResponseType,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         var description = ReasonPhrases.GetReasonPhrase(statusCode);
@@ -386,7 +383,7 @@ internal sealed class OpenApiDocumentService(
     private async Task<List<OpenApiParameter>?> GetParametersAsync(
         ApiDescription description,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         List<OpenApiParameter>? parameters = null;
@@ -436,7 +433,7 @@ internal sealed class OpenApiDocumentService(
             descriptionAttribute.Description :
             null;
 
-    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer> schemaTransformers, CancellationToken cancellationToken)
+    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {
         // Only one parameter can be bound from the body in each request.
         if (description.TryGetBodyParameter(out var bodyParameter))
@@ -459,7 +456,7 @@ internal sealed class OpenApiDocumentService(
         IEnumerable<ApiParameterDescription> formParameters,
         IList<object> endpointMetadata,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
@@ -609,7 +606,7 @@ internal sealed class OpenApiDocumentService(
         IList<ApiRequestFormat> supportedRequestFormats,
         ApiParameterDescription bodyParameter,
         IServiceProvider scopedServiceProvider,
-        List<IOpenApiSchemaTransformer> schemaTransformers,
+        IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
