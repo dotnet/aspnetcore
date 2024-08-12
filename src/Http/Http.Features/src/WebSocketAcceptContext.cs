@@ -21,6 +21,9 @@ public class WebSocketAcceptContext
     /// <summary>
     /// The interval to send keep-alive frames. This is a heart-beat that keeps the connection alive.
     /// </summary>
+    /// <remarks>
+    /// May be either a Ping or a Pong frame, depending on if <see cref="KeepAliveTimeout" /> is set.
+    /// </remarks>
     public virtual TimeSpan? KeepAliveInterval { get; set; }
 
     /// <summary>

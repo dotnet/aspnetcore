@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.WebSockets;
 
 /// <summary>
-/// Used in WebSocketMiddleware to wrap the HttpContext.Request.Body stream
-/// so that we can call HttpContext.Abort when the stream is disposed and the WebSocket is in the Aborted state.
+/// Used in <see cref="WebSocketMiddleware"/> to wrap the <see cref="HttpContext"/>.Request.Body stream
+/// so that we can call <see cref="HttpContext.Abort"/> when the stream is disposed and the WebSocket is in the <see cref="WebSocketState.Aborted"/> state.
 /// The Stream provided by Kestrel (and maybe other servers) noops in Dispose as it doesn't know whether it's a graceful close or not
 /// and can result in truncated responses if in the graceful case.
 ///
-/// This handles explicit WebSocket.Abort calls as well as the Keep-Alive timeout setting Aborted and disposing the stream.
+/// This handles explicit <see cref="WebSocket.Abort"/> calls as well as the Keep-Alive timeout setting <see cref="WebSocketState.Aborted"/> and disposing the stream.
 /// </summary>
 /// <remarks>
 /// Workaround for https://github.com/dotnet/runtime/issues/44272

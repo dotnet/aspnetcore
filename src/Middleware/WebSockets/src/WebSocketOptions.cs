@@ -20,9 +20,12 @@ public class WebSocketOptions
     }
 
     /// <summary>
-    /// Gets or sets the frequency at which to send Ping/Pong keep-alive control frames.
+    /// The interval to send keep-alive frames. This is a heart-beat that keeps the connection alive.
     /// The default is two minutes.
     /// </summary>
+    /// <remarks>
+    /// May be either a Ping or a Pong frame, depending on if <see cref="KeepAliveTimeout" /> is set.
+    /// </remarks>
     public TimeSpan KeepAliveInterval { get; set; }
 
     /// <summary>
