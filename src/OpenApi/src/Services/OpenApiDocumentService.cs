@@ -58,8 +58,12 @@ internal sealed class OpenApiDocumentService(
         // Schema and operation transformers are scoped per-request and can be
         // pre-allocated to hold the same number of transformers as the associated
         // options object.
-        IOpenApiSchemaTransformer[] schemaTransformers = new IOpenApiSchemaTransformer[_options.SchemaTransformers.Count];
-        IOpenApiOperationTransformer[] operationTransformers = new IOpenApiOperationTransformer[_options.OperationTransformers.Count];
+        IOpenApiSchemaTransformer[] schemaTransformers = _options.SchemaTransformers.Count > 0
+            ? new IOpenApiSchemaTransformer[_options.SchemaTransformers.Count]
+            : Array.Empty<IOpenApiSchemaTransformer>();
+        IOpenApiOperationTransformer[] operationTransformers = _options.OperationTransformers.Count > 0 ?
+            new IOpenApiOperationTransformer[_options.OperationTransformers.Count]
+            : Array.Empty<IOpenApiOperationTransformer>();
         InitializeTransformers(scopedServiceProvider, schemaTransformers, operationTransformers);
         var document = new OpenApiDocument
         {
