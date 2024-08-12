@@ -10,7 +10,7 @@ internal static class TypeBasedTransformerExtensions
     /// after a given OpenAPI document generation request has been completed.
     /// </summary>
     /// <remarks>
-    /// This method is intended to be invoked on <see cref="TypeBasedOpenApiOperationTransformer" /> and <see cref="TypeBasedOpenApiSchemaTransformer" /> instances.
+    /// This method is intended to be invoked on <see cref="TypeBasedOpenApiOperationTransformer" /> and <see cref="TypeBasedOpenApiSchemaTransformer" />.
     /// instances which can be invoked multiple times within the same document generation request.
     /// </remarks>
     public static async Task FinalizeTransformer<ITransformer>(this ITransformer transformer)

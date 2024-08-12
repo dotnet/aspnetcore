@@ -145,7 +145,7 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, List<IOpenApiSchemaTransformer>? schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
-        if (schemaTransformers is null)
+        if (schemaTransformers is null || schemaTransformers.Count == 0)
         {
             return;
         }

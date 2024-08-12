@@ -245,7 +245,7 @@ internal sealed class OpenApiDocumentService(
             operations[description.GetOperationType()] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
-            if (_operationTransformers is not null)
+            if (_operationTransformers is not null && _operationTransformers.Count > 0)
             {
                 for (var i = 0; i < _operationTransformers.Count; i++)
                 {
