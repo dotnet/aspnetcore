@@ -5,8 +5,6 @@ Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializat
 Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializationCallback.set -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializeAllClaims.get -> bool
 Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializeAllClaims.set -> void
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.get -> bool
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.set -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.get -> string?
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.set -> void
 static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddAuthenticationStateSerialization(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
