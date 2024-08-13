@@ -63,7 +63,7 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.Nullable == y.Nullable &&
             x.Pattern == y.Pattern &&
             x.ReadOnly == y.ReadOnly &&
-            x.Count == y.Count && x.Required.SetEquals(y.Required) &&
+            x.Required.Count == y.Required.Count && x.Required.SetEquals(y.Required) &&
             OpenApiReferenceComparer.Instance.Equals(x.Reference, y.Reference) &&
             x.UniqueItems == y.UniqueItems &&
             x.UnresolvedReference == y.UnresolvedReference &&
