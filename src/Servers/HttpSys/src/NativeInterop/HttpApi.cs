@@ -55,18 +55,22 @@ internal static partial class HttpApi
 
     static unsafe HttpApi()
     {
-        var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
-
-        if (statusCode == ErrorCodes.ERROR_SUCCESS)
+        try
         {
-            Supported = true;
-            HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
-            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
-            HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-            SupportsReset = HttpSetRequestProperty != null;
-            SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
-            SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
+
+            if (statusCode == ErrorCodes.ERROR_SUCCESS)
+            {
+                Supported = true;
+                HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
+                HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
+                HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+                SupportsReset = HttpSetRequestProperty != null;
+                SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
+                SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            }
         }
+        catch (DllNotFoundException) { }
     }
 
     private static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
