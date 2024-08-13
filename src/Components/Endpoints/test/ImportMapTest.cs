@@ -30,25 +30,6 @@ public class ImportMapTest
         _importMap = (ImportMap)_renderer.InstantiateComponent<ImportMap>();
     }
 
-    //[Fact]
-    //public async Task CanRunOnNavigateAsync()
-    //{
-    //    // Arrange
-    //    var called = false;
-    //    Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
-    //    {
-    //        await Task.CompletedTask;
-    //        called = true;
-    //    };
-    //    _importMap.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
-
-    //    // Act
-    //    await _renderer.Dispatcher.InvokeAsync(() => _importMap.RunOnNavigateAsync("http://example.com/jan", false));
-
-    //    // Assert
-    //    Assert.True(called);
-    //}
-
     [Fact]
     public async Task CanRenderImportMap()
     {
@@ -75,20 +56,24 @@ public class ImportMapTest
             });
 
         importMap.ImportMapDefinition = importMapDefinition;
+        importMap.AdditionalAttributes = new Dictionary<string, object> { ["nonce"] = "random" }.AsReadOnly();
+
         var id = _renderer.AssignRootComponentId(importMap);
         // Act
         await _renderer.Dispatcher.InvokeAsync(() => _renderer.RenderRootComponent(id));
 
         // Assert
         var frames = _renderer.GetCurrentRenderTreeFrames(id);
-        Assert.Equal(3, frames.Count);
+        Assert.Equal(4, frames.Count);
         Assert.Equal(RenderTreeFrameType.Element, frames.Array[0].FrameType);
         Assert.Equal("script", frames.Array[0].ElementName);
         Assert.Equal(RenderTreeFrameType.Attribute, frames.Array[1].FrameType);
         Assert.Equal("type", frames.Array[1].AttributeName);
         Assert.Equal("importmap", frames.Array[1].AttributeValue);
-        Assert.Equal(RenderTreeFrameType.Markup, frames.Array[2].FrameType);
-        Assert.Equal(importMapDefinition.ToJson(), frames.Array[2].TextContent);
+        Assert.Equal("nonce", frames.Array[2].AttributeName);
+        Assert.Equal("random", frames.Array[2].AttributeValue);
+        Assert.Equal(RenderTreeFrameType.Markup, frames.Array[3].FrameType);
+        Assert.Equal(importMapDefinition.ToJson(), frames.Array[3].TextContent);
     }
 
     [Fact]

@@ -69,7 +69,7 @@ public sealed class ImportMapDefinition
             if (integrity != null)
             {
                 importMap._integrity ??= [];
-                importMap._integrity[asset.Url] = integrity;
+                importMap._integrity[$"./{asset.Url}"] = integrity;
             }
 
             if (label != null)
