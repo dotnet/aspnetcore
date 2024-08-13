@@ -577,7 +577,7 @@ public partial class HubConnectionTests : FunctionalTestBase
                     var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
                     await foreach (var streamValue in stream)
                     {
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        Assert.Fail("Expected an exception from the streaming invocation.");
                     }
                 });
             }
@@ -658,7 +658,7 @@ public partial class HubConnectionTests : FunctionalTestBase
                 {
                     await foreach (var streamValue in asyncEnumerable)
                     {
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        Assert.Fail("Expected an exception from the streaming invocation.");
                     }
                 });
 

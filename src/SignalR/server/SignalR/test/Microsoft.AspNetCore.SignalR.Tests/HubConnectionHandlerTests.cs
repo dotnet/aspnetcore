@@ -2772,7 +2772,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 {
                     if (hasCloseMessage)
                     {
-                        Assert.True(false, "Received message after close");
+                        Assert.Fail("Received message after close");
                     }
 
                     switch (message)
@@ -2784,7 +2784,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                             hasCloseMessage = true;
                             break;
                         default:
-                            Assert.True(false, "Unexpected message type: " + message.GetType().Name);
+                            Assert.Fail("Unexpected message type: " + message.GetType().Name);
                             break;
                     }
                 }

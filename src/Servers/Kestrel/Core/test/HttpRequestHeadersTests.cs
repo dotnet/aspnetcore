@@ -882,7 +882,7 @@ public class HttpRequestHeadersTests
         }
 
         // Never reached
-        Assert.False(true);
+        Assert.Fail();
         return name;
     }
 

@@ -994,12 +994,12 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
         if (addressInUseCount >= 10)
         {
-            Assert.True(false, $"The corresponding {otherAddressFamily} address was already in use 10 times.");
+            Assert.Fail($"The corresponding {otherAddressFamily} address was already in use 10 times.");
         }
 
         if (wrongMessageCount >= 10)
         {
-            Assert.True(false, $"An error for a conflict with {otherAddressFamily} was thrown 10 times.");
+            Assert.Fail($"An error for a conflict with {otherAddressFamily} was thrown 10 times.");
         }
     }
 
