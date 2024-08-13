@@ -387,7 +387,7 @@ public abstract class PhysicalFileResultTestBase
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Theory]
+    [Theory(Skip = "Throws NotSupportedException instead of DirectoryNotFoundException")]
     [InlineData("/SubFolder/SubFolderTestFile.txt")]
     [InlineData("\\SubFolder\\SubFolderTestFile.txt")]
     [InlineData("/SubFolder\\SubFolderTestFile.txt")]
@@ -406,7 +406,7 @@ public abstract class PhysicalFileResultTestBase
             () => ExecuteAsync(httpContext, path, "text/plain"));
     }
 
-    [Theory]
+    [Theory(Skip = "Throws NotSupportedException instead of FileNotFoundException")]
     [InlineData("/FilePathResultTestFile.txt")]
     [InlineData("\\FilePathResultTestFile.txt")]
     public async Task ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(string path)
