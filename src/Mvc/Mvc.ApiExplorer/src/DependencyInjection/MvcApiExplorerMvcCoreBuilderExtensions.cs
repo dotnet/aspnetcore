@@ -3,7 +3,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -30,7 +32,10 @@ public static class MvcApiExplorerMvcCoreBuilderExtensions
     [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     internal static void AddApiExplorerServices(IServiceCollection services)
     {
-        services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
+        services.TryAddSingleton<IApiDescriptionGroupCollectionProvider>(sp => new ApiDescriptionGroupCollectionProvider(
+            sp.GetRequiredService<IActionDescriptorCollectionProvider>(),
+            sp.GetServices<IApiDescriptionProvider>(),
+            sp.GetRequiredService<ILoggerFactory>()));
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
     }

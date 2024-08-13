@@ -33,23 +33,11 @@ public partial class ApiDescriptionGroupCollectionProvider : IApiDescriptionGrou
         _apiDescriptionProviders = [.. apiDescriptionProviders.OrderBy(item => item.Order)];
     }
 
-    /// <summary>
-    /// Creates a new instance of <see cref="ApiDescriptionGroupCollectionProvider"/>.
-    /// </summary>
-    /// <param name="actionDescriptorCollectionProvider">
-    /// The <see cref="IActionDescriptorCollectionProvider"/>.
-    /// </param>
-    /// <param name="apiDescriptionProviders">
-    /// The <see cref="IEnumerable{IApiDescriptionProvider}"/>.
-    /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to construct a logger.</param>
-    public ApiDescriptionGroupCollectionProvider(
+    internal ApiDescriptionGroupCollectionProvider(
         IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
         IEnumerable<IApiDescriptionProvider> apiDescriptionProviders,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory) : this(actionDescriptorCollectionProvider, apiDescriptionProviders)
     {
-        _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
-        _apiDescriptionProviders = [.. apiDescriptionProviders.OrderBy(item => item.Order)];
         _logger = loggerFactory.CreateLogger<ApiDescriptionGroupCollectionProvider>();
     }
 
@@ -76,7 +64,7 @@ public partial class ApiDescriptionGroupCollectionProvider : IApiDescriptionGrou
         {
             if (_logger is not null)
             {
-                Log.ApiDescriptionProviderExecuting(_logger, provider.GetType().Name, provider.GetType().Assembly.GetName().Name);
+                Log.ApiDescriptionProviderExecuting(_logger, provider.GetType().Name, provider.GetType().Assembly.GetName().Name, provider.GetType().Assembly.GetName().Version?.ToString());
             }
             provider.OnProvidersExecuting(context);
         }
@@ -96,7 +84,7 @@ public partial class ApiDescriptionGroupCollectionProvider : IApiDescriptionGrou
 
     private static partial class Log
     {
-        [LoggerMessage(2, LogLevel.Debug, "Executing API description provider '{ProviderName}' from assembly {ProviderAssembly}.", EventName = "ApiDescriptionProviderExecuting")]
-        public static partial void ApiDescriptionProviderExecuting(ILogger logger, string providerName, string? providerAssembly);
+        [LoggerMessage(2, LogLevel.Debug, "Executing API description provider '{ProviderName}' from assembly {ProviderAssembly} v{AssemblyVersion}.", EventName = "ApiDescriptionProviderExecuting")]
+        public static partial void ApiDescriptionProviderExecuting(ILogger logger, string providerName, string? providerAssembly, string? assemblyVersion);
     }
 }
