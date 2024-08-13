@@ -46,7 +46,7 @@ public class HttpResponseHeadersTests
 
             IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
 
-            Assert.Equal(0, headers.Count);
+            Assert.Empty(headers);
             Assert.False(headers.IsReadOnly);
         }
     }

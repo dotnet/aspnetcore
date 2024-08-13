@@ -2101,7 +2101,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(streamMethod);
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
                 if (detailedError != null)
@@ -3225,7 +3225,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 
@@ -3260,7 +3260,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.NullStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 

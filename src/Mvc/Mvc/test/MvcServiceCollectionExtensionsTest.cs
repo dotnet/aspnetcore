@@ -254,7 +254,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Contains(services, s => s.ServiceType == typeof(CacheTagHelperMemoryCacheFactory));
 
         // No Razor Pages
-        Assert.Empty(services.Where(s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider)));
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider));
     }
 
     private void VerifyAllServices(IServiceCollection services)

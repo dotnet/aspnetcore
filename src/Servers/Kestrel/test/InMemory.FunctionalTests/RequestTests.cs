@@ -1891,7 +1891,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Warning);
     }
 
     [Fact]
