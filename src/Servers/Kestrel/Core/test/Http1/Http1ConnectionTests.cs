@@ -712,7 +712,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    public async Task BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;
@@ -726,7 +726,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    public async Task BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;

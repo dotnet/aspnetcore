@@ -240,7 +240,7 @@ public abstract class VirtualFileResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(33);
         Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
         Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);

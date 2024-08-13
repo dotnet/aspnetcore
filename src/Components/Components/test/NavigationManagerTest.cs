@@ -455,7 +455,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";
@@ -479,7 +479,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";

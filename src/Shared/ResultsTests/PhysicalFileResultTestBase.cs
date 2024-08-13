@@ -198,7 +198,7 @@ public abstract class PhysicalFileResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(34);
         Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
         Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
@@ -227,7 +227,7 @@ public abstract class PhysicalFileResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
         Assert.Empty(httpResponse.Headers.ContentRange);
@@ -254,7 +254,7 @@ public abstract class PhysicalFileResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
         Assert.Empty(httpResponse.Headers.ContentRange);
@@ -396,26 +396,26 @@ public abstract class PhysicalFileResultTestBase
     [InlineData(".\\SubFolder\\SubFolderTestFile.txt")]
     [InlineData("./SubFolder\\SubFolderTestFile.txt")]
     [InlineData(".\\SubFolder/SubFolderTestFile.txt")]
-    public void ExecuteAsync_ThrowsDirectoryNotFound_IfItCanNotFindTheDirectory_ForRootPaths(string path)
+    public async Task ExecuteAsync_ThrowsDirectoryNotFound_IfItCanNotFindTheDirectory_ForRootPaths(string path)
     {
         // Arrange
         var httpContext = GetHttpContext();
 
         // Act & Assert
-        Assert.ThrowsAsync<DirectoryNotFoundException>(
+        await Assert.ThrowsAsync<DirectoryNotFoundException>(
             () => ExecuteAsync(httpContext, path, "text/plain"));
     }
 
     [Theory]
     [InlineData("/FilePathResultTestFile.txt")]
     [InlineData("\\FilePathResultTestFile.txt")]
-    public void ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(string path)
+    public async Task ExecuteAsync_ThrowsFileNotFound_WhenFileDoesNotExist_ForRootPaths(string path)
     {
         // Arrange
         var httpContext = GetHttpContext();
 
         // Act & Assert
-        Assert.ThrowsAsync<FileNotFoundException>(
+        await Assert.ThrowsAsync<FileNotFoundException>(
             () => ExecuteAsync(httpContext, path, "text/plain"));
     }
 

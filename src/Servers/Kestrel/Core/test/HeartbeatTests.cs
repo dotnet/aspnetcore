@@ -20,7 +20,7 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    public async Task HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();

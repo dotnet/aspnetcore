@@ -405,7 +405,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
+    public async Task ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
     {
         // Arrange
         var runtime = new TestJSRuntime();

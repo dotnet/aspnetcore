@@ -55,7 +55,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, byteArray.Length);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -96,7 +96,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
         var contentRange = new ContentRangeHeaderValue(0, 4, byteArray.Length);
@@ -137,7 +137,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -174,7 +174,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -207,7 +207,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Empty(httpResponse.Headers.ContentRange);
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
@@ -240,7 +240,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(byteArray.Length);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -279,7 +279,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
         Assert.Empty(httpResponse.Headers.ContentRange);
@@ -356,7 +356,7 @@ public abstract class FileStreamResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
         var contentRange = new ContentRangeHeaderValue(byteArray.Length);
