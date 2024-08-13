@@ -2336,6 +2336,7 @@ public partial class HubConnectionTests : FunctionalTestBase
             // Yield first so the rest of the test runs in the OneAtATimeSynchronizationContext.Run loop
             await Task.Yield();
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
             Assert.True(connection.StartAsync().Wait(DefaultTimeout));
 
             var invokeTask = connection.InvokeAsync<string>(nameof(TestHub.HelloWorld));
@@ -2343,6 +2344,7 @@ public partial class HubConnectionTests : FunctionalTestBase
             Assert.Equal("Hello World!", invokeTask.Result);
 
             Assert.True(connection.DisposeAsync().AsTask().Wait(DefaultTimeout));
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         }
         catch (Exception ex)
         {

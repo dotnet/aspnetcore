@@ -11,6 +11,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
+
 public class PipelineExtensionTests : IDisposable
 {
     // ulong.MaxValue.ToString().Length
