@@ -91,11 +91,30 @@ internal static class EndpointParameterEmitter
     {
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
         {
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
+            var createArray = $"new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length]";
+
+            // we assign a null to result parameter if it's optional array, otherwise we create new array immediately
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = {(endpointParameter.IsOptional ? "null" : createArray)};");
+
             codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
-            endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+
+            //endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+            codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation("element", "parsed_element")}})""");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (!string.IsNullOrEmpty(element))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("wasParamCheckFailure = true;");
+            EmitLogOrThrowException(endpointParameter, codeWriter, "element");
+            codeWriter.EndBlock();
+            codeWriter.EndBlock();
+
+            // In case we have optional parameter, we emit array assignment
+            if (endpointParameter.IsOptional)
+            {
+                codeWriter.WriteLine($$"""{{endpointParameter.EmitHandlerArgument()}} ??= {{createArray}};""");
+            }
 
             // In cases where we are dealing with an array of parsable nullables we need to substitute
             // empty strings for null values.
@@ -115,12 +134,58 @@ internal static class EndpointParameterEmitter
         }
         else if (!endpointParameter.IsArray && endpointParameter.IsParsable)
         {
-            endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
+            var temp_argument = endpointParameter.EmitTempArgument();
+            var output_argument = endpointParameter.EmitParsedTempArgument();
+
+            //endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
+            if (endpointParameter.IsOptional)
+            {
+                var parameterType = endpointParameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
+                var temp_argument_parsed_non_nullable = $"{temp_argument}_parsed_non_nullable";
+
+                codeWriter.WriteLine($"""{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
+                codeWriter.WriteLine($"""if ({endpointParameter.PreferredTryParseInvocation(temp_argument, temp_argument_parsed_non_nullable)})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {temp_argument_parsed_non_nullable};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine($"""else if (string.IsNullOrEmpty({temp_argument}))""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {endpointParameter.DefaultValue};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine("else");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine("wasParamCheckFailure = true;");
+                codeWriter.StartBlock();
+            }
+            else
+            {
+                codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation(temp_argument, output_argument)}})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"if (!string.IsNullOrEmpty({temp_argument}))");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("wasParamCheckFailure = true;");
+                EmitLogOrThrowException(endpointParameter, codeWriter, temp_argument);
+                codeWriter.EndBlock();
+                codeWriter.EndBlock();
+            }
+
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
         else // Not parsable, not an array.
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
+        }
+
+        static void EmitLogOrThrowException(EndpointParameter parameter, CodeWriter writer, string inputArgument)
+        {
+            if (parameter.IsArray && parameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(parameter.ToMessageString(), true)});");
+            }
+            else
+            {
+                writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {inputArgument});");
+            }
         }
     }
 
