@@ -10,7 +10,7 @@
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <PackageReference Include="Wix" Version="3.11.1" />
+    <PackageReference Include="Microsoft.Signed.Wix" Version="3.14.1-8722.20240403.1" />
 
     <Reference Include="Microsoft.Deployment.WindowsInstaller">
       <HintPath>$(WiXSdkPath)\Microsoft.Deployment.WindowsInstaller.dll</HintPath>
