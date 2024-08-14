@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -27,7 +26,7 @@ internal sealed class OpenApiExternalDocsComparer : IEqualityComparer<OpenApiExt
 
         return x.Description == y.Description &&
             x.Url == y.Url &&
-            ComparerHelpers.DictionaryEquals((Dictionary<string, IOpenApiExtension>)x.Extensions, (Dictionary<string, IOpenApiExtension>)y.Extensions, OpenApiAnyComparer.Instance);
+            ComparerHelpers.DictionaryEquals(x.Extensions, y.Extensions, OpenApiAnyComparer.Instance);
     }
 
     public int GetHashCode(OpenApiExternalDocs obj)

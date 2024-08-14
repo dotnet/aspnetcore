@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -30,7 +29,7 @@ internal sealed class OpenApiXmlComparer : IEqualityComparer<OpenApiXml>
             x.Prefix == y.Prefix &&
             x.Attribute == y.Attribute &&
             x.Wrapped == y.Wrapped &&
-            ComparerHelpers.DictionaryEquals((Dictionary<string, IOpenApiExtension>)x.Extensions, (Dictionary<string, IOpenApiExtension>)y.Extensions, OpenApiAnyComparer.Instance);
+            ComparerHelpers.DictionaryEquals(x.Extensions, y.Extensions, OpenApiAnyComparer.Instance);
     }
 
     public int GetHashCode(OpenApiXml obj)

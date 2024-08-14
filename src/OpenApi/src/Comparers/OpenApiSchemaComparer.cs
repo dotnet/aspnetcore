@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -31,12 +29,12 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.Type == y.Type &&
             x.Format == y.Format &&
             SchemaIdEquals(x, y) &&
-            ComparerHelpers.DictionaryEquals((Dictionary<string, OpenApiSchema>)x.Properties, (Dictionary<string, OpenApiSchema>)y.Properties, Instance) &&
+            ComparerHelpers.DictionaryEquals(x.Properties, y.Properties, Instance) &&
             OpenApiDiscriminatorComparer.Instance.Equals(x.Discriminator, y.Discriminator) &&
             Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
             x.AdditionalPropertiesAllowed == y.AdditionalPropertiesAllowed &&
-            ComparerHelpers.ListEquals((List<OpenApiSchema>)x.AllOf, (List<OpenApiSchema>)y.AllOf, Instance) &&
-            ComparerHelpers.ListEquals((List<OpenApiSchema>)x.AnyOf, (List<OpenApiSchema>)y.AnyOf, Instance) &&
+            ComparerHelpers.ListEquals(x.AllOf, y.AllOf, Instance) &&
+            ComparerHelpers.ListEquals(x.AnyOf, y.AnyOf, Instance) &&
             x.Deprecated == y.Deprecated &&
             OpenApiAnyComparer.Instance.Equals(x.Default, y.Default) &&
             x.Description == y.Description &&
@@ -44,9 +42,9 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.ExclusiveMaximum == y.ExclusiveMaximum &&
             x.ExclusiveMinimum == y.ExclusiveMinimum &&
             x.Extensions.Count == y.Extensions.Count &&
-            ComparerHelpers.DictionaryEquals((Dictionary<string, IOpenApiExtension>)x.Extensions, (Dictionary<string, IOpenApiExtension>)y.Extensions, OpenApiAnyComparer.Instance) &&
+            ComparerHelpers.DictionaryEquals(x.Extensions, y.Extensions, OpenApiAnyComparer.Instance) &&
             OpenApiExternalDocsComparer.Instance.Equals(x.ExternalDocs, y.ExternalDocs) &&
-            ComparerHelpers.ListEquals((List<IOpenApiAny>)x.Enum, (List<IOpenApiAny>)y.Enum, OpenApiAnyComparer.Instance) &&
+            ComparerHelpers.ListEquals(x.Enum, y.Enum, OpenApiAnyComparer.Instance) &&
             Instance.Equals(x.Items, y.Items) &&
             x.Title == y.Title &&
             x.Maximum == y.Maximum &&
@@ -58,7 +56,7 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.MinLength == y.MinLength &&
             x.MinProperties == y.MinProperties &&
             x.MultipleOf == y.MultipleOf &&
-            ComparerHelpers.ListEquals((List<OpenApiSchema>)x.OneOf, (List<OpenApiSchema>)y.OneOf, Instance) &&
+            ComparerHelpers.ListEquals(x.OneOf, y.OneOf, Instance) &&
             Instance.Equals(x.Not, y.Not) &&
             x.Nullable == y.Nullable &&
             x.Pattern == y.Pattern &&
