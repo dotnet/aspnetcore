@@ -89,6 +89,7 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitParsingBlock(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
+        // parsable array
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
         {
             var createArray = $"new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length]";
@@ -105,7 +106,6 @@ internal static class EndpointParameterEmitter
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (!string.IsNullOrEmpty(element))");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("wasParamCheckFailure = true;");
             EmitLogOrThrowException(endpointParameter, codeWriter, "element");
             codeWriter.EndBlock();
             codeWriter.EndBlock();
@@ -128,22 +128,24 @@ internal static class EndpointParameterEmitter
             }
             codeWriter.EndBlock();
         }
-        else if (endpointParameter.IsArray && !endpointParameter.IsParsable)
+        // array fallback
+        else if (endpointParameter.IsArray)
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
-        else if (!endpointParameter.IsArray && endpointParameter.IsParsable)
+        // parsable single
+        else if (endpointParameter.IsParsable)
         {
             var temp_argument = endpointParameter.EmitTempArgument();
             var output_argument = endpointParameter.EmitParsedTempArgument();
 
             //endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
-            if (endpointParameter.IsOptional)
+            if (endpointParameter.IsOptional || endpointParameter.Type.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 var parameterType = endpointParameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
                 var temp_argument_parsed_non_nullable = $"{temp_argument}_parsed_non_nullable";
 
-                codeWriter.WriteLine($"""{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
+                codeWriter.WriteLine($"""{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
                 codeWriter.WriteLine($"""if ({endpointParameter.PreferredTryParseInvocation(temp_argument, temp_argument_parsed_non_nullable)})""");
                 codeWriter.StartBlock();
                 codeWriter.WriteLine($"""{output_argument} = {temp_argument_parsed_non_nullable};""");
@@ -153,9 +155,9 @@ internal static class EndpointParameterEmitter
                 codeWriter.WriteLine($"""{output_argument} = {endpointParameter.DefaultValue};""");
                 codeWriter.EndBlock();
                 codeWriter.WriteLine("else");
-                codeWriter.EndBlock();
-                codeWriter.WriteLine("wasParamCheckFailure = true;");
                 codeWriter.StartBlock();
+                codeWriter.WriteLine("wasParamCheckFailure = true;");
+                codeWriter.EndBlock();
             }
             else
             {
@@ -163,7 +165,6 @@ internal static class EndpointParameterEmitter
                 codeWriter.StartBlock();
                 codeWriter.WriteLine($"if (!string.IsNullOrEmpty({temp_argument}))");
                 codeWriter.StartBlock();
-                codeWriter.WriteLine("wasParamCheckFailure = true;");
                 EmitLogOrThrowException(endpointParameter, codeWriter, temp_argument);
                 codeWriter.EndBlock();
                 codeWriter.EndBlock();
@@ -171,7 +172,8 @@ internal static class EndpointParameterEmitter
 
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
-        else // Not parsable, not an array.
+        // Not parsable, not an array.
+        else
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
@@ -180,11 +182,13 @@ internal static class EndpointParameterEmitter
         {
             if (parameter.IsArray && parameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
             {
+                writer.WriteLine("wasParamCheckFailure = true;");
                 writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(parameter.ToMessageString(), true)});");
             }
             else
             {
                 writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {inputArgument});");
+                writer.WriteLine("wasParamCheckFailure = true;");
             }
         }
     }

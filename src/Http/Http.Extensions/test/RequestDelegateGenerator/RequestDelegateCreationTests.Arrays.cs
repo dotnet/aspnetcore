@@ -10,6 +10,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.VisualStudio.TestPlatform.Common;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -323,6 +324,92 @@ app.MapGet("/hello", (string?[] p) => p.Length);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "2");
         await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ImplicitQuery_OptionalIntArrayParam()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+            app.MapGet("/hello", (int[]? p = null) => p?.Length ?? 0);
+            """);
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=0&p=1&p=2");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "3");
+        //await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ImplicitQuery_OptionalIntArrayParam_EmptyValues()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+            app.MapGet("/hello", (int[]? p = null) => p?.Length ?? 0);
+            """);
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "0");
+        //await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitQuery_OptionalIntArrayParam()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+            app.MapGet("/hello", ([FromQuery] int[]? p = null) => p?.Length ?? 0);
+            """);
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=0&p=1&p=2");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "3");
+        //await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitQuery_OptionalIntArrayParam_EmptyValues()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+            app.MapGet("/hello", ([FromQuery] int[]? p = null) => p?.Length ?? 0);
+            """);
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "0");
+        //await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
