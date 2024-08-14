@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Globalization;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,7 +100,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices('a')] TestService arg) 
     public async Task SupportsSingleKeyedServiceWithPrimitiveKeyTypes(object key)
     {
         var source = $$"""
-app.MapGet("/", (HttpContext context, [FromKeyedServices({{key.ToString()?.ToLowerInvariant()}})] TestService arg) => context.Items["arg"] = arg);
+app.MapGet("/", (HttpContext context, [FromKeyedServices({{Convert.ToString(key, CultureInfo.InvariantCulture)?.ToLowerInvariant()}})] TestService arg) => context.Items["arg"] = arg);
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var myOriginalService = new TestService();
