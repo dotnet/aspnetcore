@@ -23,6 +23,8 @@ Microsoft.AspNetCore.Components.ResourceAssetProperty
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Name.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetProperty.ResourceAssetProperty(string! name, string! value) -> void
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Value.get -> string!
+Microsoft.AspNetCore.Components.UnusedTypeLoader
+static Microsoft.AspNetCore.Components.UnusedTypeLoader.LoadUnusedType() -> System.Type?
 static readonly Microsoft.AspNetCore.Components.ResourceAssetCollection.Empty -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!

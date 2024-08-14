@@ -22,6 +22,13 @@ public class Program
     {
         await SimulateErrorsIfNeededForTest();
 
+        if (UnusedTypeLoader.LoadUnusedType() is null)
+        {
+            // Fail quickly if loading an unreferenced type fails.
+            // This should make it obvious if trimming issues get caught by E2E tests.
+            throw new InvalidOperationException("Could not load the type dynamically!");
+        }
+
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
