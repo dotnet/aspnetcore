@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -22,6 +23,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -46,6 +48,8 @@ internal sealed class OpenApiDocumentService(
     /// </summary>
     private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
+
+    private static readonly FrozenSet<string> _disallowedHeaderParameters = new[] { HeaderNames.Accept, HeaderNames.Authorization, HeaderNames.ContentType }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
@@ -393,9 +397,7 @@ internal sealed class OpenApiDocumentService(
         List<OpenApiParameter>? parameters = null;
         foreach (var parameter in description.ParameterDescriptions)
         {
-            // Parameters that should be in the request body should not be
-            // populated in the parameters list.
-            if (parameter.IsRequestBodyParameter())
+            if (ShouldIgnoreParameter(parameter))
             {
                 continue;
             }
@@ -419,6 +421,24 @@ internal sealed class OpenApiDocumentService(
             parameters.Add(openApiParameter);
         }
         return parameters;
+
+        static bool ShouldIgnoreParameter(ApiParameterDescription parameter)
+        {
+            if (parameter.IsRequestBodyParameter())
+            {
+                // Parameters that should be in the request body should not be
+                // populated in the parameters list.
+                return true;
+            }
+            else if (parameter.Source == BindingSource.Header && _disallowedHeaderParameters.Contains(parameter.Name))
+            {
+                // OpenAPI 3.0 states certain headers are "not allowed" to be defined as parameters.
+                // See https://github.com/dotnet/aspnetcore/issues/57305 for more context.
+                return true;
+            }
+
+            return false;
+        }
     }
 
     private static bool IsRequired(ApiParameterDescription parameter)
