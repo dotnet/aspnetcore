@@ -164,4 +164,30 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Null(todosOperation.Parameters);
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiParameters_SkipsDisallowedHeaders()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/accept", ([FromHeader(Name = "Accept")] string value) => { });
+        builder.MapGet("/api/accept-lower", ([FromHeader(Name = "accept")] string value) => { });
+        builder.MapGet("/api/authorization", ([FromHeader(Name = "Authorization")] string value) => { });
+        builder.MapGet("/api/authorization-lower", ([FromHeader(Name = "authorization")] string value) => { });
+        builder.MapGet("/api/content-type", ([FromHeader(Name = "Content-Type")] string value) => { });
+        builder.MapGet("/api/content-type-lower", ([FromHeader(Name = "content-type")] string value) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Null(document.Paths["/api/accept"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/accept-lower"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization-lower"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type-lower"].Operations[OperationType.Get].Parameters);
+        });
+    }
 }
