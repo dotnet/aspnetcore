@@ -4,7 +4,7 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace BenchmarkDotNet.Attributes;
 
@@ -14,6 +14,6 @@ internal sealed class DefaultCoreValidationConfig : ManualConfig
     {
         AddLogger(ConsoleLogger.Default);
 
-        AddJob(Job.Dry.WithToolchain(InProcessNoEmitToolchain.Instance));
+        AddJob(Job.Dry.WithToolchain(InProcessEmitToolchain.Instance));
     }
 }
