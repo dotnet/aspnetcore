@@ -94,14 +94,6 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 app.MapPost("/todos", (TodoBindable todo) => todo);
 app.MapGet("/todos", () => new Todo[] { new Todo(1, "Walk the dog"), new Todo(2, "Come back home") });
 
-app.MapGet("/array-of-nullables", (int?[] array1) => Results.Ok());
-
-app.MapGet("/array-nullable", (int[]? array2) => Results.Ok());
-app.MapGet("/array-nullable-of-nullables", (int?[]? array3) => Results.Ok());
-
-app.MapGet("/array-nullable-optional", IResult (int[]? array4 = null) => Results.Ok());
-app.MapGet("/array-nullable-optional-of-nullables", (int?[]? array5 = null) => Results.Ok());
-
 app.Run();
 
 internal record Todo(int Id, string Title);

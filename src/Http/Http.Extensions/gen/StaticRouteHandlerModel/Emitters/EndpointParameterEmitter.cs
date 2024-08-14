@@ -95,13 +95,13 @@ internal static class EndpointParameterEmitter
             var createArray = $"new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length]";
 
             // we assign a null to result parameter if it's optional array, otherwise we create new array immediately
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = {(endpointParameter.IsOptional ? "null" : createArray)};");
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = {createArray};");
 
             codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
 
-            //endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+            // emit parsing block for current array element
             codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation("element", "parsed_element")}})""");
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (!string.IsNullOrEmpty(element))");
@@ -109,12 +109,6 @@ internal static class EndpointParameterEmitter
             EmitLogOrThrowException(endpointParameter, codeWriter, "element");
             codeWriter.EndBlock();
             codeWriter.EndBlock();
-
-            // In case we have optional parameter, we emit array assignment
-            if (endpointParameter.IsOptional)
-            {
-                codeWriter.WriteLine($$"""{{endpointParameter.EmitHandlerArgument()}} ??= {{createArray}};""");
-            }
 
             // In cases where we are dealing with an array of parsable nullables we need to substitute
             // empty strings for null values.
@@ -139,10 +133,9 @@ internal static class EndpointParameterEmitter
             var temp_argument = endpointParameter.EmitTempArgument();
             var output_argument = endpointParameter.EmitParsedTempArgument();
 
-            //endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
+            // emit parsing block for optional OR nullable values
             if (endpointParameter.IsOptional || endpointParameter.Type.NullableAnnotation == NullableAnnotation.Annotated)
             {
-                var parameterType = endpointParameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
                 var temp_argument_parsed_non_nullable = $"{temp_argument}_parsed_non_nullable";
 
                 codeWriter.WriteLine($"""{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
@@ -159,6 +152,7 @@ internal static class EndpointParameterEmitter
                 codeWriter.WriteLine("wasParamCheckFailure = true;");
                 codeWriter.EndBlock();
             }
+            // parsing block for non-nullable required parameters
             else
             {
                 codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation(temp_argument, output_argument)}})""");
