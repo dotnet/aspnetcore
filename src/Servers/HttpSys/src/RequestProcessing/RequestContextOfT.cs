@@ -29,7 +29,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             try
             {
-                InitializeFeatures();
+                if (!InitializeFeatures())
+                {
+                    Abort();
+                    return;
+                }
 
                 if (messagePump.Stopping)
                 {
