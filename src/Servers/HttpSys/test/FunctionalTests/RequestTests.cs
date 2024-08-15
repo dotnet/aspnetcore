@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -366,6 +367,43 @@ public class RequestTests : LoggedTest
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
             Assert.Equal("200", responseStatusCode);
         }
+    }
+
+    [Fact]
+    public async Task Latin1UrlIsRejected()
+    {
+        string root;
+        using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+        {
+            Assert.Fail("Request should not reach here");
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            var uri = new Uri(root);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(FormattableString.Invariant($"GET /a HTTP/1.1"));
+            builder.AppendLine("Connection: close");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+            // Replace the 'a' in the path with a Latin1 value
+            request[5] = 0xe1;
+
+            using (var socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                socket.Send(request);
+                var response = new byte[12];
+                await Task.Run(() => socket.Receive(response));
+
+                var statusCode = Encoding.UTF8.GetString(response).Substring(9);
+                Assert.Equal("400", statusCode);
+            }
+        }
+
+        var errorLogs = TestSink.Writes.Where(w => w.LogLevel >= LogLevel.Error).Select(w => w.Exception);
+        Assert.False(errorLogs.Any(), string.Join(" ", errorLogs));
     }
 
     [ConditionalFact]
