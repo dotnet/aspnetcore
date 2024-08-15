@@ -188,7 +188,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         return new ApiParameterDescription
         {
             Name = name,
-            ModelMetadata = CreateModelMetadata(parameter, paramType),
+            ModelMetadata = new EndpointModelMetadata(ModelMetadataIdentity.ForParameter(parameter.ParameterInfo, paramType)),
             Source = source,
             DefaultValue = parameter.ParameterInfo.DefaultValue,
             Type = parameter.ParameterInfo.ParameterType,
@@ -435,15 +435,6 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
     private static EndpointModelMetadata CreateModelMetadata(Type type) =>
         new(ModelMetadataIdentity.ForType(type));
-
-    private static EndpointModelMetadata CreateModelMetadata(IParameterBindingMetadata parameter, Type type)
-    {
-        if (parameter.ParameterInfo?.Member is PropertyInfo propertyInfo && propertyInfo.DeclaringType is not null)
-        {
-            return new(ModelMetadataIdentity.ForProperty(propertyInfo, type, propertyInfo.DeclaringType));
-        }
-        return CreateModelMetadata(type);
-    }
 
     private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
     {
