@@ -234,6 +234,8 @@ configuration:
       - titleContains:
           pattern: Update dependencies
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
@@ -252,6 +254,8 @@ configuration:
       - titleContains:
           pattern: Merge branch
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
@@ -497,19 +501,30 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-preview5
+          milestone: 10.0-preview1
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-preview4
+          branch: release/9.0-rc1
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-preview4
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview4 branch'
+          milestone: 9.0-rc1
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-rc1 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 9.0-rc2
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -527,7 +542,7 @@ configuration:
 
             Because there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.
 
-            You can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
+            You can find it [here](https://learn.microsoft.com/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
 
             If these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up.
       description: Provide Blazor WASM Debugging Troubleshooting link
@@ -670,7 +685,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.31
+          milestone: 6.0.34
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -681,7 +696,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.6
+          milestone: 8.0.9
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues

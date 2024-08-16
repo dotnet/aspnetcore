@@ -25,10 +25,6 @@ export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStar
     throw new Error('Circuit options have already been configured.');
   }
 
-  if (options) {
-    throw new Error('WebAssembly options have already been configured.');
-  }
-
   initializersPromise = setOptions(initializersReady);
 
   async function setOptions(initializers: Promise<Partial<CircuitStartOptions>>): Promise<void> {

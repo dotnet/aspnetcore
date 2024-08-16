@@ -346,7 +346,7 @@ public class NavigationManagerTest
         var invokedHandlerCount = 0;
 
         // The first two handlers run, but the third doesn't because the navigation gets prevented after the second.
-        var expectedInvokedHandlerCount = 2; 
+        var expectedInvokedHandlerCount = 2;
 
         navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
         navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
@@ -798,7 +798,6 @@ public class NavigationManagerTest
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52407")]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {

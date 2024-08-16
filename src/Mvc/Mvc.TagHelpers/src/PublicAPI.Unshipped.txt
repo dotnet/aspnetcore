@@ -1,1 +1,5 @@
 #nullable enable
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ImportMap.get -> Microsoft.AspNetCore.Components.ImportMapDefinition
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ImportMap.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Type.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Type.set -> void

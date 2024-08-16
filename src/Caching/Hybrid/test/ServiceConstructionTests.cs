@@ -120,7 +120,7 @@ public class ServiceConstructionTests
     public void CustomSerializerConfiguration()
     {
         var services = new ServiceCollection();
-        services.AddHybridCache().WithSerializer<Customer, CustomerSerializer>();
+        services.AddHybridCache().AddSerializer<Customer, CustomerSerializer>();
         using var provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
@@ -132,7 +132,7 @@ public class ServiceConstructionTests
     public void CustomSerializerFactoryConfiguration()
     {
         var services = new ServiceCollection();
-        services.AddHybridCache().WithSerializerFactory<CustomFactory>();
+        services.AddHybridCache().AddSerializerFactory<CustomFactory>();
         using var provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 

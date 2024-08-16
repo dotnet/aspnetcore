@@ -16,9 +16,9 @@
         Link="ProcessHelpers\DotNetMuxer.cs" />
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\Temporary*.cs" LinkBase="TestHelpers" />
 
-    <Content Include="..\src\build\**\*" LinkBase="build" />
-    <Content Include="..\src\buildMultiTargeting\**\*" LinkBase="buildMultiTargeting" />
-    <Content Include="TestProjects\**\*" />
+    <Content Include="..\src\build\**\*" LinkBase="build" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\src\buildMultiTargeting\**\*" LinkBase="buildMultiTargeting" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
 
     <Reference Include="Microsoft.Extensions.ApiDescription.Client" />
   </ItemGroup>

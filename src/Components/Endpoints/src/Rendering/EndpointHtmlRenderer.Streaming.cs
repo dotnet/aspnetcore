@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -37,6 +38,8 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
         // Important: do not introduce any 'await' statements in this method above the point where we write
@@ -65,7 +68,7 @@ internal partial class EndpointHtmlRenderer
             EmitInitializersIfNecessary(httpContext, writer);
 
             // At this point we yield the sync context. SSR batches may then be emitted at any time.
-            await writer.FlushAsync(); 
+            await writer.FlushAsync();
             await untilTaskCompleted;
         }
         catch (NavigationException navigationException)
@@ -74,6 +77,10 @@ internal partial class EndpointHtmlRenderer
         }
         catch (Exception ex)
         {
+            // Rethrowing also informs the debugger that this exception should be considered user-unhandled unlike NavigationExceptions,
+            // but calling BreakForUserUnhandledException here allows the debugger to break before we modify the HttpContext.
+            Debugger.BreakForUserUnhandledException(ex);
+
             // Theoretically it might be possible to let the error middleware run, capture the output,
             // then emit it in a special format so the JS code can display the error page. However
             // for now we're not going to support that and will simply emit a message.

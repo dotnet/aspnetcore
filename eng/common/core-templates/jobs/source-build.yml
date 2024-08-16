@@ -23,6 +23,12 @@ parameters:
 
   is1ESPipeline: ''
 
+  # If set to true and running on a non-public project,
+  # Internal nuget and blob storage locations will be enabled.
+  # This is not enabled by default because many repositories do not need internal sources
+  # and do not need to have the required service connections approved in the pipeline.
+  enableInternalSources: false
+
 jobs:
 
 - ${{ if ne(parameters.allCompletedJobId, '') }}:
@@ -41,6 +47,7 @@ jobs:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ platform }}
+      enableInternalSources: ${{ parameters.enableInternalSources }}
 
 - ${{ if eq(length(parameters.platforms), 0) }}:
   - template: /eng/common/core-templates/job/source-build.yml
@@ -48,3 +55,4 @@ jobs:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ parameters.defaultManagedPlatform }}
+      enableInternalSources: ${{ parameters.enableInternalSources }}

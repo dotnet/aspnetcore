@@ -8,17 +8,29 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class ApiExplorerTest : IClassFixture<MvcTestFixture<ApiExplorerWebSite.Startup>>
+public class ApiExplorerTest : LoggedTest
 {
-    public ApiExplorerTest(MvcTestFixture<ApiExplorerWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<ApiExplorerWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<ApiExplorerWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task ApiExplorer_IsVisible_EnabledWithConvention()
@@ -1538,6 +1550,19 @@ public class ApiExplorerTest : IClassFixture<MvcTestFixture<ApiExplorerWebSite.S
                 Assert.Equal(401, responseType.StatusCode);
                 Assert.False(responseType.IsDefaultResponse);
             });
+    }
+
+    [Fact]
+    public async Task ApiExplorer_LogsInvokedDescriptionProvidersOnStartup()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("http://localhost/ApiExplorerHttpMethod/All");
+
+        // Assert
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name?.Equals("ApiDescriptionProviderExecuting", StringComparison.Ordinal) == true);
+        Assert.Contains(TestSink.Writes, w => w.LoggerName.Equals("Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider", StringComparison.Ordinal));
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'DefaultApiDescriptionProvider' from assembly Microsoft.AspNetCore.Mvc.ApiExplorer v10.0.0.0.", StringComparison.Ordinal));
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'JsonPatchOperationsArrayProvider' from assembly Microsoft.AspNetCore.Mvc.NewtonsoftJson v42.42.42.42.", StringComparison.Ordinal));
     }
 
     private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)

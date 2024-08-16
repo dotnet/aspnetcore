@@ -108,12 +108,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
         => (options?.Flags | _hardFlags) ?? _defaultFlags;
 
-    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
+    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
-        var canBeCanceled = token.CanBeCanceled;
+        var canBeCanceled = cancellationToken.CanBeCanceled;
         if (canBeCanceled)
         {
-            token.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         var flags = GetEffectiveFlags(options);
@@ -141,19 +141,19 @@ internal sealed partial class DefaultHybridCache : HybridCache
             }
         }
 
-        return stampede.JoinAsync(token);
+        return stampede.JoinAsync(cancellationToken);
     }
 
-    public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)
+    public override ValueTask RemoveAsync(string key, CancellationToken token = default)
     {
         _localCache.Remove(key);
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
-    public override ValueTask RemoveTagAsync(string tag, CancellationToken token = default)
+    public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
         => default; // tags not yet implemented
 
-    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
+    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken token = default)
     {
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code;
         // note also that stampede token is not shared with anyone else

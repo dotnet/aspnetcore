@@ -15,17 +15,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 public class EventLogHelpers
 {
-    public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
+    public static async Task VerifyEventLogEventAsync(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
     {
         Assert.True(deploymentResult.HostProcess.HasExited);
 
-        var entries = GetEntries(deploymentResult);
         try
         {
-            AssertEntry(expectedRegexMatchString, entries, allowMultiple);
+            await AssertEntryAsync(expectedRegexMatchString, deploymentResult, allowMultiple);
         }
         catch (Exception)
         {
+            var entries = GetEntries(deploymentResult);
             foreach (var entry in entries)
             {
                 logger.LogInformation("'{Message}', generated {Generated}, written {Written}", entry.Message, entry.TimeGenerated, entry.TimeWritten);
@@ -34,22 +34,16 @@ public class EventLogHelpers
         }
     }
 
-    public static void VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
+    public static async Task VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
     {
         Assert.True(deploymentResult.HostProcess.HasExited);
 
         var entries = GetEntries(deploymentResult).ToList();
-        foreach (var regexString in expectedRegexMatchString)
+        for (var i = 0; i < expectedRegexMatchString.Length; i++)
         {
-            var matchedEntries = AssertEntry(regexString, entries);
-
-            foreach (var matchedEntry in matchedEntries)
-            {
-                entries.Remove(matchedEntry);
-            }
+            var matchedEntries = await AssertEntryAsync(expectedRegexMatchString[i], deploymentResult);
+            Assert.True(matchedEntries is not null, $"Regex {expectedRegexMatchString[i]} was not found.");
         }
-
-        Assert.True(0 == entries.Count, $"Some entries were not matched by any regex {FormatEntries(entries)}");
     }
 
     public static string OnlyOneAppPerAppPool()
@@ -65,13 +59,33 @@ public class EventLogHelpers
         }
     }
 
-    private static EventLogEntry[] AssertEntry(string regexString, IEnumerable<EventLogEntry> entries, bool allowMultiple = false)
+    private static async Task<EventLogEntry[]> AssertEntryAsync(string regexString, IISDeploymentResult deploymentResult, bool allowMultiple = false)
     {
+        EventLogEntry[] matchedEntries = [];
         var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
-        var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
-        Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
-        Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+
+        // EventLogs don't seem to be instant, add retries to attempt to reduce test failures when looking for logs.
+        for (var i = 10; i > 0; i--)
+        {
+            var entries = GetEntries(deploymentResult);
+            matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
+            if (matchedEntries.Length == 0)
+            {
+                await Task.Delay(100);
+                continue;
+            }
+            AssertEntries();
+            return matchedEntries;
+        }
+
+        AssertEntries();
         return matchedEntries;
+
+        void AssertEntries()
+        {
+            Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
+            Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+        }
     }
 
     private static string FormatEntries(IEnumerable<EventLogEntry> entries)

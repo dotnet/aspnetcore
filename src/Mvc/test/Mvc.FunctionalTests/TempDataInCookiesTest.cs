@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
@@ -14,19 +15,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithoutEndpointRouting>
 {
     private IServiceCollection _serviceCollection;
 
-    public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    protected override void ConfigureWebHostBuilder(IWebHostBuilder builder)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<BasicWebSite.StartupWithoutEndpointRouting>());
-        factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection));
-
-        Client = factory.CreateDefaultClient();
+        builder.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection);
     }
-
-    protected override HttpClient Client { get; }
 
     [Fact]
     public void VerifyNewtonsoftJsonTempDataSerializer()

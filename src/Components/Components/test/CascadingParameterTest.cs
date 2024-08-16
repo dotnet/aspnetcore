@@ -635,6 +635,61 @@ public class CascadingParameterTest
     }
 
     [Fact]
+    public async Task CanAddSubscriberDuringChangeNotification()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var paramValue = new MyParamType("Initial value");
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(paramValue, isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new ConditionallyRenderSubscriberComponent()
+        {
+            RenderWhenEqualTo = "Final value",
+        };
+
+        // Act/Assert: Initial render
+        var componentId = await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
+        renderer.RenderRootComponent(componentId);
+        var firstBatch = renderer.Batches.Single();
+        var diff = firstBatch.DiffsByComponentId[componentId].Single();
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    firstBatch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Initial value");
+            });
+        Assert.Equal(1, component.NumRenders);
+
+        // Act: Second render
+        paramValue.ChangeValue("Final value");
+        await cascadingValueSource.NotifyChangedAsync();
+        var secondBatch = renderer.Batches[1];
+        var diff2 = secondBatch.DiffsByComponentId[componentId].Single();
+
+        // Assert: Subscriber can get added during change notification and receive the cascading value
+        AssertFrame.Text(
+            secondBatch.ReferenceFrames[diff2.Edits[0].ReferenceFrameIndex],
+            "CascadingParameter=Final value");
+        Assert.Equal(2, component.NumRenders);
+
+        // Assert: Subscriber can get added during change notification and receive the cascading value
+        var nestedComponent = FindComponent<SimpleSubscriberComponent>(secondBatch, out var nestedComponentId);
+        var nestedComponentDiff = secondBatch.DiffsByComponentId[nestedComponentId].Single();
+        Assert.Collection(nestedComponentDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    secondBatch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Final value");
+            });
+        Assert.Equal(1, nestedComponent.NumRenders);
+    }
+
+    [Fact]
     public async Task AfterSupplyingValueThroughNotifyChanged_InitialValueFactoryIsNotUsed()
     {
         // Arrange
@@ -772,6 +827,40 @@ public class CascadingParameterTest
         Assert.Equal(2, services.Count());
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity - 1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity + 1)]
+    [InlineData(CascadingValueSource<MyParamType>.ComponentStateBuffer.Capacity * 2)]
+    public async Task CanHaveManySubscribers(int numSubscribers)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var paramValue = new MyParamType("Initial value");
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(paramValue, isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var components = Enumerable.Range(0, numSubscribers).Select(_ => new SimpleSubscriberComponent()).ToArray();
+
+        // Act/Assert: Initial render
+        foreach (var component in components)
+        {
+            await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
+            component.TriggerRender();
+            Assert.Equal(1, component.NumRenders);
+        }
+
+        // Act/Assert: All components re-render when the cascading value changes
+        paramValue.ChangeValue("Final value");
+        await cascadingValueSource.NotifyChangedAsync();
+        foreach (var component in components)
+        {
+            Assert.Equal(2, component.NumRenders);
+        }
+    }
+
     private class SingleDeliveryValue(string text)
     {
         public string Text => text;
@@ -858,6 +947,43 @@ public class CascadingParameterTest
             // You're not allowed to hold onto a ParameterView and access it later,
             // so this should throw
             lastParameterView.TryGetValue<object>("anything", out _);
+        }
+    }
+
+    class ConditionallyRenderSubscriberComponent : AutoRenderComponent
+    {
+        public int NumRenders { get; private set; }
+
+        public SimpleSubscriberComponent NestedSubscriber { get; private set; }
+
+        [Parameter] public string RenderWhenEqualTo { get; set; }
+
+        [CascadingParameter] MyParamType CascadingParameter { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            NumRenders++;
+            builder.AddContent(0, $"CascadingParameter={CascadingParameter}");
+
+            if (string.Equals(RenderWhenEqualTo, CascadingParameter.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                builder.OpenComponent<SimpleSubscriberComponent>(1);
+                builder.AddComponentReferenceCapture(2, component => NestedSubscriber = component as SimpleSubscriberComponent);
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    class SimpleSubscriberComponent : AutoRenderComponent
+    {
+        public int NumRenders { get; private set; }
+
+        [CascadingParameter] MyParamType CascadingParameter { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            NumRenders++;
+            builder.AddContent(0, $"CascadingParameter={CascadingParameter}");
         }
     }
 

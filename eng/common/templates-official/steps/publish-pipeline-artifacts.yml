@@ -23,4 +23,6 @@ steps:
     ${{ if parameters.args.artifactName }}:
       artifactName: ${{ parameters.args.artifactName }}
     ${{ if parameters.args.properties }}:
-      properties: ${{ properties.args.properties }}
+      properties: ${{ parameters.args.properties }}
+    ${{ if parameters.args.sbomEnabled }}:
+      sbomEnabled: ${{ parameters.args.sbomEnabled }}

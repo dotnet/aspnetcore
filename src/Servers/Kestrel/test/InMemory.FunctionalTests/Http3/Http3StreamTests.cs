@@ -1,24 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -782,7 +777,7 @@ public class Http3StreamTests : Http3TestBase
         }, requestHeaders, endStream: true);
 
         await requestStream.ExpectReceiveEndOfStream();
-        await appTcs.Task;
+        await appTcs.Task.DefaultTimeout();
     }
 
     [Fact]
@@ -2032,6 +2027,13 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorMessage: CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
 
         tcs.SetResult();
+
+        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: null,
+            Http3ErrorCode.UnexpectedFrame,
+            null);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -2107,6 +2109,7 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(Http3Formatting.ToFormattedType(f)));
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -2130,6 +2133,13 @@ public class Http3StreamTests : Http3TestBase
         await requestStream.WaitForStreamErrorAsync(
             Http3ErrorCode.UnexpectedFrame,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(Http3Formatting.ToFormattedType(f)));
+
+        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: null,
+            Http3ErrorCode.UnexpectedFrame,
+            null);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -2408,7 +2418,7 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
-    public Task HEADERS_Received_InvalidCharacters_ConnectionError()
+    public Task HEADERS_Received_InvalidCharactersInHeaderValue_ConnectionError()
     {
         var headers = new[]
         {
@@ -2419,6 +2429,20 @@ public class Http3StreamTests : Http3TestBase
         };
 
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+    }
+
+    [Fact]
+    public Task HEADERS_Received_InvalidCharactersInHeaderName_ConnectionError()
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("Cus\0tom", "value"),
+        };
+
+        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
     }
 
     [Fact]

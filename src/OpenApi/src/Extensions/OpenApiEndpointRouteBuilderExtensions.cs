@@ -43,15 +43,16 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 }
                 else
                 {
-                    var document = await documentService.GetOpenApiDocumentAsync(context.RequestAborted);
+                    var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.RequestAborted);
                     var documentOptions = options.Get(documentName);
                     using var output = MemoryBufferWriter.Get();
                     using var writer = Utf8BufferTextWriter.Get(output);
                     try
                     {
                         document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                        await context.Response.BodyWriter.WriteAsync(output.ToArray());
-                        await context.Response.BodyWriter.FlushAsync();
+                        context.Response.ContentType = "application/json;charset=utf-8";
+                        await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
+                        await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                     }
                     finally
                     {

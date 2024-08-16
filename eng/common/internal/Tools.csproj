@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
     <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
   </PropertyGroup>
   <ItemGroup>

@@ -449,6 +449,36 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
+    public static string ParameterBindingMetadataClass = $$"""
+    {{GeneratedCodeAttribute}}
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
+    {
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
+
+        public string Name { get; }
+
+        public bool HasTryParse { get; }
+
+        public bool HasBindAsync { get; }
+
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
+    }
+""";
+
     public static string AntiforgeryMetadataType = """
 file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
 {

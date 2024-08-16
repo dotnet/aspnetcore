@@ -5,6 +5,7 @@ using System.Linq;
 using HostedBlazorWebassemblyApp.Server.Data;
 using HostedBlazorWebassemblyApp.Shared;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
@@ -48,8 +49,6 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
 
         app.UseRouting();
 
@@ -57,7 +56,7 @@ public class Startup
         {
             endpoints.MapRazorPages();
             endpoints.MapControllers();
-            //endpoints.MapFallbackToFile("index.html");
+            endpoints.MapStaticAssets();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

@@ -84,3 +84,6 @@ jquery*.map eol=lf
 bootstrap*.js eol=lf
 bootstrap*.map eol=lf
 bootstrap*.css eol=lf
+
+# VerifyTests
+*.verified.txt text eol=lf working-tree-encoding=UTF-8

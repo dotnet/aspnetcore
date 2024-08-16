@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +11,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 public class SampleUsage
 {
     [Fact]
-    public async void DistributedCacheWorks()
+    public async Task DistributedCacheWorks()
     {
         var services = new ServiceCollection();
         services.AddDistributedMemoryCache();
@@ -36,7 +31,7 @@ public class SampleUsage
     }
 
     [Fact]
-    public async void HybridCacheWorks()
+    public async Task HybridCacheWorks()
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
@@ -56,7 +51,7 @@ public class SampleUsage
     }
 
     [Fact]
-    public async void HybridCacheNoCaptureWorks()
+    public async Task HybridCacheNoCaptureWorks()
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
@@ -76,7 +71,7 @@ public class SampleUsage
     }
 
     [Fact]
-    public async void HybridCacheNoCaptureObjReuseWorks()
+    public async Task HybridCacheNoCaptureObjReuseWorks()
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
@@ -126,7 +121,7 @@ public class SampleUsage
             return await cache.GetOrCreateAsync(
                 $"someinfo:{name}:{id}", // unique key for this combination
                 async ct => await SomeExpensiveOperationAsync(name, id, ct),
-                token: token
+                cancellationToken: token
                 );
         }
     }
@@ -152,7 +147,7 @@ public class SampleUsage
                 (name, id), // all of the state we need for the final call, if needed
                 static async (state, token) =>
                     await SomeExpensiveOperationAsync(state.name, state.id, token),
-                token: token
+                cancellationToken: token
             );
         }
     }
@@ -166,7 +161,7 @@ public class SampleUsage
                 (name, id), // all of the state we need for the final call, if needed
                 static async (state, token) =>
                     await SomeExpensiveOperationReuseAsync(state.name, state.id, token),
-                token: token
+                cancellationToken: token
             );
         }
     }
