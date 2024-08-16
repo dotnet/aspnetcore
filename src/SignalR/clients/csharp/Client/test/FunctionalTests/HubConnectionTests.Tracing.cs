@@ -85,9 +85,7 @@ partial class HubConnectionTests : FunctionalTestBase
                     // The SignalR client activity shouldn't escape into user code.
                     Assert.Equal(clientParentActivity1, Activity.Current);
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
                     var result = await resultTask.ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
                     Assert.Equal("Hello World!", result);
                 }
                 finally

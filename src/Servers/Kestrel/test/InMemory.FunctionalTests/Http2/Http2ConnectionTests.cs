@@ -3615,9 +3615,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendPreambleAsync().ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
@@ -3674,9 +3672,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendPreambleAsync().ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
@@ -5466,9 +5462,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         _connectionTask = CompletePipeOnTaskCompletion();
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendPreambleAsync().ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendSettingsAsync();
 
         // Requests can be sent before receiving and acking settings.
@@ -5550,9 +5544,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         _connectionTask = CompletePipeOnTaskCompletion();
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendPreambleAsync().ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
         await SendSettingsAsync();
 
         // Requests can be sent before receiving and acking settings.

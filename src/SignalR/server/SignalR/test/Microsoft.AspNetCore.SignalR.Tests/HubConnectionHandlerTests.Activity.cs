@@ -375,9 +375,7 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
                 client.Dispose();
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
                 await connectionHandlerTask.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
             }
 
             var activities = await serverChannel.Reader.ReadAtLeastAsync(minimumCount: 2);

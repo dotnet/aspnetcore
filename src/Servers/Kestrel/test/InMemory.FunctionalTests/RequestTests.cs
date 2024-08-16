@@ -2351,11 +2351,9 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                     var text = sb.ToString();
                     var writer = new StreamWriter(client.Stream, Encoding.GetEncoding("iso-8859-1"));
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
                     await writer.WriteAsync(text).ConfigureAwait(false);
                     await writer.FlushAsync().ConfigureAwait(false);
                     await client.Stream.FlushAsync().ConfigureAwait(false);
-#pragma warning restore xUnit1030 // Do not call ConfigureAwait(false) in test method
 
                     await client.Receive("HTTP/1.1 200");
                 }

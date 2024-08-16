@@ -9,8 +9,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests;
 
-#pragma warning disable xUnit1030 // Do not call ConfigureAwait(false) in test method
-
 public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 {
     private const string SkipReason = "TODO: Disabled due to CI failure. " +
