@@ -71,7 +71,7 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// <summary>
     /// Gets or sets the description of the response.
     /// </summary>
-    string? Description { get; private set; }
+    public string? Description { get; private set; }
 
     /// <summary>
     /// Gets or sets the content types associated with the response.
