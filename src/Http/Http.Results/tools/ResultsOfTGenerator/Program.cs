@@ -558,7 +558,7 @@ public class Program
         //}
 
         // Attributes
-        writer.WriteIndentedLine("[Fact(Skip = \"Test doesn't throw any exception instead of InvalidOperationException\")]");
+        writer.WriteIndentedLine("[Fact(Skip = \"Test doesn't throw any exception instead of InvalidOperationException: https://github.com/dotnet/aspnetcore/issues/57360\")]");
 
         // Start method
         writer.WriteIndent(1, "public async Task ResultsOf");
