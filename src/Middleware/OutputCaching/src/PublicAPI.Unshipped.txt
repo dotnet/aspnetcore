@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicyProvider
+Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicyProvider.DefaultOutputCachePolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.OutputCaching.OutputCacheOptions!>! options) -> void
+Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicyProvider.GetPolicyAsync(string! policyName) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy?>
+Microsoft.AspNetCore.OutputCaching.IOutputCachePolicyProvider
+Microsoft.AspNetCore.OutputCaching.IOutputCachePolicyProvider.GetPolicyAsync(string! policyName) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy?>
