@@ -28,6 +28,6 @@ public class DefaultOutputCachePolicyProvider : IOutputCachePolicyProvider
 
         var policy = _options.NamedPolicies?[policyName];
 
-        return new ValueTask<IOutputCachePolicy?>(policy);
+        return ValueTask.FromResult(policy);
     }
 }
