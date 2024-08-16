@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A type which can provide a <see cref="IOutputCachePolicy"/> for a particular name.
+/// A type which can provide an <see cref="IOutputCachePolicy"/> for a particular name.
 /// </summary>
 public interface IOutputCachePolicyProvider
 {
     /// <summary>
-    /// Gets a <see cref="IOutputCachePolicy"/> from the given <paramref name="policyName"/>
+    /// Gets a <see cref="IOutputCachePolicy"/> from the given <paramref name="policyName"/>.
     /// </summary>
     /// <param name="policyName">The policy name to retrieve.</param>
     /// <returns>The named <see cref="IOutputCachePolicy"/>.</returns>
