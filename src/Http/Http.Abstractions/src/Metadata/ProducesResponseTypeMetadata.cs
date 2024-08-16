@@ -21,10 +21,12 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// <param name="statusCode">The HTTP response status code.</param>
     /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
     /// <param name="contentTypes">Content types supported by the response.</param>
-    public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string[]? contentTypes = null)
+    /// <param name="description">The description of the response.</param>
+    public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string[]? contentTypes = null, string? description = null)
     {
         StatusCode = statusCode;
         Type = type;
+        Description = description;
 
         if (contentTypes is null || contentTypes.Length == 0)
         {
@@ -50,58 +52,22 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
         }
     }
 
+    // 9.0 BACKCOMPAT OVERLOAD -- DO NOT TOUCH
     /// <summary>
     /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP response status code.</param>
     /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
-    /// <param name="description">The descrption of the response.</param>
     /// <param name="contentTypes">Content types supported by the response.</param>
-    public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string? description = null, string[]? contentTypes = null)
-    {
-        StatusCode = statusCode;
-        Type = type;
-        Description = description;
-
-        if (contentTypes is null || contentTypes.Length == 0)
-        {
-            ContentTypes = Enumerable.Empty<string>();
-        }
-        else
-        {
-            for (var i = 0; i < contentTypes.Length; i++)
-            {
-                MediaTypeHeaderValue.Parse(contentTypes[i]);
-                ValidateContentType(contentTypes[i]);
-            }
-
-            ContentTypes = contentTypes;
-        }
-
-        static void ValidateContentType(string type)
-        {
-            if (type.Contains('*', StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Could not parse '{type}'. Content types with wildcards are not supported.");
-            }
-        }
-    }
+    public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string[]? contentTypes = null) : this(statusCode, type, contentTypes, description: null) { }
 
     // Only for internal use where validation is unnecessary.
-    private ProducesResponseTypeMetadata(int statusCode, Type? type, IEnumerable<string> contentTypes)
+    private ProducesResponseTypeMetadata(int statusCode, Type? type, IEnumerable<string> contentTypes, string? description = null)
     {
         Type = type;
         StatusCode = statusCode;
         ContentTypes = contentTypes;
-    }
-
-    // Only for internal use where validation is unnecessary.
-    private ProducesResponseTypeMetadata(int statusCode, Type? type, string? description, IEnumerable<string> contentTypes)
-    {
-        Type = type;
-        StatusCode = statusCode;
         Description = description;
-        ContentTypes = contentTypes;
     }
 
     /// <summary>
@@ -127,9 +93,8 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, nameof(Description), Description, includeNullValues: false, prefix: "Produces");
+        return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "Produces");
     }
 
-    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(statusCode, type, contentTypes);
-    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, string? description, IEnumerable<string> contentTypes) => new(statusCode, type, description, contentTypes);
+    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes, string? description) => new(statusCode, type, contentTypes, description);
 }
