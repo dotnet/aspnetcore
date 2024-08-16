@@ -20,6 +20,9 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     [Fact]
     public void NavigationIsLockedAfterPrerendering()
     {
