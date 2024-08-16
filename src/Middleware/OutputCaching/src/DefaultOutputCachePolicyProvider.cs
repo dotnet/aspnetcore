@@ -26,7 +26,12 @@ public class DefaultOutputCachePolicyProvider : IOutputCachePolicyProvider
     {
         ArgumentNullException.ThrowIfNull(policyName);
 
-        var policy = _options.NamedPolicies?[policyName];
+        IOutputCachePolicy? policy = null;
+
+        if (_options.NamedPolicies is not null && _options.NamedPolicies.TryGetValue(policyName, out var value))
+        {
+            policy = value;
+        }
 
         return ValueTask.FromResult(policy);
     }
