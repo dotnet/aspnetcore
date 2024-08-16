@@ -34,7 +34,7 @@ public class ApiResponseType
     public Type? Type { get; set; }
 
     /// <summary>
-    /// Gets the description of the response.
+    /// Gets or sets the description of the response.
     /// </summary>
     public string? Description { get; set; }
 

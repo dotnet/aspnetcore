@@ -88,7 +88,7 @@ public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProv
     internal MediaTypeCollection? ContentTypes => _contentTypes;
 
     /// <summary>
-    /// Gets the description of the response.
+    /// Gets or sets the description of the response.
     /// </summary>
     public string? Description { get; set; }
 
