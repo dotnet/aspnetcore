@@ -21,7 +21,7 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void Diagnose57416_ShouldFail()
     {
-        RSACng.Create().SignData(new byte[] { 1, 2, 3 }, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        (new RSACng()).SignData(new byte[] { 1, 2, 3 }, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
     }
 
     [Fact]
