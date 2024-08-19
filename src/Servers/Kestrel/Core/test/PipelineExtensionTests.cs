@@ -35,6 +35,9 @@ public class PipelineExtensionTests : IDisposable
     [InlineData(ulong.MinValue)]
     [InlineData(ulong.MaxValue)]
     [InlineData(4_8_15_16_23_42)]
+    [InlineData(9)]
+    [InlineData(71)]
+    [InlineData(123)]
     public void WritesNumericToAscii(ulong number)
     {
         var writerBuffer = _pipe.Writer;
