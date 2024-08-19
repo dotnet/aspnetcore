@@ -262,10 +262,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
     }
 
-    [Fact]
-    public void CanLimitMaxItemsRendered()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanLimitMaxItemsRendered(bool useAppContext)
     {
-        Browser.MountTestComponent<VirtualizationMaxItemCount>();
+        if (useAppContext)
+        {
+            // This is to test back-compat with the switch added in a .NET 8 patch.
+            // Newer applications shouldn't use this technique.
+            Browser.MountTestComponent<VirtualizationMaxItemCount_AppContext>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationMaxItemCount>();
+        }
 
         // Despite having a 600px tall scroll area and 30px high items (600/30=20),
         // we only render 10 items due to the MaxItemCount setting

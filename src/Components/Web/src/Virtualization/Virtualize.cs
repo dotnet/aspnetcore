@@ -126,10 +126,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     [Parameter]
     public string SpacerElement { get; set; } = "div";
 
-    /*
-    This API will be added in .NET 9 but cannot be added in a .NET 8 or earlier patch,
-    as we can't change public API in patches.
-
     /// <summary>
     /// Gets or sets the maximum number of items that will be rendered, even if the client reports
     /// that its viewport is large enough to show more. The default value is 100.
@@ -140,7 +136,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public int MaxItemCount { get; set; } = 100;
-    */
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -356,12 +351,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemSize = ItemSize;
         }
 
-        // This AppContext data exists as a stopgap for .NET 8 and earlier, since this is being added in a patch
-        // where we can't add new public API.
+        // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
+        // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
+        // new applications should use the much more convenient MaxItemCount parameter.
         var maxItemCount = AppContext.GetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount") switch
         {
-            int val => val, // In .NET 9, this will be Math.Min(val, MaxItemCount)
-            _ => 1000       // In .NET 9, this will be MaxItemCount
+            int val => Math.Min(val, MaxItemCount),
+            _ => MaxItemCount
         };
 
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);

@@ -1,5 +1,4 @@
-﻿@implements IDisposable
-<p>
+﻿<p>
     MaxItemCount is a safeguard against the client reporting a giant viewport and causing the server to perform a
     correspondingly giant data load and then tracking a lot of render state.
 </p>
@@ -12,9 +11,7 @@
 </p>
 
 <div id="virtualize-scroll-area" style="height: 600px; overflow-y: scroll; outline: 1px solid red; background: #eee;">
-    @* In .NET 8 and earlier, the E2E test uses an AppContext.SetData call to set MaxItemCount *@
-    @* In .NET 9 onwards, it's a Virtualize component parameter *@
-    <Virtualize ItemsProvider="GetItems" ItemSize="30">
+    <Virtualize ItemsProvider="GetItems" ItemSize="30" MaxItemCount="10">
         <div class="my-item" @key="context" style="height: 30px; outline: 1px solid #ccc">
             Id: @context.Id; Name: @context.Name
         </div>
@@ -22,13 +19,6 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        // This relies on Xunit's default behavior of running tests in the same collection sequentially,
-        // not in parallel. From .NET 9 onwards this can be removed in favour of a Virtualize parameter.
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 10);
-    }
-
     private async ValueTask<ItemsProviderResult<MyThing>> GetItems(ItemsProviderRequest request)
     {
         const int numThings = 100000;
@@ -40,9 +30,4 @@
     }
 
     record MyThing(int Id, string Name);
-
-    public void Dispose()
-    {
-        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
-    }
 }
