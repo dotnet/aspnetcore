@@ -95,9 +95,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(modelType);
 
-        var containerType = parameter.Member is PropertyInfo propertyInfo ? propertyInfo.DeclaringType : null;
-
-        return new ModelMetadataIdentity(modelType, parameter.Name, containerType, fieldInfo: parameter);
+        return new ModelMetadataIdentity(modelType, parameter.Name, fieldInfo: parameter);
     }
 
     /// <summary>
