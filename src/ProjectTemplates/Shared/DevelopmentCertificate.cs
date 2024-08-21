@@ -17,7 +17,7 @@ public readonly struct DevelopmentCertificate(string certificatePath, string cer
         string[] locations = [
             Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json"),
             Path.Combine(Environment.CurrentDirectory, "aspnetcore-https.json"),
-            Path.Combine(Path.GetDirectoryName(assembly.Location)!, "aspnetcore-https.json")
+            Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json"),
         ];
 
         var json = TryGetExistingFile(locations)
