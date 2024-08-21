@@ -28,20 +28,23 @@
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
       <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
-      <_DevCertPath>$(ArtifactsTmpDir)aspnetcore-https.pfx</_DevCertPath>
+      <_DevCertFileName>aspnetcore-https.pfx</_DevCertFileName>
+      <_DevCertJsonFileName>aspnetcore-https.json</_DevCertJsonFileName>
+      <_DevCertPath>$(ArtifactsTmpDir)$(_DevCertFileName)</_DevCertPath>
+      <_DevCertJsonPath>$(ArtifactsTmpDir)$(_DevCertJsonFileName)</_DevCertJsonPath>
       <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
     <!-- This task only tries to generate a certificate if there is none existing at the location provided as path. -->
-    <GenerateTestDevCert Path="$(_DevCertPath)" Condition="'$(MSBuildRuntimeType)' == 'core'">
-      <Output TaskParameter="Password" PropertyName="_DevCertPassword" />
-      <Output TaskParameter="Thumbprint" PropertyName="_DevCertThumbprint" />
+    <GenerateTestDevCert
+        CertificatePath="$(_DevCertPath)"
+        Condition="'$(MSBuildRuntimeType)' == 'core'">
     </GenerateTestDevCert>
 
     <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' == 'core'" Text="Failed to generate a test certificate at $(_DevCertPath)" />
     <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' != 'core'" Text="No dev cert exists at $(_DevCertPath). Ensure you follow the instructions from src/ProjectTemplates/README.md before running inside Visual Studio" />
 
-    <Copy SourceFiles="$(_DevCertPath)"
+    <Copy SourceFiles="$(_DevCertPath);$(_DevCertJsonPath)"
           DestinationFolder="$(OutputPath)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -49,22 +52,8 @@
 
     <ItemGroup>
 
-      <HelixContent Include="$(OutputPath)aspnetcore-https.pfx" />
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>aspnetcore-https.pfx</_Parameter1>
-        <_Parameter2>$(_DevCertPath)</_Parameter2>
-      </AssemblyAttribute>
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>DevCertPassword</_Parameter1>
-        <_Parameter2>$(_DevCertPassword)</_Parameter2>
-      </AssemblyAttribute>
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>DevCertThumbprint</_Parameter1>
-        <_Parameter2>$(_DevCertThumbprint)</_Parameter2>
-      </AssemblyAttribute>
+      <HelixContent Include="$(OutputPath)$(_DevCertFileName)" />
+      <HelixContent Include="$(OutputPath)$(_DevCertJsonFileName)" />
 
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>

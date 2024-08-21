@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text.Json;
 
 namespace Templates.Test.Helpers;
 
@@ -13,29 +14,26 @@ public readonly struct DevelopmentCertificate(string certificatePath, string cer
 
     public static DevelopmentCertificate Get(Assembly assembly)
     {
-        // Read the assembly metadata attributes
-        // DevCertPath, DevCertPassword, DevCertThumbprint
-        string path = null;
-        string password = null;
-        string thumbprint = null;
-        foreach (var attribute in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+        var json = Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json");
+        if (!File.Exists(json))
         {
-            if (attribute.Key == "DevCertPath")
-            {
-                path = Path.IsPathRooted(attribute.Value) ? attribute.Value : Path.Combine(AppContext.BaseDirectory, attribute.Value);
-            }
-            else if (attribute.Key == "DevCertPassword")
-            {
-                password = attribute.Value;
-            }
-            else if (attribute.Key == "DevCertThumbprint")
-            {
-                thumbprint = attribute.Value;
-            }
+            throw new InvalidOperationException($"The aspnetcore-https.json file does not exist in {json}.");
         }
 
-        return path == null || password == null || thumbprint == null
-            ? throw new InvalidOperationException("The assembly does not contain the required metadata attributes.")
-            : new DevelopmentCertificate(path, password, thumbprint);
+        using var file = File.OpenRead(json);
+        var certificateAttributes = JsonSerializer.Deserialize<CertificateAttributes>(file) ??
+            throw new InvalidOperationException($"The aspnetcore-https.json file does not contain valid JSON.");
+
+        var path = Path.ChangeExtension(json, ".pfx");
+        var password = certificateAttributes.Password;
+        var thumbprint = certificateAttributes.Thumbprint;
+
+        return new DevelopmentCertificate(path, password, thumbprint);
+    }
+
+    private class CertificateAttributes
+    {
+        public string Password { get; set; }
+        public string Thumbprint { get; set; }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -15,13 +16,7 @@ namespace RepoTasks;
 public class GenerateTestDevCert : Task
 {
     [Required]
-    public string Path { get; private set; }
-
-    [Output]
-    public string Password { get; private set; }
-
-    [Output]
-    public string Thumbprint { get; private set; }
+    public string CertificatePath { get; private set; }
 
     public override bool Execute()
     {
@@ -40,15 +35,24 @@ public class GenerateTestDevCert : Task
                 mutex.WaitOne();
             }
 
-            if (File.Exists(Path))
+            if (File.Exists(CertificatePath))
             {
-                Log.LogMessage(MessageImportance.Normal, $"A test certificate already exists at {Path}");
+                Log.LogMessage(MessageImportance.Normal, $"A test certificate already exists at {CertificatePath}");
                 return true;
             }
 
-            var cert = DevelopmentCertificate.Create(Path);
-            Password = cert.CertificatePassword;
-            Thumbprint = cert.CertificateThumbprint;
+            var cert = DevelopmentCertificate.Create(CertificatePath);
+
+            var devCertJsonFile = Path.ChangeExtension(CertificatePath, ".json");
+            var devCertJson = new CertificateInfo
+            {
+                Password = cert.CertificatePassword,
+                Thumbprint = cert.CertificateThumbprint
+            };
+
+            using var file = File.OpenWrite(devCertJsonFile);
+            file.SetLength(0);
+            JsonSerializer.Serialize(file, devCertJson);
         }
         catch (Exception e)
         {
@@ -60,5 +64,11 @@ public class GenerateTestDevCert : Task
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private class CertificateInfo
+    {
+        public string Password { get; set; }
+        public string Thumbprint { get; set; }
     }
 }
