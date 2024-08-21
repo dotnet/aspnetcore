@@ -22,7 +22,7 @@ public readonly struct DevelopmentCertificate(string certificatePath, string cer
         {
             if (attribute.Key == "DevCertPath")
             {
-                path = attribute.Value;
+                path = Path.IsPathRooted(attribute.Value) ? attribute.Value : Path.Combine(AppContext.BaseDirectory, attribute.Value);
             }
             else if (attribute.Key == "DevCertPassword")
             {
