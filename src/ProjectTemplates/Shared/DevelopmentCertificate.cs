@@ -31,7 +31,7 @@ public readonly struct DevelopmentCertificate(string certificatePath, string cer
         return new DevelopmentCertificate(path, password, thumbprint);
     }
 
-    private class CertificateAttributes
+    private sealed class CertificateAttributes
     {
         public string Password { get; set; }
         public string Thumbprint { get; set; }
