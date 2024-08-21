@@ -14,21 +14,43 @@ public readonly struct DevelopmentCertificate(string certificatePath, string cer
 
     public static DevelopmentCertificate Get(Assembly assembly)
     {
-        var json = Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json");
-        if (!File.Exists(json))
-        {
-            throw new InvalidOperationException($"The aspnetcore-https.json file does not exist in {json}.");
-        }
+        string[] locations = [
+            Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json"),
+            Path.Combine(Environment.CurrentDirectory, "aspnetcore-https.json"),
+            Path.Combine(Path.GetDirectoryName(assembly.Location)!, "aspnetcore-https.json")
+        ];
+
+        var json = TryGetExistingFile(locations)
+            ?? throw new InvalidOperationException($"The aspnetcore-https.json file does not exist. Searched locations: {Environment.NewLine}{string.Join(Environment.NewLine, locations)}");
 
         using var file = File.OpenRead(json);
         var certificateAttributes = JsonSerializer.Deserialize<CertificateAttributes>(file) ??
             throw new InvalidOperationException($"The aspnetcore-https.json file does not contain valid JSON.");
 
         var path = Path.ChangeExtension(json, ".pfx");
+
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException($"The certificate file does not exist. Expected at: '{path}'.");
+        }
+
         var password = certificateAttributes.Password;
         var thumbprint = certificateAttributes.Thumbprint;
 
         return new DevelopmentCertificate(path, password, thumbprint);
+    }
+
+    private static string TryGetExistingFile(string[] locations)
+    {
+        foreach (var location in locations)
+        {
+            if (File.Exists(location))
+            {
+                return location;
+            }
+        }
+
+        return null;
     }
 
     private sealed class CertificateAttributes
