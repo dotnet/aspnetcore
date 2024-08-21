@@ -29,7 +29,6 @@
       <_DevCertJsonFileName>aspnetcore-https.json</_DevCertJsonFileName>
       <_DevCertPath>$(ArtifactsTmpDir)$(_DevCertFileName)</_DevCertPath>
       <_DevCertJsonPath>$(ArtifactsTmpDir)$(_DevCertJsonFileName)</_DevCertJsonPath>
-      <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
     <!-- This task only tries to generate a certificate if there is none existing at the location provided as path. -->
