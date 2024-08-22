@@ -345,7 +345,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, """["a","b","c"]""");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -366,7 +366,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -388,7 +388,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, """["a","b","c"]""");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -409,7 +409,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -431,7 +431,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[0,1,2]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -452,7 +452,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -474,7 +474,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[0,1,2]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -495,7 +495,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -517,7 +517,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[0,1,2]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -538,7 +538,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -560,7 +560,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[0,1,2]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -581,7 +581,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "[]");
-        //await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
