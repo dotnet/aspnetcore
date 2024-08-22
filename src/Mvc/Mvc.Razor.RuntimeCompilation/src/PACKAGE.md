@@ -9,6 +9,14 @@ Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation is a NuGet package designed to
 * Supports faster iteration and development cycles.
 * Compatible with ASP.NET Core 3.0 and newer.
 
+## Limitations
+
+* Isn't supported for Razor components of Blazor apps.
+* Doesn't support [global using directives](/dotnet/csharp/whats-new/csharp-10#global-using-directives).
+* Doesn't support [implicit using directives](/dotnet/core/tutorials/top-level-templates#implicit-using-directives).
+* Disables [.NET Hot Reload](xref:test/hot-reload).
+* Is recommended for development, not for production.
+
 ## How to Use
 
 To start using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation in your ASP.NET Core MVC application, follow these steps:
