@@ -482,7 +482,7 @@ public class Program
     static void GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(StreamWriter writer, int typeArgNumber)
     {
         //[Fact]
-        //public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
+        //public async Task ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
         //{
         //    // Arrange
         //    Results<ChecksumResult1, NoContent> MyApi()
@@ -494,7 +494,7 @@ public class Program
         //    // Act & Assert
         //    var result = MyApi();
 
-        //    Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        //    await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         //    {
         //        await result.ExecuteAsync(httpContext);
         //    });
@@ -504,7 +504,7 @@ public class Program
         writer.WriteIndentedLine("[Fact]");
 
         // Start method
-        writer.WriteIndent(1, "public void ResultsOf");
+        writer.WriteIndent(1, "public async Task ResultsOf");
         for (int j = 1; j <= typeArgNumber; j++)
         {
             writer.Write($"TResult{j}");
@@ -526,7 +526,7 @@ public class Program
         writer.WriteIndentedLine(2, "var result = MyApi();");
         writer.WriteLine();
 
-        writer.WriteIndentedLine(2, "Assert.ThrowsAsync<ArgumentNullException>(async () =>");
+        writer.WriteIndentedLine(2, "await Assert.ThrowsAsync<ArgumentNullException>(async () =>");
         writer.WriteIndentedLine(2, "{");
         writer.WriteIndentedLine(3, "await result.ExecuteAsync(httpContext);");
         writer.WriteIndentedLine(2, "});");
@@ -573,7 +573,7 @@ public class Program
         writer.WriteIndentedLine(2, "// Arrange");
         writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
-        writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
+        writer.WriteIndentedLine(3, "return (ChecksumResult1)null;");
         writer.WriteIndentedLine(2, "}");
         writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
         writer.WriteLine();

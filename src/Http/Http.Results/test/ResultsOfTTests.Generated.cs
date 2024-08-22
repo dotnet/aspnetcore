@@ -60,7 +60,7 @@ public partial class ResultsOfTTests
     }
 
     [Fact]
-    public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    public async Task ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
@@ -72,7 +72,7 @@ public partial class ResultsOfTTests
         // Act & Assert
         var result = MyApi();
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await result.ExecuteAsync(httpContext);
         });
@@ -84,7 +84,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -275,7 +275,7 @@ public partial class ResultsOfTTests
     }
 
     [Fact]
-    public void ResultsOfTResult1TResult2TResult3_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    public async Task ResultsOfTResult1TResult2TResult3_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
@@ -287,7 +287,7 @@ public partial class ResultsOfTTests
         // Act & Assert
         var result = MyApi();
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await result.ExecuteAsync(httpContext);
         });
@@ -299,7 +299,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -559,7 +559,7 @@ public partial class ResultsOfTTests
     }
 
     [Fact]
-    public void ResultsOfTResult1TResult2TResult3TResult4_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    public async Task ResultsOfTResult1TResult2TResult3TResult4_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
@@ -571,7 +571,7 @@ public partial class ResultsOfTTests
         // Act & Assert
         var result = MyApi();
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await result.ExecuteAsync(httpContext);
         });
@@ -583,7 +583,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -920,7 +920,7 @@ public partial class ResultsOfTTests
     }
 
     [Fact]
-    public void ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
@@ -932,7 +932,7 @@ public partial class ResultsOfTTests
         // Act & Assert
         var result = MyApi();
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await result.ExecuteAsync(httpContext);
         });
@@ -944,7 +944,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -1366,7 +1366,7 @@ public partial class ResultsOfTTests
     }
 
     [Fact]
-    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
@@ -1378,7 +1378,7 @@ public partial class ResultsOfTTests
         // Act & Assert
         var result = MyApi();
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await result.ExecuteAsync(httpContext);
         });
@@ -1390,7 +1390,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
