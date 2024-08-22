@@ -145,7 +145,7 @@ internal static class BufferExtensions
         else if (number < 100 && start.Length >= 2)
         {
             var val = (uint)number;
-            uint tens = (byte)((val * 205u) >> 11); // div10, valid to 1028
+            var tens = (uint)(byte)((val * 205u) >> 11); // div10, valid to 1028
 
             start[0] = (byte)(tens + AsciiDigitStart);
             start[1] = (byte)(val - (tens * 10) + AsciiDigitStart);
@@ -154,8 +154,8 @@ internal static class BufferExtensions
         else if (number < 1000 && start.Length >= 3)
         {
             var val = (uint)number;
-            uint digit0 = (byte)((val * 41u) >> 12); // div100, valid to 1098
-            uint digits01 = (byte)((val * 205u) >> 11); // div10, valid to 1028
+            var digit0 = (uint)(byte)((val * 41u) >> 12); // div100, valid to 1098
+            var digits01 = (uint)(byte)((val * 205u) >> 11); // div10, valid to 1028
 
             start[0] = (byte)(digit0 + AsciiDigitStart);
             start[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
