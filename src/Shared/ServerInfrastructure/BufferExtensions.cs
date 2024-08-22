@@ -134,29 +134,28 @@ internal static class BufferExtensions
         const byte AsciiDigitStart = (byte)'0';
 
         var start = buffer.Span;
-        var bytesLeftInBlock = start.Length;
 
         // Fast path, try copying to the available memory directly
         var simpleWrite = true;
-        if (number < 10 && bytesLeftInBlock >= 1)
+        if (number < 10 && start.Length >= 1)
         {
             start[0] = (byte)(((uint)number) + AsciiDigitStart);
             buffer.Advance(1);
         }
-        else if (number < 100 && bytesLeftInBlock >= 2)
+        else if (number < 100 && start.Length >= 2)
         {
             var val = (uint)number;
-            var tens = (byte)((val * 205u) >> 11); // div10, valid to 1028
+            uint tens = (byte)((val * 205u) >> 11); // div10, valid to 1028
 
             start[0] = (byte)(tens + AsciiDigitStart);
             start[1] = (byte)(val - (tens * 10) + AsciiDigitStart);
             buffer.Advance(2);
         }
-        else if (number < 1000 && bytesLeftInBlock >= 3)
+        else if (number < 1000 && start.Length >= 3)
         {
             var val = (uint)number;
-            var digit0 = (byte)((val * 41u) >> 12); // div100, valid to 1098
-            var digits01 = (byte)((val * 205u) >> 11); // div10, valid to 1028
+            uint digit0 = (byte)((val * 41u) >> 12); // div100, valid to 1098
+            uint digits01 = (byte)((val * 205u) >> 11); // div10, valid to 1028
 
             start[0] = (byte)(digit0 + AsciiDigitStart);
             start[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);

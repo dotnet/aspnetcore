@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Xunit;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -35,9 +36,6 @@ public class PipelineExtensionTests : IDisposable
     [InlineData(ulong.MinValue)]
     [InlineData(ulong.MaxValue)]
     [InlineData(4_8_15_16_23_42)]
-    [InlineData(9)]
-    [InlineData(71)]
-    [InlineData(123)]
     public void WritesNumericToAscii(ulong number)
     {
         var writerBuffer = _pipe.Writer;
@@ -50,6 +48,25 @@ public class PipelineExtensionTests : IDisposable
         var numAsStr = number.ToString(CultureInfo.InvariantCulture);
         var expected = Encoding.ASCII.GetBytes(numAsStr);
         AssertExtensions.Equal(expected, reader.Buffer.Slice(0, numAsStr.Length).ToArray());
+    }
+
+    [Fact]
+    public void WritesNumericToAsciiFastPath()
+    {
+        for (ulong number = 0; number < 1000; number++)
+        {
+            var writerBuffer = _pipe.Writer;
+            var writer = new BufferWriter<PipeWriter>(writerBuffer);
+            writer.WriteNumeric(number);
+            writer.Commit();
+            writerBuffer.FlushAsync().GetAwaiter().GetResult();
+
+            var readResult = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+            var numAsStr = number.ToString(CultureInfo.InvariantCulture);
+            var expected = Encoding.ASCII.GetBytes(numAsStr);
+            AssertExtensions.Equal(expected, readResult.Buffer.Slice(0, numAsStr.Length).ToArray());
+            _pipe.Reader.AdvanceTo(readResult.Buffer.End);
+        }
     }
 
     [Theory]
