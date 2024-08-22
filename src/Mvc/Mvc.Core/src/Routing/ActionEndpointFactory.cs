@@ -353,6 +353,7 @@ internal sealed class ActionEndpointFactory
 
         // Add metadata inferred from the parameter and/or return type before action-specific metadata.
         // MethodInfo *should* never be null given a ControllerActionDescriptor, but this is unenforced.
+        var metadataCountBeforePopulating = builder.Metadata.Count;
         if (controllerActionDescriptor?.MethodInfo is not null)
         {
             EndpointMetadataPopulator.PopulateMetadata(controllerActionDescriptor.MethodInfo, builder);
@@ -364,6 +365,20 @@ internal sealed class ActionEndpointFactory
             foreach (var d in action.EndpointMetadata)
             {
                 builder.Metadata.Add(d);
+            }
+        }
+
+        if (builder.Metadata.Count != metadataCountBeforePopulating)
+        {
+            action.EndpointMetadata ??= [];
+            var producesResponseMetadataByAttribute = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
+            foreach (var metadata in builder.Metadata.OfType<IProducesResponseTypeMetadata>())
+            {
+                if (producesResponseMetadataByAttribute
+                    .FirstOrDefault(e => e is IProducesResponseTypeMetadata p && p.StatusCode == metadata.StatusCode) is null)
+                {
+                    action.EndpointMetadata.Add(metadata);
+                }
             }
         }
 
@@ -403,16 +418,6 @@ internal sealed class ActionEndpointFactory
             foreach (var filter in action.FilterDescriptors.OrderBy(f => f, FilterDescriptorOrderComparer.Comparer).Select(f => f.Filter))
             {
                 builder.Metadata.Add(filter);
-            }
-        }
-        action.EndpointMetadata ??= [];
-        var producesResponseMetadataByAttribute = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
-        foreach (var metadata in builder.Metadata.OfType<IProducesResponseTypeMetadata>())
-        {
-            if (producesResponseMetadataByAttribute
-                .FirstOrDefault(e => e is IProducesResponseTypeMetadata p && p.StatusCode == metadata.StatusCode) is null)
-            {
-                action.EndpointMetadata.Add(metadata);
             }
         }
 
@@ -462,7 +467,6 @@ internal sealed class ActionEndpointFactory
         {
             perRouteConventions[i](builder);
         }
-
 
         if (builder.FilterFactories.Count > 0 && controllerActionDescriptor is not null)
         {
