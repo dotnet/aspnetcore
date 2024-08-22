@@ -501,19 +501,30 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-rc1
+          milestone: 10.0-preview1
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-preview7
+          branch: release/9.0-rc1
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-preview7
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview7 branch'
+          milestone: 9.0-rc1
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-rc1 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 9.0-rc2
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -581,6 +592,21 @@ configuration:
       - addReply:
           reply: 'Hi @${issueAuthor}. We have added the "Needs: Author Feedback" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.'
       description: Add comment when 'Needs Author Feedback' is applied to issue
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - addMilestone:
+          milestone: 9.0.x
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+
+            Otherwise, please add `tell-mode` label.
+      description: Add release/9.0 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
       - isAction:
