@@ -359,6 +359,7 @@ internal sealed class ActionEndpointFactory
             EndpointMetadataPopulator.PopulateMetadata(controllerActionDescriptor.MethodInfo, builder);
         }
 
+        var metadataCountAfterPopulating = builder.Metadata.Count;
         // Add action-specific metadata early so it has a low precedence
         if (action.EndpointMetadata != null)
         {
@@ -370,7 +371,7 @@ internal sealed class ActionEndpointFactory
 
         builder.Metadata.Add(action);
 
-        if (builder.Metadata.Count != metadataCountBeforePopulating)
+        if (metadataCountAfterPopulating != metadataCountBeforePopulating)
         {
             action.EndpointMetadata ??= [];
             var producesResponseMetadataByAttribute = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
