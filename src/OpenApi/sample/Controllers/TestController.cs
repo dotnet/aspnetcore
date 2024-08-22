@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -15,6 +16,15 @@ public class TestController : ControllerBase
     public string GetByIdAndName(RouteParamsContainer paramsContainer)
     {
         return paramsContainer.Id + "_" + paramsContainer.Name;
+    }
+
+    [HttpGet]
+    [Route("/getbyidandnameWithIResults/{id}/{name}")]
+    public Results<Ok<string>, NotFound> GetByIdAndNameWithIResults(RouteParamsContainer paramsContainer)
+    {
+        return Random.Shared.Next() % 2 == 0 ?
+            TypedResults.Ok(paramsContainer.Id + "_" + paramsContainer.Name)
+            : TypedResults.NotFound();
     }
 
     [HttpPost]

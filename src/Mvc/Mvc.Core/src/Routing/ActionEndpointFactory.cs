@@ -405,6 +405,15 @@ internal sealed class ActionEndpointFactory
                 builder.Metadata.Add(filter);
             }
         }
+        action.EndpointMetadata ??= [];
+        foreach (var metadata in builder.Metadata.OfType<IProducesResponseTypeMetadata>())
+        {
+            if (action.EndpointMetadata
+                .FirstOrDefault(e => e is IProducesResponseTypeMetadata p && p.StatusCode == metadata.StatusCode) is null)
+            {
+                action.EndpointMetadata.Add(metadata);
+            }
+        }
 
         if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
         {
@@ -452,6 +461,7 @@ internal sealed class ActionEndpointFactory
         {
             perRouteConventions[i](builder);
         }
+
 
         if (builder.FilterFactories.Count > 0 && controllerActionDescriptor is not null)
         {
