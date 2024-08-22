@@ -474,6 +474,8 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
