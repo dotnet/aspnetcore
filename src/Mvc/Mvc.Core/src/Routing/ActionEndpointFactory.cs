@@ -368,6 +368,8 @@ internal sealed class ActionEndpointFactory
             }
         }
 
+        builder.Metadata.Add(action);
+
         if (builder.Metadata.Count != metadataCountBeforePopulating)
         {
             action.EndpointMetadata ??= [];
@@ -381,8 +383,6 @@ internal sealed class ActionEndpointFactory
                 }
             }
         }
-
-        builder.Metadata.Add(action);
 
         // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
         //
