@@ -15,22 +15,14 @@ public sealed class ProblemDetailsWriterTests
         StartupAnalyzer = new StartupAnalyzer();
 
         Analyses = new ConcurrentBag<object>();
-        ConfigureServicesMethods = new ConcurrentBag<IMethodSymbol>();
-        ConfigureMethods = new ConcurrentBag<IMethodSymbol>();
         StartupAnalyzer.ServicesAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
         StartupAnalyzer.OptionsAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
         StartupAnalyzer.MiddlewareAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
-        StartupAnalyzer.ConfigureServicesMethodFound += (sender, method) => ConfigureServicesMethods.Add(method);
-        StartupAnalyzer.ConfigureMethodFound += (sender, method) => ConfigureMethods.Add(method);
     }
 
     internal StartupAnalyzer StartupAnalyzer { get; }
 
     internal ConcurrentBag<object> Analyses { get; }
-
-    internal ConcurrentBag<IMethodSymbol> ConfigureServicesMethods { get; }
-
-    internal ConcurrentBag<IMethodSymbol> ConfigureMethods { get; }
 
     [Theory]
     [InlineData("AddControllers")]
@@ -85,7 +77,6 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         // Act + Assert
         await VerifyCodeFix(source, [diagnostic], fixedSource);
     }
-
 
     [Theory]
     [InlineData("AddControllers")]
@@ -428,7 +419,7 @@ public class SampleProblemDetailsWriter{suffix} : IProblemDetailsWriter
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies
         };
 
-        // Tests are just the Configure/ConfigureServices methods, no Main, so we need to mark the output as not console
+        // Tests are just the Configure/ConfigureServices methods, no Main, so we need to mark the output as not console.
         test.TestState.OutputKind = OutputKind.DynamicallyLinkedLibrary;
 
         return test;
