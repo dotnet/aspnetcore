@@ -374,13 +374,22 @@ internal sealed class ActionEndpointFactory
         if (metadataCountAfterPopulating != metadataCountBeforePopulating)
         {
             action.EndpointMetadata ??= [];
-            var producesResponseMetadataByAttribute = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
-            foreach (var metadata in builder.Metadata.OfType<IProducesResponseTypeMetadata>())
+            HashSet<int> producesResponseMetadataByAttribute = [];
+            foreach (var endpointMetadataInAttributes in action.EndpointMetadata)
             {
-                if (producesResponseMetadataByAttribute
-                    .FirstOrDefault(e => e is IProducesResponseTypeMetadata p && p.StatusCode == metadata.StatusCode) is null)
+                if (endpointMetadataInAttributes is IProducesResponseTypeMetadata metadataInAttributes
+                   && !producesResponseMetadataByAttribute.Contains(metadataInAttributes.StatusCode))
                 {
-                    action.EndpointMetadata.Add(metadata);
+                    producesResponseMetadataByAttribute.Add(metadataInAttributes.StatusCode);
+                }
+            }
+
+            foreach (var endpointMetadata in builder.Metadata)
+            {
+                if (endpointMetadata is IProducesResponseTypeMetadata metadata
+                   && !producesResponseMetadataByAttribute.Contains(metadata.StatusCode))
+                {
+                    producesResponseMetadataByAttribute.Add(metadata.StatusCode);
                 }
             }
         }
