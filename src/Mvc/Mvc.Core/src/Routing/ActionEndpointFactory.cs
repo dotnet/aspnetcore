@@ -389,7 +389,7 @@ internal sealed class ActionEndpointFactory
                 if (endpointMetadata is IProducesResponseTypeMetadata metadata
                    && !producesResponseMetadataByAttribute.Contains(metadata.StatusCode))
                 {
-                    producesResponseMetadataByAttribute.Add(metadata.StatusCode);
+                    action.EndpointMetadata.Add(metadata);
                 }
             }
         }
