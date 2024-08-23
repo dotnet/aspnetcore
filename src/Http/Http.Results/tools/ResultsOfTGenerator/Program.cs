@@ -573,7 +573,7 @@ public class Program
         writer.WriteIndentedLine(2, "// Arrange");
         writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
-        writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
+        writer.WriteIndentedLine(3, "return (ChecksumResult1)null;");
         writer.WriteIndentedLine(2, "}");
         writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
         writer.WriteLine();

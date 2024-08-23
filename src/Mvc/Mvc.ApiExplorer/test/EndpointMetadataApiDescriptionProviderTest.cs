@@ -385,12 +385,13 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = GetApiDescription(
             [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        async Task<Results<Created<InferredJsonClass>, ProblemHttpResult>> () => {
-            await Task.CompletedTask;
-            return Random.Shared.Next() % 2 == 0
-                ? TypedResults.Created<InferredJsonClass>("/", new InferredJsonClass())
-                : TypedResults.Problem();
-        });
+        async Task<Results<Created<InferredJsonClass>, ProblemHttpResult>> () =>
+            {
+                await Task.CompletedTask;
+                return Random.Shared.Next() % 2 == 0
+                    ? TypedResults.Created<InferredJsonClass>("/", new InferredJsonClass())
+                    : TypedResults.Problem();
+            });
 
         Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
@@ -704,6 +705,16 @@ public class EndpointMetadataApiDescriptionProviderTest
             param => Assert.False(param.IsRequired),
             param => Assert.True(param.IsRequired),
             param => Assert.False(param.IsRequired));
+    }
+
+    [Fact]
+    public void SupportsContainerTypeInAsParametersAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembers foo) => { });
+        Assert.Equal(4, apiDescription.ParameterDescriptions.Count);
+
+        Assert.NotNull(apiDescription.ParameterDescriptions[0].ModelMetadata.ContainerType);
+        Assert.Equal(typeof(AsParametersWithRequiredMembers), apiDescription.ParameterDescriptions[0].ModelMetadata.ContainerType);
     }
 
 #nullable disable

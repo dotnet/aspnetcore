@@ -84,7 +84,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -299,7 +299,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -583,7 +583,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -944,7 +944,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
@@ -1390,7 +1390,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ChecksumResult1, NoContent> MyApi()
         {
-            return new ChecksumResult1(1);
+            return (ChecksumResult1)null;
         }
         var httpContext = GetHttpContext();
 
