@@ -305,7 +305,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         var apiDescription = GetApiDescription(() => TypedResults.Created("https://example.com", new InferredJsonClass()));
 
-        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+        Assert.Single(apiDescription.SupportedResponseTypes);
 
         var createdResponseType = apiDescription.SupportedResponseTypes[0];
 
@@ -323,7 +323,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         // TypedResults for ProblemDetails doesn't implement IEndpointMetadataProvider
         var apiDescription = GetApiDescription(() => TypedResults.Problem());
 
-        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+        Assert.Single(apiDescription.SupportedResponseTypes);
 
         var responseType = apiDescription.SupportedResponseTypes[0];
 
@@ -338,7 +338,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = GetApiDescription(() =>
             Task.FromResult(TypedResults.Created("https://example.com", new InferredJsonClass())));
 
-        Assert.Equal(1, apiDescription.SupportedResponseTypes.Count);
+        Assert.Single(apiDescription.SupportedResponseTypes);
 
         var createdResponseType = apiDescription.SupportedResponseTypes[0];
 
@@ -804,7 +804,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void TestParameterAttributesCanBeInspected()
     {
         var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
-        Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
+        Assert.Single(apiDescription.ParameterDescriptions);
 
         var nameParam = apiDescription.ParameterDescriptions[0];
         Assert.Equal(typeof(string), nameParam.Type);
@@ -1288,8 +1288,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         var apiDescription0 = GetApiDescription((IFormFile fromFile) => { });
         var apiDescription1 = GetApiDescription((IFormFile? fromFile) => { });
-        Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
-        Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
+        Assert.Single(apiDescription0.ParameterDescriptions);
+        Assert.Single(apiDescription1.ParameterDescriptions);
 
         var fromFileParam0 = apiDescription0.ParameterDescriptions[0];
         Assert.Equal(typeof(IFormFile), fromFileParam0.Type);

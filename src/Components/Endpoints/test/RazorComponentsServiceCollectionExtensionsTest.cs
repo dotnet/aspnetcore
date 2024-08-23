@@ -128,15 +128,11 @@ public class RazorComponentsServiceCollectionExtensionsTest
 
         if (implementationTypes.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an implementation type for {serviceType}");
+            Assert.Fail($"Could not find an implementation type for {serviceType}");
         }
         else if (implementationTypes.Length != implementationTypes.Distinct().Count())
         {
-            Assert.True(
-                false,
-                $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
+            Assert.Fail($"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
         }
     }
 

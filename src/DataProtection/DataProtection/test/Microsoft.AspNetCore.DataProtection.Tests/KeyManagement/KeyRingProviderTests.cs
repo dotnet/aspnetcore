@@ -709,8 +709,10 @@ public class KeyRingProviderTests
         Assert.True(mreBackgroundThreadHasCalledGetCurrentKeyRing.Wait(testTimeout), "Test timed out.");
         mreForegroundThreadIsCallingGetCurrentKeyRing.Set();
         var foregroundRetVal = keyRingProvider.GetCurrentKeyRingCore(now);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         backgroundGetKeyRingTask.Wait(testTimeout);
         var backgroundRetVal = backgroundGetKeyRingTask.GetAwaiter().GetResult();
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         // Assert - underlying provider only should have been called once
         Assert.Same(expectedKeyRing, foregroundRetVal);

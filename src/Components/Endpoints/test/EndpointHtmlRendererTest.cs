@@ -823,7 +823,7 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async void Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
+    public async Task Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
     {
         // Arrange
         var expectedError = @"There is more than one named submit event with the name 'default'. Ensure named submit events have unique names, or are in scopes with distinct names. The following components use this name:
