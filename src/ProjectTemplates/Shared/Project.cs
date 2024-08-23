@@ -142,6 +142,20 @@ public class Project : IDisposable
             CaptureBinLogOnFailure(restoreExecution);
 
             Assert.True(0 == restoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, restoreResult));
+
+            // We must specify nuget.org as a source because the Azure DevOps feeds do not support the --vulnerable flag.
+            // If we restored packages from nuget.org, we could remove the following check since the restore itself would produce
+            // NuGet vulnerability warnings, but we avoid using nuget.org as a source for the restore to avoid supply chain attacks.
+            // https://learn.microsoft.com/nuget/reference/errors-and-warnings/nu1901-nu1904
+            argString = "list package --vulnerable --include-transitive --source https://api.nuget.org/v3/index.json";
+            using var listVulnerableExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+            await listVulnerableExecution.Exited;
+
+            if (listVulnerableExecution.ExitCode != 0 || !listVulnerableExecution.Output.Contains("has no vulnerable packages"))
+            {
+                // We consider this part of the build step, since the build would normally warn about vulnerable packages if not for --no-restore.
+                Assert.Fail(ErrorMessages.GetFailedProcessMessage("restore", this, new ProcessResult(listVulnerableExecution)));
+            }
         }
     }
 
