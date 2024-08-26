@@ -55,7 +55,7 @@
     "eventsource": "^2.0.2",
     "fetch-cookie": "^2.0.3",
     "node-fetch": "^2.6.7",
-    "ws": "^8.17.1"
+    "ws": "^7.5.10"
   },
   "resolutions": {
     "ansi-regex": "5.0.1"
