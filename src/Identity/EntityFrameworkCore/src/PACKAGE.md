@@ -13,7 +13,7 @@
 * Uses claims to define fine-grained access control policies
 * Seamlessly integrates with Entity Framework Core for data storage and retrieval
 
-## How to use
+## How to Use
 
 To use `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, follow these steps:
 
