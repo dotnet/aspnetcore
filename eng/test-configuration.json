@@ -7,7 +7,6 @@
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }}, // tries to manipulate the state of the server's buffer
     {"testName": {"contains": "CertificateChangedOnDisk"}}, // depends on FS event timing
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
-    {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
     {"testName": {"contains": "CheckInvalidHostingModelParameter"}},
     {"testName": {"contains": "POST_Expect100Continue_Get100Continue"}},
