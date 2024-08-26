@@ -19,71 +19,63 @@ jobs:
     steps:
     - ${{ each step in parameters.steps }}:
       - ${{ step }}
-    
+
     componentGovernanceSteps:
-      - template: /eng/common/templates/steps/component-governance.yml
-        parameters:
-          ${{ if eq(parameters.disableComponentGovernance, '') }}:
-            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
-              disableComponentGovernance: false
-            ${{ else }}:
-              disableComponentGovernance: true
+    - template: /eng/common/templates/steps/component-governance.yml
+      parameters:
+        ${{ if eq(parameters.disableComponentGovernance, '') }}:
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+            disableComponentGovernance: false
           ${{ else }}:
-            disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
-          componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
-
-      - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
-        - template: /eng/common/templates/steps/generate-sbom.yml
-          parameters:
-            PackageVersion: ${{ parameters.packageVersion }}
-            BuildDropPath: ${{ parameters.buildDropPath }}
-            publishArtifacts: false
-
+            disableComponentGovernance: true
+        ${{ else }}:
+          disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
+        componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
     artifactPublishSteps:
-      - ${{ if ne(parameters.artifacts.publish, '') }}:
-        - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
-          - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
-            parameters:
-              is1ESPipeline: false
-              args:
-                displayName: Publish pipeline artifacts
-                pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts'
-                publishLocation: Container
-                artifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
-                continueOnError: true
-                condition: always()
-        - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
-          - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
-            parameters:
-              is1ESPipeline: false
-              args:
-                targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log'
-                artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
-                displayName: 'Publish logs'
-                continueOnError: true
-                condition: always()
-                sbomEnabled: false  # we don't need SBOM for logs
-
-      - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
+    - ${{ if ne(parameters.artifacts.publish, '') }}:
+      - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
         - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
           parameters:
             is1ESPipeline: false
             args:
-              displayName: Publish Logs
-              pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+              displayName: Publish pipeline artifacts
+              pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts'
               publishLocation: Container
-              artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
+              artifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
               continueOnError: true
               condition: always()
-
-      - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+      - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
         - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
           parameters:
             is1ESPipeline: false
             args:
-              targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
-              artifactName: 'BuildConfiguration'
-              displayName: 'Publish build retry configuration'
+              targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+              artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
+              displayName: 'Publish logs'
               continueOnError: true
-              sbomEnabled: false  # we don't need SBOM for BuildConfiguration
+              condition: always()
+              sbomEnabled: false  # we don't need SBOM for logs
+
+    - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
+      - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+        parameters:
+          is1ESPipeline: false
+          args:
+            displayName: Publish Logs
+            pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+            publishLocation: Container
+            artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
+            continueOnError: true
+            condition: always()
+
+    - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+      - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+        parameters:
+          is1ESPipeline: false
+          args:
+            targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
+            artifactName: 'BuildConfiguration'
+            displayName: 'Publish build retry configuration'
+            continueOnError: true
+            sbomEnabled: false  # we don't need SBOM for BuildConfiguration
