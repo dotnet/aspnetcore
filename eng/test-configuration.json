@@ -10,7 +10,6 @@
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
     {"testName": {"contains": "CheckInvalidHostingModelParameter"}},
-    {"testName": {"contains": "CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser"}},
     {"testName": {"contains": "POST_Expect100Continue_Get100Continue"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
