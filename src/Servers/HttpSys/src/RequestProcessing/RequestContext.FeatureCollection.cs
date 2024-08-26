@@ -103,7 +103,7 @@ internal partial class RequestContext :
     {
         _initialized = true;
 
-        // Get the ID before creating the Request object as it releases the native memory
+        // Get the ID before creating the Request object as the Request ctor releases the native memory
         // We want the ID in case request processing fails and we need the ID to cancel the native request
         _requestId = RequestId;
         try
