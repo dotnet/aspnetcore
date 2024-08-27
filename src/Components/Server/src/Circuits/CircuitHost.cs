@@ -104,7 +104,7 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.InitializationStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        return HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_initialized)
             {
@@ -165,7 +165,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
-        });
+        }));
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
