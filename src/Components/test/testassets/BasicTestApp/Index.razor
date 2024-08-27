@@ -135,6 +135,17 @@
     Type SelectedComponentType
         => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName, throwOnError: true);
 
+    [SupplyParameterFromQuery(Name = "initial-component-type")]
+    private string InitialComponentTypeName { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (InitialComponentTypeName is { Length: > 0 } initialComponentTypeName)
+        {
+            SelectedComponentTypeName = initialComponentTypeName;
+        }
+    }
+
     void RenderSelectedComponent(RenderTreeBuilder builder)
     {
         if (SelectedComponentType != null)
