@@ -36,7 +36,7 @@
 
     <Message Text="Building NPM packages..." Importance="high" />
 
-    <Exec Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+    <Exec
       Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
