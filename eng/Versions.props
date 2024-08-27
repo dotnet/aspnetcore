@@ -282,7 +282,6 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>
     <!-- 3rd party dependencies -->
-    <AzureIdentityVersion>1.11.3</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>4.2.1</CastleCoreVersion>
@@ -328,7 +327,7 @@
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <XUnitRunnerVisualStudioVersion>2.4.3</XUnitRunnerVisualStudioVersion>
-    <MicrosoftDataSqlClientVersion>4.0.5</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
     <MicrosoftOpenApiVersion>1.6.17</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiReadersVersion>1.6.17</MicrosoftOpenApiReadersVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
