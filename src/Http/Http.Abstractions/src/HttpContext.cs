@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Http;
 public abstract class HttpContext
 {
     /// <summary>
+    /// Gets or sets the <see cref="Endpoint"/> for this request.
+    /// </summary>
+    public abstract Endpoint? Endpoint { get; set; }
+
+    /// <summary>
     /// Gets the collection of HTTP features provided by the server and middleware available on this request.
     /// </summary>
     public abstract IFeatureCollection Features { get; }
@@ -90,7 +95,7 @@ public abstract class HttpContext
         public HttpContextFeatureDebugView Features => new HttpContextFeatureDebugView(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
-        public Endpoint? Endpoint => _context.GetEndpoint();
+        public Endpoint? Endpoint => _context.Endpoint; // Direct access
         public ConnectionInfo Connection => _context.Connection;
         public WebSocketManager WebSockets => _context.WebSockets;
         public ClaimsPrincipal User => _context.User;

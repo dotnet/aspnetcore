@@ -213,6 +213,30 @@ public sealed class DefaultHttpContext : HttpContext
         }
     }
 
+    /// <summary>
+    /// Gets or sets the <see cref="Endpoint"/> for this request.
+    /// </summary>
+    public override Endpoint? Endpoint
+    {
+        get
+        {
+            var feature = _features.Fetch(ref _features.Cache.Endpoint, f => new EndpointFeature());
+            return feature?.Endpoint;
+        }
+        set
+        {
+            var feature = _features.Fetch(ref _features.Cache.Endpoint, f => new EndpointFeature());
+            if (value == null)
+            {
+                feature.Endpoint = null;
+            }
+            else
+            {
+                feature.Endpoint = value;
+            }
+        }
+    }
+
     // This property exists because of backwards compatibility.
     // We send an anonymous object with an HttpContext property
     // via DiagnosticListener in various events throughout the pipeline. Instead
@@ -255,5 +279,11 @@ public sealed class DefaultHttpContext : HttpContext
         public IHttpRequestLifetimeFeature? Lifetime;
         public ISessionFeature? Session;
         public IHttpRequestIdentifierFeature? RequestIdentifier;
+        public IEndpointFeature? Endpoint;
+    }
+
+    private sealed class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint? Endpoint { get; set; }
     }
 }

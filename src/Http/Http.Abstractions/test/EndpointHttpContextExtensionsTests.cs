@@ -65,7 +65,9 @@ public class EndpointHttpContextExtensionsTests
         context.SetEndpoint(null);
 
         // Assert
-        Assert.Null(context.Features.Get<IEndpointFeature>());
+        var endpointFeature = context.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature);
+        Assert.Null(endpointFeature.Endpoint);
     }
 
     [Fact]
