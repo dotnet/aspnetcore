@@ -120,6 +120,15 @@ internal sealed class KestrelMetrics
 
         if (metricsContext.ConnectionDurationEnabled)
         {
+            // Add custom tags for duration.
+            if (customTags != null)
+            {
+                for (var i = 0; i < customTags.Count; i++)
+                {
+                    tags.Add(customTags[i]);
+                }
+            }
+
             // Check if there is an end reason on the context. For example, the connection could have been aborted by shutdown.
             if (metricsContext.ConnectionEndReason is { } reason && TryGetErrorType(reason, out var errorValue))
             {
@@ -128,15 +137,6 @@ internal sealed class KestrelMetrics
             else if (exception != null)
             {
                 tags.TryAddTag(ErrorTypeAttributeName, exception.GetType().FullName);
-            }
-
-            // Add custom tags for duration.
-            if (customTags != null)
-            {
-                for (var i = 0; i < customTags.Count; i++)
-                {
-                    tags.Add(customTags[i]);
-                }
             }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
