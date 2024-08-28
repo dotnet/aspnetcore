@@ -25,8 +25,6 @@ dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
 ### Configuration
 
-After installing the package, you need to configure it in your `Startup.cs` file. Add the following code to the `ConfigureServices` method:
-
 Add the following code to the `Program.cs` of your ASP.NET Core app:
 
 ```csharp
