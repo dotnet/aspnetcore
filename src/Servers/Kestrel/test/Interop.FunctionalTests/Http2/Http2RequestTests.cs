@@ -41,7 +41,7 @@ public class Http2RequestTests : LoggedTest
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
             // Use MeterListener for this test because we want to check that a single error.type tag is added.
-            // 
+            // MetricCollector can't be used for this because it stores tags in a dictionary and overwrites values.
             var measurementTcs = new TaskCompletionSource<Measurement<double>>();
             var meterListener = new MeterListener();
             meterListener.InstrumentPublished = (instrument, meterListener) =>
