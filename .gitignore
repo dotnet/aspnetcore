@@ -45,7 +45,3 @@ UpgradeLog.htm
 .idea
 mono_crash.*.json
 mono_crash.*.blob
-/src/Components/Web.JS/dist/Release/blazor.server.js
-/src/Components/Web.JS/dist/Release/blazor.web.js
-/src/Components/Web.JS/dist/Release/blazor.webassembly.js
-/src/Components/Web.JS/dist/Release/blazor.webview.js
