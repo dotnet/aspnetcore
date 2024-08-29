@@ -7,7 +7,7 @@
 * Provides user and role management
 * Enables secure authentication and authorization mechanisms
 * Allows storage and validatation of user passwords using hashing
-* Implements sending email confirmation links for user account validation
+* Tracks email confirmation for user account validation
 * Provides two-factor authentication to provide an extra layer of security
 * Protects against brute-force attacks by locking out user accounts after multiple failed login attempts
 * Uses claims to define fine-grained access control policies
