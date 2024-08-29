@@ -35,7 +35,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 ```
 
-Make sure to replace `ApplicationDbContext` with your own database context class and `DefaultConnection` with your own connection string.
+You can replace `ApplicationDbContext` with your own database context class derived from `IdentityDbContext` and `ApplicationUser` with your own user class containing additional properties derived from `IdentityUser`.
+
+Make sure to [configure the connection string](https://learn.microsoft.com/ef/core/miscellaneous/connection-strings#aspnet-core) via "ConnectionStrings:DefaultConnection" (or whatever you rename it to) so it can connect to your database.
 
 ## Main Types
 
