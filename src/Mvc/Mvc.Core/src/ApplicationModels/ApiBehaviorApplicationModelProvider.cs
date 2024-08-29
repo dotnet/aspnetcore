@@ -40,6 +40,11 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
             ActionModelConventions.Add(new ConsumesConstraintForFormFileParameterConvention());
         }
 
+        if (options.SkipStatusCodePages)
+        {
+            ActionModelConventions.Add(new SkipStatusCodePagesConvention());
+        }
+
         var defaultErrorType = options.SuppressMapClientErrors ? typeof(void) : typeof(ProblemDetails);
         var defaultErrorTypeAttribute = new ProducesErrorResponseTypeAttribute(defaultErrorType);
         ActionModelConventions.Add(new ApiConventionApplicationModelConvention(defaultErrorTypeAttribute));
