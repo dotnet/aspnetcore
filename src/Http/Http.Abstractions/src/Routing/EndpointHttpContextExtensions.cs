@@ -22,7 +22,7 @@ public static class EndpointHttpContextExtensions
     public static Endpoint? GetEndpoint(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.Endpoint; // Access directly from HttpContext
+        return context.Endpoint;
     }
 
     /// <summary>
