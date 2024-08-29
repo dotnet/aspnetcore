@@ -8,7 +8,7 @@
 * Enables secure authentication and authorization mechanisms
 * Allows storage and validatation of user passwords using hashing
 * Tracks email confirmation for user account validation
-* Provides two-factor authentication to provide an extra layer of security
+* Tracks two-factor authentication to provide an extra layer of security
 * Protects against brute-force attacks by locking out user accounts after multiple failed login attempts
 * Uses claims to define fine-grained access control policies
 * Seamlessly integrates with Entity Framework Core for data storage and retrieval
