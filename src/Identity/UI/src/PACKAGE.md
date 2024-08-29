@@ -30,6 +30,8 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapRazorPages();
 ```
 
 ## Additional Documentation
