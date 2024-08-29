@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Identity.UI` provides the default Razor Pages built-in UI for the ASP.NET Core Identity framework.
+`Microsoft.AspNetCore.Identity.UI` provides the default Razor Pages UI for the ASP.NET Core Identity framework.
 
 ## Key Features
 
