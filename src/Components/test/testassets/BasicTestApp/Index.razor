@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
+@using System.Web
+@inject NavigationManager NavigationManager
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -135,12 +137,10 @@
     Type SelectedComponentType
         => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName, throwOnError: true);
 
-    [SupplyParameterFromQuery(Name = "initial-component-type")]
-    private string InitialComponentTypeName { get; set; }
-
     protected override void OnInitialized()
     {
-        if (InitialComponentTypeName is { Length: > 0 } initialComponentTypeName)
+        var uri = new Uri(NavigationManager.Uri);
+        if (HttpUtility.ParseQueryString(uri.Query)["initial-component-type"] is { Length: > 0 } initialComponentTypeName)
         {
             SelectedComponentTypeName = initialComponentTypeName;
         }
