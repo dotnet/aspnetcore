@@ -309,11 +309,11 @@
   <data name="Analyzer_AmbiguousActionRoute_Message" xml:space="preserve">
     <value>Route '{0}' conflicts with another action route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's pattern, HTTP method, or route constraints.</value>
   </data>
-  <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
-    <value>Use AddAuthorizationBuilder</value>
-  </data>
   <data name="Analyzer_UseAddAuthorizationBuilder_Message" xml:space="preserve">
     <value>Use AddAuthorizationBuilder to register authorization services and construct policies</value>
+  </data>
+  <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
+    <value>Use AddAuthorizationBuilder</value>
   </data>
   <data name="Analyzer_OverriddenAuthorizeAttribute_Message" xml:space="preserve">
     <value>This [Authorize] attribute is overridden by an [AllowAnonymous] attribute from farther away on '{0}'. See https://aka.ms/aspnetcore-warnings/ASP0026 for more details.</value>
