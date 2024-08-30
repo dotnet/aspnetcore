@@ -95,7 +95,7 @@ public abstract class HttpContext
         public HttpContextFeatureDebugView Features => new HttpContextFeatureDebugView(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
-        public Endpoint? Endpoint => _context.Endpoint; // Direct access
+        public Endpoint? Endpoint => _context.Endpoint;
         public ConnectionInfo Connection => _context.Connection;
         public WebSocketManager WebSockets => _context.WebSockets;
         public ClaimsPrincipal User => _context.User;

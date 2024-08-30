@@ -22,7 +22,7 @@ public static class EndpointHttpContextExtensions
     public static Endpoint? GetEndpoint(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.Endpoint; // Access directly from HttpContext
+        return context.Endpoint;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public static class EndpointHttpContextExtensions
     public static void SetEndpoint(this HttpContext context, Endpoint? endpoint)
     {
         ArgumentNullException.ThrowIfNull(context);
-        context.Endpoint = endpoint; // Set directly on HttpContext
+        context.Endpoint = endpoint;
     }
 
     private sealed class EndpointFeature : IEndpointFeature
