@@ -226,14 +226,7 @@ public sealed class DefaultHttpContext : HttpContext
         set
         {
             var feature = _features.Fetch(ref _features.Cache.Endpoint, f => new EndpointFeature());
-            if (value == null)
-            {
-                feature.Endpoint = null;
-            }
-            else
-            {
-                feature.Endpoint = value;
-            }
+            feature.Endpoint = value;
         }
     }
 

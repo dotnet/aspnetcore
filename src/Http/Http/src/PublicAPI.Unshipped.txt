@@ -1,2 +1,4 @@
 #nullable enable
+override Microsoft.AspNetCore.Http.DefaultHttpContext.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+override Microsoft.AspNetCore.Http.DefaultHttpContext.Endpoint.set -> void
 override Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.ToString() -> string!
