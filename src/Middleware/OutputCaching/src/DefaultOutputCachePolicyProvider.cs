@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <inheritdoc />
-public class DefaultOutputCachePolicyProvider : IOutputCachePolicyProvider
+internal class DefaultOutputCachePolicyProvider : IOutputCachePolicyProvider
 {
     private readonly OutputCacheOptions _options;
 
