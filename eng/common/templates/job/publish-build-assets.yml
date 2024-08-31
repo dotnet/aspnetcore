@@ -61,19 +61,24 @@ jobs:
           filePath: $(Build.SourcesDirectory)/eng/common/enable-cross-org-publishing.ps1 
           arguments: -token $(dn-bot-all-orgs-artifact-feeds-rw) 
 
-    - task: PowerShell@2
+    - task: AzureCLI@2
       displayName: Publish Build Assets
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
       inputs:
-        filePath: eng\common\sdk-task.ps1
-        arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+        azureSubscription: "Darc: Maestro Production"
+        scriptType: ps
+        scriptLocation: scriptPath
+        scriptPath: eng\common\sdk-task.ps1
+        arguments: >
+          -task PublishBuildAssets
+          -restore
+          -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
-          /p:BuildAssetRegistryToken=$(MaestroAccessToken)
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:Configuration=$(_BuildConfig)
           /p:OfficialBuildId=$(Build.BuildNumber)
-      condition: ${{ parameters.condition }}
-      continueOnError: ${{ parameters.continueOnError }}
 
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
