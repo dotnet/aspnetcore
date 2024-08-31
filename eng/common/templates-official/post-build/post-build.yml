@@ -128,7 +128,6 @@ stages:
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
             arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/
 
     - job:
       displayName: Signing Validation
@@ -266,14 +265,16 @@ stages:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
-      - task: PowerShell@2
+      - task: AzureCLI@2
         displayName: Publish Using Darc
         inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          azureSubscription: "Darc: Maestro Production"
+          scriptType: ps
+          scriptLocation: scriptPath
+          scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
           arguments: -BuildId $(BARBuildId)
             -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
-            -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
-            -MaestroToken '$(MaestroApiAccessToken)'
+            -AzdoToken '$(System.AccessToken)'
             -WaitPublishingFinish true
             -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
