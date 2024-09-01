@@ -31,17 +31,9 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     protected override bool SupportsSignIn { get => false; }
     protected override bool SupportsSignOut { get => false; }
 
-    protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
+    protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure = null)
     {
-        services.AddJwtBearer(o =>
-        {
-            ConfigureDefaults(o);
-            configure.Invoke(o);
-        });
-    }
-
-    private void ConfigureDefaults(JwtBearerOptions o)
-    {
+        services.AddJwtBearer(configure);
     }
 
     [Fact]
@@ -196,7 +188,7 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
             try
             {
                 await next();
-                Assert.False(true, "Expected exception is not thrown");
+                Assert.Fail("Expected exception is not thrown");
             }
             catch (Exception)
             {
@@ -964,26 +956,20 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     [Fact]
     public void CanReadJwtBearerOptionsFromConfig()
     {
-        var services = new ServiceCollection().AddLogging();
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-        {
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudience", "http://localhost:5000"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5001"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SaveToken", "True"),
-        }).Build();
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts-2"),
+            new("Authentication:Schemes:Bearer:ValidAudience", "http://localhost:5000"),
+            new("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5001"),
+            new("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
+            new("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
+            new("Authentication:Schemes:Bearer:SaveToken", "True"),
+        ]).Build();
         services.AddSingleton<IConfiguration>(config);
 
         // Act
-        var builder = services.AddAuthentication(o =>
-        {
-            o.AddScheme<TestHandler>("Bearer", "Bearer");
-        });
-        builder.AddJwtBearer("Bearer");
-        RegisterAuth(builder, _ => { });
+        RegisterAuth(services.AddAuthentication());
         var sp = services.BuildServiceProvider();
 
         // Assert
@@ -995,7 +981,12 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         Assert.Equal(TimeSpan.FromSeconds(60), jwtBearerOptions.BackchannelTimeout);
         Assert.False(jwtBearerOptions.RequireHttpsMetadata);
         Assert.True(jwtBearerOptions.SaveToken);
-        Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
+        // ValidateIssuerSigningKey should always be set to its non-default value of true if options are read from config.
+        Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateIssuerSigningKey);
+        // Assert default values for other options are respected.
+        Assert.True(jwtBearerOptions.MapInboundClaims);
+        Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateIssuer);
+        Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateAudience);
     }
 
     [Fact]
@@ -1026,29 +1017,23 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     [Fact]
     public void CanReadMultipleIssuersFromConfig()
     {
-        var services = new ServiceCollection().AddLogging();
+        var services = new ServiceCollection();
         var firstKey = "qPG6tDtfxFYZifHW3sEueQ==";
         var secondKey = "6JPzXj6aOPdojlZdeLshaA==";
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-        {
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
-        }).Build();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
+        ]).Build();
         services.AddSingleton<IConfiguration>(config);
 
         // Act
-        var builder = services.AddAuthentication(o =>
-        {
-            o.AddScheme<TestHandler>("Bearer", "Bearer");
-        });
-        builder.AddJwtBearer("Bearer");
-        RegisterAuth(builder, _ => { });
+        RegisterAuth(services.AddAuthentication());
         var sp = services.BuildServiceProvider();
 
         // Assert
@@ -1056,6 +1041,48 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         Assert.Equal(2, jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.Count());
         Assert.Equal(firstKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().FirstOrDefault()?.Key));
         Assert.Equal(secondKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().LastOrDefault()?.Key));
+    }
+
+    [Fact]
+    public void IssuerAndAudienceValidationEnabledByDefaultWhenOptionsAreReadFromConfig()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:Authority", "https://localhost:5001"),
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal("https://localhost:5001", jwtBearerOptions.Authority);
+        Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateIssuer);
+        Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateAudience);
+    }
+
+    [Fact]
+    public void IssuerAndAudienceValidationCanBeDisabledFromConfig()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:Authority", "https://localhost:5001"),
+            new("Authentication:Schemes:Bearer:ValidateIssuer", "false"),
+            new("Authentication:Schemes:Bearer:ValidateAudience", "false"),
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal("https://localhost:5001", jwtBearerOptions.Authority);
+        Assert.False(jwtBearerOptions.TokenValidationParameters.ValidateIssuer);
+        Assert.False(jwtBearerOptions.TokenValidationParameters.ValidateAudience);
     }
 
     class InvalidTokenValidator : TokenHandler

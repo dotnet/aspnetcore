@@ -44,7 +44,7 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsServoce_ForProblemDetails()
+    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsService_ForProblemDetails()
     {
         // Arrange
         var details = new ProblemDetails();
@@ -191,14 +191,14 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new ProblemHttpResult(new());
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class ProblemResultTests
     [Fact]
     public void ProblemResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange 
+        // Arrange
         var value = new ProblemDetails();
 
         // Act & Assert

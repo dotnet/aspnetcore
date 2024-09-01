@@ -1,0 +1,247 @@
+parameters:
+# Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+  cancelTimeoutInMinutes: ''
+  condition: ''
+  container: ''
+  continueOnError: false
+  dependsOn: ''
+  displayName: ''
+  pool: ''
+  steps: []
+  strategy: ''
+  timeoutInMinutes: ''
+  variables: []
+  workspace: ''
+  templateContext: {}
+
+# Job base template specific parameters
+  # See schema documentation - https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/TemplateSchema.md
+  # publishing defaults
+  artifacts: ''
+  enableMicrobuild: false
+  enablePublishBuildArtifacts: false
+  enablePublishBuildAssets: false
+  enablePublishTestResults: false
+  enablePublishUsingPipelines: false
+  enableBuildRetry: false
+  mergeTestResults: false
+  testRunTitle: ''
+  testResultsFormat: ''
+  name: ''
+  componentGovernanceSteps: []
+  preSteps: []
+  artifactPublishSteps: []
+  runAsPublic: false
+
+# 1es specific parameters
+  is1ESPipeline: ''
+
+jobs:
+- job: ${{ parameters.name }}
+
+  ${{ if ne(parameters.cancelTimeoutInMinutes, '') }}:
+    cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
+
+  ${{ if ne(parameters.condition, '') }}:
+    condition: ${{ parameters.condition }}
+
+  ${{ if ne(parameters.container, '') }}:
+    container: ${{ parameters.container }}
+
+  ${{ if ne(parameters.continueOnError, '') }}:
+    continueOnError: ${{ parameters.continueOnError }}
+
+  ${{ if ne(parameters.dependsOn, '') }}:
+    dependsOn: ${{ parameters.dependsOn }}
+
+  ${{ if ne(parameters.displayName, '') }}:
+    displayName: ${{ parameters.displayName }}
+
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+
+  ${{ if ne(parameters.strategy, '') }}:
+    strategy: ${{ parameters.strategy }}
+
+  ${{ if ne(parameters.timeoutInMinutes, '') }}:
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+
+  ${{ if ne(parameters.templateContext, '') }}:
+    templateContext: ${{ parameters.templateContext }}
+
+  variables:
+  - ${{ if ne(parameters.enableTelemetry, 'false') }}:
+    - name: DOTNET_CLI_TELEMETRY_PROFILE
+      value: '$(Build.Repository.Uri)'
+  - ${{ if eq(parameters.enableRichCodeNavigation, 'true') }}:
+    - name: EnableRichCodeNavigation
+      value: 'true'
+  # Retry signature validation up to three times, waiting 2 seconds between attempts.
+  # See https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu3028#retry-untrusted-root-failures
+  - name: NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY
+    value: 3,2000
+  - ${{ each variable in parameters.variables }}:
+    # handle name-value variable syntax
+    # example:
+    # - name: [key]
+    #   value: [value]
+    - ${{ if ne(variable.name, '') }}:
+      - name: ${{ variable.name }}
+        value: ${{ variable.value }}
+
+    # handle variable groups
+    - ${{ if ne(variable.group, '') }}:
+      - group: ${{ variable.group }}
+
+    # handle template variable syntax
+    # example:
+    # - template: path/to/template.yml
+    #   parameters:
+    #     [key]: [value]
+    - ${{ if ne(variable.template, '') }}:
+      - template: ${{ variable.template }}
+        ${{ if ne(variable.parameters, '') }}:
+          parameters: ${{ variable.parameters }}
+
+    # handle key-value variable syntax.
+    # example:
+    # - [key]: [value]
+    - ${{ if and(eq(variable.name, ''), eq(variable.group, ''), eq(variable.template, '')) }}:
+      - ${{ each pair in variable }}:
+        - name: ${{ pair.key }}
+          value: ${{ pair.value }}
+
+  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds
+  - ${{ if and(eq(parameters.enableTelemetry, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: DotNet-HelixApi-Access
+
+  ${{ if ne(parameters.workspace, '') }}:
+    workspace: ${{ parameters.workspace }}
+
+  steps:
+  - ${{ if eq(parameters.is1ESPipeline, '') }}:
+    - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
+  - ${{ if ne(parameters.preSteps, '') }}:
+    - ${{ each preStep in parameters.preSteps }}:
+      - ${{ preStep }}
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
+      - task: MicroBuildSigningPlugin@4
+        displayName: Install MicroBuild plugin
+        inputs:
+          signType: $(_SignType)
+          zipSources: false
+          feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+        env:
+          TeamName: $(_TeamName)
+          MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
+        continueOnError: ${{ parameters.continueOnError }}
+        condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
+    - task: NuGetAuthenticate@1
+
+  - ${{ if and(ne(parameters.artifacts.download, 'false'), ne(parameters.artifacts.download, '')) }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: current
+        artifactName: ${{ coalesce(parameters.artifacts.download.name, 'Artifacts_$(Agent.OS)_$(_BuildConfig)') }}
+        targetPath: ${{ coalesce(parameters.artifacts.download.path, 'artifacts') }}
+        itemPattern: ${{ coalesce(parameters.artifacts.download.pattern, '**') }}
+
+  - ${{ each step in parameters.steps }}:
+    - ${{ step }}
+
+  - ${{ if eq(parameters.enableRichCodeNavigation, true) }}:
+    - task: RichCodeNavIndexer@0
+      displayName: RichCodeNav Upload
+      inputs:
+        languages: ${{ coalesce(parameters.richCodeNavigationLanguage, 'csharp') }}
+        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'internal') }}
+        richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
+        uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
+      continueOnError: true
+
+  - ${{ each step in parameters.componentGovernanceSteps }}:
+    - ${{ step }}
+
+  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: MicroBuildCleanup@1
+        displayName: Execute Microbuild cleanup tasks
+        condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+        continueOnError: ${{ parameters.continueOnError }}
+        env:
+          TeamName: $(_TeamName)
+
+  # Publish test results
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:
+    - task: PublishTestResults@2
+      displayName: Publish XUnit Test Results
+      inputs:
+        testResultsFormat: 'xUnit'
+        testResultsFiles: '*.xml'
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
+        mergeTestResults: ${{ parameters.mergeTestResults }}
+      continueOnError: true
+      condition: always()
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'vstest')) }}:
+    - task: PublishTestResults@2
+      displayName: Publish TRX Test Results
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '*.trx'
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
+        mergeTestResults: ${{ parameters.mergeTestResults }}
+      continueOnError: true
+      condition: always()
+
+  # gather artifacts
+  - ${{ if ne(parameters.artifacts.publish, '') }}:
+    - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+      - task: CopyFiles@2
+        displayName: Gather binaries for publish to artifacts
+        inputs:
+          SourceFolder: 'artifacts/bin'
+          Contents: '**'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/bin'
+      - task: CopyFiles@2
+        displayName: Gather packages for publish to artifacts
+        inputs:
+          SourceFolder: 'artifacts/packages'
+          Contents: '**'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/packages'
+    - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
+      - task: CopyFiles@2
+        displayName: Gather logs for publish to artifacts
+        inputs:
+          SourceFolder: 'artifacts/log'
+          Contents: '**'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+        continueOnError: true
+        condition: always()
+      
+  - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
+    - task: CopyFiles@2
+      displayName: Gather logs for publish to artifacts
+      inputs:
+        SourceFolder: 'artifacts/log/$(_BuildConfig)'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+      continueOnError: true
+      condition: always()
+  - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+    - task: CopyFiles@2
+      displayName: Gather buildconfiguration for build retry
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/eng/common/BuildConfiguration'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/eng/common/BuildConfiguration'
+      continueOnError: true
+      condition: always()
+  - ${{ each step in parameters.artifactPublishSteps }}:
+    - ${{ step }}

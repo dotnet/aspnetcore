@@ -25,7 +25,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -260,6 +260,36 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Validate that the top spacer has expanded, and bottom one has collapsed
         Browser.False(() => topSpacer.GetAttribute("style").Contains(expectedInitialSpacerStyle));
         Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanLimitMaxItemsRendered(bool useAppContext)
+    {
+        if (useAppContext)
+        {
+            // This is to test back-compat with the switch added in a .NET 8 patch.
+            // Newer applications shouldn't use this technique.
+            Browser.MountTestComponent<VirtualizationMaxItemCount_AppContext>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationMaxItemCount>();
+        }
+
+        // Despite having a 600px tall scroll area and 30px high items (600/30=20),
+        // we only render 10 items due to the MaxItemCount setting
+        var scrollArea = Browser.Exists(By.Id("virtualize-scroll-area"));
+        var getItems = () => scrollArea.FindElements(By.ClassName("my-item"));
+        Browser.Equal(10, () => getItems().Count);
+        Browser.Equal("Id: 0; Name: Thing 0", () => getItems().First().Text);
+
+        // Scrolling still works and loads new data, though there's no guarantee about
+        // exactly how many items will show up at any one time
+        Browser.ExecuteJavaScript("document.getElementById('virtualize-scroll-area').scrollTop = 300;");
+        Browser.NotEqual("Id: 0; Name: Thing 0", () => getItems().First().Text);
+        Browser.True(() => getItems().Count > 3 && getItems().Count <= 10);
     }
 
     [Fact]

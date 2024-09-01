@@ -61,13 +61,18 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
         var objectType = value?.GetType() ?? typeof(object);
 
         // Keep this code in sync with SystemTextJsonOutputFormatter
-        var responseStream = response.Body;
         if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
-                await responseStream.FlushAsync(context.HttpContext.RequestAborted);
+                var responseWriter = response.BodyWriter;
+                if (!response.HasStarted)
+                {
+                    // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+                    await response.StartAsync();
+                }
+
+                await JsonSerializer.SerializeAsync(responseWriter, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
         }

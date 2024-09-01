@@ -12,8 +12,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -33,6 +33,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
@@ -165,9 +167,24 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (processPost)
         {
-            var valid = false;
+            if (context.Request.ContentType is not null && MediaTypeHeaderValue.TryParse(context.Request.ContentType, out var type))
+            {
+                // We can't use request.HasFormContentType here because it will throw. We should revisit that.
+                if (!type.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) &&
+                    !type.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
+                    {
+                        await context.Response.WriteAsync("The request has an incorrect Content-type.");
+                    }
+                    return RequestValidationState.InvalidPostRequest;
+                }
+            }
+
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
             // run the validation here.
+            var valid = false;
             if (context.Features.Get<IAntiforgeryValidationFeature>() is { } antiForgeryValidationFeature)
             {
                 if (!antiForgeryValidationFeature.IsValid)
@@ -205,7 +222,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
                 {
                     await context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
                 }

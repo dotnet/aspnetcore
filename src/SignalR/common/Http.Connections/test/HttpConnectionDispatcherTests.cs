@@ -159,7 +159,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
 
             var error = negotiateResponse.Value<string>("error");
-            Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+            Assert.Equal("The client requested a non-integer protocol version.", error);
 
             var connectionId = negotiateResponse.Value<string>("connectionId");
             Assert.Null(connectionId);
@@ -1504,7 +1504,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
 
             var request2 = dispatcher.ExecuteAsync(context2, options, app);
@@ -1524,7 +1524,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 

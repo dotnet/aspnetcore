@@ -1,42 +1,61 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using Microsoft.AspNetCore.Certificates.Generation;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Templates.Test.Helpers;
 
-public readonly struct DevelopmentCertificate
+public readonly struct DevelopmentCertificate(string certificatePath, string certificatePassword, string certificateThumbprint)
 {
-    public DevelopmentCertificate(string certificatePath, string certificatePassword, string certificateThumbprint)
+    public readonly string CertificatePath { get; } = certificatePath;
+    public readonly string CertificatePassword { get; } = certificatePassword;
+    public readonly string CertificateThumbprint { get; } = certificateThumbprint;
+
+    public static DevelopmentCertificate Get(Assembly assembly)
     {
-        CertificatePath = certificatePath;
-        CertificatePassword = certificatePassword;
-        CertificateThumbprint = certificateThumbprint;
+        string[] locations = [
+            Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json"),
+            Path.Combine(Environment.CurrentDirectory, "aspnetcore-https.json"),
+            Path.Combine(AppContext.BaseDirectory, "aspnetcore-https.json"),
+        ];
+
+        var json = TryGetExistingFile(locations)
+            ?? throw new InvalidOperationException($"The aspnetcore-https.json file does not exist. Searched locations: {Environment.NewLine}{string.Join(Environment.NewLine, locations)}");
+
+        using var file = File.OpenRead(json);
+        var certificateAttributes = JsonSerializer.Deserialize<CertificateAttributes>(file) ??
+            throw new InvalidOperationException($"The aspnetcore-https.json file does not contain valid JSON.");
+
+        var path = Path.ChangeExtension(json, ".pfx");
+
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException($"The certificate file does not exist. Expected at: '{path}'.");
+        }
+
+        var password = certificateAttributes.Password;
+        var thumbprint = certificateAttributes.Thumbprint;
+
+        return new DevelopmentCertificate(path, password, thumbprint);
     }
 
-    public readonly string CertificatePath { get; }
-    public readonly string CertificatePassword { get; }
-    public readonly string CertificateThumbprint { get; }
-
-    public static DevelopmentCertificate Create(string workingDirectory)
+    private static string TryGetExistingFile(string[] locations)
     {
-        var certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
-        var certificatePassword = Guid.NewGuid().ToString();
-        var certificateThumbprint = EnsureDevelopmentCertificates(certificatePath, certificatePassword);
+        foreach (var location in locations)
+        {
+            if (File.Exists(location))
+            {
+                return location;
+            }
+        }
 
-        return new DevelopmentCertificate(certificatePath, certificatePassword, certificateThumbprint);
+        return null;
     }
 
-    private static string EnsureDevelopmentCertificates(string certificatePath, string certificatePassword)
+    private sealed class CertificateAttributes
     {
-        var now = DateTimeOffset.Now;
-        var manager = CertificateManager.Instance;
-        var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
-        var certificateThumbprint = certificate.Thumbprint;
-        CertificateManager.ExportCertificate(certificate, path: certificatePath, includePrivateKey: true, certificatePassword, CertificateKeyExportFormat.Pfx);
-
-        return certificateThumbprint;
+        public string Password { get; set; }
+        public string Thumbprint { get; set; }
     }
 }

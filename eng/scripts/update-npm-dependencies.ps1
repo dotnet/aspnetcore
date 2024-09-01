@@ -1,6 +1,10 @@
+# This script needs to be run on PowerShell 7+ (for ConvertFrom-Json) on Windows (for vsts-npm-auth).
+# The GitHub CLI (gh) is required unless `-SkipPullRequestCreation` is passed.
+
 param (
     [switch]$WhatIf,
-    [switch]$SkipPullRequestCreation
+    [switch]$SkipPullRequestCreation,
+    [switch]$SkipClearCache
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +19,30 @@ if (-not $WhatIf) {
 Write-Host "Removing package-lock.json"
 if (-not $WhatIf) {
     Remove-Item .\package-lock.json
+}
+
+if (-not $SkipClearCache -and -not $WhatIf) {
+    Write-Host "Clearing the npm cache"
+    Remove-Item -Recurse -Force "$PWD/src/submodules/Node-Externals/cache"
+    New-Item -ItemType Directory -Path "$PWD/src/submodules/Node-Externals/cache"
+}
+
+try {
+    Get-Command vsts-npm-auth -CommandType ExternalScript
+    Write-Host "vsts-npm-auth is already installed"
+}
+catch {
+    Write-Host "Installing vsts-npm-auth"
+    if (-not $WhatIf) {
+        npm install -g vsts-npm-auth
+    }
+}
+
+Write-Host "Provisioning a token for the NPM registry. You might be prompted to authenticate."
+if (-not $WhatIf) {
+    # This command provisions a PAT token for the VSTS NPM registry that lasts for 15 minutes, which is more than enough time to run npm install
+    # and ensure any missing package is mirrored.
+    vsts-npm-auth -E 15 -F -C .\.npmrc
 }
 
 Write-Host "Running npm install"
@@ -76,7 +104,7 @@ else {
     git branch --set-upstream-to=origin/main
     git push origin $branchName`:$branchName --force;
     gh repo set-default dotnet/Node-Externals
-    gh pr create --base main --head "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')" --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
+    gh pr create --base main --head "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')" --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body "Do not merge this PR until the one in aspnetcore passes all checks."
 }
 
 ## Navigate to the root of the repository

@@ -24,7 +24,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
     }
 
     [Theory]
@@ -35,6 +35,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     [InlineData("render-throw")]
     [InlineData("afterrender-sync-throw")]
     [InlineData("afterrender-async-throw")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57588")]
     public void ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
     {
         Browser.MountTestComponent<ReliabilityComponent>();
@@ -53,6 +54,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57588")]
     public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
     {
         Browser.MountTestComponent<ReliabilityComponent>();

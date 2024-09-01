@@ -1,0 +1,12 @@
+{
+  "no_entry_options": {
+    "MaximumKeyLength": 937
+  },
+  "with_entry_options": {
+    "MaximumKeyLength": 937,
+    "DefaultEntryOptions": {
+      "LocalCacheExpiration": "00:02:00",
+      "Flags": "DisableCompression,DisableLocalCacheRead"
+    }
+  }
+}

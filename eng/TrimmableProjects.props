@@ -85,9 +85,19 @@
     <TrimmableProject Include="Microsoft.AspNetCore.SpaServices.Extensions" />
     <TrimmableProject Include="Microsoft.AspNetCore.StaticFiles" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Common" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR" />
+    <TrimmableProject Include="Microsoft.AspNetCore.StaticAssets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
@@ -107,5 +117,6 @@
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>

@@ -1,28 +1,7 @@
-parameters:
-  # Optional azure devops PAT with build execute permissions for the build's organization,
-  # only needed if the build that should be retained ran on a different organization than 
-  # the pipeline where this template is executing from
-  Token: ''
-  # Optional BuildId to retain, defaults to the current running build
-  BuildId: ''
-  # Azure devops Organization URI for the build in the https://dev.azure.com/<organization> format.
-  # Defaults to the organization the current pipeline is running on
-  AzdoOrgUri: '$(System.CollectionUri)'
-  # Azure devops project for the build. Defaults to the project the current pipeline is running on
-  AzdoProject: '$(System.TeamProject)'
-
 steps:
-  - task: powershell@2
-    inputs:
-      targetType: 'filePath'
-      filePath: eng/common/retain-build.ps1
-      pwsh: true
-      arguments: >
-        -AzdoOrgUri: ${{parameters.AzdoOrgUri}}
-        -AzdoProject ${{parameters.AzdoProject}}
-        -Token ${{coalesce(parameters.Token, '$env:SYSTEM_ACCESSTOKEN') }}
-        -BuildId ${{coalesce(parameters.BuildId, '$env:BUILD_ID')}}
-    displayName: Enable permanent build retention
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      BUILD_ID: $(Build.BuildId)
+- template: /eng/common/core-templates/steps/retain-build.yml
+  parameters:
+    is1ESPipeline: true
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

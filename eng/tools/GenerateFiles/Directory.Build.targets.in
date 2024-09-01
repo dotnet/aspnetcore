@@ -101,6 +101,11 @@
       <Crossgen2RuntimeIdentifiers>$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
     </KnownCrossgen2Pack>
 
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
+      <ILLinkPackVersion
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</ILLinkPackVersion>
+    </KnownILLinkPack>
+
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App" Condition=" $(UpdateAspNetCoreKnownFramework) ">
       <LatestRuntimeFrameworkVersion
@@ -117,8 +122,9 @@
 
   <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
   <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
-    <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
-    <EnableRuntimePackDownload>false</EnableRuntimePackDownload>
+    <!-- Allow additional targeting and runtime packs to be downloaded only if required by a test. -->
+    <EnableTargetingPackDownload Condition="'$(TestRequiresTargetingPackDownload)' != 'true'">false</EnableTargetingPackDownload>
+    <EnableRuntimePackDownload Condition="'$(TestRequiresRuntimePackDownload)' != 'true'">false</EnableRuntimePackDownload>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 

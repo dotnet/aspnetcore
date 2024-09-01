@@ -1014,7 +1014,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
         Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
         Assert.True(SetCookieHeaderValue.TryParseStrictList(values.ToList(), out var parsedValues));
-        Assert.Equal(1, parsedValues.Count);
+        Assert.Single(parsedValues);
         Assert.True(StringSegment.IsNullOrEmpty(parsedValues.Single().Value));
     }
 

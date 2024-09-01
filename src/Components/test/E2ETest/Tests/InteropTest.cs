@@ -23,7 +23,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<InteropComponent>();
     }
 
@@ -186,7 +186,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             {
                 if (expectedValue.Value != actualValue)
                 {
-                    throw new AssertActualExpectedException(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
+                    throw EqualException.ForMismatchedValues(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
                 }
             }
         }

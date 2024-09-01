@@ -328,7 +328,7 @@ public class XmlKeyManagerTests
         var keys = RunGetAllKeysCore(xml, activator);
 
         // Assert
-        Assert.Equal(0, keys.Count);
+        Assert.Empty(keys);
     }
 
     [Fact]
@@ -926,6 +926,97 @@ public class XmlKeyManagerTests
         // Force decryption, if encrypted.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
         _ = fetchedKey2.Descriptor;
         Assert.Equal(1, decryptionCount); // Still 1 (i.e. no change)
+    }
+
+    [Fact]
+    public void DeleteKeys()
+    {
+        var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
+
+        var keyManager = new XmlKeyManager(
+            Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new AuthenticatedEncryptorConfiguration(),
+                XmlRepository = repository,
+                XmlEncryptor = null
+            }),
+            SimpleActivator.DefaultWithoutServices,
+            NullLoggerFactory.Instance);
+
+        var activationTime = DateTimeOffset.UtcNow.AddHours(1);
+
+        var key1 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1
+        var key2 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1 and key2
+        var key3 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        var key4 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+
+        keyManager.RevokeKey(key2.KeyId); // Revoked by time, but also individually
+        keyManager.RevokeKey(key3.KeyId);
+        keyManager.RevokeKey(key3.KeyId); // Nothing prevents us from revoking the same key twice
+
+        Assert.Equal(9, repository.GetAllElements().Count); // 4 keys, 2 time-revocations, 3 guid-revocations
+
+        // The keys are stale now, but we only care about the IDs
+
+        var keyDictWithRevocations = keyManager.GetAllKeys().ToDictionary(k => k.KeyId);
+        Assert.Equal(4, keyDictWithRevocations.Count);
+        Assert.True(keyDictWithRevocations[key1.KeyId].IsRevoked);
+        Assert.True(keyDictWithRevocations[key2.KeyId].IsRevoked);
+        Assert.True(keyDictWithRevocations[key3.KeyId].IsRevoked);
+        Assert.False(keyDictWithRevocations[key4.KeyId].IsRevoked);
+
+        Assert.True(keyManager.DeleteKeys(key => key.KeyId == key1.KeyId || key.KeyId == key3.KeyId));
+
+        Assert.Equal(4, repository.GetAllElements().Count); // 2 keys, 1 time-revocation, 1 guid-revocations
+
+        var keyDictWithDeletions = keyManager.GetAllKeys().ToDictionary(k => k.KeyId);
+        Assert.Equal(2, keyDictWithDeletions.Count);
+        Assert.DoesNotContain(key1.KeyId, keyDictWithDeletions.Keys);
+        Assert.True(keyDictWithRevocations[key2.KeyId].IsRevoked);
+        Assert.DoesNotContain(key3.KeyId, keyDictWithDeletions.Keys);
+        Assert.False(keyDictWithRevocations[key4.KeyId].IsRevoked);
+    }
+
+    [Fact]
+    public void CanDeleteKey()
+    {
+        var withDeletion = new XmlKeyManager(Options.Create(new KeyManagementOptions()
+        {
+            XmlRepository = XmlRepositoryWithDeletion.Instance,
+            XmlEncryptor = null
+        }), SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
+        Assert.True(withDeletion.CanDeleteKeys);
+
+        var withoutDeletion = new XmlKeyManager(Options.Create(new KeyManagementOptions()
+        {
+            XmlRepository = XmlRepositoryWithoutDeletion.Instance,
+            XmlEncryptor = null
+        }), SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
+        Assert.False(withoutDeletion.CanDeleteKeys);
+        Assert.Throws<NotSupportedException>(() => withoutDeletion.DeleteKeys(_ => false));
+    }
+
+    private sealed class XmlRepositoryWithoutDeletion : IXmlRepository
+    {
+        public static readonly IXmlRepository Instance = new XmlRepositoryWithoutDeletion();
+
+        private XmlRepositoryWithoutDeletion() { }
+
+        IReadOnlyCollection<XElement> IXmlRepository.GetAllElements() => [];
+        void IXmlRepository.StoreElement(XElement element, string friendlyName) => throw new InvalidOperationException();
+    }
+
+    private sealed class XmlRepositoryWithDeletion : IDeletableXmlRepository
+    {
+        public static readonly IDeletableXmlRepository Instance = new XmlRepositoryWithDeletion();
+
+        private XmlRepositoryWithDeletion() { }
+
+        IReadOnlyCollection<XElement> IXmlRepository.GetAllElements() => [];
+        void IXmlRepository.StoreElement(XElement element, string friendlyName) => throw new InvalidOperationException();
+        bool IDeletableXmlRepository.DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new InvalidOperationException();
     }
 
     private class MyDeserializer : IAuthenticatedEncryptorDescriptorDeserializer

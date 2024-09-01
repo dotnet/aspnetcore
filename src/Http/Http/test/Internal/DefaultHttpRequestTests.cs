@@ -165,7 +165,7 @@ public class DefaultHttpRequestTests
     {
         var request = new DefaultHttpContext().Request;
         var cookieHeaders = request.Headers["Cookie"];
-        Assert.Empty(cookieHeaders);
+        Assert.Equal(0, cookieHeaders.Count);
         var cookies0 = request.Cookies;
         Assert.Empty(cookies0);
         Assert.Null(cookies0["key0"]);

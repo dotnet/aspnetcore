@@ -3,9 +3,11 @@
 
 using System.Globalization;
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
@@ -14,8 +16,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -76,7 +76,7 @@ public class LinkTagHelperTest
             StringComparer.Ordinal);
     }
 
-    public static TheoryData MultiAttributeSameNameData
+    public static TheoryData<TagHelperAttributeList> MultiAttributeSameNameData
     {
         get
         {
@@ -168,7 +168,7 @@ public class LinkTagHelperTest
         Assert.Equal(expectedAttributes, output.Attributes);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> RunsWhenRequiredAttributesArePresent_Data
     {
         get
         {
@@ -319,7 +319,7 @@ public class LinkTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_NoHref_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> RunsWhenRequiredAttributesArePresent_NoHref_Data
     {
         get
         {
@@ -445,7 +445,7 @@ public class LinkTagHelperTest
         Assert.Equal("data-extra", output.Attributes[2].Name);
     }
 
-    public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> DoesNotRunWhenARequiredAttributeIsMissing_Data
     {
         get
         {
@@ -725,6 +725,82 @@ public class LinkTagHelperTest
         Assert.Equal("/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
     }
 
+    [Theory]
+    [InlineData("~/css/site.css", "/css/site.fingerprint.css")]
+    [InlineData("/css/site.css", "/css/site.fingerprint.css")]
+    [InlineData("css/site.css", "css/site.fingerprint.css")]
+    public void RendersLinkTag_WithFileVersion_UsingResourceCollection(string href, string expected)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    { "rel", new HtmlString("stylesheet") },
+                    { "href", href },
+                    { "asp-append-version", "true" }
+            });
+        var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
+            {
+                { "rel", new HtmlString("stylesheet") },
+            });
+
+        var helper = GetHelper(urlHelperFactory: MakeUrlHelperFactory(value =>
+            value.StartsWith("~/", StringComparison.Ordinal) ? value[1..] : value));
+
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.Href = href;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("link", output.TagName);
+        Assert.Equal(expected, output.Attributes["href"].Value);
+    }
+
+    [Theory]
+    [InlineData("~/css/site.css")]
+    [InlineData("/approot/css/site.css")]
+    public void RenderLinkTags_PathBase_WithFileVersion_UsingResourceCollection(string href)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    { "rel", new HtmlString("stylesheet") },
+                    { "href", href },
+                    { "asp-append-version", "true" }
+            });
+        var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
+            {
+                { "rel", new HtmlString("stylesheet") },
+            });
+
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            if (value.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return value.Replace("~/", "/approot/");
+            }
+
+            return value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.ViewContext.HttpContext.Request.PathBase = "/approot";
+        helper.Href = href;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("link", output.TagName);
+        Assert.Equal("/approot/css/site.fingerprint.css", output.Attributes["href"].Value);
+    }
+
     [Fact]
     public void RendersLinkTags_WithFileVersion_AndRequestPathBase()
     {
@@ -806,6 +882,61 @@ public class LinkTagHelperTest
         // Assert
         Assert.Equal("link", output.TagName);
         Assert.Equal("/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
+        Assert.Equal(expectedPostElement, output.PostElement.GetContent());
+    }
+
+    [Fact]
+    public void RenderLinkTags_FallbackHref_WithFileVersion_WithStaticAssets()
+    {
+        // Arrange
+        var expectedPostElement = Environment.NewLine +
+            "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"hidden\" /><script>!function" +
+            "(a,b,c,d){var e,f=document,g=f.getElementsByTagName(\"SCRIPT\"),h=g[g.length-1]." +
+            "previousElementSibling,i=f.defaultView&&f.defaultView.getComputedStyle?f.defaultView." +
+            "getComputedStyle(h):h.currentStyle;if(i&&i[a]!==b)for(e=0;e<c.length;e++)f.write('<link " +
+            "href=\"'+c[e]+'\" '+d+\"/>\")}(\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"" +
+            ",[\"JavaScriptEncode[[HtmlEncode[[/fallback.fingerprint.css]]]]\"]," +
+            " \"JavaScriptEncode[[rel=\"stylesheet\" ]]\");</script>";
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    { "asp-append-version", "true" },
+                    { "asp-fallback-href-include", "**/fallback.css" },
+                    { "asp-fallback-test-class", "hidden" },
+                    { "asp-fallback-test-property", "visibility" },
+                    { "asp-fallback-test-value", "hidden" },
+                    { "href", "/css/site.css" },
+                    { "rel", new HtmlString("stylesheet") },
+            });
+        var output = MakeTagHelperOutput(
+            "link",
+            attributes: new TagHelperAttributeList
+            {
+                    { "rel", new HtmlString("stylesheet") },
+            });
+        var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+            new TestFileProvider(),
+            Mock.Of<IMemoryCache>(),
+            PathString.Empty);
+        globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/fallback.css", null))
+            .Returns(new[] { "/fallback.css" });
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.AppendVersion = true;
+        helper.Href = "/css/site.css";
+        helper.FallbackHrefInclude = "**/fallback.css";
+        helper.FallbackTestClass = "hidden";
+        helper.FallbackTestProperty = "visibility";
+        helper.FallbackTestValue = "hidden";
+        helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("link", output.TagName);
+        Assert.Equal("/css/site.fingerprint.css", output.Attributes["href"].Value);
         Assert.Equal(expectedPostElement, output.PostElement.GetContent());
     }
 
@@ -922,6 +1053,48 @@ public class LinkTagHelperTest
             content);
     }
 
+    [Fact]
+    public void RendersLinkTags_GlobbedHref_WithFileVersion_WithStaticAssets()
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    { "rel", new HtmlString("stylesheet") },
+                    { "href", "/css/site.css" },
+                    { "asp-href-include", "**/*.css" },
+                    { "asp-append-version", "true" },
+            });
+        var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
+            {
+                { "rel", new HtmlString("stylesheet") },
+            });
+        var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+            new TestFileProvider(),
+            Mock.Of<IMemoryCache>(),
+            PathString.Empty);
+        globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
+            .Returns(new[] { "/base.css" });
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+        helper.Href = "/css/site.css";
+        helper.HrefInclude = "**/*.css";
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("link", output.TagName);
+        Assert.Equal("/css/site.fingerprint.css", output.Attributes["href"].Value);
+        var content = HtmlContentUtilities.HtmlContentToString(output.PostElement, new HtmlTestEncoder());
+        Assert.Equal(
+            "<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.fingerprint.css]]\" />",
+            content);
+    }
+
     private static LinkTagHelper GetHelper(
         IWebHostEnvironment hostingEnvironment = null,
         IUrlHelperFactory urlHelperFactory = null,
@@ -948,7 +1121,7 @@ public class LinkTagHelperTest
 
     private static ViewContext MakeViewContext(string requestPathBase = null)
     {
-        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        var actionContext = new ActionContext(new DefaultHttpContext(), new AspNetCore.Routing.RouteData(), new ActionDescriptor());
         if (requestPathBase != null)
         {
             actionContext.HttpContext.Request.PathBase = new PathString(requestPathBase);
@@ -1015,13 +1188,27 @@ public class LinkTagHelperTest
         return hostingEnvironment.Object;
     }
 
-    private static IUrlHelperFactory MakeUrlHelperFactory()
+    private Endpoint CreateEndpoint()
+    {
+        return new Endpoint(
+            (context) => Task.CompletedTask,
+            new EndpointMetadataCollection(
+                [new ResourceAssetCollection([
+                    new("css/site.fingerprint.css", [new ResourceAssetProperty("label", "css/site.css")]),
+                    new("base.fingerprint.css", [new ResourceAssetProperty("label", "base.css")]),
+                    new("fallback.fingerprint.css", [new ResourceAssetProperty("label", "fallback.css")]),
+                ])]),
+            "Test");
+    }
+
+    private static IUrlHelperFactory MakeUrlHelperFactory(Func<string,string> content = null)
     {
         var urlHelper = new Mock<IUrlHelper>();
 
+        content ??= (url) => url;
         urlHelper
             .Setup(helper => helper.Content(It.IsAny<string>()))
-            .Returns(new Func<string, string>(url => url));
+            .Returns(new Func<string, string>(content));
         var urlHelperFactory = new Mock<IUrlHelperFactory>();
         urlHelperFactory
             .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))

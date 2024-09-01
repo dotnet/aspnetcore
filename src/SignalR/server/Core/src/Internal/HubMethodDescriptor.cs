@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -14,16 +17,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class HubMethodDescriptor
 {
-    private static readonly MethodInfo MakeCancelableAsyncEnumeratorMethod = typeof(AsyncEnumerableAdapters)
+    private static readonly MethodInfo MakeAsyncEnumeratorMethod = typeof(AsyncEnumerableAdapters)
         .GetRuntimeMethods()
-        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerator)) && m.IsGenericMethod);
+        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumerator)) && m.IsGenericMethod);
 
     private static readonly MethodInfo MakeAsyncEnumeratorFromChannelMethod = typeof(AsyncEnumerableAdapters)
         .GetRuntimeMethods()
         .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumeratorFromChannel)) && m.IsGenericMethod);
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
-    private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;
+    private Func<object, CancellationToken, IAsyncEnumerator<object?>>? _makeCancelableEnumerator;
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
@@ -35,27 +38,22 @@ internal sealed class HubMethodDescriptor
             ? MethodExecutor.AsyncResultType!
             : MethodExecutor.MethodReturnType;
 
-        foreach (var returnType in NonAsyncReturnType.GetInterfaces().Concat(NonAsyncReturnType.AllBaseTypes()))
+        var asyncEnumerableType = ReflectionHelper.GetIAsyncEnumerableInterface(NonAsyncReturnType);
+        if (asyncEnumerableType is not null)
         {
-            if (!returnType.IsGenericType)
+            StreamReturnType = asyncEnumerableType.GetGenericArguments()[0];
+            _makeCancelableEnumeratorMethodInfo = MakeAsyncEnumeratorMethod;
+        }
+        else
+        {
+            foreach (var returnType in NonAsyncReturnType.AllBaseTypes())
             {
-                continue;
-            }
-
-            var openReturnType = returnType.GetGenericTypeDefinition();
-
-            if (openReturnType == typeof(IAsyncEnumerable<>))
-            {
-                StreamReturnType = returnType.GetGenericArguments()[0];
-                _makeCancelableEnumeratorMethodInfo = MakeCancelableAsyncEnumeratorMethod;
-                break;
-            }
-
-            if (openReturnType == typeof(ChannelReader<>))
-            {
-                StreamReturnType = returnType.GetGenericArguments()[0];
-                _makeCancelableEnumeratorMethodInfo = MakeAsyncEnumeratorFromChannelMethod;
-                break;
+                if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(ChannelReader<>))
+                {
+                    StreamReturnType = returnType.GetGenericArguments()[0];
+                    _makeCancelableEnumeratorMethodInfo = MakeAsyncEnumeratorFromChannelMethod;
+                    break;
+                }
             }
         }
 
@@ -75,7 +73,7 @@ internal sealed class HubMethodDescriptor
                     StreamingParameters = new List<Type>();
                 }
 
-                StreamingParameters.Add(p.ParameterType.GetGenericArguments()[0]);
+                StreamingParameters.Add(ValidateParameterStreamType(p.ParameterType.GetGenericArguments()[0], p.ParameterType));
                 HasSyntheticArguments = true;
                 return false;
             }
@@ -203,21 +201,31 @@ internal sealed class HubMethodDescriptor
         return serviceProvider.GetRequiredService(parameterType);
     }
 
-    public IAsyncEnumerator<object> FromReturnedStream(object stream, CancellationToken cancellationToken)
+    public IAsyncEnumerator<object?> FromReturnedStream(object stream, CancellationToken cancellationToken)
     {
-        // there is the potential for compile to be called times but this has no harmful effect other than perf
+        // there is the potential for _makeCancelableEnumerator to be set multiple times but this has no harmful effect other than startup perf
         if (_makeCancelableEnumerator == null)
         {
-            _makeCancelableEnumerator = CompileConvertToEnumerator(_makeCancelableEnumeratorMethodInfo!, StreamReturnType!);
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                _makeCancelableEnumerator = CompileConvertToEnumerator(_makeCancelableEnumeratorMethodInfo!, StreamReturnType!);
+            }
+            else
+            {
+                _makeCancelableEnumerator = ConvertToEnumeratorWithReflection(_makeCancelableEnumeratorMethodInfo!, StreamReturnType!);
+            }
         }
 
         return _makeCancelableEnumerator.Invoke(stream, cancellationToken);
     }
 
-    private static Func<object, CancellationToken, IAsyncEnumerator<object>> CompileConvertToEnumerator(MethodInfo adapterMethodInfo, Type streamReturnType)
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "The adapter methods passed into here (MakeAsyncEnumerator and MakeAsyncEnumeratorFromChannel) don't have trimming annotations.")]
+    [RequiresDynamicCode("Calls MakeGenericMethod with types that may be ValueTypes")]
+    private static Func<object, CancellationToken, IAsyncEnumerator<object?>> CompileConvertToEnumerator(MethodInfo adapterMethodInfo, Type streamReturnType)
     {
         // This will call one of two adapter methods to wrap the passed in streamable value into an IAsyncEnumerable<object>:
-        // - AsyncEnumerableAdapters.MakeCancelableAsyncEnumerator<T>(asyncEnumerable, cancellationToken);
+        // - AsyncEnumerableAdapters.MakeAsyncEnumerator<T>(asyncEnumerable, cancellationToken);
         // - AsyncEnumerableAdapters.MakeCancelableAsyncEnumeratorFromChannel<T>(channelReader, cancellationToken);
 
         var parameters = new[]
@@ -235,8 +243,39 @@ internal sealed class HubMethodDescriptor
         };
 
         var methodCall = Expression.Call(null, genericMethodInfo, methodArguments);
-        var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerator<object>>>(methodCall, parameters);
+        var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerator<object?>>>(methodCall, parameters);
         return lambda.Compile();
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "The adapter methods passed into here (MakeAsyncEnumerator and MakeAsyncEnumeratorFromChannel) don't have trimming annotations.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "ValueTypes are handled without using MakeGenericMethod.")]
+    private static Func<object, CancellationToken, IAsyncEnumerator<object?>> ConvertToEnumeratorWithReflection(MethodInfo adapterMethodInfo, Type streamReturnType)
+    {
+        if (streamReturnType.IsValueType)
+        {
+            if (adapterMethodInfo == MakeAsyncEnumeratorMethod)
+            {
+                // return type is an IAsyncEnumerable<T>
+                return AsyncEnumerableAdapters.MakeReflectionAsyncEnumerator;
+            }
+            else
+            {
+                // must be a ChannelReader<T>
+                Debug.Assert(adapterMethodInfo == MakeAsyncEnumeratorFromChannelMethod);
+
+                return AsyncEnumerableAdapters.MakeReflectionAsyncEnumeratorFromChannel;
+            }
+        }
+        else
+        {
+            var genericAdapterMethodInfo = adapterMethodInfo.MakeGenericMethod(streamReturnType);
+            return (stream, cancellationToken) =>
+            {
+                return (IAsyncEnumerator<object?>)genericAdapterMethodInfo.Invoke(null, [stream, cancellationToken])!;
+            };
+        }
     }
 
     private static Type GetServiceType(Type type)
@@ -251,5 +290,18 @@ internal sealed class HubMethodDescriptor
         }
 
         return type;
+    }
+
+    private Type ValidateParameterStreamType(Type streamType, Type parameterType)
+    {
+        if (!RuntimeFeature.IsDynamicCodeSupported && streamType.IsValueType)
+        {
+            // NativeAOT apps are not able to stream IAsyncEnumerable and ChannelReader of ValueTypes as parameters
+            // since we cannot create a concrete IAsyncEnumerable and ChannelReader of ValueType to pass into the Hub method.
+            var methodInfo = MethodExecutor.MethodInfo;
+            throw new InvalidOperationException($"Method '{methodInfo.DeclaringType}.{methodInfo.Name}' is not supported with native AOT because it has a parameter of type '{parameterType}'. A ValueType streaming parameter is not supported because the native code to support the ValueType will not be available with native AOT.");
+        }
+
+        return streamType;
     }
 }

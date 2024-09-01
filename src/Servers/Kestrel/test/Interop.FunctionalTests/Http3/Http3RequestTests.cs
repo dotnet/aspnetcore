@@ -13,17 +13,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
@@ -701,6 +700,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57373")]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
@@ -1052,7 +1052,7 @@ public class Http3RequestTests : LoggedTest
         var badLogWrite = TestSink.Writes.FirstOrDefault(w => w.LogLevel == LogLevel.Critical);
         if (badLogWrite != null)
         {
-            Assert.True(false, "Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
+            Assert.Fail("Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
         }
     }
 
@@ -1138,8 +1138,7 @@ public class Http3RequestTests : LoggedTest
             var badLogWrite = TestSink.Writes.FirstOrDefault(w => w.LogLevel >= LogLevel.Critical);
             if (badLogWrite != null)
             {
-                Debugger.Launch();
-                Assert.True(false, "Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
+                Assert.Fail("Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
             }
 
             // Assert
@@ -1745,7 +1744,7 @@ public class Http3RequestTests : LoggedTest
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())
         {
-            await host.StartAsync();
+            await host.StartAsync().DefaultTimeout();
 
             var port = host.GetPort();
 
@@ -1760,7 +1759,7 @@ public class Http3RequestTests : LoggedTest
             var connection = await connectionStartedTcs.Task.DefaultTimeout();
 
             // Request in progress.
-            await syncPoint.WaitForSyncPoint();
+            await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
             // Server connection middleware triggers close.
             // Note that this aborts the transport, not the HTTP/3 connection.
@@ -1775,7 +1774,7 @@ public class Http3RequestTests : LoggedTest
 
             syncPoint.Continue();
 
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
     }
 
@@ -2029,6 +2028,34 @@ public class Http3RequestTests : LoggedTest
 
             Assert.DoesNotContain(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
         }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task ServerReset_InvalidErrorCode()
+    {
+        var ranHandler = false;
+        var hostBuilder = CreateHostBuilder(context =>
+        {
+            ranHandler = true;
+            // Can't test a too-large value since it's bigger than int
+            //Assert.Throws<ArgumentOutOfRangeException>(() => context.Features.Get<IHttpResetFeature>().Reset(-1)); // Invalid negative value
+            context.Features.Get<IHttpResetFeature>().Reset(-1);
+            return Task.CompletedTask;
+        });
+
+        using var host = await hostBuilder.StartAsync().DefaultTimeout();
+        using var client = HttpHelpers.CreateClient();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = GetProtocol(HttpProtocols.Http3);
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        await host.StopAsync().DefaultTimeout();
+
+        Assert.True(ranHandler);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

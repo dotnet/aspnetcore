@@ -26,7 +26,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -199,7 +199,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52783")]
     public void Cancel_CanTrigger()
     {
         Browser.MountTestComponent<DialogEventsComponent>();

@@ -33,6 +33,7 @@
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" Link="Shared\PathNormalizer\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\**\*.cs" Link="Shared\ThrowHelpers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\**\*.cs" Link="Shared\CallerArgument\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
@@ -45,7 +46,6 @@
 
   <ItemGroup>
     <Reference Include="FSharp.Core" />
-    <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />

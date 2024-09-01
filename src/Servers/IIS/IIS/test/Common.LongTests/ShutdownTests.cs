@@ -49,7 +49,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessStarted(deploymentResult),
             EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
     }
@@ -256,8 +256,82 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRestartingAppFromConfigChangeAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Just "touching" web.config should be enough to restart the process
+        deploymentResult.ModifyWebConfig(element => { });
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRecyclingAppAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Recycle app pool
+        Helpers.Recycle(deploymentResult.AppPoolName);
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -463,6 +537,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55937")]
     [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {
@@ -565,7 +640,7 @@ public class ShutdownTests : IISFunctionalTestBase
             var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-            Assert.True(false, "Should not reach here");
+            Assert.Fail("Should not reach here");
         }
         catch (HttpRequestException)
         {

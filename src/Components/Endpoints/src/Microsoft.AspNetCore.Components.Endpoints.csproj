@@ -30,11 +30,13 @@
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ResourceCollectionResolver.cs" LinkBase="Assets" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 
@@ -54,18 +56,26 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
-  <Target Name="_AddEmbeddedBlazorWebJS" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
+  <PropertyGroup>
+    <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
+    <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
+  </PropertyGroup>
+
+  <!-- blazor.web.js should exist after eng/Npm.Workspace.nodeproj builds. Fall back if not. -->
+  <Target Name="_CheckBlazorWebJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebJSFile)') ">
+    <Warning Text="'$(BlazorWebJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>
-      <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
-      <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
-      <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
+      <BlazorWebJSFile>..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
     </PropertyGroup>
+  </Target>
 
-    <Warning Condition="!Exists('$(BlazorWebJSFile)')" Text="'$(BlazorWebJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
-
+  <Target Name="_AddEmbeddedBlazorWebJS" AfterTargets="_CheckBlazorWebJSPath">
     <ItemGroup>
       <EmbeddedResource Include="$(BlazorWebJSFile)" LogicalName="_framework/$(BlazorWebJSFilename)" />
       <EmbeddedResource Include="$(BlazorWebJSFile).map" LogicalName="_framework/$(BlazorWebJSFilename).map" Condition="Exists('$(BlazorWebJSFile).map')" />

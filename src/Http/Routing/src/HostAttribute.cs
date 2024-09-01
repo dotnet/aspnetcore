@@ -53,7 +53,7 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     {
         var hostsDisplay = (Hosts.Count == 0)
             ? "*:*"
-            : string.Join(",", Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
+            : string.Join(',', Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
 
         return DebuggerHelpers.GetDebugText(nameof(Hosts), hostsDisplay);
     }

@@ -9,6 +9,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Items.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class BlazorServerTest
 {
     public BlazorServerTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
@@ -27,7 +29,7 @@ public class BlazorServerTest
     {
         Project = await ProjectFactory.CreateProject(Output);
 
-        await Project.RunDotNetNewAsync("razorcomponent --name Different");
+        await Project.RunDotNetNewAsync("razorcomponent --name Different", isItemTemplate: true);
 
         Project.AssertFileExists("Different.razor", shouldExist: true);
         Assert.Contains("<h3>Different</h3>", Project.ReadFile("Different.razor"));
