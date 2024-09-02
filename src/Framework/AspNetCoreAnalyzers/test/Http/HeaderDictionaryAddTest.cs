@@ -236,7 +236,7 @@ var context = new DefaultHttpContext();
 context.Request.Headers[""Accept""] = ""text/html""{|CS1002:|}"
         },
 
-        // With new line
+        // With trailing trivia
         {
             @"
 using Microsoft.AspNetCore.Http;
