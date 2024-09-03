@@ -8,7 +8,7 @@ parameters:
 
 steps:
 - ${{ if and(eq(parameters.runAsPublic, 'false'), not(eq(variables['System.TeamProject'], 'public'))) }}:
-  - task: AzureKeyVault@1
+  - task: AzureKeyVault@2
     inputs:
       azureSubscription: 'HelixProd_KeyVault'
       KeyVaultName: HelixProdKV
