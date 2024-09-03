@@ -277,7 +277,7 @@ stages:
             scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
             arguments: -BuildId $(BARBuildId)
               -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
-              -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
+              -AzdoToken '$(System.AccessToken)'
               -WaitPublishingFinish true
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
