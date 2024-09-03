@@ -49,7 +49,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
         // Clicking the button again will trigger a server disconnect
-        Browser.ExecuteJavaScript("arguments[0].scrollIntoView();", targetButton);
+        Browser.ExecuteJavaScript("arguments[0].scrollIntoView(true);", targetButton);
         targetButton.Click();
 
         AssertLogContains("Connection disconnected.");
@@ -72,7 +72,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
         // Clicking it again causes the circuit to disconnect
-        Browser.ExecuteJavaScript("arguments[0].scrollIntoView();", targetButton);
+        Browser.ExecuteJavaScript("arguments[0].scrollIntoView(true);", targetButton);
         targetButton.Click();
         AssertLogContains("Connection disconnected.");
     }
