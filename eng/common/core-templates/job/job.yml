@@ -33,11 +33,6 @@ parameters:
   artifactPublishSteps: []
   runAsPublic: false
 
-# Sbom related params
-  enableSbom: true
-  PackageVersion: 9.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
-
 # 1es specific parameters
   is1ESPipeline: ''
 
