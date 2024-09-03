@@ -55,7 +55,7 @@ public class FileSystemXmlRepositoryTests
             var allElements = repository.GetAllElements();
 
             // Assert
-            Assert.Equal(0, allElements.Count);
+            Assert.Empty(allElements);
         });
     }
 
@@ -264,7 +264,7 @@ public class FileSystemXmlRepositoryTests
                 // Now that the repository has read the element from disk, delete it out-of-band.
                 File.Delete(filePath);
 
-                Assert.Equal(1, deletableElements.Count);
+                Assert.Single(deletableElements);
 
                 deletableElements.First().DeletionOrder = 1;
             }));

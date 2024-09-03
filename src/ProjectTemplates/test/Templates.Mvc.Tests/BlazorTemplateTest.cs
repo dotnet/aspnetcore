@@ -16,7 +16,7 @@ public class BlazorTemplateTest : LoggedTest
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
 
-    public static TheoryData<object[]> ArgsData() =>
+    public static TheoryData<string[]> ArgsData() =>
     [
         [],
         [ArgConstants.UseProgramMain],
@@ -187,7 +187,7 @@ public class BlazorTemplateTest : LoggedTest
             return File.ReadAllTextAsync(multiProjectPath);
         }
 
-        throw new FailException($"Expected file to exist, but it doesn't: {singleProjectPath}");
+        throw FailException.ForFailure($"Expected file to exist, but it doesn't: {singleProjectPath}");
     }
 
     private async Task WorkAroundNonNullableRenderModeAsync(Project project)
