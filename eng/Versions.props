@@ -145,14 +145,14 @@
     <MicrosoftExtensionsDiagnosticsTestingVersion>9.0.0-preview.8.24431.1</MicrosoftExtensionsDiagnosticsTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>9.0.0-preview.8.24431.1</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>9.0.0-rc.2.24452.5</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>9.0.0-rc.2.24452.5</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>9.0.0-rc.2.24453.3</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>9.0.0-rc.2.24453.3</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftCodeAnalysisCommonVersion>4.11.0-1.24218.5</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.11.0-1.24218.5</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
