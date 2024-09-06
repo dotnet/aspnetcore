@@ -1984,6 +1984,34 @@ public class UserManager<TUser> : IDisposable where TUser : class
     }
 
     /// <summary>
+    /// Returns the authenticator last verified timestamp for the user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The authenticator key</returns>
+    public virtual Task<long?> GetAuthenticatorTimestampAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        var store = GetAuthenticatorKeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        return store.GetAuthenticatorTimestampAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the authenticator last verified timestamp for the user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="timestamp">The timestamp to save.</param>
+    /// <returns>Whether the user was successfully updated.</returns>
+    public virtual async Task<IdentityResult> SetAuthenticatorTimestampAsync(TUser user, long timestamp)
+    {
+        ThrowIfDisposed();
+        var store = GetAuthenticatorKeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        await store.SetAuthenticatorTimestampAsync(user, timestamp, CancellationToken).ConfigureAwait(false);
+        return await UpdateAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Generates a new base32 encoded 160-bit security secret (size of SHA1 hash).
     /// </summary>
     /// <returns>The new security secret.</returns>

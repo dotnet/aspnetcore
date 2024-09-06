@@ -64,6 +64,17 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
 #endif
 
         var timestep = Convert.ToInt64(unixTimestamp / 30);
+
+        var storedOtpTimestamp = await manager.GetAuthenticatorTimestampAsync(user).ConfigureAwait(false);
+
+        // Do not allow re-use of TOTP codes (Section 5.2 of RFC 6238).
+        if (storedOtpTimestamp.HasValue && storedOtpTimestamp >= timestep)
+        {
+            return false;
+        }
+
+        await manager.SetAuthenticatorTimestampAsync(user, timestep).ConfigureAwait(false);
+
         // Allow codes from 90s in each direction (we could make this configurable?)
         for (int i = -2; i <= 2; i++)
         {

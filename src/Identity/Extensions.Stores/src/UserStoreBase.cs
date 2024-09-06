@@ -885,6 +885,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     private const string InternalLoginProvider = "[AspNetUserStore]";
     private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
     private const string RecoveryCodeTokenName = "RecoveryCodes";
+    private const char AuthenticatorKeyTimestampSeparator = ';';
 
     /// <summary>
     /// Sets the authenticator key for the specified <paramref name="user"/>.
@@ -902,8 +903,60 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="user">The user whose security stamp should be set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
-    public virtual Task<string?> GetAuthenticatorKeyAsync(TUser user, CancellationToken cancellationToken)
-        => GetTokenAsync(user, InternalLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
+    public virtual async Task<string?> GetAuthenticatorKeyAsync(TUser user, CancellationToken cancellationToken)
+    {
+        var token = await GetTokenAsync(user, InternalLoginProvider, AuthenticatorKeyTokenName, cancellationToken).ConfigureAwait(false);
+        return token?.Split(AuthenticatorKeyTimestampSeparator).First();
+    }
+
+    /// <summary>
+    /// Get the last verified authenticator timestamp for the specified <paramref name="user" />.
+    /// </summary>
+    /// <param name="user">The user whose authenticator timestamp should be retrieved.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the last verified authenticator timestamp for the specified <paramref name="user"/>,
+    /// or null, when the authenticator code has never been verified.</returns>
+    public async Task<long?> GetAuthenticatorTimestampAsync(TUser user, CancellationToken cancellationToken)
+    {
+        var token = await GetTokenAsync(user, InternalLoginProvider, AuthenticatorKeyTokenName, cancellationToken).ConfigureAwait(false);
+        var keyParts = token?.Split(AuthenticatorKeyTimestampSeparator);
+
+        if (keyParts?.Length == 2)
+        {
+            if (long.TryParse(keyParts[1], out var timestamp))
+            {
+                return timestamp;
+            }
+
+            throw new InvalidOperationException("Invalid authenticator key and timestamp pair format");
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Set the last verified authenticator timestamp for the specified <paramref name="user" />.
+    /// </summary>
+    /// <param name="user">The user whose authenticator timestamp should be set.</param>
+    /// <param name="timestamp">The new timestamp value to be set.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
+    public async Task SetAuthenticatorTimestampAsync(TUser user, long timestamp, CancellationToken cancellationToken)
+    {
+        var key = await GetAuthenticatorKeyAsync(user, cancellationToken).ConfigureAwait(false);
+
+        if (key != null)
+        {
+            var keyTimestampPair = $"{key}{AuthenticatorKeyTimestampSeparator}{timestamp}";
+            await base.SetAuthenticatorKeyAsync(user, keyTimestampPair, cancellationToken);
+        }
+        else
+        {
+            throw new InvalidOperationException("Unable to store authenticator timestamp - no authenticator key exists");
+        }
+    }
 
     /// <summary>
     /// Returns how many recovery code are still valid for a user.

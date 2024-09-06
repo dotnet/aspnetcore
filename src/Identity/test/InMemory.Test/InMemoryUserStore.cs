@@ -393,6 +393,7 @@ public class InMemoryUserStore<TUser> :
     private const string AuthenticatorStoreLoginProvider = "[AspNetAuthenticatorStore]";
     private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
     private const string RecoveryCodeTokenName = "RecoveryCodes";
+    private const char AuthenticatorKeyTimestampSeparator = ';';
 
     public Task SetAuthenticatorKeyAsync(TUser user, string key, CancellationToken cancellationToken)
     {
@@ -401,7 +402,41 @@ public class InMemoryUserStore<TUser> :
 
     public Task<string> GetAuthenticatorKeyAsync(TUser user, CancellationToken cancellationToken)
     {
-        return GetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
+        var token = await GetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, cancellationToken).ConfigureAwait(false);
+        return token?.Split(AuthenticatorKeyTimestampSeparator).First();
+    }
+
+    public async Task<long?> GetAuthenticatorTimestampAsync(TUser user, CancellationToken cancellationToken)
+    {
+        var token = await GetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, cancellationToken).ConfigureAwait(false);
+        var keyParts = token?.Split(AuthenticatorKeyTimestampSeparator);
+
+        if (keyParts?.Length == 2)
+        {
+            if (long.TryParse(keyParts[1], out var timestamp))
+            {
+                return timestamp;
+            }
+
+            throw new InvalidOperationException("Invalid authenticator key and timestamp pair format");
+        }
+
+        return null;
+    }
+
+    public async Task SetAuthenticatorTimestampAsync(TUser user, long timestamp, CancellationToken cancellationToken)
+    {
+        var key = await GetAuthenticatorKeyAsync(user, cancellationToken).ConfigureAwait(false);
+
+        if (key != null)
+        {
+            var keyTimestampPair = $"{key}{AuthenticatorKeyTimestampSeparator}{timestamp}";
+            await base.SetAuthenticatorKeyAsync(user, keyTimestampPair, cancellationToken);
+        }
+        else
+        {
+            throw new InvalidOperationException("Unable to store authenticator timestamp - no authenticator key exists");
+        }
     }
 
     public Task ReplaceCodesAsync(TUser user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
