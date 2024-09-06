@@ -68,9 +68,9 @@ For more information on these types and their usage, refer to the [official docu
 
 For additional documentation on using OpenID Connect authentication in ASP.NET Core, you can refer to the following resources:
 
-- [ASP.NET Core Authentication](https://learn.microsoft.com/aspnet/core/security/authentication)
-- [OpenID Connect](https://openid.net/developers/how-connect-works)
-- [Entra ID documentation](https://learn.microsoft.com/entra/identity)
+* [ASP.NET Core Authentication](https://learn.microsoft.com/aspnet/core/security/authentication)
+* [OpenID Connect](https://openid.net/developers/how-connect-works)
+* [Entra ID documentation](https://learn.microsoft.com/entra/identity)
 
 ## Feedback & Contributing
 
