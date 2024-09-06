@@ -69,8 +69,11 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         await appFunc(httpContext);
 
         // Assert
-        Assert.Null(httpContext.Features.Get<IEndpointFeature>());
+        var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature);
+        Assert.Null(endpointFeature?.Endpoint);
     }
+
 
     [Fact]
     public async Task UseRouting_ServicesRegistered_Match_DoesNotSetsFeature()
@@ -165,8 +168,11 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         await appFunc(httpContext);
 
         // Assert
-        Assert.Null(httpContext.Features.Get<IEndpointFeature>());
+        var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature); 
+        Assert.Null(endpointFeature?.Endpoint);
     }
+
 
     [Fact]
     public void UseEndpoints_CallWithBuilder_SetsEndpointDataSource()
