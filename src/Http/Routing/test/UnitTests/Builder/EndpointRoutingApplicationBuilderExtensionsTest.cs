@@ -71,7 +71,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         // Assert
         var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
         Assert.NotNull(endpointFeature);
-        Assert.Null(endpointFeature?.Endpoint);
+        Assert.Null(endpointFeature.Endpoint);
     }
 
 
