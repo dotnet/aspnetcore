@@ -45,7 +45,6 @@ public interface IUserAuthenticatorKeyStore<TUser> : IUserStore<TUser> where TUs
     /// <param name="user">The user whose authenticator timestamp should be set.</param>
     /// <param name="timestamp">The new timestamp value to be set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-    /// <returns>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
     Task SetAuthenticatorTimestampAsync(TUser user, long timestamp, CancellationToken cancellationToken);
 }
