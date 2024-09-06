@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Http;
 public abstract class HttpContext
 {
     /// <summary>
-    /// Gets or sets the <see cref="Endpoint"/> for this request.
+    /// Gets or sets the <see cref="Endpoint"/> for this request. 
+    /// This property interacts with the <see cref="IEndpointFeature.Endpoint"/> and stays in sync with it.
     /// </summary>
     public abstract Endpoint? Endpoint { get; set; }
 
