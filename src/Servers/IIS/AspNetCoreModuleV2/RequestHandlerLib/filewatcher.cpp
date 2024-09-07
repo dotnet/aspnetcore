@@ -294,7 +294,8 @@ HRESULT
             //
             // check whether the monitored file got changed
             //
-            if (_wcsnicmp(pNotificationInfo->FileName,
+            if (_strFileName.QuerySizeCCH() == (pNotificationInfo->FileNameLength / sizeof(WCHAR))
+                && _wcsnicmp(pNotificationInfo->FileName,
                 _strFileName.QueryStr(),
                 pNotificationInfo->FileNameLength / sizeof(WCHAR)) == 0)
             {
