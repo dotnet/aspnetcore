@@ -9,6 +9,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class RazorClassLibraryTemplateTest : LoggedTest
 {
     public RazorClassLibraryTemplateTest(ProjectFactoryFixture projectFactory)

@@ -12,6 +12,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class WebApiTemplateTest : LoggedTest
 {
     public WebApiTemplateTest(ProjectFactoryFixture factoryFixture)

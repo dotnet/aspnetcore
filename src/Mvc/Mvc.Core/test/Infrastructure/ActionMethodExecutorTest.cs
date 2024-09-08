@@ -12,7 +12,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesVoidActions(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesVoidActionsAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -32,13 +32,13 @@ public class ActionMethodExecutorTest
         // Assert
         Assert.Equal("VoidResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
-        Assert.IsType<EmptyResult>(valueTask.Result);
+        Assert.IsType<EmptyResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningIActionResult(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningIActionResultAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -58,13 +58,13 @@ public class ActionMethodExecutorTest
         // Assert
         Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(valueTask.IsCompleted);
-        Assert.IsType<ContentResult>(valueTask.Result);
+        Assert.IsType<ContentResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningSubTypeOfActionResult(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningSubTypeOfActionResultAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -83,13 +83,13 @@ public class ActionMethodExecutorTest
 
         // Assert
         Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<ContentResult>(valueTask.Result);
+        Assert.IsType<ContentResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningActionResultOfT(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningActionResultOfTAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -107,7 +107,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
@@ -118,7 +118,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningModelAsModel(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningModelAsModelAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -136,7 +136,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
@@ -147,7 +147,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningModelAsObject(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningModelAsObjectAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -165,7 +165,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
@@ -176,7 +176,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturningActionResultAsObject(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturningActionResultAsObjectAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -195,13 +195,13 @@ public class ActionMethodExecutorTest
 
         // Assert
         Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<ContentResult>(valueTask.Result);
+        Assert.IsType<ContentResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturnTask(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturnTaskAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -221,13 +221,13 @@ public class ActionMethodExecutorTest
         // Assert
         Assert.Equal("TaskResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
-        Assert.IsType<EmptyResult>(valueTask.Result);
+        Assert.IsType<EmptyResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsReturnAwaitable(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsReturnAwaitableAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -247,13 +247,13 @@ public class ActionMethodExecutorTest
         // Assert
         Assert.Equal("AwaitableResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
-        Assert.IsType<EmptyResult>(valueTask.Result);
+        Assert.IsType<EmptyResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutorExecutesActionsAsynchronouslyReturningIActionResult(bool withFilter)
+    public async Task ActionMethodExecutorExecutesActionsAsynchronouslyReturningIActionResultAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -272,7 +272,7 @@ public class ActionMethodExecutorTest
 
         // Assert
         Assert.Equal("TaskOfIActionResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<StatusCodeResult>(valueTask.Result);
+        Assert.IsType<StatusCodeResult>(await valueTask);
     }
 
     [Theory]
@@ -298,13 +298,13 @@ public class ActionMethodExecutorTest
         // Assert
         await valueTask;
         Assert.Equal("TaskOfActionResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<ViewResult>(valueTask.Result);
+        Assert.IsType<ViewResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModel(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModelAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -322,7 +322,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
@@ -333,7 +333,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModelAsObject(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModelAsObjectAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -351,7 +351,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
@@ -362,7 +362,7 @@ public class ActionMethodExecutorTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningIActionResultAsObject(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningIActionResultAsObjectAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -381,13 +381,13 @@ public class ActionMethodExecutorTest
 
         // Assert
         Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<OkResult>(valueTask.Result);
+        Assert.IsType<OkResult>(await valueTask);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningActionResultOfT(bool withFilter)
+    public async Task ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningActionResultOfTAsync(bool withFilter)
     {
         // Arrange
         var mapper = new ActionResultTypeMapper();
@@ -405,7 +405,7 @@ public class ActionMethodExecutorTest
         var valueTask = Execute(actionMethodExecutor, filterContext, withFilter);
 
         // Assert
-        var result = Assert.IsType<ObjectResult>(valueTask.Result);
+        var result = Assert.IsType<ObjectResult>(await valueTask);
 
         Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);

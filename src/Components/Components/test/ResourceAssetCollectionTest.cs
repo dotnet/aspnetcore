@@ -17,7 +17,7 @@ public class ResourceAssetCollectionTest
         var collectionAsReadOnlyList = resourceAssetCollection as IReadOnlyList<ResourceAsset>;
 
         // Assert
-        Assert.Equal(1, collectionAsReadOnlyList.Count);
+        Assert.Single(collectionAsReadOnlyList);
         Assert.Equal("image1.jpg", collectionAsReadOnlyList[0].Url);
     }
 

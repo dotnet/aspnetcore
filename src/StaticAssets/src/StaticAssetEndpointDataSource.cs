@@ -28,6 +28,7 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
         IServiceProvider serviceProvider,
         StaticAssetEndpointFactory endpointFactory,
         string manifestName,
+        bool isBuildManifest,
         List<StaticAssetDescriptor> descriptors)
     {
         ServiceProvider = serviceProvider;
@@ -37,8 +38,14 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
 
+        if (isBuildManifest)
+        {
+            _conventions.Add(c => c.Metadata.Add(new BuildAssetMetadata()));
+        }
+
         DefaultBuilder = new StaticAssetsEndpointConventionBuilder(
             _lock,
+            isBuildManifest,
             descriptors,
             _conventions,
             _finallyConventions);

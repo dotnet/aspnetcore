@@ -12,6 +12,8 @@ using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType { get; } = "blazorwasm";
