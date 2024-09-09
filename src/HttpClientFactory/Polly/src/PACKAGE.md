@@ -53,6 +53,8 @@ For more examples on using Polly-based handlers, see the [official documentation
 
 ## Main Types
 
+The main types provided by this package are:
+
 * `PollyHttpClientBuilderExtensions`: Provides extension methods for configuring `PolicyHttpMessageHandler` message handlers as part of an `HttpClient` message handler pipeline
 * `PolicyHttpMessageHandler`: A `DelegatingHandler` implementation that executes request processing surrounded by a `Polly.Policy`
 * `PollyServiceCollectionExtensions`: Provides convenience extension methods to register `Polly.Registry.IPolicyRegistry<string>` and `Polly.Registry.IReadOnlyPolicyRegistry<string>` in a service collection
