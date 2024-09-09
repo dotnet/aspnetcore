@@ -2,12 +2,6 @@
 
 `Microsoft.AspNetCore.Authentication.Google` contains middleware to support Google's OpenId and OAuth 2.0 authentication workflows.
 
-## Key Features
-
-* Easy integration with Google's authentication services
-* Support for both OpenId and OAuth 2.0 authentication workflows
-* Seamless user authentication and authorization process
-
 ## How to Use
 
 To use `Microsoft.AspNetCore.Authentication.Google`, follow these steps:
@@ -25,13 +19,11 @@ dotnet add package Microsoft.AspNetCore.Authentication.Google
 3. Add the Authentication service to your app's `Program.cs`:
     ```csharp
     var builder = WebApplication.CreateBuilder(args);
-    var services = builder.Services;
-    var configuration = builder.Configuration;
 
-    services.AddAuthentication().AddGoogle(googleOptions =>
+    builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     {
-        googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
-        googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     });
     ```
 
