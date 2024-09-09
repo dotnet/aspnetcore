@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core apps using MVC or Minimal APIs.
+`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core apps that utilize MVC or Minimal APIs.
 
 ## Key Features
 
