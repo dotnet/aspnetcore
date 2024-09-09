@@ -67,6 +67,6 @@ To configure the test app, follow these steps:
 
 For additional documentation and examples, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/test/integration-tests) on integration testing in ASP.NET Core.
 
-## Feedback & Contributing
+## Feedback &amp; Contributing
 
 `Microsoft.AspNetCore.Mvc.Testing` is released as open-source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/dotnet/aspnetcore).
