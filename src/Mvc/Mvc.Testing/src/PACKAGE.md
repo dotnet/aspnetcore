@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for MVC applications.
+`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core applications.
 
 ## Key Features
 
@@ -29,13 +29,7 @@ To configure the test app, follow these steps:
     * `xunit`
     * `xunit.runner.visualstudio`
     * `Microsoft.NET.Test.Sdk`
-3. Expose the internal types from the web app to the test project. This can be done in the SUT's project file (`.csproj`):
-    ```xml
-    <ItemGroup>
-        <InternalsVisibleTo Include="MyTestProject" />
-    </ItemGroup>
-    ```
-4. Add a test class to the test project:
+3. Add a test class to the test project:
     ```csharp
     public class BasicTests
         : IClassFixture<WebApplicationFactory<Program>>
