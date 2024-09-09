@@ -29,6 +29,8 @@ dotnet add package Microsoft.AspNetCore.Authentication.Google
 
 ## Main Types
 
+The main types provided by this package are:
+
 * `GoogleOptions`: Represents the options for configuring Google authentication
 * `GoogleHandler`: The authentication handler responsible for processing Google authentication requests and generating the appropriate authentication ticket
 
