@@ -218,8 +218,20 @@ public sealed class DefaultHttpContext : HttpContext
     /// </summary>
     public override Endpoint? Endpoint
     {
-        get => base.Endpoint;
-        set => base.Endpoint = value;
+        get
+        {
+            return Features.Get<IEndpointFeature>()?.Endpoint;
+        }
+        set
+        {
+            var feature = Features.Get<IEndpointFeature>();
+            if (feature == null)
+            {
+                feature = new EndpointFeature();
+                Features.Set(feature);
+            }
+            feature.Endpoint = value;
+        }
     }
 
     // This property exists because of backwards compatibility.
