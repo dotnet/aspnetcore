@@ -15,7 +15,7 @@ public class ValueProviderResultTest
 
         // Assert
         Assert.Equal(0, result.Length);
-        Assert.Empty(result.Values);
+        Assert.Equal(0, result.Values.Count);
         Assert.Null(result.FirstValue);
         Assert.Equal(ValueProviderResult.None, result);
         Assert.Empty((string)result);
@@ -30,7 +30,7 @@ public class ValueProviderResultTest
 
         // Assert
         Assert.Equal(0, result.Length);
-        Assert.Empty(result.Values);
+        Assert.Equal(0, result.Values.Count);
         Assert.Null(result.FirstValue);
         Assert.Equal(ValueProviderResult.None, result);
         Assert.Empty((string)result);
@@ -45,7 +45,7 @@ public class ValueProviderResultTest
 
         // Assert
         Assert.Equal(0, result.Length);
-        Assert.Empty(result.Values);
+        Assert.Equal(0, result.Values.Count);
         Assert.Null(result.FirstValue);
         Assert.Equal(ValueProviderResult.None, result);
         Assert.Equal(ValueProviderResult.None, new ValueProviderResult(new StringValues()));

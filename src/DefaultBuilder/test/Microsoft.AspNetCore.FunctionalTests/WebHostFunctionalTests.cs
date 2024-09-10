@@ -126,7 +126,7 @@ public class WebHostFunctionalTests : LoggedTest
 
                 logger.Log(LogLevel.Information, 0, "Message", null, (s, e) =>
                 {
-                    Assert.True(false, "Information log when log level set to warning in config");
+                    Assert.Fail("Information log when log level set to warning in config");
                     return string.Empty;
                 });
 

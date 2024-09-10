@@ -172,19 +172,21 @@ Win32 error
     while (true)
     {
 
-        DWORD       cbCompletion = 0;
+        DWORD       bytesTransferred = 0;
         OVERLAPPED* pOverlapped = nullptr;
         ULONG_PTR   completionKey;
 
         BOOL success = GetQueuedCompletionStatus(
             pFileMonitor->m_hCompletionPort,
-            &cbCompletion,
+            &bytesTransferred,
             &completionKey,
             &pOverlapped,
             INFINITE);
 
-        DBG_ASSERT(success);
-        (void)success;
+        if (!success)
+        {
+            LOG_INFOF(L"Failure when watching app directory. HR: 0x%x", HRESULT_FROM_WIN32(GetLastError()));
+        }
 
         if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
         {
@@ -194,7 +196,7 @@ Win32 error
         DBG_ASSERT(pOverlapped != nullptr);
         if (pOverlapped != nullptr)
         {
-            pFileMonitor->HandleChangeCompletion(cbCompletion);
+            pFileMonitor->HandleChangeCompletion(bytesTransferred);
 
             if (!pFileMonitor->_lStopMonitorCalled)
             {
@@ -222,7 +224,7 @@ Win32 error
 
 HRESULT
 FILE_WATCHER::HandleChangeCompletion(
-    _In_ DWORD          cbCompletion
+    _In_ DWORD          bytesTransferred
 )
 /*++
 
@@ -234,7 +236,7 @@ need to be flushed)
 Arguments:
 
 dwCompletionStatus - Completion status
-cbCompletion - Bytes of completion
+bytesTransferred - Bytes of completion
 
 Return Value:
 
@@ -259,13 +261,28 @@ HRESULT
     }
 
     //
-    // There could be a FCN overflow
-    // Let assume the file got changed instead of checking files
-    // Otherwise we have to cache the file info
+    // There could be a FCN overflow, see https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-readdirectorychangesw#remarks
+    // specifically about lpBytesReturned being zero on a successful call
     //
-    if (cbCompletion == 0)
+    // We'll do a manual check for the existence of app_offline.htm since it's possible the file was added
+    // When ShadowCopy is enabled we also look for .dll changes, in order to detect a dll change in this edge case we'd need to cache all dll information
+    // and manually iterate over the directory and compare the file attributes. For now we'll assume that if dlls are changing we'll get another
+    // file change notification in that case
+    //
+    if (bytesTransferred == 0)
     {
-        fAppOfflineChanged = TRUE;
+        LOG_INFO(L"0 bytes transferred for file notifications. Falling back to manually looking for app_offline.");
+        DWORD fileAttr = GetFileAttributesW(_strFullName.QueryStr());
+        if (fileAttr != INVALID_FILE_ATTRIBUTES && !(fileAttr & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            fAppOfflineChanged = TRUE;
+            auto app = _pApplication.get();
+            app->m_detectedAppOffline = true;
+        }
+        else
+        {
+            return S_OK;
+        }
     }
     else
     {
@@ -277,7 +294,8 @@ HRESULT
             //
             // check whether the monitored file got changed
             //
-            if (_wcsnicmp(pNotificationInfo->FileName,
+            if (_strFileName.QuerySizeCCH() == (pNotificationInfo->FileNameLength / sizeof(WCHAR))
+                && _wcsnicmp(pNotificationInfo->FileName,
                 _strFileName.QueryStr(),
                 pNotificationInfo->FileNameLength / sizeof(WCHAR)) == 0)
             {
@@ -427,7 +445,7 @@ FILE_WATCHER::Monitor(VOID)
         _buffDirectoryChanges.QueryPtr(),
         _buffDirectoryChanges.QuerySize(),
         FALSE,        // Watching sub dirs. Set to False now as only monitoring app_offline
-        FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS,
+        FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS & ~FILE_NOTIFY_CHANGE_SECURITY & ~FILE_NOTIFY_CHANGE_ATTRIBUTES,
         &cbRead,
         &_overlapped,
         nullptr));

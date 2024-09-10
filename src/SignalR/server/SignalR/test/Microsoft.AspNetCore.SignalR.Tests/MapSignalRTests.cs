@@ -87,12 +87,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
@@ -120,21 +120,21 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 });
         }
@@ -159,12 +159,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
@@ -217,12 +217,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
