@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Authentication.Negotiate` contains middleware to authenticate requests using Windows Authentication (also known as Negotiate, Kerberos, or NTLM).
+`Microsoft.AspNetCore.Authentication.Negotiate` contains an authentication handler used to authenticate requests using Windows Authentication (also known as Negotiate, Kerberos, or NTLM).
 
 ## How to Use
 
