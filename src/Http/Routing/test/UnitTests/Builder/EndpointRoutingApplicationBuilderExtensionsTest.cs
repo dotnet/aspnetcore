@@ -375,6 +375,6 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
 
     private class EndpointFeature : IEndpointFeature
     {
-        public Endpoint? Endpoint { get; set; }
+        public Endpoint Endpoint { get; set; }
     }
 }
