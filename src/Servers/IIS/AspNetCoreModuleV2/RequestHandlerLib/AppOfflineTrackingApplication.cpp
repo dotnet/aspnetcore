@@ -9,7 +9,7 @@
 HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
 {
     LOG_INFOF(L"Starting app_offline monitoring in application '%ls'", m_applicationPath.c_str());
-    HRESULT hr = StartMonitoringAppOflineImpl();
+    const HRESULT hr = StartMonitoringAppOflineImpl();
 
     if (FAILED_LOG(hr))
     {
