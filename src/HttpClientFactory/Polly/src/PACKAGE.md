@@ -47,10 +47,6 @@ builder.Services.AddHttpClient("PollyDynamic")
 
 In this example, if the outgoing request is an HTTP GET, a 10-second timeout is applied. For any other HTTP method, a 30-second timeout is used.
 
-#### Additional scenarios
-
-For more examples on using Polly-based handlers, see the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/http-requests?view#use-polly-based-handlers).
-
 ## Main Types
 
 The main types provided by this package are:
