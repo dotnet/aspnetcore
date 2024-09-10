@@ -173,7 +173,6 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Null(endpointFeature?.Endpoint);
     }
 
-
     [Fact]
     public void UseEndpoints_CallWithBuilder_SetsEndpointDataSource()
     {
@@ -373,5 +372,10 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         var serviceProvder = services.BuildServiceProvider();
 
         return serviceProvder;
+    }
+
+    private class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint? Endpoint { get; set; }
     }
 }
