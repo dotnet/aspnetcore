@@ -34,6 +34,10 @@ The main types provided by this package are:
 * `GoogleOptions`: Represents the options for configuring Google authentication
 * `GoogleHandler`: The authentication handler responsible for processing Google authentication requests and generating the appropriate authentication ticket
 
+## Additional Documentation
+
+For additional documentation and examples, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/security/authentication/social/google-logins) on Google login setup in ASP.NET Core.
+
 ## Feedback &amp; Contributing
 
 `Microsoft.AspNetCore.Authentication.Google` is released as open-source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/dotnet/aspnetcore).
