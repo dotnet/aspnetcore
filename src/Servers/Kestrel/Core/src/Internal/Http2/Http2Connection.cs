@@ -1086,6 +1086,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         if (_incomingFrame.PingAck)
         {
             // TODO: verify that payload is equal to the outgoing PING frame
+            // This will be particularly important if we implement dynamic window sizing
+            // (https://github.com/dotnet/aspnetcore/issues/53657).
             return Task.CompletedTask;
         }
 
