@@ -2,6 +2,9 @@
 
 `Microsoft.Extensions.Http.Polly` integrates `IHttpClientFactory` with the [Polly](https://github.com/App-vNext/Polly) library to provide comprehensive resilience and transient fault-handling. It allows developers to express policies such as Retry, Circuit Breaker, Timeout, Bulkhead Isolation, and Fallback in a fluent and thread-safe manner.
 
+> [!NOTE]
+> This package is deprecated. Please use either [`Microsoft.Extensions.Resilience`](https://www.nuget.org/packages/Microsoft.Extensions.Resilience) or [`Microsoft.Extensions.Http.Resilience`](https://www.nuget.org/packages/Microsoft.Extensions.Http.Resilience) instead.
+
 ## How to Use
 
 To use `Microsoft.Extensions.Http.Polly`, follow these steps:
