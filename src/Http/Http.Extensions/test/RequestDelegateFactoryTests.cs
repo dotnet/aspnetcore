@@ -2942,6 +2942,43 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }, options);
     }
 
+    public static object[][] ValueTypeReturningDelegates =>
+    [
+        [(HttpContext context) => 1],
+        [(HttpContext context) => 1L],
+        [(HttpContext context) => 1.0f],
+        [(HttpContext context) => 1.0],
+        [(HttpContext context) => 'a'],
+        [(HttpContext context) => true]
+    ];
+
+    [Theory]
+    [MemberData(nameof(ValueTypeReturningDelegates))]
+    public async Task Create_DelegateWithValueReturnTypeAndEndpointFilter(System.Delegate @delegate)
+    {
+        var invoked = false;
+
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    invoked = true;
+                    return await next(context);
+                }
+            }),
+        };
+
+        var result = RequestDelegateFactory.Create(@delegate, options);
+        var requestDelegate = result.RequestDelegate;
+
+        var httpContext = CreateHttpContext();
+        await requestDelegate(httpContext);
+
+        Assert.True(invoked);
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
