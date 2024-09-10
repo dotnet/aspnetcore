@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Authentication.Google` contains middleware to support Google's OpenId and OAuth 2.0 authentication workflows.
+`Microsoft.AspNetCore.Authentication.Google` contains middleware to support Google's OAuth 2.0 authentication workflow.
 
 ## How to Use
 
