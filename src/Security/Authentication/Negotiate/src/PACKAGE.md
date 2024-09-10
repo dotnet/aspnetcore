@@ -20,16 +20,9 @@ To use the middleware, configure it in your ASP.NET Core app's `Program.cs`:
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
    .AddNegotiate();
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = options.DefaultPolicy;
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
-app.UseAuthentication();
-app.UseAuthorization();
-```
 
 Next, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/security/authentication/windowsauth) for configuration details specific to your app's web server.
 
