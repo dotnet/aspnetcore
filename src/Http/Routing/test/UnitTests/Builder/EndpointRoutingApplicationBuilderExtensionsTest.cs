@@ -74,7 +74,6 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Null(endpointFeature.Endpoint);
     }
 
-
     [Fact]
     public async Task UseRouting_ServicesRegistered_Match_DoesNotSetsFeature()
     {
