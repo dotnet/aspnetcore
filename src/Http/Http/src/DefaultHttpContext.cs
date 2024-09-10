@@ -218,19 +218,8 @@ public sealed class DefaultHttpContext : HttpContext
     /// </summary>
     public override Endpoint? Endpoint
     {
-        get
-        {
-            var feature = _features.Fetch(ref _features.Cache.Endpoint, f => new EndpointFeature());
-            return feature?.Endpoint;
-        }
-        set
-        {
-            var feature = _features.Fetch(ref _features.Cache.Endpoint, f => new EndpointFeature());
-            if(feature != null)
-            {
-                feature.Endpoint = value;
-            }
-        }
+        get => base.Endpoint;
+        set => base.Endpoint = value;
     }
 
     // This property exists because of backwards compatibility.
