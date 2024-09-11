@@ -33,7 +33,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         EndpointDataSource endpointDataSource,
         IHostEnvironment environment,
         ParameterPolicyFactory parameterPolicyFactory,
-        IServiceProviderIsService? serviceProviderIsService)
+        IServiceProviderIsService? serviceProviderIsService = null)
     {
         _endpointDataSource = endpointDataSource;
         _environment = environment;
