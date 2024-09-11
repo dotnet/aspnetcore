@@ -118,6 +118,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             catch (Exception ex)
             {
                 Log.RequestParsingError(Logger, ex);
+                // Synchronously calls Http.Sys and tells it to send an http response
+                // No one has written to the response yet (haven't even created the response object below)
                 Server.SendError(_requestId.Value, StatusCodes.Status400BadRequest, authChallenges: null);
                 return false;
             }
