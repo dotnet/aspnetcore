@@ -242,8 +242,8 @@
   <PropertyGroup>
     <!-- PackageReadmeFile specifies the package readme file name in the package. PackageReadmeFilePath points to the package readme file on disk. -->
     <EnableDefaultPackageReadmeFile Condition="'$(EnableDefaultPackageReadmeFile)' == '' and '$(IsShipping)' != 'false'">true</EnableDefaultPackageReadmeFile>
-    <PackageReadmeFile Condition="'$(PackageReadmeFile)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true'">PACKAGE.md</PackageReadmeFile>
     <PackageReadmeFilePath Condition="'$(PackageReadmeFilePath)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true'">PACKAGE.md</PackageReadmeFilePath>
+    <PackageReadmeFile Condition="'$(PackageReadmeFile)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true' and Exists('$(PackageReadmeFilePath)'">PACKAGE.md</PackageReadmeFile>
     <!-- Uncomment this once all packages have ReadMes -->
     <!-- <BeforePack>$(BeforePack);ValidatePackageReadmeExists</BeforePack> -->
   </PropertyGroup>
