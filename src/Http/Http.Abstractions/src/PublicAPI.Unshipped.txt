@@ -1,5 +1,9 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.EndpointFeature
+Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.EndpointFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.EndpointFeature.Endpoint.set -> void
+Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.EndpointFeature.EndpointFeature() -> void
 Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 *REMOVED*Microsoft.AspNetCore.Http.HostString.Value.get -> string!
 Microsoft.AspNetCore.Http.HostString.Value.get -> string?

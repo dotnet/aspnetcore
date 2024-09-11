@@ -36,8 +36,19 @@ public static class EndpointHttpContextExtensions
         context.Endpoint = endpoint;
     }
 
+    /// <summary>
+    /// A feature used to get or set the <see cref="Endpoint"/> for the current request.
+    /// </summary>
+    /// <remarks>
+    /// This feature is typically set by routing middleware. The <see cref="Endpoint"/> represents 
+    /// the final endpoint that the request will be routed to. A request might not have an endpoint 
+    /// if routing hasn't been processed yet or if no endpoint matches the request.
+    /// </remarks>
     public sealed class EndpointFeature : IEndpointFeature
     {
+        /// <summary>
+        /// Gets or sets the <see cref="Endpoint"/> for the current request.
+        /// </summary>
         public Endpoint? Endpoint { get; set; }
     }
 }
