@@ -36,7 +36,7 @@ public static class EndpointHttpContextExtensions
         context.Endpoint = endpoint;
     }
 
-    private sealed class EndpointFeature : IEndpointFeature
+    public sealed class EndpointFeature : IEndpointFeature
     {
         public Endpoint? Endpoint { get; set; }
     }

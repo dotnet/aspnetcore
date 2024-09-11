@@ -220,7 +220,14 @@ public sealed class DefaultHttpContext : HttpContext
     {
         get
         {
-            return Features.Get<IEndpointFeature>()?.Endpoint;
+            var endpointFeature = Features.Get<IEndpointFeature>();
+            if (endpointFeature == null)
+            {
+                endpointFeature = new EndpointHttpContextExtensions.EndpointFeature();
+                Features.Set(endpointFeature);
+            }
+
+            return endpointFeature.Endpoint;
         }
         set
         {
