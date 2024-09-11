@@ -216,7 +216,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 return;
             }
 
-            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
+            var statusCode = HttpApi.HttpCancelHttpRequest(Server.RequestQueue.Handle,
                 _requestId.Value, default);
 
             // Either the connection has already dropped, or the last write is in progress.
