@@ -14,7 +14,7 @@ dotnet add package Microsoft.AspNetCore.Authentication.Certificate
 
 ### Configuration
 
-1. Acquire an HTTPS certificate, apply it, and [configure your server](https://learn.microsoft.com/aspnet/core/security/authentication/certauth#configure-your-server-to-require-certificates) to require certificates
+1. Acquire an HTTPS certificate, install it, and [configure your server](https://learn.microsoft.com/aspnet/core/security/authentication/certauth#configure-your-server-to-require-certificates) to require certificates
 2. Configure the middleware in your APS.NET Core app's `Program.cs`:
     ```csharp
     var builder = WebApplication.CreateBuilder(args);
