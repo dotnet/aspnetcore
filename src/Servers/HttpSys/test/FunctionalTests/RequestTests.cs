@@ -367,8 +367,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string root;
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
             {
-                Assert.Fail("Request should not reach here");
-                return Task.FromResult(0);
+                throw new NotImplementedException();
             }))
             {
                 var uri = new Uri(root);
