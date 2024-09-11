@@ -82,6 +82,7 @@ public sealed class DefaultHttpContext : HttpContext
         _response.Initialize(revision);
         _connection?.Initialize(features, revision);
         _websockets?.Initialize(features, revision);
+        _features.Cache.Endpoint = Features.Get<IEndpointFeature>();
         _active = true;
     }
 
