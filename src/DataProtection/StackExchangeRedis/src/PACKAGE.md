@@ -2,6 +2,9 @@
 
 `Microsoft.AspNetCore.DataProtection.StackExchangeRedis` allows storing data protection keys in a Redis cache.
 
+> [!WARNING]
+> Only Redis versions supporting [Redis Data Persistence](https://learn.microsoft.com/azure/azure-cache-for-redis/cache-how-to-premium-persistence) should be used to store keys. [Azure Blob storage](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction) is persistent and can be used to store keys. For more information, see [this GitHub issue](https://github.com/dotnet/AspNetCore/issues/13476).
+
 ## How to Use
 
 To use `Microsoft.AspNetCore.DataProtection.StackExchangeRedis`, follow these steps:
