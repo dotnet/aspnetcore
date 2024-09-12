@@ -78,7 +78,7 @@ internal class TestSettings
             }
 
             Debug.WriteLine(buf.ToString());
-            Assert.True(false, buf.ToString());
+            Assert.Fail(buf.ToString());
         }
 
         return formInputs;
@@ -116,7 +116,7 @@ internal class TestSettings
             }
 
             Debug.WriteLine(buf.ToString());
-            Assert.True(false, buf.ToString());
+            Assert.Fail(buf.ToString());
         }
 
         return formInputs;
@@ -155,7 +155,7 @@ internal class TestSettings
             }
 
             Debug.WriteLine(buf.ToString());
-            Assert.True(false, buf.ToString());
+            Assert.Fail(buf.ToString());
         }
 
         return queryDict;

@@ -183,7 +183,7 @@ public class TargetingPackTests
             }
             else
             {
-                Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
+                Assert.Fail($"{packageName} is not a recognized aspNetCore or runtime dependency");
             }
         });
     }

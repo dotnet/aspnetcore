@@ -2101,7 +2101,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(streamMethod);
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
                 if (detailedError != null)
@@ -2772,7 +2772,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 {
                     if (hasCloseMessage)
                     {
-                        Assert.True(false, "Received message after close");
+                        Assert.Fail("Received message after close");
                     }
 
                     switch (message)
@@ -2784,7 +2784,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                             hasCloseMessage = true;
                             break;
                         default:
-                            Assert.True(false, "Unexpected message type: " + message.GetType().Name);
+                            Assert.Fail("Unexpected message type: " + message.GetType().Name);
                             break;
                     }
                 }
@@ -3225,7 +3225,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 
@@ -3260,7 +3260,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.NullStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 
