@@ -95,7 +95,7 @@ public class DefaultHubProtocolResolverTests
             }, NullLogger<DefaultHubProtocolResolver>.Instance);
 
         var hubProtocols = resolver.AllProtocols;
-        Assert.Equal(1, hubProtocols.Count);
+        Assert.Single(hubProtocols);
 
         Assert.Same(jsonProtocol2, hubProtocols[0]);
     }

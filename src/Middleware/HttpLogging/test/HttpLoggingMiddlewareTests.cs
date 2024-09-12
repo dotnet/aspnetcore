@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HttpLogging;
 
 public class HttpLoggingMiddlewareTests : LoggedTest
 {
-    public static TheoryData BodyData
+    public static TheoryData<string> BodyData
     {
         get
         {

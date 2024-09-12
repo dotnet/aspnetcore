@@ -791,7 +791,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     [Theory]
     [InlineData(null)]
     [InlineData("text/html")]
-    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string contentType)
+    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string? contentType)
     {
         // Arrange
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>

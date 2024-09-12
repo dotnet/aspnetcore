@@ -190,7 +190,7 @@ public class AuthorizationMessageHandlerTests
         _ = await new HttpClient(handler).GetAsync("https://localhost:5001/weather");
 
         // Assert
-        Assert.Equal(1, tokenProvider.Invocations.Count);
+        Assert.Single(tokenProvider.Invocations);
     }
 }
 

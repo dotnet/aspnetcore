@@ -273,7 +273,9 @@ public class DotNetDispatcherTest
 
         // Assert
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var result = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(testDTO.StringVal, result.StringVal);
         Assert.Equal(testDTO.IntVal, result.IntVal);
     }
@@ -407,7 +409,9 @@ public class DotNetDispatcherTest
 
         // Assert
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(7, task.Result.IntVal);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -419,7 +423,9 @@ public class DotNetDispatcherTest
         DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
 
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(new[] { 1, 2, 3 }, task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -431,7 +437,9 @@ public class DotNetDispatcherTest
         DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
 
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Null(task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]

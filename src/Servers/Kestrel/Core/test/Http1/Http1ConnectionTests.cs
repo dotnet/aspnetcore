@@ -130,7 +130,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _transport.Input.AdvanceTo(TakeStartLineAndMessageHeaders());
 
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
         readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
@@ -144,7 +144,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _transport.Input.AdvanceTo(TakeMessageHeaders());
 
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("makethislargerthanthestartline", _http1Connection.RequestHeaders["Header"]);
     }
 
@@ -277,7 +277,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _transport.Input.AdvanceTo(_consumed, _examined);
 
         Assert.True(takeMessageHeaders);
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("value1", _http1Connection.RequestHeaders["Header-1"]);
 
         _http1Connection.Reset();
@@ -289,7 +289,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _transport.Input.AdvanceTo(_consumed, _examined);
 
         Assert.True(takeMessageHeaders);
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("value2", _http1Connection.RequestHeaders["Header-2"]);
     }
 
@@ -712,7 +712,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    public async Task BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;
@@ -726,7 +726,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    public async Task BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;
@@ -876,7 +876,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders != null);
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(headers0));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders.Count >= header0Count);
@@ -908,7 +908,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders != null);
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         var newRequestHeaders = new RequestHeadersWrapper(_http1Connection.RequestHeaders);
         _http1Connection.RequestHeaders = newRequestHeaders;

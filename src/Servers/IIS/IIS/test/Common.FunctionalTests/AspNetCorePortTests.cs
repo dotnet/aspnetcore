@@ -125,7 +125,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         if (i == 10)
         {
             // Didn't restart after 10 retries
-            Assert.False(true);
+            Assert.Fail();
         }
 
         // Shutdown again
@@ -143,7 +143,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         }
 
         // Test failure if this happens.
-        Assert.False(true);
+        Assert.Fail();
     }
 
     private static int GetUnusedRandomPort()
