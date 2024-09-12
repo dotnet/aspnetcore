@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// A class that provides <c>dynamic</c> access to connections, including the one that sent the current invocation.
 /// </summary>
-[RequiresDynamicCodeAttribute("DynamicHubClient requires dynamic code generation to construct a call site.")]
+[RequiresDynamicCodeAttribute("DynamicHubClients requires dynamic code generation to construct a call site.")]
 public class DynamicHubClients
 {
     private readonly IHubCallerClients _clients;
