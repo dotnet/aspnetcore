@@ -8,13 +8,13 @@
 <h3>@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-xl-6">
         <form id="email-form" method="post">
             <div asp-validation-summary="All" class="text-danger" role="alert"></div>
             @if (Model.IsEmailConfirmed)
             {
                 <div class="form-floating mb-3 input-group">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
+                    <input asp-for="Email" class="form-control" placeholder="Enter your email" disabled />
                         <div class="input-group-append">
                             <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
                         </div>
@@ -24,13 +24,13 @@
             else
             {
                 <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
+                    <input asp-for="Email" class="form-control" placeholder="Enter your email" disabled />
                     <label asp-for="Email" class="form-label"></label>
                     <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
                 </div>
             }
             <div class="form-floating mb-3">
-                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
+                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter new email" />
                 <label asp-for="Input.NewEmail" class="form-label"></label>
                 <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
             </div>
