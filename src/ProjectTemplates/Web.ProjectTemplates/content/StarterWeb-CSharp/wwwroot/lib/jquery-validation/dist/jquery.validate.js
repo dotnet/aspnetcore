@@ -1,9 +1,9 @@
 /*!
- * jQuery Validation Plugin v1.20.0
+ * jQuery Validation Plugin v1.21.0
  *
  * https://jqueryvalidation.org/
  *
- * Copyright (c) 2023 Jörn Zaefferer
+ * Copyright (c) 2024 Jörn Zaefferer
  * Released under the MIT license
  */
 (function( factory ) {
@@ -293,6 +293,7 @@ $.extend( $.validator, {
 		onsubmit: true,
 		ignore: ":hidden",
 		ignoreTitle: false,
+		customElements: [],
 		onfocusin: function( element ) {
 			this.lastActive = element;
 
@@ -440,17 +441,17 @@ $.extend( $.validator, {
 					settings[ eventType ].call( validator, this, event );
 				}
 			}
-
+			var focusListeners = [ ":text", "[type='password']", "[type='file']", "select", "textarea", "[type='number']", "[type='search']",
+								"[type='tel']", "[type='url']", "[type='email']", "[type='datetime']", "[type='date']", "[type='month']",
+								"[type='week']", "[type='time']", "[type='datetime-local']", "[type='range']", "[type='color']",
+								"[type='radio']", "[type='checkbox']", "[contenteditable]", "[type='button']" ];
+			var clickListeners = [ "select", "option", "[type='radio']", "[type='checkbox']" ];
 			$( this.currentForm )
-				.on( "focusin.validate focusout.validate keyup.validate",
-					":text, [type='password'], [type='file'], select, textarea, [type='number'], [type='search'], " +
-					"[type='tel'], [type='url'], [type='email'], [type='datetime'], [type='date'], [type='month'], " +
-					"[type='week'], [type='time'], [type='datetime-local'], [type='range'], [type='color'], " +
-					"[type='radio'], [type='checkbox'], [contenteditable], [type='button']", delegate )
+				.on( "focusin.validate focusout.validate keyup.validate", focusListeners.concat( this.settings.customElements ).join( ", " ), delegate )
 
 				// Support: Chrome, oldIE
 				// "select" is provided as event.target when clicking a option
-				.on( "click.validate", "select, option, [type='radio'], [type='checkbox']", delegate );
+				.on( "click.validate", clickListeners.concat( this.settings.customElements ).join( ", " ), delegate );
 
 			if ( this.settings.invalidHandler ) {
 				$( this.currentForm ).on( "invalid-form.validate", this.settings.invalidHandler );
@@ -647,11 +648,12 @@ $.extend( $.validator, {
 
 		elements: function() {
 			var validator = this,
-				rulesCache = {};
+				rulesCache = {},
+				selectors = [ "input", "select", "textarea", "[contenteditable]" ];
 
 			// Select all valid inputs inside the form (no submit or reset buttons)
 			return $( this.currentForm )
-			.find( "input, select, textarea, [contenteditable]" )
+			.find( selectors.concat( this.settings.customElements ).join( ", " ) )
 			.not( ":submit, :reset, :image, :disabled" )
 			.not( this.settings.ignore )
 			.filter( function() {
@@ -1501,7 +1503,7 @@ $.extend( $.validator, {
 
 		// https://jqueryvalidation.org/number-method/
 		number: function( value, element ) {
-			return this.optional( element ) || /^(?:-?\d+|-?\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test( value );
+			return this.optional( element ) || /^(?:-?\d+|-?\d{1,3}(?:,\d{3})+)?(?:-?\.\d+)?$/.test( value );
 		},
 
 		// https://jqueryvalidation.org/digits-method/
@@ -1612,11 +1614,12 @@ $.extend( $.validator, {
 
 			param = typeof param === "string" && { url: param } || param;
 			optionDataString = $.param( $.extend( { data: value }, param.data ) );
-			if ( previous.old === optionDataString ) {
+			if ( previous.valid !== null && previous.old === optionDataString ) {
 				return previous.valid;
 			}
 
 			previous.old = optionDataString;
+			previous.valid = null;
 			validator = this;
 			this.startRequest( element );
 			data = {};
