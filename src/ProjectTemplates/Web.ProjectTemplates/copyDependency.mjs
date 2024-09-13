@@ -35,8 +35,10 @@ if (existsSync(destinationFolder)) {
             console.error('Error deleting destination folder:', err);
             process.exit(1);
         }
+        copyFolderSync(sourceFolder, destinationFolder);
+        console.log('Folder copied successfully!');
     });
+}else{
+    copyFolderSync(sourceFolder, destinationFolder);
+    console.log('Folder copied successfully!');
 }
-
-copyFolderSync(sourceFolder, destinationFolder);
-console.log('Folder copied successfully!');

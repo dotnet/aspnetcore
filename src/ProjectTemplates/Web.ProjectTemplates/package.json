@@ -14,7 +14,7 @@
     "copy-bootstrap-starter-web-csharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/bootstrap/dist",
     "copy-bootstrap-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/bootstrap/dist",
     "copy-jquery": "npm run copy-jquery-razor-pages && npm run copy-jquery-starter-web",
-    "copy-jquery-razor-pages": "npm run copy-dependency -- ./node_modules/jquery/dist/ .content/RazorPagesWeb-CSharp/wwwroot/lib/jquery/dist",
+    "copy-jquery-razor-pages": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/jquery/dist",
     "copy-jquery-starter-web": "npm run copy-jquery-starter-web-csharp && npm run copy-jquery-starter-web-fsharp",
     "copy-jquery-starter-web-csharp": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/jquery/dist",
     "copy-jquery-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/jquery/dist",
