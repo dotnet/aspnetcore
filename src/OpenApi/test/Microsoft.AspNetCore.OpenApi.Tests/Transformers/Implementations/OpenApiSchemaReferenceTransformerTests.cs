@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -403,5 +404,54 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     private class Level3
     {
         public string Terminate { get; set; }
+    }
+
+    [Fact]
+    public async Task ThrowsForOverlyNestedSchemas()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DeeplyNestedLevel1 item) => { });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifyOpenApiDocument(builder, _ => { }));
+        Assert.Equal("The depth of the generated JSON schema exceeds the JsonSerializerOptions.MaxDepth setting.", exception.Message);
+    }
+
+    [Fact]
+    public async Task SupportsDeeplyNestedSchemaWithConfiguredMaxDepth()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.MaxDepth = 124;
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapPost("/", (DeeplyNestedLevel1 item) => { });
+
+        // Act & Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("DeeplyNestedLevel1", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for DeeplyNestedLevel1.Item2
+            var level1Schema = requestSchema.GetEffective(document);
+            Assert.Equal("DeeplyNestedLevel2", level1Schema.Properties["item2"].Reference.Id);
+
+            // Assert that $ref is used for DeeplyNestedLevel2.Item3
+            var level2Schema = level1Schema.Properties["item2"].GetEffective(document);
+            Assert.Equal("DeeplyNestedLevel3", level2Schema.Properties["item3"].Reference.Id);
+
+            // Assert that $ref is used for DeeplyNestedLevel3.Item4
+            var level3Schema = level2Schema.Properties["item3"].GetEffective(document);
+            Assert.Equal("DeeplyNestedLevel4", level3Schema.Properties["item4"].Reference.Id);
+        });
     }
 }
