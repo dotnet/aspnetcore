@@ -721,11 +721,11 @@ public class CollectionModelBinderIntegrationTest
     }
 
     // parameter type, form content, expected type
-    public static TheoryData<Type, IDictionary<string, StringValues>, Type> CollectionTypeData
+    public static TheoryData<Type, Dictionary<string, StringValues>, Type> CollectionTypeData
     {
         get
         {
-            return new TheoryData<Type, IDictionary<string, StringValues>, Type>
+            return new TheoryData<Type, Dictionary<string, StringValues>, Type>
                 {
                     {
                         typeof(IEnumerable<string>),

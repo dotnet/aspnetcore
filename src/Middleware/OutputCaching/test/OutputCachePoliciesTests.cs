@@ -188,7 +188,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CacheVaryByRules.HeaderNames);
+        Assert.Equal(0, context.CacheVaryByRules.HeaderNames.Count);
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CacheVaryByRules.QueryKeys);
+        Assert.Equal(0, context.CacheVaryByRules.QueryKeys.Count);
     }
 
     [Fact]
