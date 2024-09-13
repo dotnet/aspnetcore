@@ -4,6 +4,7 @@
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
@@ -1168,8 +1169,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     public void InteractiveServerRootComponent_CanAccessCircuitContext()
     {
         Navigate($"{ServerPathBase}/interactivity/circuit-context");
-
-        Browser.Equal("True", () => Browser.FindElement(By.Id("has-circuit-context")).Text);
+        CircuitContextTest.TestCircuitContextCore(Browser);
     }
 
     [Fact]
