@@ -1,0 +1,24 @@
+{
+  "name": "project-templates",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Project templates dependencies",
+  "main": "index.js",
+  "scripts": {
+    "copy-dependency": "node copyDependency.mjs",
+    "copy-bootstrap": "npm run copy-bootstrap-blazor && npm run copy-bootstrap-razor-pages && npm run copy-bootstrap-starter-web",
+    "copy-bootstrap-blazor": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/BlazorWeb-CSharp/BlazorWeb-CSharp/wwwroot/lib/bootstrap",
+    "copy-bootstrap-razor-pages": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ .content/RazorPagesWeb-CSharp/wwwroot/lib/bootstrap",
+    "copy-bootstrap-starter-web": "npm run copy-bootstrap-starter-web-csharp && npm run copy-bootstrap-starter-web-fsharp",
+    "copy-bootstrap-starter-web-csharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/bootstrap",
+    "copy-bootstrap-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/bootstrap"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/aspnetcore.git"
+  },
+  "homepage": "https://github.com/dotnet/aspnetcore#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.3"
+  }
+}
