@@ -441,17 +441,13 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // Assert $ref used for top-level
             Assert.Equal("DeeplyNestedLevel1", requestSchema.Reference.Id);
 
-            // Assert that $ref is used for DeeplyNestedLevel1.Item2
-            var level1Schema = requestSchema.GetEffective(document);
-            Assert.Equal("DeeplyNestedLevel2", level1Schema.Properties["item2"].Reference.Id);
-
-            // Assert that $ref is used for DeeplyNestedLevel2.Item3
-            var level2Schema = level1Schema.Properties["item2"].GetEffective(document);
-            Assert.Equal("DeeplyNestedLevel3", level2Schema.Properties["item3"].Reference.Id);
-
-            // Assert that $ref is used for DeeplyNestedLevel3.Item4
-            var level3Schema = level2Schema.Properties["item3"].GetEffective(document);
-            Assert.Equal("DeeplyNestedLevel4", level3Schema.Properties["item4"].Reference.Id);
+            // Assert that $ref is used for all nested levels
+            var levelSchema = requestSchema.GetEffective(document);
+            for (var level = 2; level < 36; level++)
+            {
+                Assert.Equal($"DeeplyNestedLevel{level}", levelSchema.Properties[$"item{level}"].Reference.Id);
+                levelSchema = levelSchema.Properties[$"item{level}"].GetEffective(document);
+            }
         });
     }
 }
