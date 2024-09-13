@@ -359,4 +359,49 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     {
         public ICollection<Todo> Todos { get; set; } = [];
     }
+
+    [Fact]
+    public async Task SupportsRefMappingInDeeplyNestedTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Level1 item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Level1", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for Level1.Item2
+            var level1Schema = requestSchema.GetEffective(document);
+            Assert.Equal("Level2", level1Schema.Properties["item2"].Reference.Id);
+
+            // Assert that $ref is used for Level2.Item3
+            var level2Schema = level1Schema.Properties["item2"].GetEffective(document);
+            Assert.Equal("Level3", level2Schema.Properties["item3"].Reference.Id);
+
+            // Assert that no $ref is used for string property
+            var level3Schema = level2Schema.Properties["item3"].GetEffective(document);
+            Assert.Null(level3Schema.Properties["terminate"].Reference);
+        });
+    }
+
+    private class Level1
+    {
+        public Level2 Item2 { get; set; }
+    }
+
+    private class Level2
+    {
+        public Level3 Item3 { get; set; }
+    }
+
+    private class Level3
+    {
+        public string Terminate { get; set; }
+    }
 }

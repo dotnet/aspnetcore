@@ -293,8 +293,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("value", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties,
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties,
                     property =>
                     {
                         Assert.Equal("id", property.Key);
@@ -318,8 +319,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("error", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties, property =>
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties, property =>
                     {
                         Assert.Equal("code", property.Key);
                         Assert.Equal("integer", property.Value.Type);
@@ -405,8 +407,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("todo", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties,
+                    Assert.NotNull(property.Value.Reference);
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);
@@ -530,8 +534,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("items", property.Key);
                     Assert.Equal("array", property.Value.Type);
                     Assert.NotNull(property.Value.Items);
-                    Assert.Equal("object", property.Value.Items.Type);
-                    Assert.Collection(property.Value.Items.Properties,
+                    Assert.NotNull(property.Value.Items.Reference);
+                    Assert.Equal("object", property.Value.Items.GetEffective(document).Type);
+                    var itemsValue = property.Value.Items.GetEffective(document);
+                    Assert.Collection(itemsValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);

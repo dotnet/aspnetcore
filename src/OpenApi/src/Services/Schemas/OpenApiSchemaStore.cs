@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaStore
 {
+    // Matches default MaxValidationDepth and MaxModelBindingRecursionDepth used by MVC.
+    private readonly int MaxSchemaReferenceRecursionDepth = 32;
     private readonly Dictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
@@ -79,32 +81,37 @@ internal sealed class OpenApiSchemaStore
     /// </summary>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
     /// <param name="captureSchemaByRef"><see langword="true"/> if schema should always be referenced instead of inlined.</param>
-    public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema, bool captureSchemaByRef)
+    /// <param name="currentDepth">The current recursion depth for the reference schema.</param>
+    public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema, bool captureSchemaByRef, int currentDepth = 0)
     {
-        // Only capture top-level schemas by ref. Nested schemas will follow the
-        // reference by duplicate rules.
+        if (schema == null || currentDepth > MaxSchemaReferenceRecursionDepth)
+        {
+            return;
+        }
+
         AddOrUpdateSchemaByReference(schema, captureSchemaByRef: captureSchemaByRef);
         AddOrUpdateAnyOfSubSchemaByReference(schema);
+
         if (schema.AdditionalProperties is not null)
         {
-            AddOrUpdateSchemaByReference(schema.AdditionalProperties);
+            PopulateSchemaIntoReferenceCache(schema.AdditionalProperties, captureSchemaByRef, currentDepth++);
         }
         if (schema.Items is not null)
         {
-            AddOrUpdateSchemaByReference(schema.Items);
+            PopulateSchemaIntoReferenceCache(schema.Items, captureSchemaByRef, currentDepth++);
         }
         if (schema.AllOf is not null)
         {
             foreach (var allOfSchema in schema.AllOf)
             {
-                AddOrUpdateSchemaByReference(allOfSchema);
+                PopulateSchemaIntoReferenceCache(allOfSchema, captureSchemaByRef, currentDepth++);
             }
         }
         if (schema.Properties is not null)
         {
             foreach (var property in schema.Properties.Values)
             {
-                AddOrUpdateSchemaByReference(property);
+                PopulateSchemaIntoReferenceCache(property, captureSchemaByRef, currentDepth++);
             }
         }
     }
