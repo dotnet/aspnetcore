@@ -131,7 +131,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         firstNameColumnOptionsButton.Click();
 
         var firstNameSearchSelector = "thead > tr > th:nth-child(2) input[type=search]";
-        app.Exists(By.CssSelector(firstNameSearchSelector));
+        Browser.Exists(By.CssSelector(firstNameSearchSelector));
     }
 
     [Fact]
@@ -146,6 +146,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         grid.FindElement("tbody").Click();
 
         var firstNameSearchSelector = "thead > tr > th:nth-child(2) input[type=search]";
-        app.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
     }
 }
