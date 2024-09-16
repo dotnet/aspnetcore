@@ -65,7 +65,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 
         // Act
         builder.MapPost("/", (Todo todo) => { });
-        var options = new OpenApiOptions { CreateSchemaReferenceId = (type) => $"{type.Type.Name}Schema" };
+        var options = new OpenApiOptions { CreateSchemaReferenceId = (type) => type.Type.Name == "Todo" ? $"{type.Type.Name}Schema" : OpenApiOptions.CreateDefaultSchemaReferenceId(type) };
 
         // Assert
         await VerifyOpenApiDocument(builder, options, document =>
@@ -114,7 +114,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 
         // Act
         builder.MapPost("/", (Todo todo) => { });
-        var options = new OpenApiOptions { CreateSchemaReferenceId = (type) => type.Type.Name == "Todo" ? null : $"{type.Type.Name}Schema" };
+        var options = new OpenApiOptions { CreateSchemaReferenceId = (type) => type.Type.Name == "Todo" ? null : OpenApiOptions.CreateDefaultSchemaReferenceId(type) };
 
         // Assert
         await VerifyOpenApiDocument(builder, options, document =>

@@ -382,7 +382,7 @@ internal sealed class OpenApiDocumentService(
             .SelectMany(attr => attr.ContentTypes);
         foreach (var contentType in explicitContentTypes)
         {
-            response.Content[contentType] = new OpenApiMediaType();
+            response.Content.TryAdd(contentType, new OpenApiMediaType());
         }
 
         return response;
