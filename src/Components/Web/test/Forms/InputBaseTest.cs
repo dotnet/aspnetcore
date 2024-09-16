@@ -451,7 +451,7 @@ public class InputBaseTest
         var component = (TestInputComponent<string>)componentFrame1.Component;
         Assert.Equal("invalid", component.CssClass);
         Assert.NotNull(component.AdditionalAttributes);
-        Assert.Equal(1, component.AdditionalAttributes.Count);
+        Assert.Single(component.AdditionalAttributes);
         //Check for "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
         Assert.Equal("true", component.AdditionalAttributes["aria-invalid"]);
     }
@@ -486,7 +486,7 @@ public class InputBaseTest
         var component = (TestInputComponent<string>)componentFrame1.Component;
         Assert.Equal("invalid", component.CssClass);
         Assert.NotNull(component.AdditionalAttributes);
-        Assert.Equal(1, component.AdditionalAttributes.Count);
+        Assert.Single(component.AdditionalAttributes);
         Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
     }
 

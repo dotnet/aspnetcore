@@ -62,7 +62,7 @@ public class AuthorizationPolicyFacts
         var combined = await AuthorizationPolicy.CombineAsync(provider, attributes, policies);
 
         // Assert
-        Assert.Equal(1, combined.Requirements.Count);
+        Assert.Single(combined.Requirements);
         Assert.Empty(combined.Requirements.OfType<DenyAnonymousAuthorizationRequirement>());
     }
 

@@ -53,7 +53,7 @@ public class HttpConnectionManagerTests : LoggedTest
         httpConnectionManager.Walk(_ => connectionCount++);
 
         Assert.Equal(1, connectionCount);
-        Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationNeverCompleted"));
+        Assert.DoesNotContain(TestSink.Writes, c => c.EventId.Name == "ApplicationNeverCompleted");
 
         // Ensure httpConnection doesn't get GC'd before this point.
         GC.KeepAlive(httpConnection);

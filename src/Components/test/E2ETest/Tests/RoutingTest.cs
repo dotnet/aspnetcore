@@ -26,6 +26,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase);

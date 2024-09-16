@@ -245,15 +245,15 @@ public class EntityTagHeaderValueTest
     {
         var result = EntityTagHeaderValue.ParseList(null);
         Assert.NotNull(result);
-        Assert.Equal(0, result.Count);
+        Assert.Empty(result);
 
         result = EntityTagHeaderValue.ParseList(new string[0]);
         Assert.NotNull(result);
-        Assert.Equal(0, result.Count);
+        Assert.Empty(result);
 
         result = EntityTagHeaderValue.ParseList(new string[] { "" });
         Assert.NotNull(result);
-        Assert.Equal(0, result.Count);
+        Assert.Empty(result);
     }
 
     [Fact]

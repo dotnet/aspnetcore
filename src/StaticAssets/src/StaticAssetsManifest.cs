@@ -35,14 +35,23 @@ internal class StaticAssetsManifest
         return result;
     }
 
-    internal static StaticAssetsEndpointDataSource CreateDataSource(IEndpointRouteBuilder endpoints, string manifestName, List<StaticAssetDescriptor> descriptors)
+    internal static StaticAssetsEndpointDataSource CreateDataSource(IEndpointRouteBuilder endpoints, string manifestName, List<StaticAssetDescriptor> descriptors, bool isBuildManifest)
     {
-        var dataSource = new StaticAssetsEndpointDataSource(endpoints.ServiceProvider, new StaticAssetEndpointFactory(endpoints.ServiceProvider), manifestName, descriptors);
+        var dataSource = new StaticAssetsEndpointDataSource(
+            endpoints.ServiceProvider,
+            new StaticAssetEndpointFactory(endpoints.ServiceProvider),
+            manifestName,
+            isBuildManifest,
+            descriptors);
         endpoints.DataSources.Add(dataSource);
         return dataSource;
     }
 
     public int Version { get; set; }
 
+    public string ManifestType { get; set; } = "";
+
     public List<StaticAssetDescriptor> Endpoints { get; set; } = [];
+
+    public bool IsBuildManifest() => string.Equals(ManifestType, "Build", StringComparison.OrdinalIgnoreCase);
 }

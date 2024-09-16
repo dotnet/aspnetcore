@@ -4,6 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
+    <BuildWithNetFrameworkHostedCompiler>false</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
   <ItemGroup>
     <!-- Clear references, the SDK may add some depending on UsuingToolXxx settings, but we only want to restore the following -->

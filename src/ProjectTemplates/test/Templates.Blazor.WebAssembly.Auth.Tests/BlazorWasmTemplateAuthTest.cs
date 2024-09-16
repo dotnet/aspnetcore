@@ -6,6 +6,8 @@ using Templates.Test.Helpers;
 
 namespace Templates.Blazor.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 {
     public BlazorWasmTemplateAuthTest(ProjectFactoryFixture projectFactory)
