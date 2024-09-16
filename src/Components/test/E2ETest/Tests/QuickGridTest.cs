@@ -143,7 +143,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         firstNameColumnOptionsButton.Click();
 
         // Click outside the column options to close
-        grid.FindElement("tbody").Click();
+        grid.FindElement(By.CssSelector("tbody")).Click();
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
