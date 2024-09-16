@@ -1041,7 +1041,6 @@ public class RequestTests : LoggedTest
     [Theory]
     [InlineData("PassThrough")]
     [Repeat(100)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27157")]
     public async Task AppCanHandleClientAbortingConnectionMidRequest(string listenOptionsName)
     {
         var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
