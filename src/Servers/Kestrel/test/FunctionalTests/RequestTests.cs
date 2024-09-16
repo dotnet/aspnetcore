@@ -1039,7 +1039,8 @@ public class RequestTests : LoggedTest
     }
 
     [Theory]
-    [MemberData(nameof(ConnectionMiddlewareDataName))]
+    [InlineData("PassThrough")]
+    [Repeat(100)]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27157")]
     public async Task AppCanHandleClientAbortingConnectionMidRequest(string listenOptionsName)
     {

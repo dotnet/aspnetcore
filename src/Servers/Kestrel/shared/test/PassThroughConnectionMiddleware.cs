@@ -56,6 +56,22 @@ public class PassThroughConnectionMiddleware
             public override Memory<byte> GetMemory(int sizeHint = 0) => _output.GetMemory(sizeHint);
 
             public override Span<byte> GetSpan(int sizeHint = 0) => _output.GetSpan(sizeHint);
+
+            public override Stream AsStream(bool leaveOpen = false) => throw new InvalidOperationException("Missing override");
+
+            public override bool CanGetUnflushedBytes => throw new InvalidOperationException("Missing override");
+
+            public override ValueTask CompleteAsync(Exception exception = null) => throw new InvalidOperationException("Missing override");
+
+            protected override Task CopyFromAsync(Stream source, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Missing override");
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+            public override void OnReaderCompleted(Action<Exception, object> callback, object state) => throw new InvalidOperationException("Missing override");
+#pragma warning restore CS0672 // Member overrides obsolete member
+
+            public override long UnflushedBytes => throw new InvalidOperationException("Missing override");
+
+            public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Missing override");
         }
 
         private class PassThroughPipeReader : PipeReader
@@ -78,6 +94,20 @@ public class PassThroughConnectionMiddleware
             public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default) => _input.ReadAsync(cancellationToken);
 
             public override bool TryRead(out ReadResult result) => _input.TryRead(out result);
+
+            public override Stream AsStream(bool leaveOpen = false) => throw new InvalidOperationException("Missing override");
+
+            public override ValueTask CompleteAsync(Exception exception = null) => throw new InvalidOperationException("Missing override");
+
+            public override Task CopyToAsync(PipeWriter destination, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Missing override");
+
+            public override Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Missing override");
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+            public override void OnWriterCompleted(Action<Exception, object> callback, object state) => throw new InvalidOperationException("Missing override");
+#pragma warning restore CS0672 // Member overrides obsolete member
+
+            protected override ValueTask<ReadResult> ReadAtLeastAsyncCore(int minimumSize, CancellationToken cancellationToken) => throw new InvalidOperationException("Missing override");
         }
     }
 }
