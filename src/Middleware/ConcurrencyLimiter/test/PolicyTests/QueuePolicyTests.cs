@@ -40,6 +40,7 @@ public class QueuePolicyTests
     {
         using var s = TestUtils.CreateQueuePolicy(2, 1);
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var t1 = s.TryEnterAsync();
         Assert.True(t1.IsCompleted);
         Assert.True(t1.Result);
@@ -54,6 +55,7 @@ public class QueuePolicyTests
         var t4 = s.TryEnterAsync();
         Assert.True(t4.IsCompleted);
         Assert.False(t4.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]

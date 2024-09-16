@@ -245,7 +245,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async void StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
+    public async Task StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
     {
         IWebElement originalH1Elem;
 

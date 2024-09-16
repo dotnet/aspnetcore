@@ -56,7 +56,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             var effectiveSchema = schema.GetEffective(document);
             Assert.Equal("object", effectiveSchema.Type);
-            Assert.Equal(1, effectiveSchema.Properties.Count);
+            Assert.Single(effectiveSchema.Properties);
             var effectivePropertySchema = effectiveSchema.Properties["value"].GetEffective(document);
             Assert.Equal("string", effectivePropertySchema.Type);
             Assert.Equal("binary", effectivePropertySchema.Format);

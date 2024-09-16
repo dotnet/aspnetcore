@@ -719,10 +719,10 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         Assert.Equal(2, userClaims.Count);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[1]));
         userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, userClaims.Count);
+        Assert.Single(userClaims);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[2]));
         userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(0, userClaims.Count);
+        Assert.Empty(userClaims);
     }
 
     /// <summary>
@@ -750,10 +750,10 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         Assert.Equal(2, userClaims.Count);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[1]));
         userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, userClaims.Count);
+        Assert.Single(userClaims);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[2]));
         userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(0, userClaims.Count);
+        Assert.Empty(userClaims);
         var userClaims2 = await manager.GetClaimsAsync(user2);
         Assert.Equal(3, userClaims2.Count);
     }
@@ -770,12 +770,12 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, new Claim("c", "a")));
         var userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, userClaims.Count);
+        Assert.Single(userClaims);
         Claim claim = new Claim("c", "b");
         Claim oldClaim = userClaims.Count == 0 ? null : userClaims[0];
         IdentityResultAssert.IsSuccess(await manager.ReplaceClaimAsync(user, oldClaim, claim));
         var newUserClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, newUserClaims.Count);
+        Assert.Single(newUserClaims);
         Claim newClaim = newUserClaims.Count == 0 ? null : newUserClaims[0];
         Assert.Equal(claim.Type, newClaim.Type);
         Assert.Equal(claim.Value, newClaim.Value);
@@ -796,19 +796,19 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, new Claim("c", "a")));
         IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user2, new Claim("c", "a")));
         var userClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, userClaims.Count);
+        Assert.Single(userClaims);
         var userClaims2 = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, userClaims2.Count);
+        Assert.Single(userClaims2);
         Claim claim = new Claim("c", "b");
         Claim oldClaim = userClaims.Count == 0 ? null : userClaims[0];
         IdentityResultAssert.IsSuccess(await manager.ReplaceClaimAsync(user, oldClaim, claim));
         var newUserClaims = await manager.GetClaimsAsync(user);
-        Assert.Equal(1, newUserClaims.Count);
+        Assert.Single(newUserClaims);
         Claim newClaim = newUserClaims.Count == 0 ? null : newUserClaims[0];
         Assert.Equal(claim.Type, newClaim.Type);
         Assert.Equal(claim.Value, newClaim.Value);
         userClaims2 = await manager.GetClaimsAsync(user2);
-        Assert.Equal(1, userClaims2.Count);
+        Assert.Single(userClaims2);
         Claim oldClaim2 = userClaims2.Count == 0 ? null : userClaims2[0];
         Assert.Equal("c", oldClaim2.Type);
         Assert.Equal("a", oldClaim2.Value);
@@ -1930,7 +1930,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
 
         Assert.Equal(3, (await manager.GetUsersForClaimAsync(new Claim("foo", "bar"))).Count);
 
-        Assert.Equal(0, (await manager.GetUsersForClaimAsync(new Claim("123", "456"))).Count);
+        Assert.Empty((await manager.GetUsersForClaimAsync(new Claim("123", "456"))));
     }
 
     /// <summary>

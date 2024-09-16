@@ -172,7 +172,7 @@ expander-partial";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    public static TheoryData ViewLocationExpanders_GetIsMainPageFromContextData
+    public static TheoryData<string, string> ViewLocationExpanders_GetIsMainPageFromContextData
     {
         get
         {
