@@ -130,7 +130,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         firstNameColumnOptionsButton.Click();
 
-        var firstNameSearchSelector = "thead > tr > th:nth-child(2) input[type=search]";
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.Exists(By.CssSelector(firstNameSearchSelector));
     }
 
@@ -145,7 +145,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         // Click outside the column options to close
         grid.FindElement("tbody").Click();
 
-        var firstNameSearchSelector = "thead > tr > th:nth-child(2) input[type=search]";
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
     }
 }
