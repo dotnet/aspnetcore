@@ -96,6 +96,10 @@ public class DistributedSession : ISession
         get
         {
             Load();
+            if(IsAvailable == false)
+            {
+                throw new InvalidOperationException("Session not currently available");
+            }
             if (_sessionId == null)
             {
                 _sessionId = new Guid(IdBytes).ToString();
