@@ -76,6 +76,6 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, ContentTypeConstants.ProblemDetailsContentTypes, description: null));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, ContentTypeConstants.ProblemDetailsContentTypes));
     }
 }

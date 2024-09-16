@@ -59,29 +59,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
-    /// <typeparam name="TResponse">The type of the response.</typeparam>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status200OK"/>.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/json".</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026
-    public static RouteHandlerBuilder Produces<TResponse>(
-#pragma warning restore RS0026
-        this RouteHandlerBuilder builder,
-        int statusCode = StatusCodes.Status200OK,
-        string? contentType = null,
-        string? description = null,
-        params string[] additionalContentTypes)
-    {
-        return Produces(builder, statusCode, typeof(TResponse), contentType, description, additionalContentTypes);
-    }
-
-    /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
-    /// produced by <paramref name="builder"/>.
-    /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="statusCode">The response status code.</param>
     /// <param name="responseType">The type of the response. Defaults to null.</param>
@@ -115,44 +92,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
-    /// produced by <paramref name="builder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="statusCode">The response status code.</param>
-    /// <param name="responseType">The type of the response. Defaults to null.</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
-    /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026
-    public static RouteHandlerBuilder Produces(
-#pragma warning restore RS0026
-        this RouteHandlerBuilder builder,
-        int statusCode,
-        Type? responseType = null,
-        string? description = null,
-        string? contentType = null,
-        params string[] additionalContentTypes)
-    {
-        if (responseType is Type && string.IsNullOrEmpty(contentType))
-        {
-            contentType = ContentTypeConstants.JsonContentType;
-        }
-
-        if (contentType is null)
-        {
-            return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, responseType ?? typeof(void), description));
-        }
-
-        var contentTypes = new string[additionalContentTypes.Length + 1];
-        contentTypes[0] = contentType;
-        additionalContentTypes.CopyTo(contentTypes, 1);
-
-        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, responseType ?? typeof(void), description, contentTypes));
-    }
-
-    /// <summary>
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
     /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
     /// </summary>
@@ -174,25 +113,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
     /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="statusCode">The response status code.</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static RouteHandlerBuilder ProducesProblem(this RouteHandlerBuilder builder, int statusCode, string? description = null, string? contentType = null)
-    {
-        if (string.IsNullOrEmpty(contentType))
-        {
-            contentType = ContentTypeConstants.ProblemDetailsContentType;
-        }
-
-        return Produces(builder, statusCode, typeof(ProblemDetails), description, contentType);
-    }
-
-    /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
-    /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="statusCode">The response status code.</param>
     /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
@@ -208,28 +128,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
         }
 
         return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(ProblemDetails), [contentType]));
-    }
-
-    /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="statusCode">The response status code.</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static TBuilder ProducesProblem<TBuilder>(this TBuilder builder, int statusCode, string? description = null, string? contentType = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        where TBuilder : IEndpointConventionBuilder
-    {
-        if (string.IsNullOrEmpty(contentType))
-        {
-            contentType = ContentTypeConstants.ProblemDetailsContentType;
-        }
-
-        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(ProblemDetails), description, [contentType]));
     }
 
     /// <summary>
@@ -257,29 +155,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
     /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static RouteHandlerBuilder ProducesValidationProblem(
-        this RouteHandlerBuilder builder,
-        int statusCode = StatusCodes.Status400BadRequest,
-        string? description = null,
-        string? contentType = null)
-    {
-        if (string.IsNullOrEmpty(contentType))
-        {
-            contentType = ContentTypeConstants.ProblemDetailsContentType;
-        }
-
-        return Produces(builder, statusCode, typeof(HttpValidationProblemDetails), description, contentType);
-    }
-
-    /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
-    /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
     /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
@@ -298,32 +173,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
         }
 
         return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(HttpValidationProblemDetails), [contentType]));
-    }
-
-    /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
-    /// <param name="description">The description of the response. Defaults to null.</param>
-    /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static TBuilder ProducesValidationProblem<TBuilder>(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        this TBuilder builder,
-        int statusCode = StatusCodes.Status400BadRequest,
-        string? description = null,
-        string? contentType = null)
-        where TBuilder : IEndpointConventionBuilder
-    {
-        if (string.IsNullOrEmpty(contentType))
-        {
-            contentType = ContentTypeConstants.ProblemDetailsContentType;
-        }
-
-        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, typeof(HttpValidationProblemDetails), description, [contentType]));
     }
 
     /// <summary>
