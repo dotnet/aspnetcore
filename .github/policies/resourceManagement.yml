@@ -384,12 +384,12 @@ configuration:
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-rc1
+          branch: release/9.0-rc2
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-rc1
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-rc1 branch'
+          milestone: 9.0-rc2
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-rc2 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -399,7 +399,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-rc2
+          milestone: 9.0.0
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Issues
