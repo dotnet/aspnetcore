@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -88,10 +89,17 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             try
             {
                 var responseWriter = httpContext.Response.BodyWriter;
+
                 if (!httpContext.Response.HasStarted)
                 {
-                    // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-                    await httpContext.Response.StartAsync();
+                    var typeToCheck = context.ObjectType ?? context.Object?.GetType();
+                    // Don't call StartAsync for IAsyncEnumerable methods. Headers might be set in the controller method which isn't invoked until
+                    // JsonSerializer starts iterating over the IAsyncEnumerable.
+                    if (typeToCheck is not null && !AsyncEnumerableHelper.IsIAsyncEnumerable(typeToCheck))
+                    {
+                        // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+                        await httpContext.Response.StartAsync();
+                    }
                 }
 
                 if (jsonTypeInfo is not null)

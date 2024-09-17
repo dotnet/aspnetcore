@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -68,8 +69,13 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
                 var responseWriter = response.BodyWriter;
                 if (!response.HasStarted)
                 {
-                    // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-                    await response.StartAsync();
+                    // Don't call StartAsync for IAsyncEnumerable methods. Headers might be set in the controller method which isn't invoked until
+                    // JsonSerializer starts iterating over the IAsyncEnumerable.
+                    if (!AsyncEnumerableHelper.IsIAsyncEnumerable(objectType))
+                    {
+                        // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+                        await response.StartAsync();
+                    }
                 }
 
                 await JsonSerializer.SerializeAsync(responseWriter, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);

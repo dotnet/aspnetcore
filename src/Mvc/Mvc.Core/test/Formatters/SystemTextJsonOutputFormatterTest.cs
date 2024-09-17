@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Primitives;
@@ -111,6 +113,121 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
 
         // Assert
         Assert.Equal(expected.ToArray(), body.ToArray());
+    }
+
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
+    [Fact]
+    public async Task WriteResponseBodyAsync_AsyncEnumerableStartAsyncNotCalled()
+    {
+        // Arrange
+        TestHttpResponseBodyFeature responseBodyFeature = null;
+        var expected = new MemoryStream();
+        await JsonSerializer.SerializeAsync(expected, AsyncEnumerable(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var formatter = GetOutputFormatter();
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+
+        var actionContext = GetActionContext(mediaType, body);
+        responseBodyFeature = new TestHttpResponseBodyFeature(actionContext.HttpContext.Features.Get<IHttpResponseBodyFeature>());
+        actionContext.HttpContext.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+
+        var asyncEnumerable = AsyncEnumerable();
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            asyncEnumerable.GetType(),
+            asyncEnumerable)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        Assert.Equal(expected.ToArray(), body.ToArray());
+
+        async IAsyncEnumerable<int> AsyncEnumerable()
+        {
+            // StartAsync shouldn't be called by SystemTestJsonOutputFormatter when using IAsyncEnumerable
+            // This allows Controller methods to set Headers, etc.
+            Assert.False(responseBodyFeature?.StartCalled ?? false);
+            await Task.Yield();
+            yield return 1;
+        }
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_StartAsyncCalled()
+    {
+        // Arrange
+        TestHttpResponseBodyFeature responseBodyFeature = null;
+        var expected = new MemoryStream();
+        await JsonSerializer.SerializeAsync(expected, 1, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var formatter = GetOutputFormatter();
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+
+        var actionContext = GetActionContext(mediaType, body);
+        responseBodyFeature = new TestHttpResponseBodyFeature(actionContext.HttpContext.Features.Get<IHttpResponseBodyFeature>());
+        actionContext.HttpContext.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(int),
+            1)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        Assert.Equal(expected.ToArray(), body.ToArray());
+        Assert.True(responseBodyFeature.StartCalled);
+    }
+
+    public class TestHttpResponseBodyFeature : IHttpResponseBodyFeature
+    {
+        private readonly IHttpResponseBodyFeature _inner;
+
+        public bool StartCalled;
+
+        public TestHttpResponseBodyFeature(IHttpResponseBodyFeature inner)
+        {
+            _inner = inner;
+        }
+
+        public Stream Stream => _inner.Stream;
+
+        public PipeWriter Writer => _inner.Writer;
+
+        public Task CompleteAsync()
+        {
+            return _inner.CompleteAsync();
+        }
+
+        public void DisableBuffering()
+        {
+            _inner.DisableBuffering();
+        }
+
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
+        {
+            return _inner.SendFileAsync(path, offset, count, cancellationToken);
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            StartCalled = true;
+            return _inner.StartAsync(cancellationToken);
+        }
     }
 
     [Fact]
