@@ -77,34 +77,38 @@ internal sealed class OpenApiSchemaStore
     /// been encountered more than once in the document to avoid unnecessarily capturing unique
     /// schemas into the top-level document.
     /// </summary>
+    /// <remarks>
+    /// We don't do a depth check in the recursion call here since we assume that
+    /// System.Text.Json has already validate the depth of the schema based on
+    /// the configured JsonSerializerOptions.MaxDepth value.
+    /// </remarks>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
     /// <param name="captureSchemaByRef"><see langword="true"/> if schema should always be referenced instead of inlined.</param>
     public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema, bool captureSchemaByRef)
     {
-        // Only capture top-level schemas by ref. Nested schemas will follow the
-        // reference by duplicate rules.
         AddOrUpdateSchemaByReference(schema, captureSchemaByRef: captureSchemaByRef);
         AddOrUpdateAnyOfSubSchemaByReference(schema);
+
         if (schema.AdditionalProperties is not null)
         {
-            AddOrUpdateSchemaByReference(schema.AdditionalProperties);
+            PopulateSchemaIntoReferenceCache(schema.AdditionalProperties, captureSchemaByRef);
         }
         if (schema.Items is not null)
         {
-            AddOrUpdateSchemaByReference(schema.Items);
+            PopulateSchemaIntoReferenceCache(schema.Items, captureSchemaByRef);
         }
         if (schema.AllOf is not null)
         {
             foreach (var allOfSchema in schema.AllOf)
             {
-                AddOrUpdateSchemaByReference(allOfSchema);
+                PopulateSchemaIntoReferenceCache(allOfSchema, captureSchemaByRef);
             }
         }
         if (schema.Properties is not null)
         {
             foreach (var property in schema.Properties.Values)
             {
-                AddOrUpdateSchemaByReference(property);
+                PopulateSchemaIntoReferenceCache(property, captureSchemaByRef);
             }
         }
     }
