@@ -124,8 +124,7 @@
             "Pages/Weather.*",
             "Layout/MainLayout.razor.css",
             "Layout/NavMenu.*",
-            "wwwroot/css/bootstrap/**",
-            "wwwroot/css/bootstrap-icons/**",
+            "wwwroot/lib/**",
             "wwwroot/favicon.png",
             "wwwroot/sample-data/weather.json"
           ]

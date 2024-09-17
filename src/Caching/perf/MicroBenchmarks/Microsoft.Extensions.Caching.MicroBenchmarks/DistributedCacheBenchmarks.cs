@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -126,23 +125,6 @@ public class DistributedCacheBenchmarks : IDisposable
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public int GetSingleRandomBuffer()
-    {
-        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
-        int total = 0;
-        for (int i = 0; i < OperationsPerInvoke; i++)
-        {
-            if (_backend.TryGet(RandomKey(), writer))
-            {
-                total += writer.CommittedBytes;
-            }
-            writer.ResetInPlace();
-        }
-        writer.Dispose();
-        return total;
-    }
-
-    [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public int GetConcurrentRandom()
     {
         Func<Task<byte[]?>> callback = () => _backend.GetAsync(RandomKey());
@@ -167,23 +149,6 @@ public class DistributedCacheBenchmarks : IDisposable
         {
             total += (await _backend.GetAsync(RandomKey()))?.Length ?? 0;
         }
-        return total;
-    }
-
-    [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public async Task<int> GetSingleRandomBufferAsync()
-    {
-        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
-        int total = 0;
-        for (int i = 0; i < OperationsPerInvoke; i++)
-        {
-            if (await _backend.TryGetAsync(RandomKey(), writer))
-            {
-                total += writer.CommittedBytes;
-            }
-            writer.ResetInPlace();
-        }
-        writer.Dispose();
         return total;
     }
 
@@ -215,23 +180,6 @@ public class DistributedCacheBenchmarks : IDisposable
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public int GetSingleFixedBuffer()
-    {
-        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
-        int total = 0;
-        for (int i = 0; i < OperationsPerInvoke; i++)
-        {
-            if (_backend.TryGet(FixedKey(), writer))
-            {
-                total += writer.CommittedBytes;
-            }
-            writer.ResetInPlace();
-        }
-        writer.Dispose();
-        return total;
-    }
-
-    [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public int GetConcurrentFixed()
     {
         Func<Task<byte[]?>> callback = () => _backend.GetAsync(FixedKey());
@@ -255,23 +203,6 @@ public class DistributedCacheBenchmarks : IDisposable
         {
             total += (await _backend.GetAsync(FixedKey()))?.Length ?? 0;
         }
-        return total;
-    }
-
-    [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public async Task<int> GetSingleFixedBufferAsync()
-    {
-        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
-        int total = 0;
-        for (int i = 0; i < OperationsPerInvoke; i++)
-        {
-            if (await _backend.TryGetAsync(FixedKey(), writer))
-            {
-                total += writer.CommittedBytes;
-            }
-            writer.ResetInPlace();
-        }
-        writer.Dispose();
         return total;
     }
 

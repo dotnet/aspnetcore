@@ -392,7 +392,9 @@ public class ClientHandlerTests
         var httpClient = new HttpClient(handler);
         Task<HttpResponseMessage> task = httpClient.GetAsync("https://example.com/");
         Assert.False(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(task.Wait(50));
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         block.Set();
         HttpResponseMessage response = await task;
     }

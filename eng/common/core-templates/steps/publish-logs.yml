@@ -45,6 +45,7 @@ steps:
     SourceFolder: '$(Build.SourcesDirectory)/PostBuildLogs'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
+  condition: always()
 
 - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
   parameters:

@@ -1,7 +1,21 @@
+parameters:
+# Sbom related params
+  enableSbom: true
+  PackageVersion: 9.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+
 jobs:
 - template: /eng/common/core-templates/job/job.yml
   parameters:
     is1ESPipeline: true
+
+    componentGovernanceSteps:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+      - template: /eng/common/templates/steps/generate-sbom.yml
+        parameters:
+          PackageVersion: ${{ parameters.packageVersion }}
+          BuildDropPath: ${{ parameters.buildDropPath }}
+          publishArtifacts: false
 
     # publish artifacts
     # for 1ES managed templates, use the templateContext.output to handle multiple outputs.

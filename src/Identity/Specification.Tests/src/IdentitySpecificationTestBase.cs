@@ -254,12 +254,12 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[1]));
         roleClaims = await manager.GetClaimsAsync(role);
         safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
-        Assert.Equal(1, roleClaims.Count);
+        Assert.Single(roleClaims);
         Assert.Equal(3, safeRoleClaims.Count);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[2]));
         roleClaims = await manager.GetClaimsAsync(role);
         safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
-        Assert.Equal(0, roleClaims.Count);
+        Assert.Empty(roleClaims);
         Assert.Equal(3, safeRoleClaims.Count);
     }
 
@@ -592,7 +592,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             Assert.Equal(3, (await manager.GetUsersInRoleAsync(await roleManager.GetRoleNameAsync(role))).Count);
         }
 
-        Assert.Equal(0, (await manager.GetUsersInRoleAsync("123456")).Count);
+        Assert.Empty((await manager.GetUsersInRoleAsync("123456")));
     }
 
     private List<TRole> GenerateRoles(string namePrefix, int count)
