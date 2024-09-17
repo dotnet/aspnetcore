@@ -22,9 +22,9 @@ internal static class AsyncEnumerableHelper
             return type;
         }
 
-        if (type.GetInterface("IAsyncEnumerable`1") is Type t)
+        if (type.GetInterface("IAsyncEnumerable`1") is Type asyncEnumerableType)
         {
-            return t;
+            return asyncEnumerableType;
         }
 
         return null;
