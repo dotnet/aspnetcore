@@ -135,7 +135,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void CanCloseColumnOptions()
+    public void CanCloseColumnOptionsByBlurring()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
         var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
@@ -144,6 +144,21 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         // Click outside the column options to close
         grid.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByCloseColumnOptionsAsync()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click the button inside the column options to close, this calls CloseColumnOptionsAsync
+        grid.FindElement(By.CssSelector("#close-column-options")).Click();
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
