@@ -7,7 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Core.Infrastructure;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 

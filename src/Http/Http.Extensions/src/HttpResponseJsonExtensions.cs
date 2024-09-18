@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -91,7 +92,9 @@ public static partial class HttpResponseJsonExtensions
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
+        // Don't call StartAsync for IAsyncEnumerable. Headers might be set at the beginning of the generator which isn't invoked until
+        // JsonSerializer starts iterating over the IAsyncEnumerable.
+        if (!response.HasStarted && !AsyncEnumerableHelper.IsIAsyncEnumerable(typeof(TValue)))
         {
             // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
             startTask = response.StartAsync(cancellationToken);
@@ -132,7 +135,9 @@ public static partial class HttpResponseJsonExtensions
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
+        // Don't call StartAsync for IAsyncEnumerable. Headers might be set at the beginning of the generator which isn't invoked until
+        // JsonSerializer starts iterating over the IAsyncEnumerable.
+        if (!response.HasStarted && !AsyncEnumerableHelper.IsIAsyncEnumerable(typeof(TValue)))
         {
             // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
             startTask = response.StartAsync(cancellationToken);
@@ -185,7 +190,9 @@ public static partial class HttpResponseJsonExtensions
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
+        // Don't call StartAsync for IAsyncEnumerable. Headers might be set at the beginning of the generator which isn't invoked until
+        // JsonSerializer starts iterating over the IAsyncEnumerable.
+        if (!response.HasStarted && value is not null && !AsyncEnumerableHelper.IsIAsyncEnumerable(value.GetType()))
         {
             // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
             startTask = response.StartAsync(cancellationToken);
@@ -305,7 +312,9 @@ public static partial class HttpResponseJsonExtensions
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
+        // Don't call StartAsync for IAsyncEnumerable. Headers might be set at the beginning of the generator which isn't invoked until
+        // JsonSerializer starts iterating over the IAsyncEnumerable.
+        if (!response.HasStarted && !AsyncEnumerableHelper.IsIAsyncEnumerable(type))
         {
             // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
             startTask = response.StartAsync(cancellationToken);
@@ -368,7 +377,9 @@ public static partial class HttpResponseJsonExtensions
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
         var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
+        // Don't call StartAsync for IAsyncEnumerable. Headers might be set at the beginning of the generator which isn't invoked until
+        // JsonSerializer starts iterating over the IAsyncEnumerable.
+        if (!response.HasStarted && !AsyncEnumerableHelper.IsIAsyncEnumerable(type))
         {
             // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
             startTask = response.StartAsync(cancellationToken);

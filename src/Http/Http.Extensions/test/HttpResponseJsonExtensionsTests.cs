@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Http.Features;
 
 #nullable enable
 
@@ -481,6 +482,83 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("null", data);
     }
 
+    [Fact]
+    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableStartAsyncNotCalled()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
+        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+
+        // Act
+        await context.Response.WriteAsJsonAsync(AsyncEnumerable());
+
+        // Assert
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
+
+        async IAsyncEnumerable<int> AsyncEnumerable()
+        {
+            Assert.False(responseBodyFeature.StartCalled);
+            await Task.Yield();
+            yield return 1;
+            yield return 2;
+        }
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsync_AsyncEnumerableStartAsyncNotCalled()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
+        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+
+        // Act
+        await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
+
+        // Assert
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
+
+        async IAsyncEnumerable<int> AsyncEnumerable()
+        {
+            Assert.False(responseBodyFeature.StartCalled);
+            await Task.Yield();
+            yield return 1;
+            yield return 2;
+        }
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsync_StartAsyncCalled()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
+        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+
+        // Act
+        await context.Response.WriteAsJsonAsync(new int[] {1, 2}, typeof(int[]));
+
+        // Assert
+        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
+        Assert.True(responseBodyFeature.StartCalled);
+    }
+
     public class TestObject
     {
         public string? StringProperty { get; set; }
@@ -528,6 +606,43 @@ public class HttpResponseJsonExtensionsTests
             var tcs = new TaskCompletionSource();
             cancellationToken.Register(s => ((TaskCompletionSource)s!).SetCanceled(), tcs);
             return new ValueTask(tcs.Task);
+        }
+    }
+
+    public class TestHttpResponseBodyFeature : IHttpResponseBodyFeature
+    {
+        private readonly IHttpResponseBodyFeature _inner;
+
+        public bool StartCalled;
+
+        public TestHttpResponseBodyFeature(IHttpResponseBodyFeature inner)
+        {
+            _inner = inner;
+        }
+
+        public Stream Stream => _inner.Stream;
+
+        public PipeWriter Writer => _inner.Writer;
+
+        public Task CompleteAsync()
+        {
+            return _inner.CompleteAsync();
+        }
+
+        public void DisableBuffering()
+        {
+            _inner.DisableBuffering();
+        }
+
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
+        {
+            return _inner.SendFileAsync(path, offset, count, cancellationToken);
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            StartCalled = true;
+            return _inner.StartAsync(cancellationToken);
         }
     }
 }

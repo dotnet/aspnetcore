@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure;
+namespace Microsoft.AspNetCore.Internal;
 
 internal static class AsyncEnumerableHelper
 {
@@ -15,7 +17,7 @@ internal static class AsyncEnumerableHelper
             "It also kept it on any type which implements it. The below call to GetInterfaces " +
             "may return fewer results when trimmed but it will return 'IAsyncEnumerable<>' " +
             "if the type implemented it, even after trimming.")]
-    private static Type? GetIAsyncEnumerableInterface(Type type)
+    internal static Type? GetIAsyncEnumerableInterface(Type type)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
         {
