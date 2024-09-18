@@ -546,7 +546,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Complete
-                Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error, reason);
+                var errorCode = _errorCodeFeature.Error == -1 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
+                Abort(CreateConnectionAbortError(error, clientAbort), errorCode, reason);
 
                 // Wait for active requests to complete.
                 while (_activeRequestCount > 0)
