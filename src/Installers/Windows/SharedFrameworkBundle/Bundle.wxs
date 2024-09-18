@@ -11,6 +11,10 @@
             <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 
+        <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeyExistsSearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
+
         <!-- Ensure upgrades from 3.0.0 preview 1, 2, and 3. Conditioned for the 3.0.0 family. -->
         <?if $(var.Version)=3.0.0.0?>
         <?if $(var.Platform)=x86?>
