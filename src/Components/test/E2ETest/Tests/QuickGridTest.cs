@@ -157,7 +157,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         firstNameColumnOptionsButton.Click();
 
-        // Click the button inside the column options to close, this calls QuickGrid.CloseColumnOptionsAsync
+        // Click the button inside the column options popup to close, this calls QuickGrid.CloseColumnOptionsAsync
         grid.FindElement(By.CssSelector("#close-column-options")).Click();
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
