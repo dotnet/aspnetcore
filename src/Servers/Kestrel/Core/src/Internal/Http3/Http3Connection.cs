@@ -505,12 +505,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
+                var errorCode = GetErrorCodeOrNoError();
+
                 // Abort active request streams.
                 lock (_streams)
                 {
                     foreach (var stream in _streams.Values)
                     {
-                        stream.Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error);
+                        stream.Abort(CreateConnectionAbortError(error, clientAbort), errorCode);
                     }
                 }
 
@@ -546,7 +548,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Complete
-                var errorCode = _errorCodeFeature.Error == -1 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
                 Abort(CreateConnectionAbortError(error, clientAbort), errorCode, reason);
 
                 // Wait for active requests to complete.
@@ -906,7 +907,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         TryStopAcceptingStreams();
 
         // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionEndReason.TransportCompleted);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), GetErrorCodeOrNoError(), ConnectionEndReason.TransportCompleted);
     }
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)
@@ -922,6 +923,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _webtransportSessions[http3Stream.StreamId] = session;
         }
         return session;
+    }
+
+    private Http3ErrorCode GetErrorCodeOrNoError()
+    {
+        return _errorCodeFeature.Error <= 0 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
     }
 
     private static class GracefulCloseInitiator
