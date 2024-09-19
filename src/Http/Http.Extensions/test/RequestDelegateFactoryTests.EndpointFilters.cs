@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Routing.Internal;
 
