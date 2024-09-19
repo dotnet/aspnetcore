@@ -11,20 +11,22 @@ public class OpenApiDocumentConcurrentRequestTests(SampleAppFixture fixture) : I
     [Fact]
     public async Task MapOpenApi_HandlesConcurrentRequests()
     {
+        // Arrange
         var client = fixture.CreateClient();
-        Task<HttpResponseMessage>[] requests =
-        [
+        var requests = new List<Task<HttpResponseMessage>>
+        {
             client.GetAsync("/openapi/v1.json"),
             client.GetAsync("/openapi/v1.json"),
             client.GetAsync("/openapi/v1.json")
-        ];
+        };
 
+        // Act
         var results = await Task.WhenAll(requests);
 
+        // Assert
         foreach (var result in results)
         {
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
-
     }
 }
