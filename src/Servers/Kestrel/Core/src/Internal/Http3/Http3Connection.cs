@@ -927,7 +927,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private Http3ErrorCode GetErrorCodeOrNoError()
     {
-        return _errorCodeFeature.Error <= 0 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
+        // The default error value is -1. If it hasn't been changed before abort is called then default to HTTP/3's NoError value.
+        return _errorCodeFeature.Error == -1 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
     }
 
     private static class GracefulCloseInitiator
