@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil el" />
     <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="xcopy /s C:\Windows\System32\winevt\Logs %25HELIX_WORKITEM_UPLOAD_ROOT%25" />
   </ItemGroup>
 
