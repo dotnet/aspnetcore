@@ -35,18 +35,17 @@ internal sealed class Startup
 
         app.Use(async (ctx, next) =>
         {
-            if (ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+            if (ctx.Request.Path.StartsWithSegments("/_framework/blazor.boot.json"))
             {
                 ctx.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
-
-                if (applyCopHeaders)
+            }
+            else if (applyCopHeaders && ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+            {
+                var fileExtension = Path.GetExtension(ctx.Request.Path);
+                if (string.Equals(fileExtension, ".js", StringComparison.Ordinal))
                 {
-                    var fileExtension = Path.GetExtension(ctx.Request.Path);
-                    if (string.Equals(fileExtension, ".js", StringComparison.Ordinal))
-                    {
-                        // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                        ApplyCrossOriginPolicyHeaders(ctx);
-                    }
+                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                    ApplyCrossOriginPolicyHeaders(ctx);
                 }
             }
 
