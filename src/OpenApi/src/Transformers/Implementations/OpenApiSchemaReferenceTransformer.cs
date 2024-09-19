@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -85,7 +86,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
     /// <param name="schema">The inline schema to replace with a reference.</param>
     /// <param name="schemasByReference">A cache of schemas and their associated reference IDs.</param>
     /// <param name="isTopLevel">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
-    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, Dictionary<OpenApiSchema, string?> schemasByReference, bool isTopLevel = false)
+    internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, ConcurrentDictionary<OpenApiSchema, string?> schemasByReference, bool isTopLevel = false)
     {
         if (schema is null)
         {
