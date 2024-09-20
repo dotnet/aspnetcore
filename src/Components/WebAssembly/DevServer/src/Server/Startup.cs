@@ -42,7 +42,7 @@ internal sealed class Startup
             else if (applyCopHeaders && ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
             {
                 var fileExtension = Path.GetExtension(ctx.Request.Path);
-                if (string.Equals(fileExtension, ".js", StringComparison.Ordinal))
+                if (string.Equals(fileExtension, ".js", StringComparison.OrdinalIgnoreCase))
                 {
                     // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
                     ApplyCrossOriginPolicyHeaders(ctx);
