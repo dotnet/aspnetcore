@@ -225,7 +225,7 @@ internal class Http3InMemory
 
     public async Task InitializeConnectionAsync(RequestDelegate application)
     {
-        MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this)
+        MultiplexedConnectionContext ??= new TestMultiplexedConnectionContext(this)
         {
             ConnectionId = "TEST"
         };
