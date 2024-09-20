@@ -36,7 +36,6 @@
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs" LinkBase="SharedFormMapping" />
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\BrowserFileFromFormFile.cs" LinkBase="SharedFormMapping" />
     <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Reflection\AsyncEnumerableHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

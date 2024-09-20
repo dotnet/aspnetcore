@@ -7,7 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.TestHost;
 
 #nullable enable
 
@@ -482,81 +484,69 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("null", data);
     }
 
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
     [Fact]
-    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableStartAsyncNotCalled()
+    public async Task AsyncEnumerableCanSetHeader()
     {
-        // Arrange
-        var body = new MemoryStream();
-        var context = new DefaultHttpContext();
-        context.Response.Body = body;
-        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
-        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
 
-        // Act
-        await context.Response.WriteAsJsonAsync(AsyncEnumerable());
+        await using var app = builder.Build();
 
-        // Assert
-        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
-        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-
-        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
-
-        async IAsyncEnumerable<int> AsyncEnumerable()
+        app.MapGet("/", IAsyncEnumerable<int> (HttpContext httpContext) =>
         {
-            Assert.False(responseBodyFeature.StartCalled);
-            await Task.Yield();
-            yield return 1;
-            yield return 2;
-        }
+            return AsyncEnum();
+
+            async IAsyncEnumerable<int> AsyncEnum()
+            {
+                await Task.Yield();
+                httpContext.Response.Headers["Test"] = "t";
+                yield return 1;
+            }
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var result = await client.GetAsync("/");
+        result.EnsureSuccessStatusCode();
+        var headerValue = Assert.Single(result.Headers.GetValues("Test"));
+        Assert.Equal("t", headerValue);
+
+        await app.StopAsync();
     }
 
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
     [Fact]
-    public async Task WriteAsJsonAsync_AsyncEnumerableStartAsyncNotCalled()
+    public async Task EnumerableCanSetHeader()
     {
-        // Arrange
-        var body = new MemoryStream();
-        var context = new DefaultHttpContext();
-        context.Response.Body = body;
-        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
-        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
 
-        // Act
-        await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
+        await using var app = builder.Build();
 
-        // Assert
-        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
-        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-
-        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
-
-        async IAsyncEnumerable<int> AsyncEnumerable()
+        app.MapGet("/", IEnumerable<int> (HttpContext httpContext) =>
         {
-            Assert.False(responseBodyFeature.StartCalled);
-            await Task.Yield();
-            yield return 1;
-            yield return 2;
-        }
-    }
+            return Enum();
 
-    [Fact]
-    public async Task WriteAsJsonAsync_StartAsyncCalled()
-    {
-        // Arrange
-        var body = new MemoryStream();
-        var context = new DefaultHttpContext();
-        context.Response.Body = body;
-        var responseBodyFeature = new TestHttpResponseBodyFeature(context.Features.GetRequiredFeature<IHttpResponseBodyFeature>());
-        context.Features.Set<IHttpResponseBodyFeature>(responseBodyFeature);
+            IEnumerable<int> Enum()
+            {
+                httpContext.Response.Headers["Test"] = "t";
+                yield return 1;
+            }
+        });
 
-        // Act
-        await context.Response.WriteAsJsonAsync(new int[] {1, 2}, typeof(int[]));
+        await app.StartAsync();
 
-        // Assert
-        Assert.Equal(ContentTypeConstants.JsonContentTypeWithCharset, context.Response.ContentType);
-        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        var client = app.GetTestClient();
 
-        Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
-        Assert.True(responseBodyFeature.StartCalled);
+        var result = await client.GetAsync("/");
+        result.EnsureSuccessStatusCode();
+        var headerValue = Assert.Single(result.Headers.GetValues("Test"));
+        Assert.Equal("t", headerValue);
+
+        await app.StopAsync();
     }
 
     public class TestObject
@@ -606,43 +596,6 @@ public class HttpResponseJsonExtensionsTests
             var tcs = new TaskCompletionSource();
             cancellationToken.Register(s => ((TaskCompletionSource)s!).SetCanceled(), tcs);
             return new ValueTask(tcs.Task);
-        }
-    }
-
-    public class TestHttpResponseBodyFeature : IHttpResponseBodyFeature
-    {
-        private readonly IHttpResponseBodyFeature _inner;
-
-        public bool StartCalled;
-
-        public TestHttpResponseBodyFeature(IHttpResponseBodyFeature inner)
-        {
-            _inner = inner;
-        }
-
-        public Stream Stream => _inner.Stream;
-
-        public PipeWriter Writer => _inner.Writer;
-
-        public Task CompleteAsync()
-        {
-            return _inner.CompleteAsync();
-        }
-
-        public void DisableBuffering()
-        {
-            _inner.DisableBuffering();
-        }
-
-        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
-        {
-            return _inner.SendFileAsync(path, offset, count, cancellationToken);
-        }
-
-        public Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            StartCalled = true;
-            return _inner.StartAsync(cancellationToken);
         }
     }
 }

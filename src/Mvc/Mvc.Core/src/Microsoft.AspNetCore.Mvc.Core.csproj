@@ -40,7 +40,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Reflection\AsyncEnumerableHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
