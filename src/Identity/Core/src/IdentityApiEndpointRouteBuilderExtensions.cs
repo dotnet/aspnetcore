@@ -274,12 +274,14 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                     return CreateValidationProblem("CannotResetSharedKeyAndEnable",
                         "Resetting the 2fa shared key must disable 2fa until a 2fa token based on the new shared key is validated.");
                 }
-                else if (string.IsNullOrEmpty(tfaRequest.TwoFactorCode))
+
+                if (string.IsNullOrEmpty(tfaRequest.TwoFactorCode))
                 {
                     return CreateValidationProblem("RequiresTwoFactor",
                         "No 2fa token was provided by the request. A valid 2fa token is required to enable 2fa.");
                 }
-                else if (!await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, tfaRequest.TwoFactorCode))
+
+                if (!await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, tfaRequest.TwoFactorCode))
                 {
                     return CreateValidationProblem("InvalidTwoFactorCode",
                         "The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.");
