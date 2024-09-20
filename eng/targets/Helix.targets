@@ -5,8 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil el" />
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="xcopy /s C:\Windows\System32\winevt\Logs %25HELIX_WORKITEM_UPLOAD_ROOT%25" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl EndpointMapper %25HELIX_WORKITEM_UPLOAD_ROOT%25\EndpointMapper.evtx" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
