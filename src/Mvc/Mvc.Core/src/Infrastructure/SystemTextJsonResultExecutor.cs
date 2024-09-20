@@ -66,12 +66,6 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
             try
             {
                 var responseWriter = response.BodyWriter;
-                if (!response.HasStarted)
-                {
-                    // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-                    await response.StartAsync();
-                }
-
                 await JsonSerializer.SerializeAsync(responseWriter, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }

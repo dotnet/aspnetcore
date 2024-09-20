@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.TestHost;
 
 #nullable enable
 
@@ -479,6 +482,71 @@ public class HttpResponseJsonExtensionsTests
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("null", data);
+    }
+
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
+    [Fact]
+    public async Task AsyncEnumerableCanSetHeader()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        await using var app = builder.Build();
+
+        app.MapGet("/", IAsyncEnumerable<int> (HttpContext httpContext) =>
+        {
+            return AsyncEnum();
+
+            async IAsyncEnumerable<int> AsyncEnum()
+            {
+                await Task.Yield();
+                httpContext.Response.Headers["Test"] = "t";
+                yield return 1;
+            }
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var result = await client.GetAsync("/");
+        result.EnsureSuccessStatusCode();
+        var headerValue = Assert.Single(result.Headers.GetValues("Test"));
+        Assert.Equal("t", headerValue);
+
+        await app.StopAsync();
+    }
+
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
+    [Fact]
+    public async Task EnumerableCanSetHeader()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        await using var app = builder.Build();
+
+        app.MapGet("/", IEnumerable<int> (HttpContext httpContext) =>
+        {
+            return Enum();
+
+            IEnumerable<int> Enum()
+            {
+                httpContext.Response.Headers["Test"] = "t";
+                yield return 1;
+            }
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var result = await client.GetAsync("/");
+        result.EnsureSuccessStatusCode();
+        var headerValue = Assert.Single(result.Headers.GetValues("Test"));
+        Assert.Equal("t", headerValue);
+
+        await app.StopAsync();
     }
 
     public class TestObject

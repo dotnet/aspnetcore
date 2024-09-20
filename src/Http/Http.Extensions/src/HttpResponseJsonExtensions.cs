@@ -90,22 +90,12 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
-        var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
-        {
-            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-            startTask = response.StartAsync(cancellationToken);
-        }
-
         // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        if (!cancellationToken.CanBeCanceled)
         {
-            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, options,
-                ignoreOCE: !cancellationToken.CanBeCanceled,
-                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+            return WriteAsJsonAsyncSlow(response.BodyWriter, value, options, response.HttpContext.RequestAborted);
         }
 
-        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, options, cancellationToken);
     }
 
@@ -131,33 +121,22 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
-        var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
-        {
-            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-            startTask = response.StartAsync(cancellationToken);
-        }
-
         // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        if (!cancellationToken.CanBeCanceled)
         {
-            return WriteAsJsonAsyncSlow(startTask, response, value, jsonTypeInfo,
-                ignoreOCE: !cancellationToken.CanBeCanceled,
-                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+            return WriteAsJsonAsyncSlow(response, value, jsonTypeInfo, response.HttpContext.RequestAborted);
         }
 
-        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
 
-        static async Task WriteAsJsonAsyncSlow(Task startTask, HttpResponse response, TValue value, JsonTypeInfo<TValue> jsonTypeInfo,
-            bool ignoreOCE, CancellationToken cancellationToken)
+        static async Task WriteAsJsonAsyncSlow(HttpResponse response, TValue value, JsonTypeInfo<TValue> jsonTypeInfo,
+            CancellationToken cancellationToken)
         {
             try
             {
-                await startTask;
                 await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
             }
-            catch (OperationCanceledException) when (ignoreOCE) { }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -184,52 +163,38 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
-        var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
-        {
-            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-            startTask = response.StartAsync(cancellationToken);
-        }
-
         // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        if (!cancellationToken.CanBeCanceled)
         {
-            return WriteAsJsonAsyncSlow(startTask, response, value, jsonTypeInfo,
-                ignoreOCE: !cancellationToken.CanBeCanceled,
-                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+            return WriteAsJsonAsyncSlow(response, value, jsonTypeInfo, response.HttpContext.RequestAborted);
         }
 
-        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
 
-        static async Task WriteAsJsonAsyncSlow(Task startTask, HttpResponse response, object? value, JsonTypeInfo jsonTypeInfo,
-            bool ignoreOCE, CancellationToken cancellationToken)
+        static async Task WriteAsJsonAsyncSlow(HttpResponse response, object? value, JsonTypeInfo jsonTypeInfo,
+            CancellationToken cancellationToken)
         {
             try
             {
-                await startTask;
                 await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
             }
-            catch (OperationCanceledException) when (ignoreOCE) { }
+            catch (OperationCanceledException) { }
         }
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow<TValue>(
-        Task startTask,
         PipeWriter body,
         TValue value,
         JsonSerializerOptions? options,
-        bool ignoreOCE,
         CancellationToken cancellationToken)
     {
         try
         {
-            await startTask;
             await JsonSerializer.SerializeAsync(body, value, options, cancellationToken);
         }
-        catch (OperationCanceledException) when (ignoreOCE) { }
+        catch (OperationCanceledException) { }
     }
 
     /// <summary>
@@ -304,42 +269,30 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
-        var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
-        {
-            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-            startTask = response.StartAsync(cancellationToken);
-        }
-
         // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        if (!cancellationToken.CanBeCanceled)
         {
-            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, type, options,
-                ignoreOCE: !cancellationToken.CanBeCanceled,
-                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+            return WriteAsJsonAsyncSlow(response.BodyWriter, value, type, options,
+                response.HttpContext.RequestAborted);
         }
 
-        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, type, options, cancellationToken);
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow(
-        Task startTask,
         PipeWriter body,
         object? value,
         Type type,
         JsonSerializerOptions? options,
-        bool ignoreOCE,
         CancellationToken cancellationToken)
     {
         try
         {
-            await startTask;
             await JsonSerializer.SerializeAsync(body, value, type, options, cancellationToken);
         }
-        catch (OperationCanceledException) when (ignoreOCE) { }
+        catch (OperationCanceledException) { }
     }
 
     /// <summary>
@@ -367,33 +320,22 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? ContentTypeConstants.JsonContentTypeWithCharset;
 
-        var startTask = Task.CompletedTask;
-        if (!response.HasStarted)
-        {
-            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
-            startTask = response.StartAsync(cancellationToken);
-        }
-
         // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        if (!cancellationToken.CanBeCanceled)
         {
-            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, type, context,
-                ignoreOCE: !cancellationToken.CanBeCanceled,
-                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+            return WriteAsJsonAsyncSlow(response.BodyWriter, value, type, context, response.HttpContext.RequestAborted);
         }
 
-        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, type, context, cancellationToken);
 
-        static async Task WriteAsJsonAsyncSlow(Task startTask, PipeWriter body, object? value, Type type, JsonSerializerContext context,
-            bool ignoreOCE, CancellationToken cancellationToken)
+        static async Task WriteAsJsonAsyncSlow(PipeWriter body, object? value, Type type, JsonSerializerContext context,
+            CancellationToken cancellationToken)
         {
             try
             {
-                await startTask;
                 await JsonSerializer.SerializeAsync(body, value, type, context, cancellationToken);
             }
-            catch (OperationCanceledException) when (ignoreOCE) { }
+            catch (OperationCanceledException) { }
         }
     }
 
