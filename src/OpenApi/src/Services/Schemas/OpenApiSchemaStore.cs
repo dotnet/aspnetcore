@@ -60,7 +60,7 @@ internal sealed class OpenApiSchemaStore
     /// <returns>A <see cref="JsonObject" /> representing the JSON schema associated with the key.</returns>
     public JsonNode GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonNode> valueFactory)
     {
-        return _schemas.GetOrAdd(key, valueFactory(key));
+        return _schemas.GetOrAdd(key, _ => valueFactory(key));
     }
 
     /// <summary>
