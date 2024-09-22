@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -46,7 +47,7 @@ internal sealed class OpenApiDocumentService(
     /// are unique within the lifetime of an application and serve as helpful associators between
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
-    private readonly Dictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+    private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
 
     private static readonly FrozenSet<string> _disallowedHeaderParameters = new[] { HeaderNames.Accept, HeaderNames.Authorization, HeaderNames.ContentType }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);

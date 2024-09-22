@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaStore
 {
-    private readonly Dictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
+    private readonly ConcurrentDictionary<OpenApiSchemaKey, JsonNode> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
         [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject
@@ -48,8 +49,8 @@ internal sealed class OpenApiSchemaStore
         },
     };
 
-    public readonly Dictionary<OpenApiSchema, string?> SchemasByReference = new(OpenApiSchemaComparer.Instance);
-    private readonly Dictionary<string, int> _referenceIdCounter = new();
+    public readonly ConcurrentDictionary<OpenApiSchema, string?> SchemasByReference = new(OpenApiSchemaComparer.Instance);
+    private readonly ConcurrentDictionary<string, int> _referenceIdCounter = new();
 
     /// <summary>
     /// Resolves the JSON schema for the given type and parameter description.
@@ -59,13 +60,7 @@ internal sealed class OpenApiSchemaStore
     /// <returns>A <see cref="JsonObject" /> representing the JSON schema associated with the key.</returns>
     public JsonNode GetOrAdd(OpenApiSchemaKey key, Func<OpenApiSchemaKey, JsonNode> valueFactory)
     {
-        if (_schemas.TryGetValue(key, out var schema))
-        {
-            return schema;
-        }
-        var targetSchema = valueFactory(key);
-        _schemas.Add(key, targetSchema);
-        return targetSchema;
+        return _schemas.GetOrAdd(key, valueFactory);
     }
 
     /// <summary>
