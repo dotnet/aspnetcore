@@ -160,4 +160,27 @@ internal sealed class DiagnosticMemoryPool : MemoryPool<byte>
 
         await task;
     }
+
+    public bool ContainsMemory(Memory<byte> memory)
+    {
+        lock (_syncObj)
+        {
+            foreach (var block in _blocks)
+            {
+                unsafe
+                {
+                    fixed (byte* inUseMemoryPtr = memory.Span)
+                    fixed (byte* beginPooledMemoryPtr = block.Memory.Span)
+                    {
+                        byte* endPooledMemoryPtr = beginPooledMemoryPtr + block.Memory.Length;
+                        if (inUseMemoryPtr >= beginPooledMemoryPtr && inUseMemoryPtr < endPooledMemoryPtr)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    }
 }
