@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -593,5 +594,69 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.False(property.Nullable);
                 });
         });
+    }
+
+    [Fact]
+    public async Task SupportsClassWithJsonUnmappedMemberHandlingDisallowed()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ExampleWithDisallowedUnmappedMembers type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("number", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                });
+            Assert.False(schema.AdditionalPropertiesAllowed);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsClassWithJsonUnmappedMemberHandlingSkipped()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ExampleWithSkippedUnmappedMembers type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("number", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                });
+            Assert.True(schema.AdditionalPropertiesAllowed);
+        });
+    }
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private class ExampleWithDisallowedUnmappedMembers
+    {
+        public int Number { get; init; }
+    }
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Skip)]
+    private class ExampleWithSkippedUnmappedMembers
+    {
+        public int Number { get; init; }
     }
 }
