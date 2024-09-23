@@ -1,6 +1,6 @@
 ## About
 
-`Microsoft.AspNetCore.Diagnostics.EntityFramework` provides an ASP.NET Core middleware for EF Core error pages, allowing detection and diagnosis of errors with EF Core migrations.
+`Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore` provides an ASP.NET Core middleware for EF Core error pages, allowing detection and diagnosis of errors with EF Core migrations.
 
 ## Key Features
 
@@ -9,12 +9,12 @@
 
 ## How to Use
 
-To use `Microsoft.AspNetCore.Diagnostics.EntityFramework`, follow these steps:
+To use `Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore`, follow these steps:
 
 ### Installation
 
 ```shell
-dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFramework
+dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 ```
 
 ### Configuration
@@ -39,4 +39,4 @@ For more information on using Entity Framework Core in ASP.NET Core applications
 
 ## Feedback & Contributing
 
-`Microsoft.AspNetCore.Diagnostics.EntityFramework` is released as open-source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/dotnet/aspnetcore).
+`Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore` is released as open-source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/dotnet/aspnetcore).
