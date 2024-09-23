@@ -659,4 +659,43 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         public int Number { get; init; }
     }
+
+    [Fact]
+    public async Task SupportsTypesWithSelfReferencedProperties()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Parent parent) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("selfReferenceList", property.Key);
+                    Assert.Equal("array", property.Value.Type);
+                    Assert.Equal("Parent", property.Value.Items.Reference.Id);
+                },
+                property =>
+                {
+                    Assert.Equal("selfReferenceDictionary", property.Key);
+                    Assert.Equal("object", property.Value.Type);
+                    Assert.Equal("Parent", property.Value.AdditionalProperties.Reference.Id);
+                });
+        });
+    }
+
+    public class Parent
+    {
+        public IEnumerable<Parent> SelfReferenceList { get; set; } = [ ];
+        public IDictionary<string, Parent> SelfReferenceDictionary { get; set; } = new Dictionary<string, Parent>();
+    }
+
 }
