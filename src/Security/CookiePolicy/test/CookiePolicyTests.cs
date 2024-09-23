@@ -311,7 +311,7 @@ public class CookiePolicyTests
         var transaction = await server.SendAsync("http://example.com/login");
 
         Assert.NotNull(transaction.SetCookie);
-        Assert.Equal(1, transaction.SetCookie.Count);
+        Assert.Single(transaction.SetCookie);
         Assert.Equal("A=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure", transaction.SetCookie[0]);
     }
 
@@ -396,7 +396,7 @@ public class CookiePolicyTests
         var transaction = await server.SendAsync("http://example.com/login");
 
         Assert.NotNull(transaction.SetCookie);
-        Assert.Equal(1, transaction.SetCookie.Count);
+        Assert.Single(transaction.SetCookie);
         var cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[0]);
         Assert.Equal("TestCookie", cookie.Name);
         Assert.True(cookie.HttpOnly);

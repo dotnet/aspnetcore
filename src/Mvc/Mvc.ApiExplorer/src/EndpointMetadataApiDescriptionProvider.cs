@@ -33,7 +33,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         EndpointDataSource endpointDataSource,
         IHostEnvironment environment,
         ParameterPolicyFactory parameterPolicyFactory,
-        IServiceProviderIsService? serviceProviderIsService)
+        IServiceProviderIsService? serviceProviderIsService = null)
     {
         _endpointDataSource = endpointDataSource;
         _environment = environment;
@@ -188,7 +188,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         return new ApiParameterDescription
         {
             Name = name,
-            ModelMetadata = CreateModelMetadata(paramType),
+            ModelMetadata = CreateModelMetadata(parameter, paramType),
             Source = source,
             DefaultValue = parameter.ParameterInfo.DefaultValue,
             Type = parameter.ParameterInfo.ParameterType,
@@ -435,6 +435,19 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
     private static EndpointModelMetadata CreateModelMetadata(Type type) =>
         new(ModelMetadataIdentity.ForType(type));
+
+    private static EndpointModelMetadata CreateModelMetadata(IParameterBindingMetadata parameter, Type type)
+    {
+        if (parameter.ParameterInfo is { } parameterInfo)
+        {
+            if (parameterInfo.Member is PropertyInfo propertyInfo && propertyInfo.DeclaringType is not null)
+            {
+                return new(ModelMetadataIdentity.ForProperty(propertyInfo, type, propertyInfo.DeclaringType));
+            }
+            return new(ModelMetadataIdentity.ForParameter(parameterInfo, type));
+        }
+        return CreateModelMetadata(type);
+    }
 
     private static void AddResponseContentTypes(IList<ApiResponseFormat> apiResponseFormats, IReadOnlyList<string> contentTypes)
     {

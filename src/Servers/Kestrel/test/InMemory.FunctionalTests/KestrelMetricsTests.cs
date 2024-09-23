@@ -159,6 +159,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57944")]
     public async Task Http1Connection_RequestEndsWithIncompleteReadAsync()
     {
         var testMeterFactory = new TestMeterFactory();
@@ -171,7 +172,12 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         await using var server = new TestServer(async context =>
         {
             var result = await context.Request.BodyReader.ReadAsync();
-            await context.Response.BodyWriter.WriteAsync(result.Buffer.ToArray());
+
+            // The request body might be incomplete, but there should be something in the first read.
+            Assert.True(result.Buffer.Length > 0);
+            Assert.Equal(result.Buffer.ToSpan(), "Hello World?"u8[..(int)result.Buffer.Length]);
+
+            await context.Response.WriteAsync("Hello World?");
             // No BodyReader.Advance. Connection will fail when attempting to complete body.
         }, serviceContext);
 

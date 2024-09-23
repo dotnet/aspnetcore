@@ -786,6 +786,6 @@ app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
 
         await endpoint.RequestDelegate(httpContext);
 
-        Assert.Equal(["hello", "bye"], (string[])httpContext.Items["message"]);
+        Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
 }

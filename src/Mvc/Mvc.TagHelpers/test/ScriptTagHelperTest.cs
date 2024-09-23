@@ -113,7 +113,7 @@ public class ScriptTagHelperTest
         Assert.Equal(expectedAttributes, output.Attributes);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_Data
     {
         get
         {
@@ -295,7 +295,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_NoSrc_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_NoSrc_Data
     {
         get
         {
@@ -383,7 +383,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> DoesNotRunWhenARequiredAttributeIsMissing_Data
     {
         get
         {

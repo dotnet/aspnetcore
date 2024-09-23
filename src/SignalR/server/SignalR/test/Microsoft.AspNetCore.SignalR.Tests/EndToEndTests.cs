@@ -515,7 +515,7 @@ public class EndToEndTests : FunctionalTestBase
         try
         {
             await ServerClosesConnectionWithErrorIfHubCannotBeCreated(HttpTransportType.WebSockets);
-            Assert.True(false, "Expected error was not thrown.");
+            Assert.Fail("Expected error was not thrown.");
         }
         catch
         {
@@ -529,7 +529,7 @@ public class EndToEndTests : FunctionalTestBase
         try
         {
             await ServerClosesConnectionWithErrorIfHubCannotBeCreated(HttpTransportType.LongPolling);
-            Assert.True(false, "Expected error was not thrown.");
+            Assert.Fail("Expected error was not thrown.");
         }
         catch
         {

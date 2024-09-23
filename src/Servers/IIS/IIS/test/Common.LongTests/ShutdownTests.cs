@@ -640,7 +640,7 @@ public class ShutdownTests : IISFunctionalTestBase
             var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-            Assert.True(false, "Should not reach here");
+            Assert.Fail("Should not reach here");
         }
         catch (HttpRequestException)
         {

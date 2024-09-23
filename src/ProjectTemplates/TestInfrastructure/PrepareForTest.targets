@@ -22,6 +22,31 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+    <Target Name="GenerateTesDevCert" BeforeTargets="AssignTargetPaths">
+
+    <PropertyGroup>
+      <_DevCertFileName>aspnetcore-https.pfx</_DevCertFileName>
+      <_DevCertJsonFileName>aspnetcore-https.json</_DevCertJsonFileName>
+      <_DevCertPath>$(ArtifactsTmpDir)$(_DevCertFileName)</_DevCertPath>
+      <_DevCertJsonPath>$(ArtifactsTmpDir)$(_DevCertJsonFileName)</_DevCertJsonPath>
+    </PropertyGroup>
+
+    <!-- This task only tries to generate a certificate if there is none existing at the location provided as path. -->
+    <GenerateTestDevCert
+        CertificatePath="$(_DevCertPath)"
+        Condition="'$(MSBuildRuntimeType)' == 'core'">
+    </GenerateTestDevCert>
+
+    <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' == 'core'" Text="Failed to generate a test certificate at $(_DevCertPath)" />
+    <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' != 'core'" Text="No dev cert exists at $(_DevCertPath). Ensure you follow the instructions from src/ProjectTemplates/README.md before running inside Visual Studio" />
+
+    <ItemGroup>
+      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+  </Target>
+
   <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>

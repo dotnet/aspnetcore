@@ -506,7 +506,7 @@ partial class HubConnectionTests : FunctionalTestBase
                 {
                     await foreach (var streamValue in asyncEnumerable)
                     {
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        Assert.Fail("Expected an exception from the streaming invocation.");
                     }
                 });
 

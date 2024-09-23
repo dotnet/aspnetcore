@@ -223,7 +223,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         static ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -250,7 +252,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(initialHandlerCount, completedHandlerCount);
 
         ValueTask HandleLocationChanging(LocationChangingContext context)
@@ -276,7 +280,9 @@ public class NavigationManagerTest
         Assert.False(navigation1.IsCompleted);
         tcs.SetResult();
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         async ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -328,7 +334,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         static ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -357,7 +365,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(expectedInvokedHandlerCount, invokedHandlerCount);
 
         ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
@@ -391,7 +401,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.True(currentContext.DidPreventNavigation);
         Assert.True(currentContext.CancellationToken.IsCancellationRequested);
         Assert.False(isHandlerCompleted);
@@ -428,7 +440,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.True(currentContext.DidPreventNavigation);
         Assert.True(currentContext.CancellationToken.IsCancellationRequested);
         Assert.False(isFirstHandlerCompleted);
@@ -455,7 +469,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";
@@ -479,7 +493,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";
@@ -503,7 +517,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(blockNavigationHandlerCount, canceledBlockNavigationHandlerCount);
 
         async ValueTask HandleLocationChanging_BlockNavigation(LocationChangingContext context)
@@ -556,11 +572,13 @@ public class NavigationManagerTest
         await tcs.Task.WaitAsync(Timeout);
 
         // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.IsCompletedSuccessfully);
         Assert.False(navigation1.Result);
 
         Assert.True(navigation2.IsCompletedSuccessfully);
         Assert.True(navigation2.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         async ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -615,6 +633,7 @@ public class NavigationManagerTest
         await tcs.Task.WaitAsync(Timeout);
 
         // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.IsCompletedSuccessfully);
         Assert.False(navigation1.Result);
 
@@ -623,6 +642,7 @@ public class NavigationManagerTest
 
         Assert.True(navigation3.IsCompletedSuccessfully);
         Assert.True(navigation3.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         Assert.Equal(expectedCanceledHandlerCount, canceledHandlerCount);
         Assert.Equal(0, completedHandlerCount);

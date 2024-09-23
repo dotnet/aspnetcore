@@ -20,7 +20,7 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    public async Task HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
@@ -176,7 +176,7 @@ public class HeartbeatTests : LoggedTest
 
         heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
-        Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "HeartbeatSlow");
     }
 
     [Fact]

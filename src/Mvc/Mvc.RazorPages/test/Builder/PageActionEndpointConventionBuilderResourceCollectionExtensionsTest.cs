@@ -33,7 +33,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(0, list.Count);
+            Assert.Empty(list);
         });
     }
 
@@ -54,7 +54,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(0, list.Count);
+            Assert.Empty(list);
         });
     }
 
@@ -75,7 +75,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -97,7 +97,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("default.css", list[0].Url);
         });
     }
@@ -120,7 +120,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("default.css", list[0].Url);
         });
     }
@@ -143,7 +143,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -169,7 +169,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -195,7 +195,7 @@ public class PageActionEndpointConventionBuilderResourceCollectionExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(0, list.Count);
+            Assert.Empty(list);
         });
     }
 

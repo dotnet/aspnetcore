@@ -328,7 +328,7 @@ public class XmlKeyManagerTests
         var keys = RunGetAllKeysCore(xml, activator);
 
         // Assert
-        Assert.Equal(0, keys.Count);
+        Assert.Empty(keys);
     }
 
     [Fact]

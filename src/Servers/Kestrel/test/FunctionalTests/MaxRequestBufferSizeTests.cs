@@ -211,6 +211,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24557")]
     public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
     {
         // Parameters
@@ -409,7 +410,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
             if (count == 0)
             {
-                Assert.True(false, "Stream completed without expected substring.");
+                Assert.Fail("Stream completed without expected substring.");
             }
 
             for (var i = 0; i < count && matchedChars < exptectedLength; i++)

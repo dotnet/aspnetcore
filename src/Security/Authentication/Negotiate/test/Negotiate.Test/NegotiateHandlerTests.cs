@@ -102,7 +102,7 @@ public class NegotiateHandlerTests
         var server = host.GetTestServer();
 
         var ex = await Assert.ThrowsAsync<TrueException>(() => SendAsync(server, "/404", new TestConnection(), "Negotiate ClientNtlmBlob2"));
-        Assert.Equal("Stage1Complete", ex.UserMessage);
+        Assert.Equal("Stage1Complete", ex.Message);
     }
 
     [Theory]

@@ -6,6 +6,7 @@ Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.Value.get -> TValue?
+static Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult.IsLocalUrl(string? url) -> bool
 static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!

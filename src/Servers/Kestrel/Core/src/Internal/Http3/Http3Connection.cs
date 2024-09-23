@@ -101,6 +101,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public string ConnectionId => _context.ConnectionId;
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
+    // The default error value is -1. If it hasn't been changed before abort is called then default to HTTP/3's NoError value.
+    private Http3ErrorCode Http3ErrorCodeOrNoError => _errorCodeFeature.Error == -1 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
+
     public void StopProcessingNextRequest(ConnectionEndReason reason)
         => StopProcessingNextRequest(serverInitiated: true, reason);
 
@@ -505,12 +508,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
+                var errorCode = Http3ErrorCodeOrNoError;
+
                 // Abort active request streams.
                 lock (_streams)
                 {
                     foreach (var stream in _streams.Values)
                     {
-                        stream.Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error);
+                        stream.Abort(CreateConnectionAbortError(error, clientAbort), errorCode);
                     }
                 }
 
@@ -546,7 +551,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Complete
-                Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error, reason);
+                Abort(CreateConnectionAbortError(error, clientAbort), errorCode, reason);
 
                 // Wait for active requests to complete.
                 while (_activeRequestCount > 0)
@@ -905,7 +910,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         TryStopAcceptingStreams();
 
         // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionEndReason.TransportCompleted);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCodeOrNoError, ConnectionEndReason.TransportCompleted);
     }
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)

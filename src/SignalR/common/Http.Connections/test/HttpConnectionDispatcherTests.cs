@@ -1504,7 +1504,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
 
             var request2 = dispatcher.ExecuteAsync(context2, options, app);
@@ -1524,7 +1524,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 

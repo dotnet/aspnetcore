@@ -264,15 +264,15 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "Done");
 
                 await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).DefaultTimeout();
-                Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
-                Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
+                Assert.Equal(new PathString(expectedPath), await pathTcs.Task);
+                Assert.Equal(requestUrl, await rawTargetTcs.Task);
                 if (queryValue == null)
                 {
-                    Assert.False(queryTcs.Task.Result.ContainsKey("q"));
+                    Assert.False((await queryTcs.Task).ContainsKey("q"));
                 }
                 else
                 {
-                    Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
+                    Assert.Equal(queryValue, (await queryTcs.Task)["q"]);
                 }
             }
         }
@@ -1891,7 +1891,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Warning);
     }
 
     [Fact]

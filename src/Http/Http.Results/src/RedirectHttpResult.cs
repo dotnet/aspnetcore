@@ -121,6 +121,18 @@ public sealed partial class RedirectHttpResult : IResult
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Returns a value that indicates whether the URL is local. A URL is considered
+    /// local if it does not have a host / authority part and it has an absolute path.
+    /// URLs using virtual paths (<c>'~/'</c>) are also local.
+    /// </summary>
+    /// <param name="url">The URL.</param>
+    /// <returns>
+    /// <see langword="true"/> if the URL is local; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool IsLocalUrl([NotNullWhen(true)][StringSyntax(StringSyntaxAttribute.Uri)] string? url)
+        => SharedUrlHelper.IsLocalUrl(url);
+
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Information,
