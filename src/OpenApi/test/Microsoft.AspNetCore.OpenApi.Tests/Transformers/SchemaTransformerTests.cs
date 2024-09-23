@@ -531,14 +531,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var path = document.Paths["/list-of-todo"];
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            var itemSchema = responseSchema.GetEffective(document).Items;
+            var itemSchema = responseSchema.GetEffective(document).Items.GetEffective(document);
             Assert.Equal("modified-number-format", itemSchema.Properties["id"].Format);
 
             // Assert that the integer type within the list has been updated
             var otherPath = document.Paths["/list-of-int"];
             var otherGetOperation = otherPath.Operations[OperationType.Get];
             var otherResponseSchema = otherGetOperation.Responses["200"].Content["application/json"].Schema;
-            var otherItemSchema = otherResponseSchema.GetEffective(document).Items;
+            var otherItemSchema = otherResponseSchema.GetEffective(document).Items.GetEffective(document);
             Assert.Equal("modified-number-format", otherItemSchema.Format);
         });
     }
@@ -611,7 +611,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var path = document.Paths["/list"];
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            var someShapeSchema = responseSchema.GetEffective(document).Properties["someShape"];
+            var someShapeSchema = responseSchema.GetEffective(document).Properties["someShape"].GetEffective(document);
             var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var triangleExtension));
@@ -652,7 +652,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var path = document.Paths["/list"];
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            var someShapeSchema = responseSchema.GetEffective(document).Items.GetEffective(document).Properties["someShape"];
+            var someShapeSchema = responseSchema.GetEffective(document).Items.GetEffective(document).Properties["someShape"].GetEffective(document);
             var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.GetEffective(document).Extensions.TryGetValue("x-my-extension", out var triangleExtension));

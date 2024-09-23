@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.OpenApi;
@@ -19,8 +20,10 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Moq;
+using Xunit.Sdk;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public abstract class OpenApiDocumentServiceTestBase
@@ -53,7 +56,10 @@ public abstract class OpenApiDocumentServiceTestBase
             ApplicationName = nameof(OpenApiDocumentServiceTests)
         };
 
-        var options = new MvcOptions();
+        var options = new MvcOptions
+        {
+            OutputFormatters = { new TestJsonOutputFormatter() }
+        };
         var optionsAccessor = Options.Create(options);
 
         var constraintResolver = new Mock<IInlineConstraintResolver>();
@@ -85,6 +91,22 @@ public abstract class OpenApiDocumentServiceTestBase
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
 
         return documentService;
+    }
+
+    private class TestJsonOutputFormatter : TextOutputFormatter
+    {
+        public TestJsonOutputFormatter()
+        {
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/json"));
+
+            SupportedEncodings.Add(Encoding.UTF8);
+        }
+
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+        {
+            return Task.FromResult(0);
+        }
     }
 
     internal static OpenApiDocumentService CreateDocumentService(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions)
@@ -203,6 +225,14 @@ public abstract class OpenApiDocumentServiceTestBase
         action.RouteValues.Add("controller", "Test");
         action.RouteValues.Add("action", action.MethodInfo.Name);
         action.ActionConstraints = [new HttpMethodActionConstraint(["GET"])];
+        action.EndpointMetadata = [..action.MethodInfo.GetCustomAttributes()];
+        if (controllerType is not null)
+        {
+            foreach (var attribute in controllerType.GetCustomAttributes())
+            {
+                action.EndpointMetadata.Add(attribute);
+            }
+        }
 
         action.Parameters = [];
         foreach (var parameter in action.MethodInfo.GetParameters())

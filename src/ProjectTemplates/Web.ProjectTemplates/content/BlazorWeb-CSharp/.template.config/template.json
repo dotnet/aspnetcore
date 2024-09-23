@@ -106,7 +106,7 @@
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
-            "BlazorWeb-CSharp/wwwroot/bootstrap/**",
+            "BlazorWeb-CSharp/wwwroot/lib/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
             "BlazorWeb-CSharp.Client/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"

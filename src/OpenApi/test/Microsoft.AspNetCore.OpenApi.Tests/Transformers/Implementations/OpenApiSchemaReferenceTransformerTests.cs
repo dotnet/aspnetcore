@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -358,5 +359,95 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     private class TodoListContainer
     {
         public ICollection<Todo> Todos { get; set; } = [];
+    }
+
+    [Fact]
+    public async Task SupportsRefMappingInDeeplyNestedTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Level1 item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Level1", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for Level1.Item2
+            var level1Schema = requestSchema.GetEffective(document);
+            Assert.Equal("Level2", level1Schema.Properties["item2"].Reference.Id);
+
+            // Assert that $ref is used for Level2.Item3
+            var level2Schema = level1Schema.Properties["item2"].GetEffective(document);
+            Assert.Equal("Level3", level2Schema.Properties["item3"].Reference.Id);
+
+            // Assert that no $ref is used for string property
+            var level3Schema = level2Schema.Properties["item3"].GetEffective(document);
+            Assert.Null(level3Schema.Properties["terminate"].Reference);
+        });
+    }
+
+    private class Level1
+    {
+        public Level2 Item2 { get; set; }
+    }
+
+    private class Level2
+    {
+        public Level3 Item3 { get; set; }
+    }
+
+    private class Level3
+    {
+        public string Terminate { get; set; }
+    }
+
+    [Fact]
+    public async Task ThrowsForOverlyNestedSchemas()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DeeplyNestedLevel1 item) => { });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifyOpenApiDocument(builder, _ => { }));
+        Assert.Equal("The depth of the generated JSON schema exceeds the JsonSerializerOptions.MaxDepth setting.", exception.Message);
+    }
+
+    [Fact]
+    public async Task SupportsDeeplyNestedSchemaWithConfiguredMaxDepth()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.MaxDepth = 124;
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapPost("/", (DeeplyNestedLevel1 item) => { });
+
+        // Act & Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("DeeplyNestedLevel1", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for all nested levels
+            var levelSchema = requestSchema.GetEffective(document);
+            for (var level = 2; level < 36; level++)
+            {
+                Assert.Equal($"DeeplyNestedLevel{level}", levelSchema.Properties[$"item{level}"].Reference.Id);
+                levelSchema = levelSchema.Properties[$"item{level}"].GetEffective(document);
+            }
+        });
     }
 }
