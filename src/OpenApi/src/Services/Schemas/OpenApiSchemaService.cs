@@ -32,6 +32,7 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
+    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new OpenApiJsonSchemaContext(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
         // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
@@ -135,7 +136,9 @@ internal sealed class OpenApiSchemaService(
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
-        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
+        // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
+        // particularly in the case of maxDepth.
+        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
