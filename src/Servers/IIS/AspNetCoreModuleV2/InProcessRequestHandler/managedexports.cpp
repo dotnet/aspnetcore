@@ -516,7 +516,7 @@ http_get_authentication_information(
 )
 {
     *pstrAuthType = SysAllocString(pInProcessHandler->QueryHttpContext()->GetUser()->GetAuthenticationType());
-    *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetPrimaryToken();
+    *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetImpersonationToken();
 
     return S_OK;
 }
