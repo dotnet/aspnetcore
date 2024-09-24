@@ -17,7 +17,7 @@ public class OutputCacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisOutputCache(options => { });
+        services.AddStackExchangeRedisOutputCache();
 
         // Assert
         var outputCacheStore = services.FirstOrDefault(desc => desc.ServiceType == typeof(IOutputCacheStore));
@@ -34,7 +34,7 @@ public class OutputCacheServiceExtensionsTests
         services.AddScoped(typeof(IOutputCacheStore), sp => Mock.Of<IOutputCacheStore>());
 
         // Act
-        services.AddStackExchangeRedisOutputCache(options => { });
+        services.AddStackExchangeRedisOutputCache();
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
@@ -51,7 +51,7 @@ public class OutputCacheServiceExtensionsTests
     {
         var services = new ServiceCollection();
 
-        Assert.Same(services, services.AddStackExchangeRedisOutputCache(_ => { }));
+        Assert.Same(services, services.AddStackExchangeRedisOutputCache());
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class OutputCacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisOutputCache(options => { });
+        services.AddStackExchangeRedisOutputCache();
 
         // Assert
         using var serviceProvider = services.BuildServiceProvider();
@@ -77,7 +77,7 @@ public class OutputCacheServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddStackExchangeRedisOutputCache(options => { });
+        services.AddStackExchangeRedisOutputCache();
         services.AddLogging();
 
         // Assert
@@ -105,7 +105,7 @@ public class OutputCacheServiceExtensionsTests
 
         // Act
         services.AddLogging();
-        services.AddStackExchangeRedisOutputCache(options => { });
+        services.AddStackExchangeRedisOutputCache();
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
