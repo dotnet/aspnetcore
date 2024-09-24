@@ -17,7 +17,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     private readonly string _contentRootDir;
     private readonly ILogger<CertificatePathWatcher> _logger;
 
-    private readonly object _metadataLock = new();
+    private readonly Lock _metadataLock = new();
 
     /// <remarks>Acquire <see cref="_metadataLock"/> before accessing.</remarks>
     private readonly Dictionary<string, DirectoryWatchMetadata> _metadataForDirectory = new();

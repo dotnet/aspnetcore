@@ -35,9 +35,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     // so start highest opened request stream ID at -4.
     private const long DefaultHighestOpenedRequestStreamId = -4;
 
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private readonly HttpMultiplexedConnectionContext _context;
-    private readonly object _protocolSelectionLock = new();
+    private readonly Lock _protocolSelectionLock = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Dictionary<long, WebTransportSession>? _webtransportSessions;
