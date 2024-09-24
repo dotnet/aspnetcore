@@ -1150,7 +1150,7 @@ public class RequestTests : LoggedTest
 
             if (count == 0)
             {
-                Assert.True(false, "Stream completed without expected substring.");
+                Assert.Fail("Stream completed without expected substring.");
             }
 
             for (var i = 0; i < count && matchedChars < expectedLength; i++)

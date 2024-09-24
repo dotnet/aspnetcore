@@ -414,7 +414,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" ||
                                                         w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
 
-        Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
+        Assert.DoesNotContain(transportLogs, w => w.LogLevel > LogLevel.Debug);
     }
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52464")]
@@ -454,8 +454,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         // partial headers to be read leading to a bad request.
         var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
 
-        Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
-        Assert.Empty(coreLogs.Where(w => w.LogLevel > LogLevel.Information));
+        Assert.DoesNotContain(transportLogs, w => w.LogLevel > LogLevel.Debug);
+        Assert.DoesNotContain(coreLogs, w => w.LogLevel > LogLevel.Information);
 
         await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 

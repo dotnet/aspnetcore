@@ -476,7 +476,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+        Assert.Equal(expectedLength, (await response.Content.ReadAsByteArrayAsync()).Length);
 
         var logMessages = sink.Writes.ToList();
         if (enableHttps)
@@ -539,7 +539,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+        Assert.Equal(expectedLength, (await response.Content.ReadAsByteArrayAsync()).Length);
 
         var logMessages = sink.Writes.ToList();
         if (mode == HttpsCompressionMode.Compress)
@@ -602,7 +602,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+        Assert.Equal(expectedLength, (await response.Content.ReadAsByteArrayAsync()).Length);
 
         var logMessages = sink.Writes.ToList();
         if (mode == HttpsCompressionMode.DoNotCompress)

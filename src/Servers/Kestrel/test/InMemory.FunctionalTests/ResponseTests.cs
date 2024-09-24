@@ -1254,7 +1254,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
 
         // With the server disposed we know all connections were drained and all messages were logged.
-        Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationError"));
+        Assert.DoesNotContain(TestSink.Writes, c => c.EventId.Name == "ApplicationError");
     }
 
     [Fact]
@@ -1329,7 +1329,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1365,7 +1365,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1401,7 +1401,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     [Fact]
@@ -2786,7 +2786,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     [Fact]

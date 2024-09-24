@@ -169,8 +169,8 @@ public class HttpMethodMatcherPolicyTest
 
         await policy.ApplyAsync(httpContext, candidates);
 
-        Assert.Equal(httpContext.GetEndpoint().Metadata, EndpointMetadataCollection.Empty);
-        Assert.True(string.Equals(httpContext.GetEndpoint().DisplayName, Http405EndpointDisplayName, StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(EndpointMetadataCollection.Empty, httpContext.GetEndpoint().Metadata);
+        Assert.Equal(Http405EndpointDisplayName, httpContext.GetEndpoint().DisplayName, ignoreCase: true);
     }
 
     [Fact]

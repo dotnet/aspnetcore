@@ -51,7 +51,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         var routeValues = listener.BeforeAction?.RouteData?.Values;
         Assert.NotNull(routeValues);
 
-        Assert.Equal(1, routeValues.Count);
+        Assert.Single(routeValues);
         Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
     }
 
@@ -142,7 +142,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         // Assert
         var pageContext = Assert.IsType<PageActionInvoker>(invoker).PageContext;
         Assert.NotNull(pageContext);
-        Assert.Equal(1, pageContext.ValueProviderFactories.Count);
+        Assert.Single(pageContext.ValueProviderFactories);
         Assert.Same(valueProviderFactory2, pageContext.ValueProviderFactories[0]);
     }
 

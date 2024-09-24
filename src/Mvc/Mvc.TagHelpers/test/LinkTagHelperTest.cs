@@ -76,7 +76,7 @@ public class LinkTagHelperTest
             StringComparer.Ordinal);
     }
 
-    public static TheoryData MultiAttributeSameNameData
+    public static TheoryData<TagHelperAttributeList> MultiAttributeSameNameData
     {
         get
         {
@@ -168,7 +168,7 @@ public class LinkTagHelperTest
         Assert.Equal(expectedAttributes, output.Attributes);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> RunsWhenRequiredAttributesArePresent_Data
     {
         get
         {
@@ -319,7 +319,7 @@ public class LinkTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_NoHref_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> RunsWhenRequiredAttributesArePresent_NoHref_Data
     {
         get
         {
@@ -445,7 +445,7 @@ public class LinkTagHelperTest
         Assert.Equal("data-extra", output.Attributes[2].Name);
     }
 
-    public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
+    public static TheoryData<TagHelperAttributeList, Action<LinkTagHelper>> DoesNotRunWhenARequiredAttributeIsMissing_Data
     {
         get
         {

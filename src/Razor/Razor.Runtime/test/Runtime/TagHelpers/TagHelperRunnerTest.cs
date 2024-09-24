@@ -37,12 +37,12 @@ public class TagHelperRunnerTest
         Assert.Equal(2, incrementer);
     }
 
-    public static TheoryData TagHelperOrderData
+    public static TheoryData<int[], int[]> TagHelperOrderData
     {
         get
         {
             // tagHelperOrders, expectedTagHelperOrders
-            return new TheoryData<int[], int[]>
+            return new()
                 {
                     {
                         new[] { 1000, int.MaxValue, 0 },

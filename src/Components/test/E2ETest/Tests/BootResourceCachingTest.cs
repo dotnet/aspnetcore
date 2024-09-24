@@ -60,13 +60,13 @@ public partial class BootResourceCachingTest
         WaitUntilLoaded();
         var subsequentResourcesRequested = GetAndClearRequestedPaths();
         Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
-        Assert.Empty(subsequentResourcesRequested.Where(path =>
+        Assert.DoesNotContain(subsequentResourcesRequested, path =>
             path.Contains("/dotnet.native.", StringComparison.Ordinal) &&
-            path.EndsWith(".wasm", StringComparison.Ordinal)));
+            path.EndsWith(".wasm", StringComparison.Ordinal));
         Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js", StringComparison.Ordinal)));
-        Assert.Empty(subsequentResourcesRequested.Where(path =>
+        Assert.DoesNotContain(subsequentResourcesRequested, path =>
             !path.Contains("/dotnet.native.", StringComparison.Ordinal) &&
-            path.EndsWith(".wasm", StringComparison.Ordinal)));
+            path.EndsWith(".wasm", StringComparison.Ordinal));
     }
 
     [Fact]

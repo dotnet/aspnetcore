@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 
 public class UrlResolutionTagHelperTest
 {
-    public static TheoryData ResolvableUrlData
+    public static TheoryData<string, string> ResolvableUrlData
     {
         get
         {
@@ -38,7 +38,7 @@ public class UrlResolutionTagHelperTest
         }
     }
 
-    public static TheoryData ResolvableUrlVersionData
+    public static TheoryData<string, string> ResolvableUrlVersionData
     {
         get
         {
@@ -133,7 +133,7 @@ public class UrlResolutionTagHelperTest
         Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
     }
 
-    public static TheoryData ResolvableUrlHtmlStringData
+    public static TheoryData<string, string> ResolvableUrlHtmlStringData
     {
         get
         {
@@ -193,7 +193,7 @@ public class UrlResolutionTagHelperTest
         Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
     }
 
-    public static TheoryData UnresolvableUrlData
+    public static TheoryData<string> UnresolvableUrlData
     {
         get
         {
@@ -251,7 +251,7 @@ public class UrlResolutionTagHelperTest
         Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
     }
 
-    public static TheoryData UnresolvableUrlHtmlStringData
+    public static TheoryData<string> UnresolvableUrlHtmlStringData
     {
         get
         {

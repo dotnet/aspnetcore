@@ -178,7 +178,7 @@ public class LayoutViewTest
         // Assert
         Assert.Equal(2, _renderer.Batches.Count);
         var batch = _renderer.Batches[1];
-        Assert.Equal(0, batch.DisposedComponentIDs.Count);
+        Assert.Empty(batch.DisposedComponentIDs);
         Assert.Collection(batch.DiffsInOrder,
             diff => Assert.Empty(diff.Edits), // LayoutView rerendered, but with no changes
             diff => Assert.Empty(diff.Edits), // RootLayout rerendered, but with no changes
@@ -220,7 +220,7 @@ public class LayoutViewTest
         Assert.True(setParametersTask2.IsCompletedSuccessfully);
         Assert.Equal(2, _renderer.Batches.Count);
         var batch = _renderer.Batches[1];
-        Assert.Equal(1, batch.DisposedComponentIDs.Count); // Disposes NestedLayout
+        Assert.Single(batch.DisposedComponentIDs); // Disposes NestedLayout
         Assert.Collection(batch.DiffsInOrder,
             diff => Assert.Empty(diff.Edits), // LayoutView rerendered, but with no changes
             diff =>

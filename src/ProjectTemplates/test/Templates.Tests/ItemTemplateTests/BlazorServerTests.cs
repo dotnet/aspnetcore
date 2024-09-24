@@ -9,6 +9,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Items.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class BlazorServerTest
 {
     public BlazorServerTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)

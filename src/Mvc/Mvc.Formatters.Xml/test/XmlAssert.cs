@@ -29,7 +29,7 @@ public static class XmlAssert
 
         if (!areEqual)
         {
-            throw new EqualException(
+            throw EqualException.ForMismatchedValues(
                 sortedExpectedXDocument.ToString(SaveOptions.DisableFormatting),
                 sortedActualXDocument.ToString(SaveOptions.DisableFormatting));
         }

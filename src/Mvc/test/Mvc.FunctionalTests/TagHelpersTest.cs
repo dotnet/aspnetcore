@@ -126,7 +126,7 @@ public class TagHelpersTest : LoggedTest
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
     }
 
-    public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
+    public static TheoryData<string, string> TagHelpersAreInheritedFromViewImportsPagesData
     {
         get
         {

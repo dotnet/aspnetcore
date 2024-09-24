@@ -34,7 +34,7 @@
 
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
     <UsagePattern IdentityGlob="Microsoft.NET.ILLink.Tasks/*9.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*10.0.*" />
 
     <!-- Transivite dependency of Microsoft.CodeAnalysis.ExternalAccess.AspNetCore -> Microsoft.CodeAnalysis.Features.
          In product build the dependency is bumped to latest, which also bumps the version of DiaSymReader  -->
@@ -47,4 +47,10 @@
     <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
     <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
   </IgnorePatterns>
+
+  <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
+  <Usages>
+    <Usage Id="Newtonsoft.Json" Version="13.0.1" />
+    <Usage Id="System.Security.Cryptography.Xml" Version="6.0.0" />
+  </Usages>
 </UsageData>

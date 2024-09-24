@@ -452,7 +452,7 @@ public class DefaultPageApplicationModelProviderTest
 
         // Assert
         var pageModel = context.PageApplicationModel;
-        Assert.Empty(pageModel.HandlerProperties.Where(p => p.BindingInfo != null));
+        Assert.DoesNotContain(pageModel.HandlerProperties, p => p.BindingInfo != null);
         Assert.Empty(pageModel.HandlerMethods);
         Assert.Same(typeof(EmptyPage).GetTypeInfo(), pageModel.HandlerType);
         Assert.Same(typeof(EmptyPage).GetTypeInfo(), pageModel.ModelType);
@@ -473,7 +473,7 @@ public class DefaultPageApplicationModelProviderTest
 
         // Assert
         var pageModel = context.PageApplicationModel;
-        Assert.Empty(pageModel.HandlerProperties.Where(p => p.BindingInfo != null));
+        Assert.DoesNotContain(pageModel.HandlerProperties, p => p.BindingInfo != null);
         Assert.Empty(pageModel.HandlerMethods);
         Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.DeclaredModelType);
         Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.ModelType);
