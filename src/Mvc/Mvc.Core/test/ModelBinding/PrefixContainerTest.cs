@@ -181,6 +181,23 @@ public class PrefixContainerTest
     }
 
     [Theory]
+    [InlineData("parameter")]
+    [InlineData("foo")]
+    [InlineData("bar")]
+    public void ContainsPrefix_ReturnFalse_WhenPrefixMatchesExactly_WithKeys(string prefix)
+    {
+        // Arrange
+        var keys = new string[] { "parameter", "foo", "bar" };
+        var container = new PrefixContainer(keys);
+
+        // Act
+        var result = container.ContainsPrefix(prefix);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("foo")]
     public void GetKeysFromPrefix_ReturnsEmptySequenceWhenContainerIsEmpty(string prefix)
