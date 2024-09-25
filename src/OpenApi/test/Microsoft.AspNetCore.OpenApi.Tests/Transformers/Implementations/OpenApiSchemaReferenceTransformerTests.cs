@@ -450,4 +450,31 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             }
         });
     }
+
+    [Fact]
+    public async Task SelfReferenceMapperOnlyOperatesOnSchemaReferenceTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo))
+            {
+                schema.Reference = new OpenApiReference { Id = "#", Type = ReferenceType.Link };
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/todo"].Operations[OperationType.Get];
+            var response = operation.Responses["200"].Content["application/json"];
+            var responseSchema = response.Schema;
+            Assert.Equal("#", responseSchema.Reference.Id);
+            Assert.Equal(ReferenceType.Link, responseSchema.Reference.Type);
+        });
+    }
 }
