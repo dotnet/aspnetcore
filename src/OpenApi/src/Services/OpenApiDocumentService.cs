@@ -403,6 +403,12 @@ internal sealed class OpenApiDocumentService(
                 continue;
             }
 
+            // MVC's ModelMetadata layer will set ApiParameterDescription.Type to string when the parameter
+            // is a parsable or convertible type. In this case, we want to use the actual model type
+            // to generate the schema instead of the string type.
+            var targetType = parameter.Type == typeof(string) && parameter.ModelMetadata.ModelType != parameter.Type
+                ? parameter.ModelMetadata.ModelType
+                : parameter.Type;
             var openApiParameter = new OpenApiParameter
             {
                 Name = parameter.Name,
@@ -414,7 +420,7 @@ internal sealed class OpenApiDocumentService(
                     _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
                 },
                 Required = IsRequired(parameter),
-                Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
+                Schema = await _componentService.GetOrCreateSchemaAsync(targetType, scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
                 Description = GetParameterDescriptionFromAttribute(parameter)
             };
 
