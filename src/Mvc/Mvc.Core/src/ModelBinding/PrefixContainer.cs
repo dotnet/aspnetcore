@@ -212,7 +212,7 @@ public class PrefixContainer
                 // which should not qualify as a prefix match. Therefore, we will continue searching
                 // for valid matches in this case.
 
-                if (candidate.Length > prefix.Length)
+                if ((uint)candidate.Length > (uint)prefix.Length)
                 {
                     var c = candidate[prefix.Length];
                     if (c == '.' || c == '[')
