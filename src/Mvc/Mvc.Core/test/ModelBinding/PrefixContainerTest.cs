@@ -184,7 +184,7 @@ public class PrefixContainerTest
     [InlineData("parameter")]
     [InlineData("foo")]
     [InlineData("bar")]
-    public void ContainsPrefix_ReturnFalse_WhenPrefixMatchesExactly_WithKeys(string prefix)
+    public void ContainsPrefix_ReturnsFalse_WhenPrefixMatchesExactly_WithKeys(string prefix)
     {
         // Arrange
         var keys = new string[] { "parameter", "foo", "bar" };
