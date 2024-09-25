@@ -20,7 +20,8 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.JSInterop.WebAssembly" />
+    <Reference Include="Microsoft.JSInterop.WebAssembly" /> 
+    <Reference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
