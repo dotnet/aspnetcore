@@ -201,32 +201,40 @@ public class PrefixContainer
             {
                 Debug.Assert(candidate.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
-                // Okay, now we have a candidate that starts with the prefix. If the candidate is longer than
-                // the prefix, we need to look at the next character and see if it's a delimiter.
-                if (candidate.Length == prefix.Length)
+                // At this point, we have identified a candidate that starts with the given prefix.
+                // If the candidate's length is greater than that of the prefix, we need to examine
+                // the character that immediately follows the prefix in the candidate string.
+                // This step is crucial to determine if the candidate is a valid prefix match.
+                // A valid prefix match occurs if the next character is either a delimiter ('.' or '['),
+                // indicating that the candidate is a sub-key of the prefix. If the next character
+                // is not a delimiter, it means the candidate contains additional characters that
+                // extend beyond the prefix without forming a valid hierarchical relationship,
+                // which should not qualify as a prefix match. Therefore, we will continue searching
+                // for valid matches in this case.
+
+                if (candidate.Length > prefix.Length)
                 {
-                    // Exact match
-                    return pivot;
+                    var c = candidate[prefix.Length];
+                    if (c == '.' || c == '[')
+                    {
+                        // Match, followed by delimiter
+                        return pivot;
+                    }
+
+                    // Okay, so the candidate has some extra text. We need to keep searching.
+                    //
+                    // Can often assume the candidate string is greater than the prefix e.g. that works for
+                    //  prefix: product
+                    //  candidate: productId
+                    // most of the time because "product", "product.id", etc. will sort earlier than "productId". But,
+                    // the assumption isn't correct if "product[0]" is also in _sortedValues because that value will
+                    // sort later than "productId".
+                    //
+                    // Fall back to brute force and cover all the cases.
+                    return LinearSearch(prefix, start, end);
                 }
 
-                var c = candidate[prefix.Length];
-                if (c == '.' || c == '[')
-                {
-                    // Match, followed by delimiter
-                    return pivot;
-                }
-
-                // Okay, so the candidate has some extra text. We need to keep searching.
-                //
-                // Can often assume the candidate string is greater than the prefix e.g. that works for
-                //  prefix: product
-                //  candidate: productId
-                // most of the time because "product", "product.id", etc. will sort earlier than "productId". But,
-                // the assumption isn't correct if "product[0]" is also in _sortedValues because that value will
-                // sort later than "productId".
-                //
-                // Fall back to brute force and cover all the cases.
-                return LinearSearch(prefix, start, end);
+                return -1;
             }
 
             if (compare > 0)
