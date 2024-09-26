@@ -6,6 +6,19 @@
 
   <ItemGroup>
     <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl EndpointMapper %25HELIX_WORKITEM_UPLOAD_ROOT%25\EndpointMapper.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-BCRYPT/Analytic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-BCRYPT-Analytic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-CNG/Analytic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-CNG-Analytic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-DPAPI/BackUpKeySvc %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-DPAPI-BackUpKeySvc.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-DPAPI/Debug %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-DPAPI-Debug.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-DPAPI/Operational %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-DPAPI-Operational.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-DSSEnh/Analytic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-DSSEnh-Analytic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-NCrypt/CertInUse %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-NCrypt-CertInUse.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-NCrypt/Operational %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-NCrypt-Operational.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-RNG/Analytic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-RNG-Analytic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-Crypto-RSAEnh/Analytic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-Crypto-RSAEnh-Analytic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-LSA/Diagnostic %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-LSA-Diagnostic.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-LSA/Operational %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-LSA-Operational.evtx" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="wevtutil epl Microsoft-Windows-LSA/Performance %25HELIX_WORKITEM_UPLOAD_ROOT%25\Microsoft-Windows-LSA-Performance.evtx" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
