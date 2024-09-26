@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -594,4 +595,107 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 });
         });
     }
+
+    [Fact]
+    public async Task SupportsClassWithJsonUnmappedMemberHandlingDisallowed()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ExampleWithDisallowedUnmappedMembers type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("number", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                });
+            Assert.False(schema.AdditionalPropertiesAllowed);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsClassWithJsonUnmappedMemberHandlingSkipped()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ExampleWithSkippedUnmappedMembers type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("number", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                });
+            Assert.True(schema.AdditionalPropertiesAllowed);
+        });
+    }
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private class ExampleWithDisallowedUnmappedMembers
+    {
+        public int Number { get; init; }
+    }
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Skip)]
+    private class ExampleWithSkippedUnmappedMembers
+    {
+        public int Number { get; init; }
+    }
+
+    [Fact]
+    public async Task SupportsTypesWithSelfReferencedProperties()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (Parent parent) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema.GetEffective(document);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("selfReferenceList", property.Key);
+                    Assert.Equal("array", property.Value.Type);
+                    Assert.Equal("Parent", property.Value.Items.Reference.Id);
+                },
+                property =>
+                {
+                    Assert.Equal("selfReferenceDictionary", property.Key);
+                    Assert.Equal("object", property.Value.Type);
+                    Assert.Equal("Parent", property.Value.AdditionalProperties.Reference.Id);
+                });
+        });
+    }
+
+    public class Parent
+    {
+        public IEnumerable<Parent> SelfReferenceList { get; set; } = [ ];
+        public IDictionary<string, Parent> SelfReferenceDictionary { get; set; } = new Dictionary<string, Parent>();
+    }
+
 }

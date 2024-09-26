@@ -537,4 +537,59 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Null(operation.RequestBody.Content["application/json"].Schema.Type);
         });
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsParameterWithEnumType(bool useAction)
+    {
+        // Arrange
+        if (!useAction)
+        {
+            var builder = CreateBuilder();
+            builder.MapGet("/api/with-enum", (ItemStatus status) => status);
+        }
+        else
+        {
+            var action = CreateActionDescriptor(nameof(GetItemStatus));
+            await VerifyOpenApiDocument(action, AssertOpenApiDocument);
+        }
+
+        static void AssertOpenApiDocument(OpenApiDocument document)
+        {
+            var operation = document.Paths["/api/with-enum"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
+            Assert.NotNull(parameter.Schema.Reference);
+            Assert.Equal(parameter.Schema.Reference.Id, response.Reference.Id);
+            var schema = parameter.Schema.GetEffective(document);
+            Assert.Collection(schema.Enum,
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Pending", openApiString.Value);
+            },
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Approved", openApiString.Value);
+            },
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Rejected", openApiString.Value);
+            });
+        }
+    }
+
+    [Route("/api/with-enum")]
+    private ItemStatus GetItemStatus([FromQuery] ItemStatus status) => status;
+
+    [JsonConverter(typeof(JsonStringEnumConverter<ItemStatus>))]
+    internal enum ItemStatus
+    {
+        Pending = 0,
+        Approved = 1,
+        Rejected = 2,
+    }
 }
