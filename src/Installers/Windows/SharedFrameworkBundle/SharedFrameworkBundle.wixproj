@@ -13,10 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
     <WixExtension Include="WixDependencyExtension">
       <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
       <Name>WixDependencyExtension</Name>
@@ -29,7 +25,6 @@
 
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
-    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
     <Content Include="thm.xml" />
   </ItemGroup>
 
