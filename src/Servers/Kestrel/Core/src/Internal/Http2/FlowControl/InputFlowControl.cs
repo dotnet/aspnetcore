@@ -24,16 +24,16 @@ internal sealed class InputFlowControl
         private const long AbortedBitMask = 1L << 32; // uint MaxValue + 1
         internal long _state;
 
-        public FlowControlState(uint initialWindowSize, bool isAborted)
+        public FlowControlState(int size, bool isAborted)
         {
-            _state = initialWindowSize;
+            _state = (uint)size; // Casted first to uint before assigning it to a long field to the address negative values
             if (isAborted)
             {
                 _state |= AbortedBitMask;
             }
         }
 
-        public uint Available => (uint)_state;
+        public int Available => (int)_state;
 
         public bool IsAborted => _state > uint.MaxValue;
     }
@@ -49,19 +49,20 @@ internal sealed class InputFlowControl
     {
         Debug.Assert(initialWindowSize >= minWindowSizeIncrement, "minWindowSizeIncrement is greater than the window size.");
 
-        _flow = new FlowControlState(initialWindowSize, false);
+        _flow = new FlowControlState((int)initialWindowSize, isAborted: false);
         _initialWindowSize = initialWindowSize;
         _minWindowSizeIncrement = (int)minWindowSizeIncrement;
     }
 
     public bool IsAvailabilityLow => _flow.Available < _minWindowSizeIncrement;
 
-    // Test hook, not participating in mutual exclusion
-    internal uint Available => _flow.Available;
+    // Test hook
+    internal int Available => _flow.Available;
+    internal bool IsAborted => _flow.IsAborted;
 
     public void Reset()
     {
-        _flow = new FlowControlState(_initialWindowSize, false);
+        _flow = new FlowControlState((int)_initialWindowSize, isAborted: false);
         _pendingUpdateSize = 0;
         _windowUpdatesDisabled = false;
     }
@@ -72,6 +73,7 @@ internal sealed class InputFlowControl
         do
         {
             currentFlow = _flow; // Copy
+
             // Even if the stream is aborted, the client should never send more data than was available in the
             // flow-control window at the time of the abort.
             if (bytes > currentFlow.Available)
@@ -84,7 +86,7 @@ internal sealed class InputFlowControl
                 return false;
             }
 
-            computedFlow = new FlowControlState(currentFlow.Available - (uint)bytes, isAborted: false);
+            computedFlow = new FlowControlState(currentFlow.Available - bytes, isAborted: false);
         } while (currentFlow._state != Interlocked.CompareExchange(ref _flow._state, computedFlow._state, currentFlow._state));
 
         return true;
@@ -103,14 +105,12 @@ internal sealed class InputFlowControl
                 return false;
             }
 
-            var maxUpdate = int.MaxValue - currentFlow.Available;
-            if (bytes > maxUpdate)
-            {
-                // We only try to update the window back to its initial size after the app consumes data.
-                // It shouldn't be possible for the window size to ever exceed Http2PeerSettings.MaxWindowSize.
-                Debug.Assert(false, $"{nameof(TryUpdateWindow)} attempted to grow window past max size.");
-            }
-            computedFlow = new FlowControlState(currentFlow.Available + (uint)bytes, isAborted: false);
+            var maxUpdate = Http2PeerSettings.MaxWindowSize - currentFlow.Available;
+
+            // We only try to update the window back to its initial size after the app consumes data.
+            // It shouldn't be possible for the window size to ever exceed Http2PeerSettings.MaxWindowSize.
+            Debug.Assert(bytes <= maxUpdate, $"{nameof(TryUpdateWindow)} attempted to grow window past max size.");
+            computedFlow = new FlowControlState(currentFlow.Available + bytes, isAborted: false);
         } while (currentFlow._state != Interlocked.CompareExchange(ref _flow._state, computedFlow._state, currentFlow._state));
 
         if (_windowUpdatesDisabled)

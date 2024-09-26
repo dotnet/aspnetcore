@@ -10,6 +10,43 @@ public class InputFlowControlTests
 {
     private const int IterationCount = 1;
 
+    [Theory]
+    [InlineData(-100, -100)]
+    [InlineData(100, 100)]
+    [InlineData(int.MaxValue, int.MaxValue)]
+    [InlineData(int.MinValue, int.MinValue)]
+    public void ValuesCanBeUpdatedToBoundaries(int update, int expected)
+    {
+        var sut = new InputFlowControl(0, 0);
+        sut.TryUpdateWindow(update, out _);
+        Assert.Equal(expected, sut.Available);
+    }
+
+    [Fact]
+    public void Available_CanBecomeNegative()
+    {
+        var sut = new InputFlowControl(10, 1);
+        sut.TryUpdateWindow(-100, out _);
+        Assert.Equal(-90, sut.Available);
+        sut.TryUpdateWindow(100, out _);
+        Assert.Equal(10, sut.Available);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(-1)]
+    [InlineData(int.MaxValue)]
+    [InlineData(int.MinValue)]
+    public void IsAborted(int value)
+    {
+        var sut = new InputFlowControl(uint.MaxValue, 1);
+        sut.TryUpdateWindow(value, out _);
+        Assert.False(sut.IsAborted);
+        sut.Abort();
+        Assert.True(sut.IsAborted);
+    }
+
     [Fact]
     public async Task Threads1_Advance()
     {
@@ -82,7 +119,7 @@ public class InputFlowControlTests
             var t2 = Task.Run(() => WindowUpdate(sut));
             var t3 = Task.Run(() => WindowUpdate(sut));
             await Task.WhenAll(t1, t2, t3);
-            Assert.Equal((uint)15000 + 5000 * 3, sut.Available);
+            Assert.Equal(15000 + 5000 * 3, sut.Available);
         }
 
         static void WindowUpdate(InputFlowControl sut)
@@ -331,7 +368,7 @@ public class InputFlowControlTests
             var t2 = Task.Run(() => Advance(sut));
             var t3 = Task.Run(() => Advance(sut));
             await Task.WhenAll(t0, t1, t2, t3);
-            Assert.Equal((uint)10000, sut.Available);
+            Assert.Equal(10000, sut.Available);
         }
 
         static void WindowUpdate(InputFlowControl sut)
@@ -364,7 +401,7 @@ public class InputFlowControlTests
             var t2 = Task.Run(() => WindowUpdate(ref sizeSum, sut));
             var t3 = Task.Run(() => WindowUpdate(ref sizeSum, sut));
             await Task.WhenAll(t1, t2, t3);
-            Assert.Equal((uint)15000 + 5000 * 3, sut.Available);
+            Assert.Equal(15000 + 5000 * 3, sut.Available);
             sut.TryUpdateWindow(11, out var size); // To trigger anything less then 10 included
             sizeSum += size;
             Assert.Equal(5000 * 3 + 11, sizeSum);
