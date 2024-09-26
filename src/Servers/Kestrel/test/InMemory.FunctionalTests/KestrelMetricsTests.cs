@@ -391,6 +391,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58086")]
     public async Task Http1Connection_ServerAbort_HasErrorType()
     {
         var testMeterFactory = new TestMeterFactory();
@@ -399,16 +400,20 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+        var readBodyTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await using var server = new TestServer(c =>
+        await using var server = new TestServer(async c =>
         {
+            await c.Request.Body.ReadUntilEndAsync();
+            readBodyTcs.SetResult();
             c.Abort();
-            return Task.CompletedTask;
         }, serviceContext);
 
         using (var connection = server.CreateConnection())
         {
             await connection.Send(sendString).DefaultTimeout();
+
+            await readBodyTcs.Task.DefaultTimeout();
 
             await connection.ReceiveEnd().DefaultTimeout();
 
