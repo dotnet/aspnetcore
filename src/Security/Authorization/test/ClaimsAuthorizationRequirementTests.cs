@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
 
 public class ClaimsAuthorizationRequirementTests
 {
-    public ClaimsAuthorizationRequirement CreateRequirement(string claimType, params string[] allowedValues)
-    {
-        return new ClaimsAuthorizationRequirement(claimType, allowedValues);
-    }
-
     [Fact]
     public void ToString_ShouldReturnAndDescriptionWhenAllowedValuesNotNull()
     {
@@ -49,5 +45,29 @@ public class ClaimsAuthorizationRequirementTests
 
         // Assert
         Assert.Equal("ClaimsAuthorizationRequirement:Claim.Type=Custom", formattedValue);
+    }
+
+    [Fact]
+    public void ToString_ShouldReturnPredicateDescriptionWhenPredicateIsUsed()
+    {
+        // Arrange
+        Predicate<Claim> claimPredicate = claim => claim.Type == "Permissions" && claim.Value.Contains("CanViewPage");
+        var requirement = CreateRequirement(claimPredicate);
+
+        // Act
+        var formattedValue = requirement.ToString();
+
+        // Assert
+        Assert.Equal("ClaimsAuthorizationRequirement:Evaluates using a custom predicate", formattedValue);
+    }
+
+    private ClaimsAuthorizationRequirement CreateRequirement(string claimType, params string[] allowedValues)
+    {
+        return new ClaimsAuthorizationRequirement(claimType, allowedValues);
+    }
+
+    private ClaimsAuthorizationRequirement CreateRequirement(Predicate<Claim> match)
+    {
+        return new ClaimsAuthorizationRequirement(match);
     }
 }

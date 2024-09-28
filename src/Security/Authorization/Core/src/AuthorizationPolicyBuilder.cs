@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Shared;
@@ -138,6 +139,20 @@ public class AuthorizationPolicyBuilder
         ArgumentNullThrowHelper.ThrowIfNull(claimType);
 
         Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues: null));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <see cref="ClaimsAuthorizationRequirement"/> to the current instance which requires
+    /// that the current user has a claim that satisfies the specified predicate.
+    /// </summary>
+    /// <param name="match">The predicate to evaluate the claims.</param>
+    /// <returns>A reference to this instance after the operation has completed.</returns>
+    public AuthorizationPolicyBuilder RequireClaim(Predicate<Claim> match)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(match);
+
+        Requirements.Add(new ClaimsAuthorizationRequirement(match));
         return this;
     }
 
