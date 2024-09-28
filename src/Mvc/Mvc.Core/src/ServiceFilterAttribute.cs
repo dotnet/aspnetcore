@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Mvc;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-[DebuggerDisplay("Type = {ServiceType}, Order = {Order}")]
+[DebuggerDisplay("Type = {ServiceType}/{Key}, Order = {Order}")]
+
 public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
 {
     /// <summary>
@@ -40,6 +41,12 @@ public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     /// </summary>
     public Type ServiceType { get; }
 
+    /// <summary>
+    /// optional key for the registration
+    /// </summary>
+    public object? Key { get; set; }
+
+
     /// <inheritdoc />
     public bool IsReusable { get; set; }
 
@@ -48,7 +55,16 @@ public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
-        var filter = (IFilterMetadata)serviceProvider.GetRequiredService(ServiceType);
+        IFilterMetadata filter;
+        if (string.IsNullOrWhiteSpace(Key as string))
+        {
+            filter = (IFilterMetadata)serviceProvider.GetRequiredService(ServiceType);
+        }
+        else
+        {
+            filter = (IFilterMetadata)serviceProvider.GetRequiredKeyedService(ServiceType, Key);
+
+        }
         if (filter is IFilterFactory filterFactory)
         {
             // Unwrap filter factories
