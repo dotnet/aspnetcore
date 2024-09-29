@@ -154,6 +154,14 @@ internal sealed class OpenApiSchemaStore
     private void AddOrUpdateSchemaByReference(OpenApiSchema schema, string? baseTypeSchemaId = null, bool captureSchemaByRef = false)
     {
         var targetReferenceId = baseTypeSchemaId is not null ? $"{baseTypeSchemaId}{GetSchemaReferenceId(schema)}" : GetSchemaReferenceId(schema);
+        // Schemas that already have a reference provided by JsonSchemaExporter are skipped here
+        // and handled by the OpenApiSchemaReferenceTransformer instead. This case typically kicks
+        // in for self-referencing schemas where JsonSchemaExporter inlines references to avoid
+        // infinite recursion.
+        if (schema.Reference is not null)
+        {
+            return;
+        }
         if (SchemasByReference.TryGetValue(schema, out var referenceId) || captureSchemaByRef)
         {
             // If we've already used this reference ID else where in the document, increment a counter value to the reference
