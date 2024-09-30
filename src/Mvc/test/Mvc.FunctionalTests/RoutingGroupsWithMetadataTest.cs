@@ -32,6 +32,7 @@ public class RoutingGroupsWithMetadataTests : LoggedTest
     public WebApplicationFactory<StartupForRouteGroupsWithMetadata> Factory { get; private set; }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55927")]
     public async Task OrderedGroupMetadataForControllers()
     {
         using var client = Factory.CreateClient();
