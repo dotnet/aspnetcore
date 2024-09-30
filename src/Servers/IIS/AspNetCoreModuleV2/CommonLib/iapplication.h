@@ -62,7 +62,7 @@ std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> make_application(Params&&...
 }
 
 template< class TYPE >
-TYPE FindParameter(LPCSTR sRequiredParameter, APPLICATION_PARAMETER *pParameters, DWORD nParameters)
+TYPE FindParameter(LPCSTR sRequiredParameter, const APPLICATION_PARAMETER *pParameters, DWORD nParameters)
 {
     for (DWORD i = 0; i < nParameters; i++)
     {

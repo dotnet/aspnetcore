@@ -77,7 +77,7 @@ public:
 
     virtual
     VOID
-    StopInternal(bool fServerInitiated) noexcept
+    StopInternal(bool fServerInitiated)
     {
         UNREFERENCED_PARAMETER(fServerInitiated);
     }

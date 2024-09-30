@@ -24,6 +24,9 @@ public:
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
     {
+        // 'Don't return a pointer that may be invalid'
+        // We use make_unique to prevent memory leaks and then release it so we don't delete the pointer
+#pragma warning(suppress: 26487)
         *pRequestHandler = std::make_unique<ServerErrorHandler>(*pHttpContext, m_statusCode, m_subStatusCode, m_statusText, m_HR, m_disableStartupPage, m_responseContent).release();
 
         return S_OK;

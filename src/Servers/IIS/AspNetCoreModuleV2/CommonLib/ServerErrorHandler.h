@@ -9,13 +9,13 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, std::string& responseContent) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, std::string& responseContent)
         : REQUEST_HANDLER(pContext),
         m_HR(hr),
         m_disableStartupPage(disableStartupPage),
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
-        m_statusText(std::move(statusText)),
+        m_statusText(statusText),
         m_ExceptionInfoContent(responseContent)
     {
     }

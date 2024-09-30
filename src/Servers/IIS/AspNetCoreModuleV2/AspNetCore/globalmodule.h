@@ -75,7 +75,7 @@ private:
             // IIS will actually stop giving us new requests and queue them instead for processing by the new app process.
             m_shutdown = std::thread([this]()
                 {
-                    auto delay = m_pApplicationManager->GetShutdownDelay();
+                    const auto delay = m_pApplicationManager->GetShutdownDelay();
                     LOG_INFOF(L"Shutdown starting in %d ms.", delay.count());
                     // Delay so that any incoming requests while we're returning from OnGlobalStopListening are allowed to be processed
                     std::this_thread::sleep_for(delay);

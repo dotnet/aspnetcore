@@ -85,6 +85,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         IN_PROCESS_HANDLER::StaticTerminate();
         ALLOC_CACHE_HANDLER::StaticTerminate();
         DebugStop();
+        break;
     default:
         break;
     }

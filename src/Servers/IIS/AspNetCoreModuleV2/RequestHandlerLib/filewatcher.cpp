@@ -13,7 +13,9 @@ FILE_WATCHER::FILE_WATCHER() :
     m_hChangeNotificationThread(nullptr),
     m_fThreadExit(false),
     m_fShadowCopyEnabled(false),
-    m_copied(false)
+    m_copied(false),
+    _overlapped(),
+    m_shutdownTimeout(0)
 {
     m_pDoneCopyEvent = CreateEvent(
         nullptr,  // default security attributes
@@ -50,13 +52,13 @@ void FILE_WATCHER::WaitForWatcherThreadExit()
     {
         // This is the old behavior, which is now opt-in using an environment variable. Wait for
         // the thread to exit, but if it doesn't exit soon enough, terminate it.
-        const int totalWaitTimeMs = 10000;
-        const int waitIntervalMs = 50;
-        const int iterations = totalWaitTimeMs / waitIntervalMs;
+        constexpr int totalWaitTimeMs = 10000;
+        constexpr int waitIntervalMs = 50;
+        constexpr int iterations = totalWaitTimeMs / waitIntervalMs;
         for (int i = 0; i < iterations && !m_fThreadExit; i++)
         {
             // Check if the thread has exited.
-            DWORD result = WaitForSingleObject(m_hChangeNotificationThread, waitIntervalMs);
+            const DWORD result = WaitForSingleObject(m_hChangeNotificationThread, waitIntervalMs);
             if (result == WAIT_OBJECT_0)
             {
                 // The thread has exited.
@@ -68,6 +70,9 @@ void FILE_WATCHER::WaitForWatcherThreadExit()
         if (!m_fThreadExit)
         {
             LOG_INFO(L"File watcher thread did not exit. Forcing termination.");
+            // Using TerminateThread does not allow propert thread clean up.
+            // Off by default, behind a backcompat switch
+#pragma warning(suppress: 6258)
             TerminateThread(m_hChangeNotificationThread, 1);
         }
     }
@@ -99,7 +104,7 @@ FILE_WATCHER::Create(
         (LPTHREAD_START_ROUTINE)ChangeNotificationThread,
         this,
         0,
-        NULL));
+        nullptr));
 
     if (pszDirectoryToMonitor == nullptr ||
         pszFileNameToMonitor == nullptr ||
@@ -128,7 +133,7 @@ FILE_WATCHER::Create(
         nullptr,
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-        NULL);
+        nullptr);
 
     RETURN_LAST_ERROR_IF(_hDirectory == INVALID_HANDLE_VALUE);
 
@@ -176,7 +181,7 @@ Win32 error
         OVERLAPPED* pOverlapped = nullptr;
         ULONG_PTR   completionKey;
 
-        BOOL success = GetQueuedCompletionStatus(
+        const BOOL success = GetQueuedCompletionStatus(
             pFileMonitor->m_hCompletionPort,
             &bytesTransferred,
             &completionKey,
@@ -272,7 +277,7 @@ HRESULT
     if (bytesTransferred == 0)
     {
         LOG_INFO(L"0 bytes transferred for file notifications. Falling back to manually looking for app_offline.");
-        DWORD fileAttr = GetFileAttributesW(_strFullName.QueryStr());
+        const DWORD fileAttr = GetFileAttributesW(_strFullName.QueryStr());
         if (fileAttr != INVALID_FILE_ATTRIBUTES && !(fileAttr & FILE_ATTRIBUTE_DIRECTORY))
         {
             fAppOfflineChanged = TRUE;
@@ -353,7 +358,9 @@ HRESULT
     return S_OK;
 }
 
-
+// The pointer argument can be marked as a pointer to a const
+// This is a callback that's passed to a windows function without const qualifications on the arguments
+#pragma warning(suppress: 26461)
 VOID
 CALLBACK
 FILE_WATCHER::TimerCallback(
@@ -475,7 +482,7 @@ FILE_WATCHER::StopMonitor()
     LOG_INFO(L"Stopping file watching.");
 
     // Signal the file watcher thread to exit
-    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
+    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, nullptr);
     WaitForWatcherThreadExit();
 
     if (m_fShadowCopyEnabled)

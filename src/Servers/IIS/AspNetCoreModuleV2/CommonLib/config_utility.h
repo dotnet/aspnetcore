@@ -61,7 +61,7 @@ private:
     HRESULT
     FindKeyValuePair(IAppHostElement* pElement, PCWSTR key, STRU& strHandlerVersionValue)
     {
-        HRESULT hr;
+        HRESULT hr = S_OK;
         CComPtr<IAppHostElement>           pHandlerSettings = nullptr;
         CComPtr<IAppHostElementCollection> pHandlerSettingsCollection = nullptr;
         CComPtr<IAppHostElement>           pHandlerVar = nullptr;

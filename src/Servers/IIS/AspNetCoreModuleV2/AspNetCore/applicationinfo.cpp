@@ -116,7 +116,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                 pHttpApplication.GetApplicationId(),
                 hr);
 
-            auto page = ANCM_ERROR_PAGE;
+            constexpr auto page = ANCM_ERROR_PAGE;
             std::string responseContent;
             if (options.QueryShowDetailedErrors())
             {
@@ -301,7 +301,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
         auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
         if (!shadowCopyBaseDirectory.exists())
         {
-            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), NULL);
+            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
         }
 
         for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))
@@ -311,7 +311,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
                 try
                 {
                     auto tempDirName = entry.path().filename().string();
-                    int intFileName = std::stoi(tempDirName);
+                    const int intFileName = std::stoi(tempDirName);
                     if (intFileName > directoryName)
                     {
                         directoryName = intFileName;
@@ -334,7 +334,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
         // Avoid using canonical for shadowCopyBaseDirectory
         // It could expand to a network drive, or an expanded link folder path
         // We already made it an absolute path relative to the physicalPath above
-        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
+        const HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
 
         LOG_INFOF(L"Finished copying %d files to shadow copy directory %ls.", copiedFileCount, shadowCopyBaseDirectory.path().c_str());
 

@@ -87,6 +87,9 @@ void HostFxr::Load(const std::wstring& location)
     }
 }
 
+// No array to pointer decay
+// This is in reference to main taking PCWSTR argv[] and the analyzer wanting us to use span instead
+#pragma warning(suppress: 26485)
 void HostFxr::SetMain(hostfxr_main_fn hostfxr_main_fn)
 {
     m_hostfxr_main_fn = hostfxr_main_fn;
@@ -114,7 +117,7 @@ HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const 
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
 }
 
-int HostFxr::InitializeForApp(int argc, PCWSTR* argv, const std::wstring& dotnetExe) const noexcept
+int HostFxr::InitializeForApp(int argc, PCWSTR* argv, const std::wstring& dotnetExe) const
 {
     if (m_hostfxr_initialize_for_dotnet_commandline_fn == nullptr || m_hostfxr_main_fn != nullptr)
     {

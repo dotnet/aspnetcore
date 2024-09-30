@@ -259,7 +259,7 @@ C_ASSERT( sizeof(VOID*) <= sizeof(ULONGLONG) );
 //  bytes. If the buffer overflows then a heap buffer will be allocated.
 //
 #define STACK_BUFFER( _name, _size )    \
-    ULONGLONG   __aqw##_name[ ( ( (_size) + sizeof(ULONGLONG) - 1 ) / sizeof(ULONGLONG) ) ]; \
+    ULONGLONG   __aqw##_name[ ( ( (_size) + sizeof(ULONGLONG) - 1 ) / sizeof(ULONGLONG) ) ]{}; \
     BUFFER      _name( (BYTE*)__aqw##_name, sizeof(__aqw##_name) )
 
 //

@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include "HostFxr.h"
 
-IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = NULL;
+IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = nullptr;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -28,7 +28,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
     m_pConfig(std::move(pConfig)),
-    m_requestCount(0)
+    m_requestCount(0),
+    m_AsyncCompletionHandler(nullptr)
 {
     DBG_ASSERT(m_pConfig);
 
@@ -317,7 +318,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
         const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
 
-        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
+        const auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
             auto content = m_stringRedirectionOutput->GetOutput();

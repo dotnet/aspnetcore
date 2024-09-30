@@ -69,6 +69,10 @@ WINHTTP_HELPER::GetFlagsFromBufferType(
     __out BOOL *                           pfClose
 )
 {
+    *pfClose = FALSE;
+    *pfFinalFragment = FALSE;
+    *pfUtf8Encoded = FALSE;
+
     switch (BufferType)
     {
     case WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE:

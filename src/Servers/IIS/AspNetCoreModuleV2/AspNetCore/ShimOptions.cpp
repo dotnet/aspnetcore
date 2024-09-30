@@ -79,9 +79,9 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     m_strArguments = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS)
         .value_or(m_strArguments);
 
-    auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
-    auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
-    auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
+    const auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
+    const auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
+    const auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
 
     m_fShowDetailedErrors = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
 
@@ -111,7 +111,7 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
 
 void ShimOptions::SetShutdownDelay(const std::wstring& shutdownDelay)
 {
-    auto millsecondsValue = std::stoi(shutdownDelay);
+    const auto millsecondsValue = std::stoi(shutdownDelay);
     if (millsecondsValue < 0)
     {
         throw ConfigurationLoadException(format(
