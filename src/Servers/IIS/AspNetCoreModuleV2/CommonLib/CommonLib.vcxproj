@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\build\Build.Lib.Settings" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{55494E58-E061-4C4C-A0A8-837008E72F85}</ProjectGuid>
     <RootNamespace>NewCommon</RootNamespace>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
+  <Import Project="..\..\build\Build.Lib.Settings" />
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..\iislib;$(LibNetHostPath)</AdditionalIncludeDirectories>

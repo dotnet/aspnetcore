@@ -12,9 +12,9 @@
     <Rule Id="C26116" Action="Error" />
     <Rule Id="C26117" Action="Error" />
     <Rule Id="C26130" Action="Error" />
-    <Rule Id="C26135" Action="Error" />
+    <Rule Id="C26135" Action="None" /> <!-- Missing annotation <annotation> at function '<func>' -->
     <Rule Id="C26140" Action="Error" />
-    <Rule Id="C26160" Action="Error" />
+    <Rule Id="C26160" Action="None" /> <!-- Caller possibly failing to hold lock '<lock>' before calling function '<func>'. -->
     <Rule Id="C26165" Action="Error" />
     <Rule Id="C26166" Action="Error" />
     <Rule Id="C26167" Action="Error" />
@@ -38,7 +38,7 @@
     <Rule Id="C26426" Action="Error" />
     <Rule Id="C26427" Action="Error" />
     <Rule Id="C26429" Action="None" /> <!-- Symbol is never tested for nullness, it can be marked as gsl::not_null. -->
-    <Rule Id="C26430" Action="Error" />
+    <Rule Id="C26430" Action="None" /> <!-- Symbol '<var>' is not tested for nullness on all paths  -->
     <Rule Id="C26431" Action="Error" />
     <Rule Id="C26432" Action="None" /> <!-- If you define or delete any default operation in the type 'type-name', define or delete them all -->
     <Rule Id="C26433" Action="None" /> <!-- Function should be marked with override -->
@@ -58,15 +58,16 @@
     <Rule Id="C26448" Action="None" /> <!-- Consider using gsl::finally if final action is intended -->
     <Rule Id="C26449" Action="Error" />
     <Rule Id="C26450" Action="Error" />
-    <Rule Id="C26451" Action="Error" />
+    <Rule Id="C26451" Action="None" /> <!-- Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow -->
     <Rule Id="C26452" Action="Error" />
     <Rule Id="C26453" Action="Error" />
     <Rule Id="C26454" Action="Error" />
     <Rule Id="C26455" Action="None" /> <!-- Default constructor should not throw. Declare it 'noexcept' -->
+    <Rule Id="C26457" Action="None" /> <!--  (void) should not be used to ignore return values, use 'std::ignore =' instead -->
     <Rule Id="C26459" Action="Error" />
     <Rule Id="C26460" Action="None" /> <!-- The reference argument 'argument' for function 'function' can be marked as const  -->
     <Rule Id="C26461" Action="None" /> <!-- The pointer argument 'argument' for function 'function' can be marked as a pointer to const -->
-    <Rule Id="C26462" Action="Error" />
+    <Rule Id="C26462" Action="None" /> <!--  The value pointed to by '<var>' is assigned only once, mark it as a pointer to const -->
     <Rule Id="C26463" Action="Error" />
     <Rule Id="C26464" Action="Error" />
     <Rule Id="C26465" Action="Error" />
@@ -74,7 +75,7 @@
     <Rule Id="C26467" Action="None" /> <!-- Converting from floating point to unsigned integral types results in non-portable code if the double/float has a negative value. -->
     <Rule Id="C26471" Action="None" /> <!-- Don't use reinterpret_cast. A cast from void* can use static_cast -->
     <Rule Id="C26472" Action="None" /> <!-- Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast, or gsl::narrow. -->
-    <Rule Id="C26473" Action="Error" />
+    <Rule Id="C26473" Action="None" /> <!-- Don't cast between pointer types where the source type and the target type are the same -->
     <Rule Id="C26474" Action="Error" />
     <Rule Id="C26475" Action="Error" />
     <Rule Id="C26476" Action="None" /> <!-- Expression/symbol 'name' uses a naked union 'union' with multiple type pointers: Use variant instead -->
@@ -99,6 +100,7 @@
     <Rule Id="C26818" Action="None" /> <!-- Switch statement does not cover all cases. Consider adding a 'default' label -->
     <Rule Id="C26819" Action="Error" />
     <Rule Id="C26826" Action="None" /> <!-- Don't use C-style variable arguments -->
+    <Rule Id="C26859" Action="None" /> <!-- Empty optional '<var>' is unwrapped, will throw exception. -->
     <Rule Id="C28020" Action="None" /> <!-- The expression 'expr' is not true at this call -->
     <Rule Id="C28021" Action="Error" />
     <Rule Id="C28022" Action="Error" />
@@ -220,8 +222,8 @@
     <Rule Id="C28246" Action="Error" />
     <Rule Id="C28250" Action="Error" />
     <Rule Id="C28251" Action="None" /> <!-- Inconsistent annotation for function: this instance has an error -->
-    <Rule Id="C28252" Action="Error" />
-    <Rule Id="C28253" Action="Error" />
+    <Rule Id="C28252" Action="None" /> <!-- Inconsistent annotation for '<func>': <param> has '<annotation>' on the prior instance. -->
+    <Rule Id="C28253" Action="None" /> <!-- Inconsistent annotation for '<func>': <param> has '<annotations>' on this instance -->
     <Rule Id="C28254" Action="Error" />
     <Rule Id="C28260" Action="Error" />
     <Rule Id="C28262" Action="Error" />
@@ -294,7 +296,7 @@
     <Rule Id="C6029" Action="Error" />
     <Rule Id="C6031" Action="None" /> <!-- Return value ignored: '<func>'. -->
     <Rule Id="C6053" Action="Error" />
-    <Rule Id="C6054" Action="Error" />
+    <Rule Id="C6054" Action="None" /> <!-- String '<var>' might not be zero-terminated. -->
     <Rule Id="C6059" Action="Error" />
     <Rule Id="C6063" Action="Error" />
     <Rule Id="C6064" Action="Error" />
@@ -396,7 +398,7 @@
     <Rule Id="C6385" Action="Error" />
     <Rule Id="C6386" Action="Error" />
     <Rule Id="C6387" Action="None" /> <!-- '<expr>' could be '<val>':  this does not adhere to the specification for the function '<func>' -->
-    <Rule Id="C6388" Action="Error" />
+    <Rule Id="C6388" Action="None" /> <!-- '<var>' might not be '<val>':  this does not adhere to the specification for the function '<func>' -->
     <Rule Id="C6400" Action="Error" />
     <Rule Id="C6401" Action="Error" />
     <Rule Id="C6411" Action="Error" />

@@ -53,9 +53,11 @@ Return Values:
         *pcchEncoded = cchEncoded;
     }
 
-    if (cchEncodedStringSize == 0 && pszEncodedString == NULL) {
+    if (pszEncodedString == NULL) {
         return ERROR_SUCCESS;
     }
+
+    *pszEncodedString = 0;
 
     if (cchEncodedStringSize < cchEncoded) {
         // Given buffer is too small to hold encoded string.
@@ -66,8 +68,16 @@ Return Values:
     ib = ich = 0;
     while (ib < cbDecodedBufferSize) {
         b0 = pbDecodedBuffer[ib++];
-        b1 = (ib < cbDecodedBufferSize) ? pbDecodedBuffer[ib++] : 0;
-        b2 = (ib < cbDecodedBufferSize) ? pbDecodedBuffer[ib++] : 0;
+        b1 = 0;
+        b2 = 0;
+        if (ib < cbDecodedBufferSize)
+        {
+            b1 = pbDecodedBuffer[ib++];
+        }
+        if (ib < cbDecodedBufferSize)
+        {
+            b2 = pbDecodedBuffer[ib++];
+        }
 
         //
         // The checks below for buffer overflow seems redundant to me.
@@ -176,10 +186,19 @@ constexpr auto NA = (255);
     BYTE    b0, b1, b2, b3;
     BYTE *  pbDecodeBuffer = (BYTE *) pDecodeBuffer;
 
-    cchEncodedSize = (DWORD)wcslen(pszEncodedString);
-    if (NULL != pcbDecoded) {
+    if (NULL != pcbDecoded)
+    {
         *pcbDecoded = 0;
     }
+
+    if (pDecodeBuffer == NULL)
+    {
+        return ERROR_SUCCESS;
+    }
+
+    *pbDecodeBuffer = 0;
+
+    cchEncodedSize = (DWORD)wcslen(pszEncodedString);
 
     if ((0 == cchEncodedSize) || (0 != (cchEncodedSize % 4))) {
         // Input string is not sized correctly to be base64.
@@ -292,9 +311,11 @@ Return Values:
         *pcchEncoded = cchEncoded;
     }
 
-    if (cchEncodedStringSize == 0 && pszEncodedString == NULL) {
+    if (pszEncodedString == NULL) {
         return ERROR_SUCCESS;
     }
+
+    *pszEncodedString = 0;
 
     if (cchEncodedStringSize < cchEncoded) {
         // Given buffer is too small to hold encoded string.
@@ -305,8 +326,16 @@ Return Values:
     ib = ich = 0;
     while (ib < cbDecodedBufferSize) {
         b0 = pbDecodedBuffer[ib++];
-        b1 = (ib < cbDecodedBufferSize) ? pbDecodedBuffer[ib++] : 0;
-        b2 = (ib < cbDecodedBufferSize) ? pbDecodedBuffer[ib++] : 0;
+        b1 = 0;
+        b2 = 0;
+        if (ib < cbDecodedBufferSize)
+        {
+            b1 = pbDecodedBuffer[ib++];
+        }
+        if (ib < cbDecodedBufferSize)
+        {
+            b2 = pbDecodedBuffer[ib++];
+        }
 
         //
         // The checks below for buffer overflow seems redundant to me.
@@ -415,10 +444,17 @@ Return Values:
     BYTE    b0, b1, b2, b3;
     BYTE *  pbDecodeBuffer = (BYTE *) pDecodeBuffer;
 
-    cchEncodedSize = (DWORD)strlen(pszEncodedString);
     if (NULL != pcbDecoded) {
         *pcbDecoded = 0;
     }
+
+    if (pDecodeBuffer == NULL) {
+        return ERROR_SUCCESS;
+    }
+
+    *pbDecodeBuffer = 0;
+
+    cchEncodedSize = (DWORD)strlen(pszEncodedString);
 
     if ((0 == cchEncodedSize) || (0 != (cchEncodedSize % 4))) {
         // Input string is not sized correctly to be base64.

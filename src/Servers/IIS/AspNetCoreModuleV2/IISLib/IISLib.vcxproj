@@ -5,7 +5,6 @@
     <ProjectGuid>{09D9D1D6-2951-4E14-BC35-76A23CF9391A}</ProjectGuid>
     <RootNamespace>IISLib</RootNamespace>
     <ProjectName>IISLib</ProjectName>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <WholeProgramOptimization>true</WholeProgramOptimization>
