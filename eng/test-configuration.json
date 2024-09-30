@@ -5,6 +5,7 @@
   "retryOnRules": [
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }}, // tries to manipulate the state of the server's buffer
+    {"testName": {"contains": "ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/58169
     {"testName": {"contains": "CertificateChangedOnDisk"}}, // depends on FS event timing
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
     {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
