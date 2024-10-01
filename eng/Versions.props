@@ -47,7 +47,7 @@
     <!-- this should usually match for LTS builds, and be off-by-one otherwise;
       example use-case here is OOB packages where Aspire wants to be able to consume
       new features specific to OOB -->
-    <CurrentLtsTargetFramework>net8.0</CurrentLtsTargetFramework>
+    <CurrentLtsTargetFramework>net10.0</CurrentLtsTargetFramework>
   </PropertyGroup>
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
