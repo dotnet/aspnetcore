@@ -413,6 +413,7 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ProducesResponseTypeMetadata(int statusCode, System.Type? type = null, string![]? contentTypes = null) -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.StatusCode.get -> int
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.QueryString
