@@ -28,10 +28,10 @@ public class PasswordValidatorTest
     }
 
     [Theory]
-    [InlineData(null)]  
-    [InlineData("")]    
-    [InlineData("abc")] 
-    [InlineData("abcde")] 
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("abc")]
+    [InlineData("abcde")]
     public async Task FailsIfPasswordIsNullOrTooShort(string input)
     {
         const string error = "Passwords must be at least 6 characters.";
