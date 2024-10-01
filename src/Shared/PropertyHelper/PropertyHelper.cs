@@ -187,7 +187,6 @@ internal sealed class PropertyHelper
     }
 
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported")]
     private static Func<object, object?> MakeFastPropertyGetter(
         PropertyInfo propertyInfo,
         MethodInfo propertyGetterWrapperMethod,
@@ -270,7 +269,6 @@ internal sealed class PropertyHelper
     /// same speed. This only works for reference types.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported")]
     public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
