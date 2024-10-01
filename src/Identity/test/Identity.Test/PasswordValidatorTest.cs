@@ -32,7 +32,7 @@ public class PasswordValidatorTest
     [InlineData("")]
     [InlineData("abc")]
     [InlineData("abcde")]
-    public async Task FailsIfPasswordIsNullOrTooShort(string input)
+    public async Task FailsIfPasswordIsNullOrTooShortTests(string input)
     {
         const string error = "Passwords must be at least 6 characters.";
         var manager = MockHelpers.TestUserManager<PocoUser>();
