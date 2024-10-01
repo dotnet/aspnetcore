@@ -103,7 +103,7 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net10.0",,
+          "choice": "net10.0",
           "description": "Target net10.0"
         }
       ],
