@@ -19,6 +19,7 @@ run_restore=''
 run_build=true
 run_pack=false
 run_publish=false
+run_sign=false
 run_tests=false
 build_all=false
 build_deps=true
@@ -64,6 +65,7 @@ Options:
     --[no-]pack                       Produce packages.
     --[no-]test                       Run tests.
     --[no-]publish                    Run publish.
+    --[no-]sign                       Run signing.
 
     --projects                        A list of projects to build. (Must be an absolute path.)
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
@@ -159,6 +161,12 @@ while [[ $# -gt 0 ]]; do
             ;;
         -no-publish|-nopublish)
             run_publish=false
+            ;;
+        -sign)
+            run_sign=true
+            ;;
+        -no-sign|-nosign)
+            run_sign=false
             ;;
         -test|-t)
             run_tests=true
@@ -296,6 +304,7 @@ if [ "$run_build" = false ]; then
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:Publish=$run_publish"
+msbuild_args[${#msbuild_args[*]}]="-p:Sign=$run_sign"
 msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
 
 msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
