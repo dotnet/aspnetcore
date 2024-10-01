@@ -3,7 +3,7 @@
   "name": "Libreria di classi Razor",
   "description": "Progetto per la creazione di una libreria di classi Razor destinata a .NET",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/SupportPagesAndViews/displayName": "Supporta pagine e visualizzazioni",
   "symbols/SupportPagesAndViews/description": "Indica se supportare l'aggiunta di pagine e visualizzazioni Razor tradizionali a questa libreria.",

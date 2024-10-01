@@ -29,7 +29,7 @@
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseLocalDB/description": "SQLite yerine LocalDB'nin kullanılıp kullanılmayacağı. Bu seçenek yalnızca --auth Individual veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/CalledApiUrl/description": "Web uygulamasından çağrılan API URL'si. Bu seçenek yalnızca --auth SingleOrg, --auth MultiOrg veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/CallsMicrosoftGraph/description": "Web uygulamasının Microsoft Graph çağırıp çağırmadığını belirtir. Bu seçenek yalnızca --auth SingleOrg veya --auth MultiOrg belirtilirse geçerlidir.",

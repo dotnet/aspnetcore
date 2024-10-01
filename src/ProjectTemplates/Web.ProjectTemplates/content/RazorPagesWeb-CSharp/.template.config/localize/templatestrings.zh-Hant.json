@@ -30,7 +30,7 @@
   "symbols/NoHttps/description": "是否要關閉 HTTPS。只有當 IndividualB2C、SingleOrg 或 MultiOrg 未用於 --auth 時，才適用此選項。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而非 SQLite。只有在已指定 --auth Individual 或 --auth IndividualB2C 時，才適用此選項。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/CalledApiUrl/description": "要從 Web 應用程式呼叫的 API URL。只有在已指定 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 時，才適用此選項。",
   "symbols/CallsMicrosoftGraph/description": "指定 Web 應用程式呼叫是否 Microsoft Graph。只有在已指定 --auth SingleOrg 或 --auth MultiOrg 時，才適用此選項。",
   "symbols/CalledApiScopes/description": "要求從 Web 應用程式呼叫 API 的範圍。只有在已指定 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 時，才適用此選項。",

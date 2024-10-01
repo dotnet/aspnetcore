@@ -3,7 +3,7 @@
   "name": "Serviço gRPC do ASP.NET Core",
   "description": "Um modelo de projeto para criar um serviço gRPC usando ASP.NET Core, com suporte opcional para publicação como native AOT.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/kestrelHttpPort/description": "Número da porta a ser usada para o ponto de extremidade HTTP em launchSettings.json.",
