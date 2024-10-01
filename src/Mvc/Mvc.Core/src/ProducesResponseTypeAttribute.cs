@@ -11,6 +11,31 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// A filter that specifies the type of the value and status code returned by the action.
 /// </summary>
+/// <remarks>
+/// This attribute can be used to specify the type of the response body, the status code,
+/// and content-type(s) of the response.
+///
+/// In an MVC application, this attribute can be applied to an action method or controller class.
+/// In a Minimal API application, this attribute should be applied to the delegate method.
+///
+/// More than one instance of ProducesResponseTypeAttribute with different status codes may
+/// be used to specify multiple possible responses from an endpoint.
+/// </remarks>
+/// <example>
+/// In the following example, the ProducesResponseTypeAttribute is used to specify the type of the
+/// response body and the status code for the successful response and the status code, type, and content
+/// type for the error response.
+/// <code>
+/// app.MapGet("/todos/{id}",
+///     [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+///     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+///     async (TodoDb db, string id) =>
+///         await db.Todos.FindAsync(id)
+///         is Todo todo
+///         ? Results.Ok(todo)
+///         : Results.NotFound());
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
 {
