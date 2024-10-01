@@ -14,4 +14,3 @@ Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
-Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ProducesResponseTypeMetadata(int statusCode, System.Type? type = null, string![]? contentTypes = null) -> void
