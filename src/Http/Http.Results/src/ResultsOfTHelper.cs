@@ -17,6 +17,7 @@ internal static class ResultsOfTHelper
 
     // TODO: Improve calling static interface method with reflection
     // https://github.com/dotnet/aspnetcore/issues/46267
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported")]
     public static void PopulateMetadataIfTargetIsIEndpointMetadataProvider<[DynamicallyAccessedMembers(RequireMethods)] TTarget>(MethodInfo method, EndpointBuilder builder)
     {
         if (typeof(IEndpointMetadataProvider).IsAssignableFrom(typeof(TTarget)))

@@ -763,6 +763,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported")]
     private void DiscoverHubMethods(bool disableImplicitFromServiceParameters)
     {
         var hubType = typeof(THub);

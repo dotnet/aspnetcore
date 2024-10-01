@@ -201,6 +201,7 @@ internal sealed class HubMethodDescriptor
         return serviceProvider.GetRequiredService(parameterType);
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported")]
     public IAsyncEnumerator<object?> FromReturnedStream(object stream, CancellationToken cancellationToken)
     {
         // there is the potential for _makeCancelableEnumerator to be set multiple times but this has no harmful effect other than startup perf
