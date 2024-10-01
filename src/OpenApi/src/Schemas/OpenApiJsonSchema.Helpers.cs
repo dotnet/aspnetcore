@@ -280,6 +280,11 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
                 reader.Read();
+                if (reader.TokenType == JsonTokenType.False)
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    break;
+                }
                 var additionalPropsConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.AdditionalProperties = additionalPropsConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
                 break;

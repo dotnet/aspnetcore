@@ -701,6 +701,84 @@ public class Http3ConnectionTests : Http3TestBase
         await tcs.Task;
     }
 
+    [Fact]
+    public async Task ErrorCodeIsValidOnConnectionTimeout()
+    {
+        // This test loosely repros the scenario in https://github.com/dotnet/aspnetcore/issues/57933.
+        // In particular, there's a request from the server and, once a response has been sent,
+        // the (simulated) transport throws a QuicException that surfaces through AcceptAsync.
+        // This test confirms that Http3Connection.ProcessRequestsAsync doesn't (indirectly) cause
+        // IProtocolErrorCodeFeature.Error to be set to (or left at) -1, which System.Net.Quic will
+        // not accept.
+
+        // Used to signal that a request has been sent and a response has been received
+        var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        // Used to signal that the connection context has been aborted
+        var abortTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // InitializeConnectionAsync consumes the connection context, so set it first
+        Http3Api.MultiplexedConnectionContext = new ThrowingMultiplexedConnectionContext(Http3Api, skipCount: 2, requestTcs, abortTcs);
+        await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+        var requestStream = await Http3Api.CreateRequestStream(Headers, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        requestTcs.SetResult();
+
+        // By the time the connection context is aborted, the error code feature has been updated
+        await abortTcs.Task.DefaultTimeout();
+
+        Http3Api.CloseServerGracefully();
+
+        var errorCodeFeature = Http3Api.MultiplexedConnectionContext.Features.Get<IProtocolErrorCodeFeature>();
+        Assert.InRange(errorCodeFeature.Error, 0, (1L << 62) - 1); // Valid range for HTTP/3 error codes
+    }
+
+    private sealed class ThrowingMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private int _skipCount;
+        private readonly TaskCompletionSource _requestTcs;
+        private readonly TaskCompletionSource _abortTcs;
+
+        /// <summary>
+        /// After <paramref name="skipCount"/> calls to <see cref="AcceptAsync"/>, the next call will throw a <see cref="QuicException"/>
+        /// (after waiting for <see cref="_requestTcs"/> to be set).
+        ///
+        /// <paramref name="abortTcs"/> lets this type signal that <see cref="Abort"/> has been called.
+        /// </summary>
+        public ThrowingMultiplexedConnectionContext(Http3InMemory testBase, int skipCount, TaskCompletionSource requestTcs, TaskCompletionSource abortTcs)
+            : base(testBase)
+        {
+            _skipCount = skipCount;
+            _requestTcs = requestTcs;
+            _abortTcs = abortTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            if (_skipCount-- <= 0)
+            {
+                await _requestTcs.Task.DefaultTimeout();
+                throw new System.Net.Quic.QuicException(
+                    System.Net.Quic.QuicError.ConnectionTimeout,
+                    applicationErrorCode: null,
+                    "Connection timed out waiting for a response from the peer.");
+            }
+            return await base.AcceptAsync(cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            _abortTcs.SetResult();
+            base.Abort(abortReason);
+        }
+    }
+
     private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)
     {
         var requestStream = await Http3Api.CreateRequestStream(headers, endStream: !sendData);

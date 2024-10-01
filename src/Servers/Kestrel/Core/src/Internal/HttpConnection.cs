@@ -30,7 +30,7 @@ internal sealed class HttpConnection : ITimeoutHandler
     private readonly TimeProvider _timeProvider;
     private readonly TimeoutControl _timeoutControl;
 
-    private readonly object _protocolSelectionLock = new object();
+    private readonly Lock _protocolSelectionLock = new();
     private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
     private Http1Connection? _http1Connection;
 

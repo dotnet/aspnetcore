@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -292,8 +293,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("value", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties,
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties,
                     property =>
                     {
                         Assert.Equal("id", property.Key);
@@ -317,8 +319,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("error", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties, property =>
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties, property =>
                     {
                         Assert.Equal("code", property.Key);
                         Assert.Equal("integer", property.Value.Type);
@@ -404,8 +407,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("todo", property.Key);
-                    Assert.Equal("object", property.Value.Type);
-                    Assert.Collection(property.Value.Properties,
+                    Assert.NotNull(property.Value.Reference);
+                    var propertyValue = property.Value.GetEffective(document);
+                    Assert.Equal("object", propertyValue.Type);
+                    Assert.Collection(propertyValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);
@@ -529,8 +534,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("items", property.Key);
                     Assert.Equal("array", property.Value.Type);
                     Assert.NotNull(property.Value.Items);
-                    Assert.Equal("object", property.Value.Items.Type);
-                    Assert.Collection(property.Value.Items.Properties,
+                    Assert.NotNull(property.Value.Items.Reference);
+                    Assert.Equal("object", property.Value.Items.GetEffective(document).Type);
+                    var itemsValue = property.Value.Items.GetEffective(document);
+                    Assert.Collection(itemsValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);
@@ -651,6 +658,53 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("This is a description", property.Value.Description);
                 });
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_SupportsProducesWithProducesResponseTypeOnController()
+    {
+        var actionDescriptor = CreateActionDescriptor(nameof(TestController.Get), typeof(TestController));
+
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("title", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("completed", property.Key);
+                    Assert.Equal("boolean", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("createdAt", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("date-time", property.Value.Format);
+                });
+        });
+    }
+
+    [ApiController]
+    [Produces("application/json")]
+    public class TestController
+    {
+        [Route("/")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        internal Todo Get() => new(1, "Write test", false, DateTime.Now);
     }
 
     private class ClassWithObjectProperty
