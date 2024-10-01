@@ -261,7 +261,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return false;
   }
 
-  private refreshRootComponents(components: Iterable<RootComponentInfo>) {
+  private async refreshRootComponents(components: Iterable<RootComponentInfo>): Promise<void> {
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
 
     for (const component of components) {
@@ -295,18 +295,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       if (rendererId === WebRendererId.Server) {
         updateServerRootComponents(batchJson);
       } else {
-        this.updateWebAssemblyRootComponents(batchJson);
+        await this.updateWebAssemblyRootComponents(batchJson);
       }
     }
 
     this.circuitMayHaveNoRootComponents();
   }
 
-  private updateWebAssemblyRootComponents(operationsJson: string) {
+  private async updateWebAssemblyRootComponents(operationsJson: string): Promise<void> {
     if (isFirstUpdate()) {
       resolveInitialUpdate(operationsJson);
     } else {
-      updateWebAssemblyRootComponents(operationsJson);
+      await updateWebAssemblyRootComponents(operationsJson);
     }
   }
 
