@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             private static readonly Action<ILogger, Exception?> _channelBindingRetrieved =
                 LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ChannelBindingRetrieved, "Channel binding retrieved.");
 
+            private static readonly Action<ILogger, Exception?> _requestParsingError =
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.RequestParsingError, "Failed to parse request.");
+
             public static void AbortError(ILogger logger, Exception exception)
             {
                 _abortError(logger, exception);
@@ -32,6 +35,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             public static void ChannelBindingRetrieved(ILogger logger)
             {
                 _channelBindingRetrieved(logger, null);
+            }
+
+            public static void RequestParsingError(ILogger logger, Exception exception)
+            {
+                _requestParsingError(logger, exception);
             }
         }
     }
