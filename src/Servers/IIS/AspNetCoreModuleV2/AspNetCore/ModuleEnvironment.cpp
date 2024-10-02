@@ -44,9 +44,6 @@ void SetApplicationEnvironmentVariables(_In_ IHttpServer &server, _In_ IHttpCont
 
     IHttpServer2* server2;
     if (SUCCEEDED(HttpGetExtendedInterface(&server, &server, &server2))) {
-        // GetAppPoolConfigFile likely returns a 0 terminating string but the SAL annotations don't state that, we should probably change the code
-        // just to be safe
-#pragma warning(suppress: 6387)
         SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_POOL_CONFIG_FILE", server2->GetAppPoolConfigFile());
     }
 
