@@ -1,24 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -365,6 +358,39 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var response = await SendSocketRequestAsync(root, rawPath);
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
                 Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Latin1UrlIsRejected()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                throw new NotImplementedException();
+            }))
+            {
+                var uri = new Uri(root);
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine(FormattableString.Invariant($"GET /a HTTP/1.1"));
+                builder.AppendLine("Connection: close");
+                builder.Append("HOST: ");
+                builder.AppendLine(uri.Authority);
+                builder.AppendLine();
+                byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+                // Replace the 'a' in the path with a Latin1 value
+                request[5] = 0xe1;
+
+                using (var socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(uri.Host, uri.Port);
+                    socket.Send(request);
+                    var response = new byte[12];
+                    await Task.Run(() => socket.Receive(response));
+
+                    var statusCode = Encoding.UTF8.GetString(response).Substring(9);
+                    Assert.Equal("400", statusCode);
+                }
             }
         }
 
