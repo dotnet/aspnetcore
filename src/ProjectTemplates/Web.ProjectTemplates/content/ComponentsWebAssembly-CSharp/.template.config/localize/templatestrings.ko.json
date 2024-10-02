@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly 독립 실행형 앱",
   "description": "WebAssembly에서 실행되는 Blazor 앱을 만드는 데 사용되는 프로젝트 템플릿입니다. 이 템플릿을 사용하여 다양한 동적 UI(사용자 인터페이스)가 포함된 웹앱을 만들 수 있습니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/auth/choices/None/description": "인증 없음",
   "symbols/auth/choices/Individual/description": "개별 인증",

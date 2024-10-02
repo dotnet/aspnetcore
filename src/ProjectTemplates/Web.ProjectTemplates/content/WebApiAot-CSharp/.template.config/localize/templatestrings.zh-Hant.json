@@ -6,7 +6,7 @@
   "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
   "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
   "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",

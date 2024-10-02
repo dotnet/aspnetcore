@@ -6,7 +6,7 @@
   "symbols/kestrelHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP dans launchSettings.json.",
   "symbols/iisHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP IIS Express dans launchSettings.json.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/UseProgramMain/displayName": "N’utilisez pas _d’instructions de niveau supérieur.",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",

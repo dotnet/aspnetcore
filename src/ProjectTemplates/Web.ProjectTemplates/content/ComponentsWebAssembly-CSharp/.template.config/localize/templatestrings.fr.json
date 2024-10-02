@@ -3,7 +3,7 @@
   "name": "Application Blazor WebAssembly autonome",
   "description": "Modèle de projet permettant de créer une application Blazor qui s'exécute sur WebAssembly. Vous pouvez utiliser ce modèle pour les applications web ayant des IU (interfaces utilisateur) dynamiques riches.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/auth/choices/None/description": "Aucune authentification",
   "symbols/auth/choices/Individual/description": "Authentification individuelle",

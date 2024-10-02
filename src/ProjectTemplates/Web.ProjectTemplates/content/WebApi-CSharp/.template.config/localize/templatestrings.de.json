@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseLocalDB/description": "Ob LocalDB anstelle von SQLite verwendet werden soll. Diese Option gilt nur, wenn --auth Individual oder --auth IndividualB2C angegeben ist.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/CalledApiUrl/description": "URL der API, die von der Web-App aufgerufen werden soll. Diese Option gilt nur, wenn --auth SingleOrg oder --auth IndividualB2C angegeben ist.",
   "symbols/CallsMicrosoftGraph/description": "Gibt an, ob die Web App Microsoft Graph aufruft. Diese Option gilt nur, wenn --auth SingleOrg angegeben ist.",

@@ -3,7 +3,7 @@
   "name": "Razor 클래스 라이브러리",
   "description": ".NET을 대상으로 하는 Razor 클래스 라이브러리를 생성하기 위한 프로젝트",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/SupportPagesAndViews/displayName": "지원 페이지 및 보기",
   "symbols/SupportPagesAndViews/description": "이 라이브러리에 기존 Razor 페이지 및 보기 추가를 지원할지 여부입니다.",

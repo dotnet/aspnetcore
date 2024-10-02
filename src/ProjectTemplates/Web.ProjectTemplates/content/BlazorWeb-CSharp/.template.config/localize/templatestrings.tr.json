@@ -3,7 +3,7 @@
   "name": "Blazor Web Uygulaması",
   "description": "Hem sunucu tarafı işlemeyi hem de istemci etkileşimini destekleyen bir Blazor web uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "Gizli diziler için kullanılacak kimlik (Bireysel kimlik doğrulamayla kullanın).",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",

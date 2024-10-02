@@ -53,15 +53,15 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
-        var net8Ref = new ReferenceAssemblies(
-            "net9.0",
+        var net10Ref = new ReferenceAssemblies(
+            "net10.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
-            Path.Combine("ref", "net9.0"))
+            Path.Combine("ref", "net10.0"))
         .WithNuGetConfigFilePath(nugetConfigPath);
 
-        return net8Ref.AddAssemblies(ImmutableArray.Create(
+        return net10Ref.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Authorization.IAuthorizeData).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata).Assembly.Location),

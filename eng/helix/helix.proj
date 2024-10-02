@@ -74,7 +74,7 @@
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net9.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net10.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
 
