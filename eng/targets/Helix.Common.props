@@ -49,7 +49,7 @@
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
 
         <!-- Mac -->
-        <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
+        <HelixAvailableTargetQueue Include="OSX.1200.Amd64.Open" Platform="OSX" />
 
         <!-- Windows -->
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />

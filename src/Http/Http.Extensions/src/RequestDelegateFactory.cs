@@ -533,6 +533,11 @@ public static partial class RequestDelegateFactory
         }
         else
         {
+            if (returnType.IsValueType)
+            {
+                return Expression.Call(WrapObjectAsValueTaskMethod, Expression.Convert(methodCall, typeof(object)));
+            }
+
             return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
         }
     }
