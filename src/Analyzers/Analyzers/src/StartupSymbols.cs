@@ -9,9 +9,9 @@ internal sealed class StartupSymbols
 {
     public StartupSymbols(Compilation compilation)
     {
-        IApplicationBuilder = compilation.GetTypeByMetadataName(SymbolNames.IApplicationBuilder.MetadataName);
-        IServiceCollection = compilation.GetTypeByMetadataName(SymbolNames.IServiceCollection.MetadataName);
-        MvcOptions = compilation.GetTypeByMetadataName(SymbolNames.MvcOptions.MetadataName);
+        IApplicationBuilder = compilation.GetTypeByMetadataName(SymbolNames.IApplicationBuilder.MetadataName)!;
+        IServiceCollection = compilation.GetTypeByMetadataName(SymbolNames.IServiceCollection.MetadataName)!;
+        MvcOptions = compilation.GetTypeByMetadataName(SymbolNames.MvcOptions.MetadataName)!;
     }
 
     public bool HasRequiredSymbols => IApplicationBuilder != null && IServiceCollection != null;

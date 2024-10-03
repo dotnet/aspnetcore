@@ -223,4 +223,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor IncorrectlyConfiguredProblemDetailsWriter = new(
+        "ASP0027",
+        new LocalizableResourceString(nameof(Resources.Analyzer_IncorrectlyConfiguredProblemDetailsWriter_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_IncorrectlyConfiguredProblemDetailsWriter_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
