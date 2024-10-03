@@ -238,9 +238,9 @@
     <DuendeIdentityServerStorageVersion>5.2.0</DuendeIdentityServerStorageVersion>
     <DuendeIdentityServerEntityFrameworkStorageVersion>5.2.0</DuendeIdentityServerEntityFrameworkStorageVersion>
     <MessagePackVersion>2.1.90</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>1.16.0</MicrosoftIdentityWebVersion>
-    <MicrosoftIdentityWebMicrosoftGraphVersion>1.16.0</MicrosoftIdentityWebMicrosoftGraphVersion>
-    <MicrosoftIdentityWebUIVersion>1.16.0</MicrosoftIdentityWebUIVersion>
+    <MicrosoftIdentityWebVersion>3.2.0</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebMicrosoftGraphVersion>3.2.0</MicrosoftIdentityWebMicrosoftGraphVersion>
+    <MicrosoftIdentityWebUIVersion>3.2.0</MicrosoftIdentityWebUIVersion>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
