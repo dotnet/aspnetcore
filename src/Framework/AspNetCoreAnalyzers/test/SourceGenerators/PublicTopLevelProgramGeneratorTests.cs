@@ -47,6 +47,24 @@ public partial class Program { }
     }
 
     [Fact]
+    public async Task DoesNotGeneratesSource_IfProgramDeclaresExplicitInternalAccess()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+internal partial class Program { }
+""";
+
+        await VerifyCS.VerifyAsync(source);
+    }
+
+    [Fact]
     public async Task DoesNotGeneratorSource_ExplicitPublicProgramClass()
     {
         var source = """
@@ -77,6 +95,30 @@ using Microsoft.AspNetCore.Builder;
 internal class Program
 {
     public static void Main()
+    {
+        var app = WebApplication.Create();
+
+        app.MapGet("/", () => "Hello, World!");
+
+        app.Run();
+    }
+}
+""";
+
+        await VerifyCS.VerifyAsync(source);
+    }
+
+    [Theory]
+    [InlineData("interface")]
+    [InlineData("struct")]
+    public async Task DoesNotGeneratorSource_ExplicitInternalProgramType(string type)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+
+internal {{type}} Program
+{
+    public static void Main(string[] args)
     {
         var app = WebApplication.Create();
 

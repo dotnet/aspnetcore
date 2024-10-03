@@ -20,6 +20,14 @@ public class PublicProgramSourceGenerator : IIncrementalGenerator
             {
                 return null;
             }
+            // If the discovered `Program` type is an interface, struct or generic type then its not
+            // generated and has been defined in source, so we can skip it
+            if (program.TypeKind == TypeKind.Struct || program.TypeKind == TypeKind.Interface || program.IsGenericType)
+            {
+                return null;
+            }
+            // If there are multiple partial declarations, then do nothing since we don't want
+            // to trample on visibility explicitly set by the user
             if (program.DeclaringSyntaxReferences.Length > 1)
             {
                 return null;
