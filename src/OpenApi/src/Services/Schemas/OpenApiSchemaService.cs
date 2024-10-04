@@ -126,8 +126,15 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type? type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
+        // If the type is null, then we're dealing with an ambient
+        // route parameter that does not define a specific parameter type in the
+        // route handler or in the response. In this case, we default to a string schema.
+        if (type is null)
+        {
+            return new OpenApiSchema { Type = "string" };
+        }
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
             ? new OpenApiSchemaKey(type, parameterInfoDescription.ParameterInfo) : new OpenApiSchemaKey(type, null);
