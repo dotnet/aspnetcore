@@ -22,7 +22,7 @@ internal sealed partial class SocketConnection : TransportConnection
     private readonly IDuplexPipe _originalTransport;
     private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
     private volatile Exception? _shutdownReason;
     private Task? _sendingTask;
     private Task? _receivingTask;

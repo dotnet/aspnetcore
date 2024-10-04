@@ -3,7 +3,7 @@
   "name": "Служба gRPC ASP.NET Core",
   "description": "Шаблон проекта для создания службы gRPC с помощью ASP.NET Core с необязательной поддержкой публикации в качестве «native AOT».",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/kestrelHttpPort/description": "Номер порта, используемый для конечной точки HTTP в launchSettings.json.",

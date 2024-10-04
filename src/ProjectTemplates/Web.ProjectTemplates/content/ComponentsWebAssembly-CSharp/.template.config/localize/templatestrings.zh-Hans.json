@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly 独立应用",
   "description": "用于创建在 WebAssembly 上运行的 Blazor 应用的项目模板。此模板可用于具有丰富动态用户界面(UI)的 Web 应用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/auth/choices/None/description": "无身份验证",
   "symbols/auth/choices/Individual/description": "个人身份验证",

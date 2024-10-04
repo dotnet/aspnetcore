@@ -71,7 +71,7 @@ internal sealed class Http2FrameWriter
 
     private bool IsFlowControlQueueLimitEnabled => _maximumFlowControlQueueSize > 0;
 
-    private readonly object _writeLock = new object();
+    private readonly Lock _writeLock = new();
     private readonly Http2Frame _outgoingFrame;
     private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
     private readonly ConcurrentPipeWriter _outputWriter;
@@ -99,7 +99,7 @@ internal sealed class Http2FrameWriter
     private bool _completed;
     private bool _aborted;
 
-    private readonly object _windowUpdateLock = new();
+    private readonly Lock _windowUpdateLock = new();
     private long _connectionWindow;
     private readonly Queue<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
     // This is the stream that consumed the last set of connection window

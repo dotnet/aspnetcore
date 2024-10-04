@@ -3,7 +3,7 @@
   "name": "Usługa gRPC platformy ASP.NET Core",
   "description": "Szablon projektu służący do tworzenia usługi platformy gRPC przy użyciu platformy ASP.NET Core z opcjonalną obsługą publikowania jako native AOT.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/kestrelHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP w pliku launchSettings.json.",

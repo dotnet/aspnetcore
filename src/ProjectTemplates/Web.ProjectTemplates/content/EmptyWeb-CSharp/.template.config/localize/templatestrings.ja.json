@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json の IIS Express HTTP エンドポイントに使用するポート番号。",
   "symbols/iisHttpsPort/description": "launchSettings.json で IIS Express HTTPS エンドポイントに使用するポート番号。このオプションは、HTTPS 以外のパラメーターが使用されていない場合にのみ適用されます (IndividualAuth または OrganizationalAuth が使用されている場合は、HTTPS 以外は無視されます)。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、Individual、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",

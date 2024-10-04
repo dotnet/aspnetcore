@@ -3,7 +3,7 @@
   "name": "Blazor 웹앱",
   "description": "서버 측 렌더링 및 클라이언트 대화형 작업을 모두 지원하는 Blazor 웹앱을 만들기 위한 프로젝트 템플릿입니다. 이 템플릿은 풍부한 동적 UI(사용자 인터페이스)가 있는 웹앱에 사용할 수 있습니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "비밀에 사용할 ID입니다(개별 인증과 함께 사용).",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/ExcludeLaunchSettings/description": "생성된 템플릿에서 launchSettings.json을 제외할지 여부입니다.",

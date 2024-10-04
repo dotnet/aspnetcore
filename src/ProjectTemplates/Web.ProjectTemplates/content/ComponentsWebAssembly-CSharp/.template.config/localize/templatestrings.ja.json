@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly スタンドアロン アプリ",
   "description": "WebAssembly で実行される Blazor アプリを作成するためのプロジェクト テンプレート。このテンプレートは、高度でダイナミックなユーザー インターフェイス (UI) を備えた Web アプリに使用できます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/auth/choices/None/description": "認証なし",
   "symbols/auth/choices/Individual/description": "個別の認証",

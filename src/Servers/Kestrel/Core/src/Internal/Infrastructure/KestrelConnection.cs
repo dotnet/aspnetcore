@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature, IConnectionMetricsContextFeature
 {
     private List<(Action<object> handler, object state)>? _heartbeatHandlers;
-    private readonly object _heartbeatLock = new object();
+    private readonly Lock _heartbeatLock = new();
 
     private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
     private bool _completed;
