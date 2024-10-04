@@ -34,27 +34,27 @@ WINHTTP_HELPER::StaticInitialize(
     }
 
     HMODULE  hWinHttp = GetModuleHandleA("winhttp.dll");
-    RETURN_LAST_ERROR_IF (hWinHttp == NULL);
+    RETURN_LAST_ERROR_IF (hWinHttp == nullptr);
 
     sm_pfnWinHttpWebSocketCompleteUpgrade = (PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE)
         GetProcAddress(hWinHttp, "WinHttpWebSocketCompleteUpgrade");
-    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketCompleteUpgrade == NULL);
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketCompleteUpgrade == nullptr);
 
     sm_pfnWinHttpWebSocketQueryCloseStatus = (PFN_WINHTTP_WEBSOCKET_QUERY_CLOSE_STATUS)
         GetProcAddress(hWinHttp, "WinHttpWebSocketQueryCloseStatus");
-    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketQueryCloseStatus == NULL);
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketQueryCloseStatus == nullptr);
 
     sm_pfnWinHttpWebSocketReceive = (PFN_WINHTTP_WEBSOCKET_RECEIVE)
         GetProcAddress(hWinHttp, "WinHttpWebSocketReceive");
-    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketReceive == NULL);
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketReceive == nullptr);
 
     sm_pfnWinHttpWebSocketSend = (PFN_WINHTTP_WEBSOCKET_SEND)
         GetProcAddress(hWinHttp, "WinHttpWebSocketSend");
-    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketSend == NULL);
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketSend == nullptr);
 
     sm_pfnWinHttpWebSocketShutdown = (PFN_WINHTTP_WEBSOCKET_SHUTDOWN)
         GetProcAddress(hWinHttp, "WinHttpWebSocketShutdown");
-    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketShutdown == NULL);
+    RETURN_LAST_ERROR_IF (sm_pfnWinHttpWebSocketShutdown == nullptr);
 
     return S_OK;
 }

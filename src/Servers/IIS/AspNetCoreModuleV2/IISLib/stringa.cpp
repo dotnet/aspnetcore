@@ -32,7 +32,7 @@ STRA::STRA(
 
 --*/
 {
-    _ASSERTE( NULL != pbInit );
+    _ASSERTE( nullptr != pbInit );
     _ASSERTE( cchInit > 0 );
     _ASSERTE( pbInit[0] == '\0' );
 }
@@ -51,7 +51,7 @@ STRA::Equals(
     __in BOOL   fIgnoreCase /*= FALSE*/
 ) const
 {
-    _ASSERTE( NULL != pszRhs );
+    _ASSERTE( nullptr != pszRhs );
 
     if( fIgnoreCase )
     {
@@ -67,7 +67,7 @@ STRA::Equals(
     __in BOOL           fIgnoreCase /*= FALSE*/
 ) const
 {
-    _ASSERTE( NULL != pstrRhs );
+    _ASSERTE( nullptr != pstrRhs );
     return Equals( pstrRhs->QueryStr(), fIgnoreCase );
 }
 
@@ -142,7 +142,7 @@ STRA::Reset(
 // Resets the internal string to be NULL string. Buffer remains cached.
 //
 {
-    _ASSERTE( QueryStr() != NULL );
+    _ASSERTE( QueryStr() != nullptr );
     *(QueryStr()) = '\0';
     m_cchLen = 0;
 }
@@ -220,7 +220,7 @@ STRA::Copy(
     __in const STRA * pstrRhs
 )
 {
-    _ASSERTE( pstrRhs != NULL );
+    _ASSERTE( pstrRhs != nullptr );
     return Copy( pstrRhs->QueryStr(), pstrRhs->QueryCCH() );
 }
 
@@ -323,7 +323,7 @@ STRA::Append(
     __in const STRA * pstrRhs
 )
 {
-    _ASSERTE( pstrRhs != NULL );
+    _ASSERTE( pstrRhs != nullptr );
     return Append( pstrRhs->QueryStr(), pstrRhs->QueryCCH() );
 }
 
@@ -382,8 +382,8 @@ STRA::CopyToBuffer(
 // Makes a copy of the stored string into the given buffer
 //
 {
-    _ASSERTE( NULL != pszBuffer );
-    _ASSERTE( NULL != pcb );
+    _ASSERTE( nullptr != pszBuffer );
+    _ASSERTE( nullptr != pcb );
 
     HRESULT hr          = S_OK;
     DWORD   cbNeeded    = QueryCB() + sizeof( CHAR );
@@ -464,6 +464,7 @@ Return Value:
 
     HRESULT hr = SafeVsnprintf(pszFormatString, argsList);
 
+#pragma warning(suppress: 26477)
     va_end( argsList );
     return hr;
 }
@@ -675,7 +676,7 @@ Return Value:
 --*/
 {
     LPCSTR  pch     = QueryStr();
-    __analysis_assume( pch != NULL );
+    __analysis_assume( pch != nullptr );
     int     i      = 0;
     BYTE    ch;
     HRESULT hr      = S_OK;
@@ -859,8 +860,8 @@ Return Value:
                                         1,
                                         static_cast<LPSTR>(pDest),
                                         6,
-                                        NULL,
-                                        NULL);
+                                        nullptr,
+                                        nullptr);
 
             pDest += dwLen;
             pScan += 6;
@@ -1000,7 +1001,7 @@ STRA::AuxAppend(
     __in DWORD      cbOffset
 )
 {
-    _ASSERTE( NULL != pStr );
+    _ASSERTE( nullptr != pStr );
     _ASSERTE( cbOffset <= QueryCB() );
 
     ULONGLONG cb64NewSize = static_cast<ULONGLONG>(cbOffset) + cbLen + sizeof( CHAR );
@@ -1070,8 +1071,8 @@ STRA::AuxAppendW(
         cchAppendW,
         QueryStr() + cbOffset,
         cbAvailable,
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     );
     if( 0 != cbRet )
     {
@@ -1104,10 +1105,10 @@ STRA::AuxAppendW(
         dwFlags,
         pszAppendW,
         cchAppendW,
-        NULL,
+        nullptr,
         0,
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     );
     if( 0 == cbRet )
     {
@@ -1133,8 +1134,8 @@ STRA::AuxAppendW(
         cchAppendW,
         QueryStr() + cbOffset,
         cbAvailable,
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     );
     if( 0 == cbRet )
     {
@@ -1169,7 +1170,7 @@ STRA::AuxAppendWTruncate(
 // Cheesey WCHAR --> CHAR conversion
 //
 {
-    _ASSERTE( NULL != pszAppendW );
+    _ASSERTE( nullptr != pszAppendW );
     _ASSERTE( 0 == cbOffset || cbOffset == QueryCB() );
 
     if( !pszAppendW )
@@ -1213,8 +1214,8 @@ STRA::ConvertUnicodeToCodePage(
     __in UINT                   uCodePage
 )
 {
-    _ASSERTE(NULL != pszSrcUnicodeString);
-    _ASSERTE(NULL != pbufDstAnsiString);
+    _ASSERTE(nullptr != pszSrcUnicodeString);
+    _ASSERTE(nullptr != pbufDstAnsiString);
 
     DWORD dwFlags;
 
@@ -1233,17 +1234,17 @@ STRA::ConvertUnicodeToCodePage(
                                       dwStringLen,
                                       static_cast<LPSTR>(pbufDstAnsiString->QueryPtr()),
                                       static_cast<int>(pbufDstAnsiString->QuerySize()),
-                                      NULL,
-                                      NULL);
+                                      nullptr,
+                                      nullptr);
     if ((iStrLen == 0) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
         iStrLen = WideCharToMultiByte(uCodePage,
                                       dwFlags,
                                       pszSrcUnicodeString,
                                       dwStringLen,
-                                      NULL,
+                                      nullptr,
                                       0,
-                                      NULL,
-                                      NULL);
+                                      nullptr,
+                                      nullptr);
         if (iStrLen != 0) {
             // add one just for the extra NULL
             BOOL bTemp = pbufDstAnsiString->Resize(iStrLen + 1);
@@ -1259,8 +1260,8 @@ STRA::ConvertUnicodeToCodePage(
                                               dwStringLen,
                                               static_cast<LPSTR>(pbufDstAnsiString->QueryPtr()),
                                               static_cast<int>(pbufDstAnsiString->QuerySize()),
-                                              NULL,
-                                              NULL);
+                                              nullptr,
+                                              nullptr);
             }
 
         }
@@ -1387,7 +1388,7 @@ STRA::StartsWith(
     __in const STRA *   pStraPrefix,
     __in bool           fIgnoreCase) const
 {
-    _ASSERTE( pStraPrefix != NULL );
+    _ASSERTE( pStraPrefix != nullptr );
     return StartsWith(pStraPrefix->QueryStr(), fIgnoreCase);
 }
 
@@ -1436,7 +1437,7 @@ STRA::StartsWith(
     __in PCSTR          pszPrefix,
     __in bool           fIgnoreCase) const
 {
-    if (pszPrefix == NULL)
+    if (pszPrefix == nullptr)
     {
         return FALSE;
     }
@@ -1488,7 +1489,7 @@ STRA::EndsWith(
     __in const STRA *   pStraSuffix,
     __in bool           fIgnoreCase) const
 {
-    _ASSERTE( pStraSuffix != NULL );
+    _ASSERTE( pStraSuffix != nullptr );
     return EndsWith(pStraSuffix->QueryStr(), fIgnoreCase);
 }
 
@@ -1541,7 +1542,7 @@ STRA::EndsWith(
 {
     PSTR      pszString   = QueryStr();
 
-    if (pszSuffix == NULL)
+    if (pszSuffix == nullptr)
     {
         return FALSE;
     }

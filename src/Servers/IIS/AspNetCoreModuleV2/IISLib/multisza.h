@@ -69,7 +69,7 @@ public:
     BOOL IsEmpty( VOID) const      { return ( *QueryStr() == L'\0'); }
 
     BOOL Append( const CHAR  * pchInit ) {
-      return ((pchInit != NULL) ? (AuxAppend( pchInit,
+      return ((pchInit != nullptr) ? (AuxAppend( pchInit,
                                               (DWORD) (::strlen(pchInit)) * sizeof(CHAR)
                                               )) :
               TRUE);
@@ -77,7 +77,7 @@ public:
 
 
     BOOL Append( const CHAR  * pchInit, DWORD cchLen ) {
-      return ((pchInit != NULL) ? (AuxAppend( pchInit,
+      return ((pchInit != nullptr) ? (AuxAppend( pchInit,
                                               cchLen * sizeof(CHAR))) :
               TRUE);
     }
@@ -88,7 +88,7 @@ public:
 
     // Resets the internal string to be NULL string. Buffer remains cached.
     VOID Reset()
-    { DBG_ASSERT( QueryPtr() != NULL);
+    { DBG_ASSERT( QueryPtr() != nullptr );
       QueryStr()[0] = L'\0';
       QueryStr()[1] = L'\0';
       m_cchLen = 2;
@@ -97,7 +97,7 @@ public:
 
     BOOL Copy( const CHAR  * pchInit, IN DWORD cbLen ) {
       if ( QueryPtr() ) { Reset(); }
-      return ( (pchInit != NULL) ?
+      return ( (pchInit != nullptr) ?
                AuxAppend( pchInit, cbLen, FALSE ):
                TRUE);
     }
@@ -140,7 +140,7 @@ public:
     BOOL
       Clone( OUT MULTISZA * pstrClone) const
         {
-          return ((pstrClone == NULL) ?
+          return ((pstrClone == nullptr) ?
                   (SetLastError(ERROR_INVALID_PARAMETER), FALSE) :
                   (pstrClone->Copy( *this))
                   );
@@ -160,7 +160,7 @@ public:
     //
 
     static DWORD CalcLength( const CHAR * str,
-                                    LPDWORD pcStrings = NULL );
+                                    LPDWORD pcStrings = nullptr );
 
     //
     // Determine if the MULTISZA contains a specific string.
@@ -185,11 +185,11 @@ public:
     //
 
     const CHAR * First( VOID ) const
-        { return *QueryStr() == L'\0' ? NULL : QueryStr(); }
+        { return *QueryStr() == L'\0' ? nullptr : QueryStr(); }
 
     const CHAR * Next( const CHAR * Current ) const
         { Current += ::strlen( Current ) + 1;
-          return *Current == L'\0' ? NULL : Current; }
+          return *Current == L'\0' ? nullptr : Current; }
 
     BOOL
     Equals(

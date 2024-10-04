@@ -46,7 +46,7 @@ Return Value:
     ULONG ulEntrySize = 0;
     ULONG ulTmpResult = 0;
     ULONG ulExtraBytesInHeader = 0;
-    PTRACE_LOG log = NULL;
+    PTRACE_LOG log = nullptr;
     HRESULT hr = S_OK;
 
     //
@@ -74,7 +74,7 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -85,7 +85,7 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
   
     //
@@ -96,13 +96,13 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     if ( ulTotalSize > (ULONG) 0x7FFFFFFF )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -115,7 +115,7 @@ Return Value:
     // Initialize it.
     //
 
-    if( log != NULL ) {
+    if( log != nullptr ) {
 
         RtlZeroMemory( log, ulTotalSize );
 
@@ -151,7 +151,7 @@ Return Value:
 
 --*/
 {
-        if ( Log != NULL ) {
+        if ( Log != nullptr ) {
         //DBG_ASSERT( Log->Signature == TRACE_LOG_SIGNATURE );
 
         Log->Signature = TRACE_LOG_SIGNATURE_X;

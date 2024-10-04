@@ -49,11 +49,11 @@ Return Values:
     // Calculate encoded string size.
     cchEncoded = 1 + (cbDecodedBufferSize + 2) / 3 * 4;
 
-    if (NULL != pcchEncoded) {
+    if (nullptr != pcchEncoded) {
         *pcchEncoded = cchEncoded;
     }
 
-    if (cchEncodedStringSize == 0 && pszEncodedString == NULL) {
+    if (cchEncodedStringSize == 0 && pszEncodedString == nullptr) {
         return ERROR_SUCCESS;
     }
 
@@ -177,7 +177,7 @@ constexpr auto NA = (255);
     BYTE *  pbDecodeBuffer = (BYTE *) pDecodeBuffer;
 
     cchEncodedSize = (DWORD)wcslen(pszEncodedString);
-    if (NULL != pcbDecoded) {
+    if (nullptr != pcbDecoded) {
         *pcbDecoded = 0;
     }
 
@@ -199,11 +199,11 @@ constexpr auto NA = (255);
         }
     }
 
-    if (NULL != pcbDecoded) {
+    if (nullptr != pcbDecoded) {
         *pcbDecoded = cbDecoded;
     }
 
-    if (cbDecodeBufferSize == 0 && pDecodeBuffer == NULL) {
+    if (cbDecodeBufferSize == 0 && pDecodeBuffer == nullptr) {
         return ERROR_SUCCESS;
     }
 
@@ -288,11 +288,11 @@ Return Values:
     // Calculate encoded string size.
     cchEncoded = 1 + (cbDecodedBufferSize + 2) / 3 * 4;
 
-    if (NULL != pcchEncoded) {
+    if (nullptr != pcchEncoded) {
         *pcchEncoded = cchEncoded;
     }
 
-    if (cchEncodedStringSize == 0 && pszEncodedString == NULL) {
+    if (cchEncodedStringSize == 0 && pszEncodedString == nullptr) {
         return ERROR_SUCCESS;
     }
 
@@ -416,7 +416,7 @@ Return Values:
     BYTE *  pbDecodeBuffer = (BYTE *) pDecodeBuffer;
 
     cchEncodedSize = (DWORD)strlen(pszEncodedString);
-    if (NULL != pcbDecoded) {
+    if (nullptr != pcbDecoded) {
         *pcbDecoded = 0;
     }
 
@@ -438,11 +438,11 @@ Return Values:
         }
     }
 
-    if (NULL != pcbDecoded) {
+    if (nullptr != pcbDecoded) {
         *pcbDecoded = cbDecoded;
     }
 
-    if (cbDecodeBufferSize == 0 && pDecodeBuffer == NULL) {
+    if (cbDecodeBufferSize == 0 && pDecodeBuffer == nullptr) {
         return ERROR_SUCCESS;
     }
 
