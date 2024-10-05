@@ -25,7 +25,7 @@ app.Run();
 public partial class Program { }
 """;
 
-        await VerifyCS.VerifyAsync(source, "PublicTopLevelProgram.Generated.cs", expected);
+        await VerifyCS.VerifyAsync(source, "PublicTopLevelProgram.Generated.g.cs", expected);
     }
 
     [Fact]
