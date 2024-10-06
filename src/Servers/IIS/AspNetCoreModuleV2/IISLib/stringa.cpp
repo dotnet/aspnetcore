@@ -135,6 +135,12 @@ STRA::QueryStr(
     return m_Buff.QueryPtr();
 }
 
+VOID STRA::EnsureNullTerminated()
+{
+    // m_cchLen represents the string's length, not the underlying buffer length
+    m_Buff.QueryPtr()[m_cchLen] = '\0';
+}
+
 VOID
 STRA::Reset(
 )
@@ -696,7 +702,7 @@ Return Value:
 
     _ASSERTE( pch );
 
-    while (pch[i] != NULL)
+    while ((DWORD)i < m_cchLen && pch[i] != NULL)
     {
         //
         //  Escape characters that are in the non-printable range
@@ -1154,7 +1160,7 @@ Finished:
     // ensure we're still NULL terminated in the right spot
     // (regardless of success or failure)
     //
-    QueryStr()[m_cchLen] = '\0';
+    EnsureNullTerminated();
 
     return hr;
 }

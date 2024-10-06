@@ -471,7 +471,7 @@ SERVER_PROCESS::SetupCommandLine(
 Finished:
     if (pszFullPath != nullptr)
     {
-        delete pszFullPath;
+        delete[] pszFullPath;
     }
     return hr;
 }
@@ -963,6 +963,7 @@ SERVER_PROCESS::SetWindowsAuthToken(
 )
 {
     HRESULT hr = S_OK;
+    *pTargetTokenHandle = nullptr;
 
     if (m_hListeningProcessHandle != nullptr && m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
     {

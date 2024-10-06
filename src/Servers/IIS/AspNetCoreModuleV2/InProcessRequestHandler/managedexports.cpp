@@ -278,6 +278,7 @@ http_read_request_bytes(
 )
 {
     HRESULT hr = S_OK;
+    *pvBuffer = 0;
 
     if (pInProcessHandler == nullptr)
     {

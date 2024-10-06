@@ -389,6 +389,9 @@ HASH_TABLE<_Record,_Key>::FindKey(
 
     _tableLock.SharedAcquire();
 
+    // Dereferencing NULL pointer 'pNode'
+    // FindNodeInternal will set a non-null pNode when true is returned, just need to figure out how to correctly SAL the method
+#pragma warning(suppress: 6011)
     if (FindNodeInternal(key, dwHash, &pNode) &&
         pNode->_pRecord != nullptr)
     {
@@ -507,6 +510,9 @@ HASH_TABLE<_Record,_Key>::DeleteKey(
 
     if (FindNodeInternal(key, dwHash, &pNode, &ppPreviousNodeNextPointer))
     {
+        // Dereferencing NULL pointer 'pNode'
+        // FindNodeInternal will set a non-null pNode when true is returned, just need to figure out how to correctly SAL the method
+#pragma warning(suppress: 6011)
         *ppPreviousNodeNextPointer = pNode->_pNext;
         DeleteNode(pNode);
         _nItems--;

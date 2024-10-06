@@ -291,8 +291,8 @@
     <Rule Id="C28736" Action="Error" />
     <Rule Id="C28750" Action="Error" />
     <Rule Id="C28751" Action="Error" />
-    <Rule Id="C6001" Action="None" /> <!-- uninitialized memory -->
-    <Rule Id="C6011" Action="None" /> <!-- Possible null deref -->
+    <Rule Id="C6001" Action="Error" />
+    <Rule Id="C6011" Action="Error" />
     <Rule Id="C6014" Action="Error" />
     <Rule Id="C6029" Action="Error" />
     <Rule Id="C6031" Action="None" /> <!-- Return value ignored: '<func>'. -->
@@ -303,7 +303,7 @@
     <Rule Id="C6064" Action="Error" />
     <Rule Id="C6066" Action="Error" />
     <Rule Id="C6067" Action="Error" />
-    <Rule Id="C6101" Action="None" /> <!-- Returning uninitialized memory -->
+    <Rule Id="C6101" Action="Error" />
     <Rule Id="C6200" Action="Error" />
     <Rule Id="C6201" Action="Error" />
     <Rule Id="C6211" Action="Error" />
@@ -347,7 +347,7 @@
     <Rule Id="C6280" Action="Error" />
     <Rule Id="C6281" Action="Error" />
     <Rule Id="C6282" Action="Error" />
-    <Rule Id="C6283" Action="None" /> <!-- array new with scalar delete -->
+    <Rule Id="C6283" Action="Error" />
     <Rule Id="C6284" Action="Error" />
     <Rule Id="C6285" Action="Error" />
     <Rule Id="C6286" Action="Error" />
@@ -396,8 +396,8 @@
     <Rule Id="C6381" Action="Error" />
     <Rule Id="C6383" Action="Error" />
     <Rule Id="C6384" Action="Error" />
-    <Rule Id="C6385" Action="None" /> <!-- Reading invalid data -->
-    <Rule Id="C6386" Action="None" /> <!-- Overrun -->
+    <Rule Id="C6385" Action="Error" />
+    <Rule Id="C6386" Action="Error" />
     <Rule Id="C6387" Action="None" /> <!-- '<expr>' could be '<val>':  this does not adhere to the specification for the function '<func>' -->
     <Rule Id="C6388" Action="None" /> <!-- '<var>' might not be '<val>':  this does not adhere to the specification for the function '<func>' -->
     <Rule Id="C6400" Action="Error" />
