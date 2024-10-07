@@ -110,7 +110,7 @@
       NoLogo="true"
       Cultures="en-us"
       InstallerFile="%(WixInstallerFilesToProcess.Identity)"
-      AdditionalBasePaths="$(MSBuildProjectDirectory)"
+      AdditionalBasePaths="$(MSBuildProjectDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle"
       WixExtensions="@(WixExtension)"
       Loc="@(EmbeddedResource)"
       Sice="$(SuppressIces)"
