@@ -99,7 +99,7 @@
     <Rule Id="C26498" Action="Error" />
     <Rule Id="C26814" Action="None" /> <!-- The const variable 'variable' can be computed at compile time. Consider using constexpr -->
     <Rule Id="C26818" Action="None" /> <!-- Switch statement does not cover all cases. Consider adding a 'default' label -->
-    <Rule Id="C26819" Action="None" /> <!-- Unannotated fallthrough -->
+    <Rule Id="C26819" Action="Error" />
     <Rule Id="C26826" Action="None" /> <!-- Don't use C-style variable arguments -->
     <Rule Id="C26859" Action="None" /> <!-- Empty optional '<var>' is unwrapped, will throw exception. -->
     <Rule Id="C28020" Action="None" /> <!-- The expression 'expr' is not true at this call -->
