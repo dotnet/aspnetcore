@@ -262,7 +262,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         nullptr,
         0,
         cbContentLength,
-        reinterpret_cast<DWORD_PTR>(static_cast<PVOID>(this))))
+        reinterpret_cast<DWORD_PTR>(this)))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
 
