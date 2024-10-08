@@ -25,7 +25,9 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// <param name="writer">A text writer associated with the document to write to.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer)
     {
-        var optionsSnapshot = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
+        // Resolving IOptionsSnapshot requires a scoped service provider.
+        using var scopedService = serviceProvider.CreateScope();
+        var optionsSnapshot = scopedService.ServiceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
         var namedOption = optionsSnapshot.Get(documentName);
         var resolvedOpenApiVersion = namedOption.OpenApiVersion;
         await GenerateAsync(documentName, writer, resolvedOpenApiVersion);
