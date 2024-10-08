@@ -559,6 +559,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             TryClose();
         }
 
+        _http3Output.Complete();
+
         // Stream will be pooled after app completed.
         // Wait to signal app completed after any potential aborts on the stream.
         _appCompletedTaskSource.SetResult(null);
