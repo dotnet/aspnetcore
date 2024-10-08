@@ -248,7 +248,7 @@
     <Rule Id="C28290" Action="Error" />
     <Rule Id="C28291" Action="Error" />
     <Rule Id="C28300" Action="Error" />
-    <Rule Id="C28301" Action="None" /> <!-- No annotations for first declaration -->
+    <Rule Id="C28301" Action="Error" />
     <Rule Id="C28302" Action="Error" />
     <Rule Id="C28303" Action="Error" />
     <Rule Id="C28304" Action="Error" />
@@ -427,7 +427,6 @@
     <Rule Id="C6540" Action="Error" />
     <Rule Id="C6551" Action="Error" />
     <Rule Id="C6552" Action="Error" />
-    <Rule Id="C6553" Action="None" /> <!-- Annotation does not apply to a value type -->
     <Rule Id="C6701" Action="Error" />
     <Rule Id="C6702" Action="Error" />
     <Rule Id="C6703" Action="Error" />
