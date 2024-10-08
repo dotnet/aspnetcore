@@ -19,19 +19,19 @@ public partial class Program { }
     {
         var internalGeneratedProgramClass = context.CompilationProvider
             // Get the entry point associated with the compilation, this maps to the Main method definition
-            .Select((compilation, cancellationToken) => compilation.GetEntryPoint(cancellationToken))
+            .Select(static (compilation, cancellationToken) => compilation.GetEntryPoint(cancellationToken))
             // Get the containing symbol of the entry point, this maps to the Program class
-            .Select((symbol, _) => symbol?.ContainingSymbol)
+            .Select(static (symbol, _) => symbol?.ContainingSymbol)
             // If the program class is already public, we don't need to generate anything.
-            .Select((symbol, _) => symbol?.DeclaredAccessibility == Accessibility.Public ? null : symbol)
+            .Select(static (symbol, _) => symbol?.DeclaredAccessibility == Accessibility.Public ? null : symbol)
             // If the discovered `Program` type is not a class then its not
             // generated and has been defined in source, so we can skip it
-            .Select((symbol, _) => symbol is INamedTypeSymbol { TypeKind: TypeKind.Class } ? symbol : null)
+            .Select(static (symbol, _) => symbol is INamedTypeSymbol { TypeKind: TypeKind.Class } ? symbol : null)
             // If there are multiple partial declarations, then do nothing since we don't want
             // to trample on visibility explicitly set by the user
-            .Select((symbol, _) => symbol is { DeclaringSyntaxReferences: { Length: 1 } declaringSyntaxReferences } ? declaringSyntaxReferences.Single() : null)
+            .Select(static (symbol, _) => symbol is { DeclaringSyntaxReferences: { Length: 1 } declaringSyntaxReferences } ? declaringSyntaxReferences.Single() : null)
             // If the `Program` class is already declared in user code, we don't need to generate anything.
-            .Select((declaringSyntaxReference, cancellationToken) => declaringSyntaxReference?.GetSyntax(cancellationToken) is ClassDeclarationSyntax ? null : declaringSyntaxReference);
+            .Select(static (declaringSyntaxReference, cancellationToken) => declaringSyntaxReference?.GetSyntax(cancellationToken) is ClassDeclarationSyntax ? null : declaringSyntaxReference);
 
         context.RegisterSourceOutput(internalGeneratedProgramClass, (context, result) =>
         {
