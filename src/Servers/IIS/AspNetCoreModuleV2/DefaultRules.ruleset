@@ -80,7 +80,6 @@
     <Rule Id="C26475" Action="Error" />
     <Rule Id="C26476" Action="None" /> <!-- Expression/symbol 'name' uses a naked union 'union' with multiple type pointers: Use variant instead -->
     <Rule Id="C26477" Action="Error" />
-    <Rule Id="C26478" Action="None" /> <!-- Don't use std::move on constant variables. -->
     <Rule Id="C26481" Action="None" /> <!-- Don't use pointer arithmetic. Use span instead -->
     <Rule Id="C26482" Action="None" /> <!-- Only index into arrays using constant expressions. -->
     <Rule Id="C26483" Action="Error" />
@@ -95,7 +94,7 @@
     <Rule Id="C26494" Action="None" /> <!-- Variable 'variable' is uninitialized. Always initialize an object. -->
     <Rule Id="C26495" Action="None" /> <!-- Variable 'variable' is uninitialized. Always initialize a member variable -->
     <Rule Id="C26496" Action="None" /> <!-- The variable 'variable' is assigned only once, mark it as const. -->
-    <Rule Id="C26497" Action="None" /> <!-- Attempt to make this constexpr -->
+    <Rule Id="C26497" Action="Error" />
     <Rule Id="C26498" Action="Error" />
     <Rule Id="C26814" Action="None" /> <!-- The const variable 'variable' can be computed at compile time. Consider using constexpr -->
     <Rule Id="C26818" Action="None" /> <!-- Switch statement does not cover all cases. Consider adding a 'default' label -->
