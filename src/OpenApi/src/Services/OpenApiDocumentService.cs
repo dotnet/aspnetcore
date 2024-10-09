@@ -409,6 +409,10 @@ internal sealed class OpenApiDocumentService(
             var targetType = parameter.Type == typeof(string) && parameter.ModelMetadata.ModelType != parameter.Type
                 ? parameter.ModelMetadata.ModelType
                 : parameter.Type;
+            // If the type is null, then we're dealing with an inert
+            // route parameter that does not define a specific parameter type in the
+            // route handler or in the response. In this case, we default to a string schema.
+            targetType ??= typeof(string);
             var openApiParameter = new OpenApiParameter
             {
                 Name = parameter.Name,
