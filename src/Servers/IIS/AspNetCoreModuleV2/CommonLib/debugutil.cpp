@@ -114,7 +114,7 @@ std::wstring
 GetModuleName()
 {
     WCHAR path[MAX_PATH];
-    LOG_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, MAX_PATH));
+    LOG_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, _countof(path)));
     return path;
 }
 

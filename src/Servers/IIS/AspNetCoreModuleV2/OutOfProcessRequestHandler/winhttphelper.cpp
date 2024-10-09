@@ -21,9 +21,7 @@ WINHTTP_HELPER::sm_pfnWinHttpWebSocketQueryCloseStatus;
 
 //static
 HRESULT
-WINHTTP_HELPER::StaticInitialize(
-    VOID
-)
+WINHTTP_HELPER::StaticInitialize()
 {
     //
     // Initialize the function pointers for WinHttp Websocket API's.

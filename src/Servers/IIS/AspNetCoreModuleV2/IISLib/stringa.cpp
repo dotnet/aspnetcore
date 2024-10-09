@@ -470,7 +470,7 @@ Return Value:
 
     HRESULT hr = SafeVsnprintf(pszFormatString, argsList);
 
-#pragma warning(suppress: 26477)
+#pragma warning(suppress: 26477) // va_end uses 0
     va_end( argsList );
     return hr;
 }
