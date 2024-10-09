@@ -1596,116 +1596,115 @@ public partial class HubConnection : IAsyncDisposable
         var timer = new TimerAwaitable(TickRate, TickRate);
         var timerTask = connectionState.TimerLoop(timer);
 
-        using (var uploadStreamSource = new CancellationTokenSource())
+        using var uploadStreamSource = new CancellationTokenSource();
+        connectionState.UploadStreamToken = uploadStreamSource.Token;
+        var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
+
+        // We can't safely wait for this task when closing without introducing deadlock potential when calling StopAsync in a .On method
+        connectionState.InvocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
+
+        async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
         {
-            connectionState.UploadStreamToken = uploadStreamSource.Token;
-            var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
-
-            // We can't safely wait for this task when closing without introducing deadlock potential when calling StopAsync in a .On method
-            connectionState.InvocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
-
-            async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
+            while (await invocationMessageChannelReader.WaitToReadAsync().ConfigureAwait(false))
             {
-                while (await invocationMessageChannelReader.WaitToReadAsync().ConfigureAwait(false))
+                while (invocationMessageChannelReader.TryRead(out var invocationMessage))
                 {
-                    while (invocationMessageChannelReader.TryRead(out var invocationMessage))
+                    var invokeTask = DispatchInvocationAsync(invocationMessage, connectionState);
+                    // If a client result is expected we shouldn't block on user code as that could potentially permanently block the application
+                    // Even if it doesn't permanently block, it would be better if non-client result handlers could still be called while waiting for a result
+                    // e.g. chat while waiting for user input for a turn in a game
+                    if (string.IsNullOrEmpty(invocationMessage.InvocationId))
                     {
-                        var invokeTask = DispatchInvocationAsync(invocationMessage, connectionState);
-                        // If a client result is expected we shouldn't block on user code as that could potentially permanently block the application
-                        // Even if it doesn't permanently block, it would be better if non-client result handlers could still be called while waiting for a result
-                        // e.g. chat while waiting for user input for a turn in a game
-                        if (string.IsNullOrEmpty(invocationMessage.InvocationId))
-                        {
-                            await invokeTask.ConfigureAwait(false);
-                        }
+                        await invokeTask.ConfigureAwait(false);
                     }
                 }
             }
+        }
 
-            var input = connectionState.Connection.Transport.Input;
+        var input = connectionState.Connection.Transport.Input;
 
-            try
+        try
+        {
+            while (true)
             {
-                while (true)
+                var result = await input.ReadAsync().ConfigureAwait(false);
+                var buffer = result.Buffer;
+
+                try
                 {
-                    var result = await input.ReadAsync().ConfigureAwait(false);
-                    var buffer = result.Buffer;
-
-                    try
+                    if (result.IsCanceled)
                     {
-                        if (result.IsCanceled)
+                        // We were canceled. Possibly because we were stopped gracefully
+                        break;
+                    }
+                    else if (!buffer.IsEmpty)
+                    {
+                        Log.ProcessingMessage(_logger, buffer.Length);
+
+                        CloseMessage? closeMessage = null;
+
+                        while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
                         {
-                            // We were canceled. Possibly because we were stopped gracefully
-                            break;
-                        }
-                        else if (!buffer.IsEmpty)
-                        {
-                            Log.ProcessingMessage(_logger, buffer.Length);
+                            // We have data, process it
+                            closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer).ConfigureAwait(false);
 
-                            CloseMessage? closeMessage = null;
-
-                            while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
-                            {
-                                // We have data, process it
-                                closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer).ConfigureAwait(false);
-
-                                if (closeMessage != null)
-                                {
-                                    // Closing because we got a close frame, possibly with an error in it.
-                                    if (closeMessage.Error != null)
-                                    {
-                                        connectionState.CloseException = new HubException($"The server closed the connection with the following error: {closeMessage.Error}");
-                                    }
-
-                                    // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
-                                    if (!closeMessage.AllowReconnect)
-                                    {
-                                        connectionState.Stopping = true;
-                                    }
-
-                                    break;
-                                }
-                            }
-
-                            // If we're closing stop everything
                             if (closeMessage != null)
                             {
+                                // Closing because we got a close frame, possibly with an error in it.
+                                if (closeMessage.Error != null)
+                                {
+                                    connectionState.CloseException = new HubException($"The server closed the connection with the following error: {closeMessage.Error}");
+                                }
+
+                                // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
+                                if (!closeMessage.AllowReconnect)
+                                {
+                                    connectionState.Stopping = true;
+                                }
+
                                 break;
                             }
                         }
 
-                        if (result.IsCompleted)
+                        // If we're closing stop everything
+                        if (closeMessage != null)
                         {
-                            if (!buffer.IsEmpty)
-                            {
-                                throw new InvalidDataException("Connection terminated while reading a message.");
-                            }
                             break;
                         }
                     }
-                    finally
+
+                    if (result.IsCompleted)
                     {
-                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
-                        // We mark examined as `buffer.End` so that if we didn't receive a full frame, we'll wait for more data
-                        // before yielding the read again.
-                        input.AdvanceTo(buffer.Start, buffer.End);
+                        if (!buffer.IsEmpty)
+                        {
+                            throw new InvalidDataException("Connection terminated while reading a message.");
+                        }
+                        break;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.ServerDisconnectedWithError(_logger, ex);
-                connectionState.CloseException = ex;
-            }
-            finally
-            {
-                invocationMessageChannel.Writer.TryComplete();
-                timer.Stop();
-                await timerTask.ConfigureAwait(false);
-                uploadStreamSource.Cancel();
-                await HandleConnectionClose(connectionState).ConfigureAwait(false);
+                finally
+                {
+                    // The buffer was sliced up to where it was consumed, so we can just advance to the start.
+                    // We mark examined as `buffer.End` so that if we didn't receive a full frame, we'll wait for more data
+                    // before yielding the read again.
+                    input.AdvanceTo(buffer.Start, buffer.End);
+                }
             }
         }
+        catch (Exception ex)
+        {
+            Log.ServerDisconnectedWithError(_logger, ex);
+            connectionState.CloseException = ex;
+        }
+        finally
+        {
+            invocationMessageChannel.Writer.TryComplete();
+            timer.Stop();
+            await timerTask.ConfigureAwait(false);
+            uploadStreamSource.Cancel();
+            await HandleConnectionClose(connectionState).ConfigureAwait(false);
+        }
+
     }
 
     // Internal for testing
