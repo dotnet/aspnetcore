@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
 
 <Project>
 
