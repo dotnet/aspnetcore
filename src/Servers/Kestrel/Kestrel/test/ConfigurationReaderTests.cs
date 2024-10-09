@@ -219,6 +219,62 @@ public class ConfigurationReaderTests
     }
 
     [Fact]
+    public void ReadEndpointWithSingleHttpProtocolSet_ReturnsCorrectValue()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Protocols", "Http1"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Equal(HttpProtocols.Http1, endpoint.Protocols);
+    }
+
+    [Fact]
+    public void ReadEndpointWithMultipleHttpProtocolsSet_ReturnsCorrectValue()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Protocols", "Http1AndHttp2"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Equal(HttpProtocols.Http1AndHttp2, endpoint.Protocols);
+    }
+
+    [Fact]
+    public void ReadEndpointWithUnionHttpProtocolsSet_ReturnsCorrectValue()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Protocols", "Http2 | Http1"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Equal(HttpProtocols.Http1AndHttp2, endpoint.Protocols);
+    }
+
+    [Fact]
+    public void ReadEndpointWithUnionHttpProtocolsSet_ReturnsNullForBadPart()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Protocols", "Http2 | Http0"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Null(endpoint.Protocols);
+    }
+
+    [Fact]
     public void ReadEndpointWithSingleSslProtocolSet_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -249,6 +305,51 @@ public class ConfigurationReaderTests
 #pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls11 | SslProtocols.Tls12, endpoint.SslProtocols);
 #pragma warning restore SYSLIB0039
+    }
+
+    [Fact]
+    public void ReadEndpointWithUnionSslProtocolSet_ReturnsCorrectValue()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls12 | Tls11"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
+        Assert.Equal(SslProtocols.Tls11 | SslProtocols.Tls12, endpoint.SslProtocols);
+#pragma warning restore SYSLIB0039
+    }
+
+    [Fact]
+    public void ReadEndpointWithUnionSslProtocolSet_ReturnsNoneForBadPart()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls12 | Tls0"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Equal(SslProtocols.None, endpoint.SslProtocols);
+    }
+
+    [Fact]
+    public void ReadEndpointWithUnionSslProtocolSet_ReturnsNoneForBadPartInAnyChild()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:1", "Tls12 | Tls0"),
+        }).Build();
+        var reader = new ConfigurationReader(config);
+
+        var endpoint = reader.Endpoints.First();
+        Assert.Equal(SslProtocols.None, endpoint.SslProtocols);
     }
 
     [Fact]

@@ -175,37 +175,91 @@ internal sealed class ConfigurationReader
 
     private static HttpProtocols? ParseProtocols(string? protocols)
     {
-        if (Enum.TryParse<HttpProtocols>(protocols, ignoreCase: true, out var result))
+        if (protocols is null)
+        {
+            return null;
+        }
+
+        if (protocols.Contains('|'))
+        {
+            var split = protocols.Split('|');
+            var result = HttpProtocols.None;
+            foreach (var protocol in split)
+            {
+                // Enum.TryParse handles trimming
+                if (!TryParseProtocol(protocol, out var parsed))
+                {
+                    return null;
+                }
+                result |= parsed;
+            }
+            return result;
+        }
+        else if (TryParseProtocol(protocols, out var result))
         {
             return result;
         }
 
         return null;
+
+        static bool TryParseProtocol(string protocol, [NotNullWhen(true)] out HttpProtocols result)
+        {
+            if (Enum.TryParse<HttpProtocols>(protocol, ignoreCase: true, out var parsed))
+            {
+                result = parsed;
+                return true;
+            }
+            result = default;
+            return false;
+        }
     }
 
     private static SslProtocols? ParseSslProcotols(IConfigurationSection sslProtocols)
     {
         // Avoid trimming warning from IConfigurationSection.Get<string[]>()
-        string[]? stringProtocols = null;
         var childrenSections = sslProtocols.GetChildren().ToArray();
-        if (childrenSections.Length > 0)
+        if (childrenSections.Length == 0)
         {
-            stringProtocols = new string[childrenSections.Length];
-            for (var i = 0; i < childrenSections.Length; i++)
+            return null;
+        }
+
+        var result = SslProtocols.None;
+
+        foreach (var childrenSection in childrenSections)
+        {
+            var stringProtocols = childrenSection.Value!;
+            if (stringProtocols.Contains('|'))
             {
-                stringProtocols[i] = childrenSections[i].Value!;
+                var split = stringProtocols.Split('|');
+                foreach (var stringProtocol in split)
+                {
+                    // Enum.TryParse handles trimming
+                    if (!TryParseSslProtocol(stringProtocol, out var parsed))
+                    {
+                        // A bad value in any list clobbers all lists
+                        return SslProtocols.None;
+                    }
+                    result |= parsed;
+                }
+            }
+            else if (TryParseSslProtocol(stringProtocols, out var parsed))
+            {
+                result |= parsed;
             }
         }
 
-        return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
-        {
-            if (Enum.TryParse(current, ignoreCase: true, out SslProtocols parsed))
-            {
-                return acc | parsed;
-            }
+        return result;
 
-            return acc;
-        });
+        static bool TryParseSslProtocol(string protocol, [NotNullWhen(true)] out SslProtocols result)
+        {
+            if (Enum.TryParse<SslProtocols>(protocol, ignoreCase: true, out var parsed))
+            {
+                result = parsed;
+                return true;
+            }
+            result = default;
+            return false;
+        }
     }
 
     internal static void ThrowIfContainsHttpsOnlyConfiguration(EndpointConfig endpoint)
