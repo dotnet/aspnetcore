@@ -202,7 +202,7 @@ internal sealed class ConfigurationReader
 
         return null;
 
-        static bool TryParseProtocol(string protocol, [NotNullWhen(true)] out HttpProtocols result)
+        static bool TryParseProtocol(string protocol, out HttpProtocols result)
         {
             if (Enum.TryParse<HttpProtocols>(protocol, ignoreCase: true, out var parsed))
             {
@@ -250,7 +250,7 @@ internal sealed class ConfigurationReader
 
         return result;
 
-        static bool TryParseSslProtocol(string protocol, [NotNullWhen(true)] out SslProtocols result)
+        static bool TryParseSslProtocol(string protocol, out SslProtocols result)
         {
             if (Enum.TryParse<SslProtocols>(protocol, ignoreCase: true, out var parsed))
             {
