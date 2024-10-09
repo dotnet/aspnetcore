@@ -1704,7 +1704,6 @@ public partial class HubConnection : IAsyncDisposable
             uploadStreamSource.Cancel();
             await HandleConnectionClose(connectionState).ConfigureAwait(false);
         }
-
     }
 
     // Internal for testing
