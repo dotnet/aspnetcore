@@ -1,0 +1,28 @@
+parameters:
+  # Enable cleanup tasks for MicroBuild
+  enableMicrobuild: false
+  # Enable cleanup tasks for MicroBuild on Mac and Linux
+  # Will be ignored if 'enableMicrobuild' is false or 'Agent.Os' is 'Windows_NT'
+  enableMicrobuildForMacAndLinux: false
+  continueOnError: false
+
+steps:
+  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
+    - task: MicroBuildCleanup@1
+      displayName: Execute Microbuild cleanup tasks
+      condition: and(
+        always(),
+        or(
+          and(
+            eq(variables['Agent.Os'], 'Windows_NT'),
+            in(variables['_SignType'], 'real', 'test')
+          ),
+          and(
+            ${{ eq(parameters.enableMicrobuildForMacAndLinux, true) }},
+            ne(variables['Agent.Os'], 'Windows_NT'),
+            eq(variables['_SignType'], 'real')
+          )
+        ))
+      continueOnError: ${{ parameters.continueOnError }}
+      env:
+        TeamName: $(_TeamName)
