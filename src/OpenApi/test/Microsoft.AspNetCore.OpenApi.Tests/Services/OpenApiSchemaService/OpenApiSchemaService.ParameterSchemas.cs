@@ -592,4 +592,22 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         Approved = 1,
         Rejected = 2,
     }
+
+    [Fact]
+    public async Task SupportsMvcActionWithAmbientRouteParameter()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AmbientRouteParameter));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = document.Paths["/api/with-ambient-route-param/{versionId}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("string", parameter.Schema.Type);
+        });
+    }
+
+    [Route("/api/with-ambient-route-param/{versionId}")]
+    private void AmbientRouteParameter() { }
 }
