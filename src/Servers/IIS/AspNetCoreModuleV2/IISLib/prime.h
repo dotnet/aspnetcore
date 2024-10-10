@@ -33,7 +33,7 @@ public:
         //
         for ( DWORD Index = 0; Index < _countof( g_Primes ); Index++ )
         {
-            DWORD dwCandidate = g_Primes[Index];
+            const DWORD dwCandidate = g_Primes[Index];
             if ( dwCandidate >= dwMinimum )
             {
                 return dwCandidate;
@@ -68,7 +68,7 @@ private:
             return ( dwCandidate == 2 );
         }
 
-        DWORD dwMax = static_cast<DWORD>(sqrt(static_cast<double>(dwCandidate)));
+        const DWORD dwMax = static_cast<DWORD>(sqrt(static_cast<double>(dwCandidate)));
 
         for ( DWORD Index = 3; Index <= dwMax; Index += 2 )
         {

@@ -156,6 +156,8 @@ void StandardStreamRedirection::Stop()
                 dwThreadStatus == STILL_ACTIVE)
             {
                 LOG_WARN(L"Thread reading stdout/err hit timeout, forcibly closing thread.");
+                // Using TerminateThread does not allow proper thread clean up.
+#pragma warning(suppress: 6258)
                 TerminateThread(m_hErrThread, STATUS_CONTROL_C_EXIT);
             }
         }

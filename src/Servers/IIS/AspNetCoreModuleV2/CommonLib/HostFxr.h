@@ -30,7 +30,7 @@ typedef int(*hostfxr_get_runtime_property_value_fn)(void* host_context_handle, P
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
 typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
 
-const int AppArgNotRunnable = 0x80008094;
+constexpr int AppArgNotRunnable = 0x80008094;
 
 class HostFxrErrorRedirector: NonCopyable
 {
@@ -53,6 +53,9 @@ public:
     {
     }
 
+    // No array to pointer decay
+    // This is in reference to main taking PCWSTR argv[] and the analyzer wanting us to use span instead
+#pragma warning(suppress: 26485)
     HostFxr(
         hostfxr_main_fn hostfxr_main_fn,
         hostfxr_get_native_search_directories_fn hostfxr_get_native_search_directories_fn,
@@ -60,7 +63,12 @@ public:
         : m_hostfxr_main_fn(hostfxr_main_fn),
           m_hostfxr_get_native_search_directories_fn(hostfxr_get_native_search_directories_fn),
           m_corehost_set_error_writer_fn(corehost_set_error_writer_fn),
-          m_host_context_handle(nullptr)
+          m_host_context_handle(nullptr),
+          m_hostfxr_close_fn(nullptr),
+          m_hostfxr_get_runtime_property_value_fn(nullptr),
+          m_hostfxr_initialize_for_dotnet_commandline_fn(nullptr),
+          m_hostfxr_run_app_fn(nullptr),
+          m_hostfxr_set_runtime_property_value_fn(nullptr)
     {
     }
 
@@ -78,7 +86,7 @@ public:
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
     int SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept;
     int GetRuntimePropertyValue(PCWSTR name, PWSTR* value) const noexcept;
-    int InitializeForApp(int argc, PCWSTR* argv, const std::wstring& m_dotnetExeKnownLocation) const noexcept;
+    int InitializeForApp(int argc, PCWSTR* argv, const std::wstring& m_dotnetExeKnownLocation) const;
     void Close() const noexcept;
 
 private:

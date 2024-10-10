@@ -60,9 +60,9 @@ public:
     static
     HRESULT
     CreateRequestHandlerConfig(
-        _In_  IHttpServer             *pHttpServer,
-        _In_  IHttpSite               *pSite,
-        _In_  IHttpApplication        *pHttpApplication,
+        const _In_  IHttpServer      *pHttpServer,
+        const _In_  IHttpSite        *pSite,
+        const _In_  IHttpApplication *pHttpApplication,
         _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
     );
 
@@ -236,15 +236,26 @@ protected:
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
         m_hostingModel(HOSTING_UNKNOWN),
-        m_ppStrArguments(NULL)
+        m_ppStrArguments(nullptr),
+        m_dwArgc(0),
+        m_fAnonymousAuthEnabled(false),
+        m_fDisableStartUpErrorPage(true),
+        m_dwProcessesPerApplication(0),
+        m_dwRapidFailsPerMinute(0),
+        m_dwRequestTimeoutInMS(0),
+        m_dwShutdownTimeLimitInMS(0),
+        m_fBasicAuthEnabled(false),
+        m_fForwardWindowsAuthToken(false),
+        m_fWindowsAuthEnabled(false),
+        m_dwStartupTimeLimitInMS(0)
     {
     }
 
     HRESULT
     Populate(
-        IHttpServer      *pHttpServer,
-        IHttpSite        *pSite,
-        IHttpApplication *pHttpApplication
+        const IHttpServer      *pHttpServer,
+        const IHttpSite        *pSite,
+        const IHttpApplication *pHttpApplication
     );
 
     DWORD                  m_dwRequestTimeoutInMS;

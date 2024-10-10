@@ -5,6 +5,14 @@
 
 struct ErrorContext
 {
+    ErrorContext() :
+        detailedErrorContent(),
+        generalErrorType(),
+        errorReason(),
+        statusCode(),
+        subStatusCode()
+    {}
+
     // TODO consider adding HRESULT here
     std::string detailedErrorContent;
     USHORT statusCode;

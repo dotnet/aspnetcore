@@ -89,7 +89,7 @@ public:
     PWSTR
     ExtractKey(
         ENVIRONMENT_VAR_ENTRY *   pEntry
-    )
+    ) override
     {
         return pEntry->QueryName();
     }
@@ -97,7 +97,7 @@ public:
     DWORD
     CalcKeyHash(
         PWSTR   pszName
-    )
+    ) override
     {
         return HashStringNoCase(pszName);
     }
@@ -106,7 +106,7 @@ public:
     EqualKeys(
         PWSTR   pszName1,
         PWSTR   pszName2
-    )
+    ) override
     {
         return (_wcsicmp(pszName1, pszName2) == 0);
     }
@@ -114,7 +114,7 @@ public:
     VOID
     ReferenceRecord(
         ENVIRONMENT_VAR_ENTRY *   pEntry
-    )
+    ) override
     {
         pEntry->Reference();
     }
@@ -122,7 +122,7 @@ public:
     VOID
     DereferenceRecord(
         ENVIRONMENT_VAR_ENTRY *   pEntry
-    )
+    ) override
     {
         pEntry->Dereference();
     }

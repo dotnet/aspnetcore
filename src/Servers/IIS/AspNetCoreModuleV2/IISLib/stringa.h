@@ -143,6 +143,9 @@ public:
     QueryStr(
     ) const;
 
+
+    VOID EnsureNullTerminated();
+
     VOID
     Reset(
     );

@@ -117,6 +117,8 @@ http_get_server_variable(
     PCWSTR pszVariableValue;
     DWORD cbLength;
 
+    *pwszReturn = nullptr;
+
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()
         ->GetServerVariable(pszVariableName, &pszVariableValue, &cbLength);
@@ -276,6 +278,7 @@ http_read_request_bytes(
 )
 {
     HRESULT hr = S_OK;
+    *pvBuffer = 0;
 
     if (pInProcessHandler == NULL)
     {

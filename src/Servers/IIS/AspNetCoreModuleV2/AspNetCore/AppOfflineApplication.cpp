@@ -12,6 +12,9 @@ HRESULT AppOfflineApplication::CreateHandler(IHttpContext* pHttpContext, IREQUES
     try
     {
         auto handler = std::make_unique<AppOfflineHandler>(*pHttpContext, m_strAppOfflineContent);
+        // 'Don't return a pointer that may be invalid'
+        // We use make_unique to prevent memory leaks in case of exception during ctor and then release it so we don't delete the pointer
+#pragma warning(suppress: 26487)
         *pRequestHandler = handler.release();
     }
     CATCH_RETURN();

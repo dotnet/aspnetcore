@@ -35,14 +35,12 @@
 #define RETURN_CAUGHT_EXCEPTION()                               return CaughtExceptionHResult(LOCATION_INFO);
 
 #define _CHECK_FAILED(expr)                                     __pragma(warning(push)) \
-    __pragma(warning(disable:4127)) /*disable condition is const warning*/ \
-    FAILED(expr) \
-    __pragma(warning(pop))
+    __pragma(warning(suppress:4127)) /*disable condition is const warning*/ \
+    FAILED(expr)
 
 #define _HR_RET(hr)                                             __pragma(warning(push)) \
-    __pragma(warning(disable:26498)) /*disable constexpr warning */ \
-    const HRESULT __hrRet = hr; \
-    __pragma(warning(pop))
+    __pragma(warning(suppress:26498 26814)) /*disable constexpr warning */ \
+    const HRESULT __hrRet = hr;
 
 #define RETURN_HR(hr)                                           do { _HR_RET(hr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } return __hrRet; } while (0, 0)
 #define RETURN_LAST_ERROR()                                     do { return LogLastError(LOCATION_INFO); } while (0, 0)

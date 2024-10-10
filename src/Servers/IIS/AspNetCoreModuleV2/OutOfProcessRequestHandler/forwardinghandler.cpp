@@ -262,7 +262,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         NULL,
         0,
         cbContentLength,
-        reinterpret_cast<DWORD_PTR>(static_cast<PVOID>(this))))
+        reinterpret_cast<DWORD_PTR>(this)))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
 
@@ -576,7 +576,7 @@ Failure:
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH());
             }
-            (VOID)strDescription.SyncWithBuffer();
+            std::ignore = strDescription.SyncWithBuffer();
 
             if (strDescription.QueryCCH() != 0)
             {
@@ -1495,6 +1495,8 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
     HRESULT hr = S_OK;
     IHttpRequest *      pRequest = m_pW3Context->GetRequest();
 
+    *pfClientError = FALSE;
+
     //
     // completion for sending the initial request or request entity to
     // winhttp, get more request entity if available, else start receiving
@@ -1596,7 +1598,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
     STACK_STRA(strHeaders, 2048);
     DWORD         dwHeaderSize = bufHeaderBuffer.QuerySize();
 
-    UNREFERENCED_PARAMETER(pfAnotherCompletionExpected);
+    *pfAnotherCompletionExpected = FALSE;
 
     //
     // Headers are available, read the status line and headers and pass
@@ -1691,6 +1693,8 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusDataAvailable(
 {
     HRESULT hr = S_OK;
 
+    *pfAnotherCompletionExpected = FALSE;
+
     //
     // Response data is available from winhttp, read it
     //
@@ -1743,6 +1747,8 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
 )
 {
     HRESULT hr = S_OK;
+
+    *pfAnotherCompletionExpected = FALSE;
 
     //
     // Response data has been read from winhttp, send it to the client
@@ -1820,6 +1826,8 @@ FORWARDING_HANDLER::OnSendingRequest(
     __out BOOL *                pfClientError
 )
 {
+    *pfClientError = FALSE;
+
     //
     // This is a completion for a read from http.sys, abort in case
     // of failure, if we read anything write it out over WinHTTP,
@@ -2091,7 +2099,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         //
         RETURN_IF_FAILED(strHeaderValue.Copy(
             pchStatus,
-            (DWORD)(pchEndofHeaderValue - pchStatus) + 1));
+            (SIZE_T)(pchEndofHeaderValue - pchStatus) + 1));
         RETURN_IF_FAILED(pResponse->SetStatus(uStatus,
                 strHeaderValue.QueryStr(),
                 0,
@@ -2126,6 +2134,10 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
             pchNewline[1] == '\t')
         {
             pchNewline = strchr(pchNewline + 1, '\n');
+            if (pchNewline == NULL)
+            {
+                return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+            }
         }
 
         DBG_ASSERT(
@@ -2405,7 +2417,7 @@ SetCookie:
             {
                 RETURN_HR(E_OUTOFMEMORY);
             }
-            StringCchCopyA(const_cast<PSTR>(pszHeader), strTemp.QueryCCH() + 1, strTemp.QueryStr());
+            StringCchCopyA(const_cast<PSTR>(pszHeader), (size_t)strTemp.QueryCCH() + 1, strTemp.QueryStr());
             pHeaders->pUnknownHeaders[i].pRawValue = pszHeader;
             pHeaders->pUnknownHeaders[i].RawValueLength = static_cast<USHORT>(strTemp.QueryCCH());
 
@@ -2460,6 +2472,7 @@ FORWARDING_HANDLER::NotifyDisconnect()
     }
 }
 
+_Acquires_exclusive_lock_(this->m_RequestLock)
 VOID
 FORWARDING_HANDLER::AcquireLockExclusive()
 {
@@ -2469,6 +2482,7 @@ FORWARDING_HANDLER::AcquireLockExclusive()
     DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
 }
 
+_Releases_exclusive_lock_(this->m_RequestLock)
 VOID
 FORWARDING_HANDLER::ReleaseLockExclusive()
 {
