@@ -604,18 +604,28 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [Route("/api/with-ambient-route-param/{versionId}")]
     private void AmbientRouteParameter() { }
 
-    [Fact]
-    public async Task SupportsRouteParameterWithCustomTryParse()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsRouteParameterWithCustomTryParse(bool useAction)
     {
         // Arrange
         var builder = CreateBuilder();
 
         // Act
-        builder.MapGet("/api/{student}", (Student student) => { });
-        builder.MapGet("/api", () => new Student("Tester"));
+        if (!useAction)
+        {
+            builder.MapGet("/api/{student}", (Student student) => student);
+            await VerifyOpenApiDocument(builder, AssertOpenApiDocument);
+        }
+        else
+        {
+            var action = CreateActionDescriptor(nameof(GetStudent));
+            await VerifyOpenApiDocument(action, AssertOpenApiDocument);
+        }
 
         // Assert
-        await VerifyOpenApiDocument(builder, document =>
+        static void AssertOpenApiDocument(OpenApiDocument document)
         {
             // Parameter is a plain-old string when it comes from the route or query
             var operation = document.Paths["/api/{student}"].Operations[OperationType.Get];
@@ -623,7 +633,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("string", parameter.Schema.Type);
 
             // Type is fully serialized in the response
-            operation = document.Paths["/api"].Operations[OperationType.Get];
             var response = Assert.Single(operation.Responses).Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema.GetEffective(document);
@@ -633,8 +642,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal("name", property.Key);
                 Assert.Equal("string", property.Value.Type);
             });
-        });
+        }
     }
+
+    [Route("/api/{student}")]
+    private Student GetStudent(Student student) => student;
 
     public record Student(string Name)
     {

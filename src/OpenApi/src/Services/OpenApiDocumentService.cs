@@ -686,10 +686,17 @@ internal sealed class OpenApiDocumentService(
         var parameterType = parameter.Type is not null
             ? Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type
             : parameter.Type;
-        var requiresModelMetadataFallback = parameterType == typeof(string) && parameter.ModelMetadata.ModelType != parameter.Type;
+
+        // parameter.Type = typeof(string)
+        // parameter.ModelMetadata.Type = typeof(TEnum)
+        var requiresModelMetadataFallbackForEnum = parameterType == typeof(string)
+            && parameter.ModelMetadata.ModelType != parameter.Type
+            && parameter.ModelMetadata.ModelType.IsEnum;
         // Enums are exempt because we want to set the OpenApiSchema.Enum field when feasible.
+        // parameter.Type = typeof(TEnum), typeof(Student), typeof(ITryParse)
+        // parameter.ModelMetadata.Type = typeof(string)
         var hasTryParse = bindingMetadata?.HasTryParse == true && parameterType is not null && !parameterType.IsEnum;
-        var targetType = requiresModelMetadataFallback || hasTryParse
+        var targetType = requiresModelMetadataFallbackForEnum || hasTryParse
             ? parameter.ModelMetadata.ModelType
             : parameter.Type;
         targetType ??= typeof(string);
