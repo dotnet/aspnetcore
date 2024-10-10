@@ -33,7 +33,7 @@ MULTISZA::CalcLength( const CHAR * str,
         count++;
     }
 
-    if( pcStrings != NULL ) {
+    if( pcStrings != nullptr ) {
         *pcStrings = count;
     }
 
@@ -49,8 +49,8 @@ MULTISZA::FindString( const CHAR * str ) const
     // Sanity check.
     //
 
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
+    DBG_ASSERT( QueryStr() != nullptr);
+    DBG_ASSERT( str != nullptr );
     DBG_ASSERT( *str != '\0' );
 
     //
@@ -83,8 +83,8 @@ MULTISZA::FindStringNoCase( const CHAR * str ) const
     // Sanity check.
     //
 
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
+    DBG_ASSERT( QueryStr() != nullptr);
+    DBG_ASSERT( str != nullptr);
     DBG_ASSERT( *str != '\0' );
 
     //
@@ -96,9 +96,7 @@ MULTISZA::FindStringNoCase( const CHAR * str ) const
     while( *multisz != '\0' ) {
 
         if( !_stricmp( multisz, str ) ) {
-
             return TRUE;
-
         }
 
         multisz += strlen( multisz ) + 1;
@@ -147,7 +145,7 @@ MULTISZA::AuxInit( const CHAR * pInit )
 
 BOOL MULTISZA::AuxAppend( const CHAR * pStr, UINT cbStr, BOOL fAddSlop )
 {
-    DBG_ASSERT( pStr != NULL );
+    DBG_ASSERT( pStr != nullptr);
 
     UINT cbThis = QueryCB();
 
@@ -240,7 +238,7 @@ MULTISZA::CopyToBuffer( __out_ecount_opt(*lpcch) CHAR * lpszBuffer, LPDWORD lpcc
 {
    BOOL fReturn = TRUE;
 
-    if ( lpcch == NULL) {
+    if ( lpcch == nullptr) {
         SetLastError( ERROR_INVALID_PARAMETER);
         return ( FALSE);
     }
@@ -270,7 +268,7 @@ MULTISZA::Equals(
 // Compares this to pmszRhs, returns TRUE if equal
 //
 {
-    DBG_ASSERT( NULL != pmszRhs );
+    DBG_ASSERT(nullptr != pmszRhs );
 
     PCSTR pszLhs = First( );
     PCSTR pszRhs = pmszRhs->First( );
@@ -280,9 +278,9 @@ MULTISZA::Equals(
         return FALSE;
     }
 
-    while( NULL != pszLhs )
+    while( nullptr != pszLhs )
     {
-        DBG_ASSERT( NULL != pszRhs );
+        DBG_ASSERT( nullptr != pszRhs );
 
         if( 0 != strcmp( pszLhs, pszRhs ) )
         {
@@ -325,8 +323,8 @@ Return Value:
 {
     HRESULT                 hr = S_OK;
 
-    if ( pszList == NULL ||
-         pmszList == NULL )
+    if ( pszList == nullptr ||
+         pmszList == nullptr)
     {
         DBG_ASSERT( FALSE );
         hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
@@ -352,9 +350,9 @@ Return Value:
           pszCurrent = pszNext + 1,
           pszNext = strchr( pszCurrent, L',' ) )
     {
-        PCSTR pszEnd = NULL;
+        PCSTR pszEnd = nullptr;
 
-        if ( pszNext != NULL )
+        if ( pszNext != nullptr )
         {
             pszEnd = pszNext;
         }
@@ -385,7 +383,7 @@ Return Value:
             }
         }
         
-        if ( pszNext == NULL )
+        if ( pszNext == nullptr )
         {
             break;
         }
