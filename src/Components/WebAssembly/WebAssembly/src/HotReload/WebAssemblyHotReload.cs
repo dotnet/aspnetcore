@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 
@@ -18,19 +19,42 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static partial class WebAssemblyHotReload
 {
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
+    public readonly struct LogEntry
+    {
+        public string Message { get; init; }
+        public int Severity { get; init; }
+    }
+
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
+    public readonly struct Delta
+    {
+        public string ModuleId { get; init; }
+        public byte[] MetadataDelta { get; init; }
+        public byte[] ILDelta { get; init; }
+        public byte[] PdbDelta { get; init; }
+        public int[] UpdatedTypes { get; init; }
+    }
+
     private const string BlazorHotReloadModuleName = "blazor-hotreload";
 
     private static HotReloadAgent? _hotReloadAgent;
-    private static readonly UpdateDelta[] _updateDeltas = new[]
-    {
-        new UpdateDelta(),
-    };
 
     internal static async Task InitializeAsync()
     {
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
         {
+            var existingAgent = Interlocked.CompareExchange(ref _hotReloadAgent, new HotReloadAgent(), null);
+            if (existingAgent != null)
+            {
+                throw new InvalidOperationException("Already initialized");
+            }
+
             // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
             // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage.
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
@@ -39,26 +63,30 @@ public static partial class WebAssemblyHotReload
         }
     }
 
+    private static HotReloadAgent GetAgent()
+        => _hotReloadAgent ?? throw new InvalidOperationException("Not initialized");
+
     /// <summary>
     /// For framework use only.
     /// </summary>
+    [Obsolete("Use ApplyHotReloadDeltas instead")]
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes, int[]? updatedTypes)
     {
-        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
-#pragma warning disable IDE0200 // Remove unnecessary lambda expression
-        Interlocked.CompareExchange(ref _hotReloadAgent, new HotReloadAgent(m => Debug.WriteLine(m)), null);
-#pragma warning restore IDE0200 // Remove unnecessary lambda expression
+        _ = GetAgent().ApplyDeltas(
+            [new UpdateDelta(Guid.Parse(moduleIdString, CultureInfo.InvariantCulture), metadataDelta, ilDelta, pdbBytes, updatedTypes ?? [])],
+            ResponseLoggingLevel.WarningsAndErrors);
+    }
 
-        var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
-
-        _updateDeltas[0].ModuleId = moduleId;
-        _updateDeltas[0].MetadataDelta = metadataDelta;
-        _updateDeltas[0].ILDelta = ilDelta;
-        _updateDeltas[0].PdbBytes = pdbBytes;
-        _updateDeltas[0].UpdatedTypes = updatedTypes;
-
-        _hotReloadAgent.ApplyDeltas(_updateDeltas);
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
+    [JSInvokable(nameof(ApplyHotReloadDeltas))]
+    public static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
+    {
+        return GetAgent().ApplyDeltas(
+            deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)), (ResponseLoggingLevel)loggingLevel)
+            .Select(log => new LogEntry() { Message = log.message, Severity = (int)log.severity }).ToArray();
     }
 
     /// <summary>
@@ -66,14 +94,7 @@ public static partial class WebAssemblyHotReload
     /// </summary>
     [JSInvokable(nameof(GetApplyUpdateCapabilities))]
     public static string GetApplyUpdateCapabilities()
-    {
-        var method = typeof(System.Reflection.Metadata.MetadataUpdater).GetMethod("GetCapabilities", BindingFlags.NonPublic | BindingFlags.Static, Type.EmptyTypes);
-        if (method is null)
-        {
-            return string.Empty;
-        }
-        return (string)method.Invoke(obj: null, parameters: null)!;
-    }
+        => GetAgent().Capabilities;
 
     [JSImport("receiveHotReloadAsync", BlazorHotReloadModuleName)]
     private static partial Task ReceiveHotReloadAsync();

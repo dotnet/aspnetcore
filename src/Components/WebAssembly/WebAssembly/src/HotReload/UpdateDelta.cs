@@ -3,15 +3,11 @@
 
 namespace Microsoft.Extensions.HotReload;
 
-internal sealed class UpdateDelta
+internal readonly struct UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, byte[] pdbDelta, int[] updatedTypes)
 {
-    public Guid ModuleId { get; set; }
-
-    public byte[] MetadataDelta { get; set; } = default!;
-
-    public byte[] ILDelta { get; set; } = default!;
-
-    public byte[]? PdbBytes { get; set; }
-
-    public int[]? UpdatedTypes { get; set; }
+    public Guid ModuleId { get; } = moduleId;
+    public byte[] MetadataDelta { get; } = metadataDelta;
+    public byte[] ILDelta { get; } = ilDelta;
+    public byte[] PdbDelta { get; } = pdbDelta;
+    public int[] UpdatedTypes { get; } = updatedTypes;
 }
