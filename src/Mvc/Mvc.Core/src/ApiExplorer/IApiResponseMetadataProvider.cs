@@ -18,6 +18,11 @@ public interface IApiResponseMetadataProvider : IFilterMetadata
     Type? Type { get; }
 
     /// <summary>
+    /// Gets the description of the response.
+    /// </summary>
+    string? Description { get; }
+
+    /// <summary>
     /// Gets the HTTP status code of the response.
     /// </summary>
     int StatusCode { get; }
