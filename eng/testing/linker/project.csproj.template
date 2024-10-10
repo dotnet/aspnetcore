@@ -27,11 +27,4 @@
     {AdditionalProjectReferences}
   </ItemGroup>
 
-  <!-- Workaround for trimming tests failing during execution. -->
-  <ItemGroup>
-    <EmbeddedResource Include="ILLink.Descriptors.xml">
-      <LogicalName>ILLink.Descriptors.xml</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>
