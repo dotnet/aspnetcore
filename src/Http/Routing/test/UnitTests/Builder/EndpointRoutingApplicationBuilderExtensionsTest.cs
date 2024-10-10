@@ -69,7 +69,9 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         await appFunc(httpContext);
 
         // Assert
-        Assert.Null(httpContext.Features.Get<IEndpointFeature>());
+        var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature);
+        Assert.Null(endpointFeature.Endpoint);
     }
 
     [Fact]
@@ -165,7 +167,9 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         await appFunc(httpContext);
 
         // Assert
-        Assert.Null(httpContext.Features.Get<IEndpointFeature>());
+        var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature); 
+        Assert.Null(endpointFeature?.Endpoint);
     }
 
     [Fact]
@@ -367,5 +371,10 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         var serviceProvder = services.BuildServiceProvider();
 
         return serviceProvder;
+    }
+
+    private class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint Endpoint { get; set; }
     }
 }
