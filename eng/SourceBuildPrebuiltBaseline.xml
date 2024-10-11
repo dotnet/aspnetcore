@@ -47,4 +47,10 @@
     <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
     <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
   </IgnorePatterns>
+
+  <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
+  <Usages>
+    <Usage Id="Newtonsoft.Json" Version="13.0.1" />
+    <Usage Id="System.Security.Cryptography.Xml" Version="6.0.0" />
+  </Usages>
 </UsageData>
