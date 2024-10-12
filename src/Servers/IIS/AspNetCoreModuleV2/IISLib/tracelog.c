@@ -10,7 +10,6 @@
 #define FREE_MEM(ptr) (VOID)LocalFree( (HLOCAL)(ptr) )
 
 
-
 PTRACE_LOG
 CreateTraceLog(
     IN LONG LogSize,
@@ -130,7 +129,6 @@ Return Value:
 
 }   // CreateTraceLog
 
-
 VOID
 DestroyTraceLog(
     IN PTRACE_LOG Log
@@ -160,7 +158,6 @@ Return Value:
 
 }   // DestroyTraceLog
 
-
 LONG
 WriteTraceLog(
     IN PTRACE_LOG Log,
@@ -213,7 +210,6 @@ Return Value:
     return index;
 }   // WriteTraceLog
 
-
 VOID
 ResetTraceLog(
     IN PTRACE_LOG Log
@@ -231,4 +227,3 @@ ResetTraceLog(
     Log->NextEntry = -1;
 
 }   // ResetTraceLog
-
