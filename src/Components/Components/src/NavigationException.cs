@@ -8,10 +8,16 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public class NavigationException : Exception
 {
+
+    private const string RedirectExceptionMessage =
+    "A navigation was initiated during static rendering. " +
+    "This exception is not an error, but instead signals to the framework that a redirect should occur. " +
+    "It should not be caught by application code.";
+
     /// <summary>
     /// Initializes a new <see cref="NavigationException"/> instance.
     /// </summary>
-    public NavigationException(string uri)
+    public NavigationException(string uri) : base(RedirectExceptionMessage)
     {
         Location = uri;
     }
