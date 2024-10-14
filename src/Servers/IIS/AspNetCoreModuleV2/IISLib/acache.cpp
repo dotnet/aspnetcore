@@ -429,7 +429,6 @@ Finished:
 
     if ( fLockedHeap )
     {
-        fLockedHeap = FALSE;
         DBG_REQUIRE( ::HeapUnlock( hHeap ) );
     }
 
