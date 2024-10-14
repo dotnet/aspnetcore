@@ -34,6 +34,13 @@
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x64.exe" Certificate="MicrosoftSHA2" Visible="false" />
+  </ItemGroup>
+
   <Target Name="BuildX64" AfterTargets="AfterBuild" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
@@ -54,8 +61,8 @@
         id=$(PackageId);
         version=$(PackageVersion);
         authors=$(Authors);
-        MicrosoftAspNetCoreHostingPackageVersion=$(MicrosoftAspNetCoreHostingPackageVersion);
-        MicrosoftAspNetCoreMvcRazorPagesPackageVersion=$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion);
+        MicrosoftAspNetCoreHostingPackageVersion=$(PackageVersion);
+        MicrosoftAspNetCoreMvcRazorPagesPackageVersion=$(PackageVersion);
         description=$(Description);
         tags=$(PackageTags.Replace(';', ' '));
         licenseUrl=$(PackageLicenseUrl);

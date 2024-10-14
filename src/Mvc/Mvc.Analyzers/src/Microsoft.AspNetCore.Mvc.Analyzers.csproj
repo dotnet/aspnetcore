@@ -14,6 +14,10 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Analyzers.dll" Certificate="MicrosoftSHA2" Visible="false" />
+  </ItemGroup>
+
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
 
     <PropertyGroup>

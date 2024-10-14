@@ -6,9 +6,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="1.0.15" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
-    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

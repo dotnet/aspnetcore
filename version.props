@@ -1,15 +1,15 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>40</AspNetCorePatchVersion>
+    <AspNetCoreMinorVersion>3</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <ValidateBaseline>true</ValidateBaseline>
 
-    <PreReleaseLabel>servicing</PreReleaseLabel>
-    <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
+    <PreReleaseLabel>rtm</PreReleaseLabel>
+    <PreReleaseBrandingLabel>RTM</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t000</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <ExperimentalVersionPrefix>0.1.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
+    <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
 
     <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
     <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>

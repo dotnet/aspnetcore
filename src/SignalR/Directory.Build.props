@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- Override the version settings from the repo root. -->
-    <VersionPrefix>1.0.$(AspNetCorePatchVersion)</VersionPrefix>
+    <VersionPrefix>1.2.$(AspNetCorePatchVersion)</VersionPrefix>
     <PackageVersion>$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <!-- These packages do not align with the repo version. -->

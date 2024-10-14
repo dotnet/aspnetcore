@@ -27,12 +27,16 @@
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.dll" Certificate="MicrosoftSHA2" Visible="false" />
+  </ItemGroup>
+
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">
 
     <PropertyGroup>
-      <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.AspNetCore.Mvc.Razor.Extensions')->Metadata('PackageVersion'))</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-      <MicrosoftAspNetCoreRazorRuntimePackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.AspNetCore.Razor.Runtime')->Metadata('PackageVersion'))</MicrosoftAspNetCoreRazorRuntimePackageVersion>
-      <MicrosoftCodeAnalysisRazorPackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.CodeAnalysis.Razor')->Metadata('PackageVersion'))</MicrosoftCodeAnalysisRazorPackageVersion>
+      <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+      <MicrosoftAspNetCoreRazorRuntimePackageVersion>$(PackageVersion)</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+      <MicrosoftCodeAnalysisRazorPackageVersion>$(PackageVersion)</MicrosoftCodeAnalysisRazorPackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>

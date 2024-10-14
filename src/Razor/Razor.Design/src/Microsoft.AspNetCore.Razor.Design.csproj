@@ -38,6 +38,13 @@
     <BuildDependsOn>_BuildDependencyProjects;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- These files should be signed by aspnet/razor -->
+    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll"  />
+    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll"  />
+    <SignedPackageFile Include="rzc.dll" Certificate="MicrosoftSHA2" Visible="false" />
+  </ItemGroup>
+
   <Target Name="_BuildDependencyProjects">
     <!-- 
       The Microsoft.AspNetCore.Razor.Tasks package needs to support both net46 and netstandard2.0 for desktop vs

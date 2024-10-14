@@ -19,12 +19,12 @@
           "Template"
         ]
       },
-      "Microsoft.DotNet.Web.ProjectTemplates.2.1": {
+      "Microsoft.DotNet.Web.ProjectTemplates.2.3": {
         "packageTypes": [
           "Template"
         ]
       },
-      "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1": {
+      "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.3": {
         "packageTypes": [
           "Template"
         ]

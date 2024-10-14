@@ -15,6 +15,7 @@
     <Reference Include="Microsoft.AspNetCore.Routing" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" PrivateAssets="None" />
@@ -25,8 +26,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Logging.Console" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" PrivateAssets="None" />
-
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.25" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
   </ItemGroup>
 
 </Project>

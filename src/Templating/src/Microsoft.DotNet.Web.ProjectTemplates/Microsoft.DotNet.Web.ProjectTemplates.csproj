@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.1</PackageId>
+    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.3</PackageId>
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
   </PropertyGroup>
 

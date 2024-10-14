@@ -11,7 +11,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
-    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>
