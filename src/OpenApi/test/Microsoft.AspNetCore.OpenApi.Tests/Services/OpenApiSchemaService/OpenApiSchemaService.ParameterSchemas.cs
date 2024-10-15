@@ -547,7 +547,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         if (!useAction)
         {
             var builder = CreateBuilder();
-            builder.MapGet("/api/with-enum", (ItemStatus status) => status);
+            builder.MapGet("/api/with-enum", (Status status) => status);
+            await VerifyOpenApiDocument(builder, AssertOpenApiDocument);
         }
         else
         {
@@ -583,15 +584,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Route("/api/with-enum")]
-    private ItemStatus GetItemStatus([FromQuery] ItemStatus status) => status;
-
-    [JsonConverter(typeof(JsonStringEnumConverter<ItemStatus>))]
-    internal enum ItemStatus
-    {
-        Pending = 0,
-        Approved = 1,
-        Rejected = 2,
-    }
+    private Status GetItemStatus([FromQuery] Status status) => status;
 
     [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
@@ -610,4 +603,63 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     [Route("/api/with-ambient-route-param/{versionId}")]
     private void AmbientRouteParameter() { }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsRouteParameterWithCustomTryParse(bool useAction)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        if (!useAction)
+        {
+            builder.MapGet("/api/{student}", (Student student) => student);
+            await VerifyOpenApiDocument(builder, AssertOpenApiDocument);
+        }
+        else
+        {
+            var action = CreateActionDescriptor(nameof(GetStudent));
+            await VerifyOpenApiDocument(action, AssertOpenApiDocument);
+        }
+
+        // Assert
+        static void AssertOpenApiDocument(OpenApiDocument document)
+        {
+            // Parameter is a plain-old string when it comes from the route or query
+            var operation = document.Paths["/api/{student}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("string", parameter.Schema.Type);
+
+            // Type is fully serialized in the response
+            var response = Assert.Single(operation.Responses).Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties, property =>
+            {
+                Assert.Equal("name", property.Key);
+                Assert.Equal("string", property.Value.Type);
+            });
+        }
+    }
+
+    [Route("/api/{student}")]
+    private Student GetStudent(Student student) => student;
+
+    public record Student(string Name)
+    {
+        public static bool TryParse(string value, out Student result)
+        {
+            if (value is null)
+            {
+                result = null;
+                return false;
+            }
+
+            result = new Student(value);
+            return true;
+        }
+    }
 }
