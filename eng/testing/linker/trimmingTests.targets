@@ -96,8 +96,6 @@
     <Copy SourceFiles="$(_projectSourceFile);
                        @(_additionalProjectSourceFiles)"
           DestinationFolder="$(_projectDir)" />
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)ILLink.Descriptors.xml"
-          DestinationFolder="$(_projectDir)" />
     <Message Text="Generated $(_projectFile)" />
   </Target>
 
