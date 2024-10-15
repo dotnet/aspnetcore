@@ -61,6 +61,13 @@ public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     public bool SuppressConsumesConstraintForFormFileParameters { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that determines whether the is suppressed for
+    /// API controllers. This feature prevents MVC's status code pages from overriding raw API responses with
+    /// HTML-based status code pages when mixing MVC Controllers with API Controllers in the same application.
+    /// </summary>
+    public bool SkipStatusCodePages { get; set; }
+
+    /// <summary>
     /// Gets or sets a value that determines if controllers with <see cref="ApiControllerAttribute"/>
     /// transform certain client errors.
     /// <para>
