@@ -14,7 +14,7 @@ dependencies {
 archivesBaseName = 'signalr-messagepack'
 
 task sourceJar(type: Jar) {
-    classifier "sources"
+    archiveClassifier "sources"
     from sourceSets.main.allJava
 }
 
