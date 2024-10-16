@@ -425,6 +425,10 @@ internal sealed class Program
             case EnsureCertificateResult.ErrorExportingTheCertificate:
                 reporter.Warn("There was an error exporting the HTTPS developer certificate to a file.");
                 return ErrorExportingTheCertificate;
+            case EnsureCertificateResult.ErrorExportingTheCertificateToNonExistentDirectory:
+                // A distinct warning is useful, but a distinct error code is probably not.
+                reporter.Warn("There was an error exporting the HTTPS developer certificate to a file.  Please create the target directory before exporting.");
+                return ErrorExportingTheCertificate;
             case EnsureCertificateResult.PartiallyFailedToTrustTheCertificate:
                 // A distinct warning is useful, but a distinct error code is probably not.
                 reporter.Warn("There was an error trusting the HTTPS developer certificate. It will be trusted by some clients but not by others.");
