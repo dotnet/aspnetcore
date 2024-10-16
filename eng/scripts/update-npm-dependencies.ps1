@@ -9,8 +9,6 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-$env:npm_config_cache = "$PWD/src/submodules/Node-Externals/cache"
-
 Write-Host "Ensuring the repository is clean"
 if (-not $WhatIf) {
     git clean -xdff
@@ -19,12 +17,6 @@ if (-not $WhatIf) {
 Write-Host "Removing package-lock.json"
 if (-not $WhatIf) {
     Remove-Item .\package-lock.json
-}
-
-if (-not $SkipClearCache -and -not $WhatIf) {
-    Write-Host "Clearing the npm cache"
-    Remove-Item -Recurse -Force "$PWD/src/submodules/Node-Externals/cache"
-    New-Item -ItemType Directory -Path "$PWD/src/submodules/Node-Externals/cache"
 }
 
 try {
@@ -50,6 +42,7 @@ if (-not $WhatIf) {
     npm install --prefer-online --include optional
 }
 
+# Add optional dependencies to the cache to ensure that they get mirrored
 Write-Host "Adding optional dependencies to the cache"
 $rollupOptionalDependencies = (Get-Content .\package-lock.json | ConvertFrom-Json -AsHashtable).packages['node_modules/rollup'].optionalDependencies |
 Select-Object '@rollup/rollup-*';
@@ -76,48 +69,18 @@ if ($null -ne $commonOptionalDependencyVersion) {
     }
 }
 
-Write-Host "Verifying the cache"
-if(-not $WhatIf) {
-    npm cache verify
-}
-
-# Navigate to the Node-Externals submodule
-# Checkout a branch named infrastructure/update-npm-package-cache-<date>
-# Stage the changes in the folder
-# Commit the changes with the message "Updated npm package cache <date>"
-# Use the GH CLI to create a PR for the branch in the origin remote
-
-Push-Location src/submodules/Node-Externals
-$branchName = "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')"
-if (-not $WhatIf) {
-    git branch -D $branchName 2>$null
-    git checkout -b $branchName
-    git add .
-    git commit -m "Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')"
-}
-
-if ($WhatIf -or $SkipPullRequestCreation) {
-    Write-Host "Skipping pull request creation for Node-Externals submodule"
-}
-else {
-    Write-Host "Creating pull request for Node-Externals submodule"
-    git branch --set-upstream-to=origin/main
-    git push origin $branchName`:$branchName --force;
-    gh repo set-default dotnet/Node-Externals
-    gh pr create --base main --head "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')" --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body "Do not merge this PR until the one in aspnetcore passes all checks."
-}
 
 ## Navigate to the root of the repository
-## Checkout a branch named infrastructure/update-npm-package-cache-<date>
+## Checkout a branch named infrastructure/update-npm-packages-<date>
 ## Stage the changes in the folder
-## Commit the changes with the message "Updated npm package cache <date>"
+## Commit the changes with the message "Updated npm packages <date>"
 ## Use the GH CLI to create a PR for the branch in the origin remote
-Pop-Location
 if(-not $WhatIf) {
+    $branchName = "infrastructure/update-npm-packages-$(Get-Date -Format 'yyyy-MM-dd')"
     git branch -D $branchName 2>$null
     git checkout -b $branchName
     git add .
-    git commit -m "Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')"
+    git commit -m "Updated npm packages $(Get-Date -Format 'yyyy-MM-dd')"
 }
 
 if ($WhatIf -or $SkipPullRequestCreation) {
@@ -128,5 +91,5 @@ else {
     git branch --set-upstream-to=origin/main
     git push origin $branchName`:$branchName --force;
     gh repo set-default dotnet/aspnetcore
-    gh pr create --base main --head $branchName --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
+    gh pr create --base main --head $branchName --title "[Infrastructure] Updated npm packages $(Get-Date -Format 'yyyy-MM-dd')" --body ""
 }
