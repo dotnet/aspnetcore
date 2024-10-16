@@ -19,7 +19,7 @@ task sourceJar(type: Jar) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier "javadoc"
+    archiveClassifier "javadoc"
     from javadoc.destinationDir
 }
 
