@@ -11,3 +11,5 @@ Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasTryParse.get -> 
 Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.Name.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -> System.Reflection.ParameterInfo!
+virtual Microsoft.AspNetCore.Http.HttpContext.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+virtual Microsoft.AspNetCore.Http.HttpContext.Endpoint.set -> void
