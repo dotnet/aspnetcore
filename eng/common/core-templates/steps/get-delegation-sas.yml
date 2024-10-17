@@ -31,7 +31,16 @@ steps:
       # Calculate the expiration of the SAS token and convert to UTC
       $expiry = (Get-Date).AddHours(${{ parameters.expiryInHours }}).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
-      $sas = az storage container generate-sas --account-name ${{ parameters.storageAccount }} --name ${{ parameters.container }} --permissions ${{ parameters.permissions }} --expiry $expiry --auth-mode login --as-user -o tsv
+      # Temporarily work around a helix issue where SAS tokens with / in them will cause incorrect downloads
+      # of correlation payloads. https://github.com/dotnet/dnceng/issues/3484
+      $sas = ""
+      do {
+        $sas = az storage container generate-sas --account-name ${{ parameters.storageAccount }} --name ${{ parameters.container }} --permissions ${{ parameters.permissions }} --expiry $expiry --auth-mode login --as-user -o tsv
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Failed to generate SAS token."
+          exit 1
+        }
+      } while($sas.IndexOf('/') -ne -1)
 
       if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to generate SAS token."
