@@ -3,13 +3,12 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using ApiExplorerWebSite;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
@@ -1563,6 +1562,84 @@ public class ApiExplorerTest : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.LoggerName.Equals("Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider", StringComparison.Ordinal));
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'DefaultApiDescriptionProvider' from assembly Microsoft.AspNetCore.Mvc.ApiExplorer v10.0.0.0.", StringComparison.Ordinal));
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'JsonPatchOperationsArrayProvider' from assembly Microsoft.AspNetCore.Mvc.NewtonsoftJson v42.42.42.42.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApiExplorer_SupportsIResults()
+    {
+        // Act
+        var response = await Client.GetAsync($"http://localhost/ApiExplorerHttpResultsController/GetOfT");
+        var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+        //Assert
+        var description = Assert.Single(result);
+        Assert.Collection(
+           description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+           responseType =>
+           {
+               Assert.Equal(typeof(int).FullName, responseType.ResponseType);
+               Assert.Equal(200, responseType.StatusCode);
+               Assert.False(responseType.IsDefaultResponse);
+           },
+            responseType =>
+            {
+                Assert.Equal(typeof(DateTime).FullName, responseType.ResponseType);
+                Assert.Equal(404, responseType.StatusCode);
+                Assert.False(responseType.IsDefaultResponse);
+            });
+    }
+
+    [Fact]
+    public async Task ApiExplorer_SupportsIResultsWhenNoType()
+    {
+        // Act
+        var response = await Client.GetAsync($"http://localhost/ApiExplorerHttpResultsController/GetWithNotFoundWithNoType");
+        var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+        //Assert
+        var description = Assert.Single(result);
+        Assert.Collection(
+           description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+           responseType =>
+           {
+               Assert.Equal(typeof(int).FullName, responseType.ResponseType);
+               Assert.Equal(200, responseType.StatusCode);
+               Assert.False(responseType.IsDefaultResponse);
+           },
+            responseType =>
+            {
+                Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                Assert.Equal(404, responseType.StatusCode);
+                Assert.False(responseType.IsDefaultResponse);
+            });
+    }
+
+    [Fact]
+    public async Task ApiExplorer_SupportsIResultsWhenDifferentProduceType()
+    {
+        // Act
+        var response = await Client.GetAsync($"http://localhost/ApiExplorerHttpResultsController/GetWithDifferentProduceType");
+        var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+        //Assert
+        var description = Assert.Single(result);
+        Assert.Collection(
+           description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+           responseType =>
+           {
+               Assert.Equal(typeof(long).FullName, responseType.ResponseType);
+               Assert.Equal(200, responseType.StatusCode);
+               Assert.False(responseType.IsDefaultResponse);
+           },
+            responseType =>
+            {
+                Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                Assert.Equal(404, responseType.StatusCode);
+                Assert.False(responseType.IsDefaultResponse);
+            });
     }
 
     private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
