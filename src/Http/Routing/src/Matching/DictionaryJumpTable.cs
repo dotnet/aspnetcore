@@ -12,6 +12,7 @@ internal sealed class DictionaryJumpTable : JumpTable
     private readonly int _defaultDestination;
     private readonly int _exitDestination;
     private readonly FrozenDictionary<string, int> _dictionary;
+    private readonly FrozenDictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _lookup;
 
     public DictionaryJumpTable(
         int defaultDestination,
@@ -22,6 +23,7 @@ internal sealed class DictionaryJumpTable : JumpTable
         _exitDestination = exitDestination;
 
         _dictionary = entries.ToFrozenDictionary(e => e.text, e => e.destination, StringComparer.OrdinalIgnoreCase);
+        _lookup = _dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     public override int GetDestination(string path, PathSegment segment)
@@ -31,8 +33,8 @@ internal sealed class DictionaryJumpTable : JumpTable
             return _exitDestination;
         }
 
-        var text = path.Substring(segment.Start, segment.Length);
-        if (_dictionary.TryGetValue(text, out var destination))
+        var text = path.AsSpan(segment.Start, segment.Length);
+        if (_lookup.TryGetValue(text, out var destination))
         {
             return destination;
         }
