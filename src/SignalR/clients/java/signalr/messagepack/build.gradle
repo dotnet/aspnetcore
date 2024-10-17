@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 group 'com.microsoft.signalr.messagepack'
@@ -14,12 +14,12 @@ dependencies {
 archivesBaseName = 'signalr-messagepack'
 
 task sourceJar(type: Jar) {
-    classifier "sources"
+    archiveClassifier "sources"
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier "javadoc"
+    archiveClassifier "javadoc"
     from javadoc.destinationDir
 }
 

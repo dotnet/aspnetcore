@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 allprojects {
