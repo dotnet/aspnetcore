@@ -160,7 +160,10 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     context.Response.StatusCode = 500;
                 }
 
-                await _exceptionHandler(new ErrorContext(context, ex));
+                var errorContext = new ErrorContext(context, ex);
+
+                SetExceptionHandlerFeatures(errorContext);
+                await _exceptionHandler(errorContext);
 
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.UnhandledException";
                 if (_diagnosticSource.IsEnabled(eventName))
@@ -220,17 +223,12 @@ internal class DeveloperExceptionPageMiddlewareImpl
     {
         var httpContext = errorContext.HttpContext;
 
-        if (_problemDetailsService is not null)
-        {
-            SetExceptionHandlerFeatures(errorContext);
-        }
-
         if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
-            {
-                HttpContext = httpContext,
-                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
-                Exception = errorContext.Exception 
-            }))
+        {
+            HttpContext = httpContext,
+            ProblemDetails = CreateProblemDetails(errorContext, httpContext),
+            Exception = errorContext.Exception
+        }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
