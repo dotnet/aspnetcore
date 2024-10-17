@@ -29,7 +29,7 @@ public class PublicPartialProgramClassFixer : CodeFixProvider
                     async cancellationToken =>
                     {
                         var editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
-                        var root = context.Document.GetSyntaxRootAsync(cancellationToken).Result;
+                        var root = await context.Document.GetSyntaxRootAsync(cancellationToken);
                         if (root is null)
                         {
                             return context.Document;

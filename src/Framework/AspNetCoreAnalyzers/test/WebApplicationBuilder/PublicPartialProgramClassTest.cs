@@ -28,11 +28,15 @@ app.Run();
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
-    public async Task RemovesDeclarationIfItIsFound()
+    [Theory]
+    [InlineData("public partial class Program { }")]
+    [InlineData("public partial class Program { /* This is just for tests */ }")]
+    [InlineData("public partial class Program { \n // This is just for tests \n }")]
+    [InlineData("public partial class Program;")]
+    public async Task RemovesDeclarationIfItIsFound(string declarationStyle)
     {
         // Arrange
-        var source = """
+        var source = $$"""
 using Microsoft.AspNetCore.Builder;
 
 var app = WebApplication.Create();
@@ -41,7 +45,7 @@ app.MapGet("/", () => "Hello, World!");
 
 app.Run();
 
-{|#0:public partial class Program { }|}
+{|#0:{{declarationStyle}}|}
 """;
 
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.PublicPartialProgramClassNotRequired)
