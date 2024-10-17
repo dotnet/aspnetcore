@@ -327,7 +327,7 @@
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
-    <MicrosoftDataSqlClientVersion>4.0.5</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
     <MicrosoftOpenApiVersion>1.6.17</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiReadersVersion>1.6.17</MicrosoftOpenApiReadersVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
