@@ -821,6 +821,15 @@ public static partial class RequestDelegateFactory
                     $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
             }
 
+            // Parameters like IFormFileCollection should throw "The abstract type ... is not supported" rather than
+            // "...not supported on enumerable parameters.". It happens down the line.
+            if (!parameter.ParameterType.IsAbstract
+                    && typeof(System.Collections.IEnumerable).IsAssignableFrom(parameter.ParameterType))
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(AsParametersAttribute)} is not supported on enumerable parameters.");
+            }
+
             return BindParameterFromProperties(parameter, factoryContext);
         }
         else if (parameter.ParameterType == typeof(HttpContext))
