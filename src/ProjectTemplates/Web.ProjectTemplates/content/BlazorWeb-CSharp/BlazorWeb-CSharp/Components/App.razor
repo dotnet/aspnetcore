@@ -22,6 +22,8 @@
     <HeadOutlet @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
     <HeadOutlet @rendermode="InteractiveServer" />
+    ##elseif (WeatherForecastApi)
+    <HeadOutlet @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
     ##else
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
     ##endif*@
@@ -37,7 +39,7 @@
     ##elseif (UseServer)
     <Routes @rendermode="InteractiveServer" />
     ##else
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <Routes @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
     ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
