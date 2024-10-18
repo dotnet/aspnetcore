@@ -2463,9 +2463,9 @@ semver@^7.3.4, semver@^7.3.7:
     lru-cache "^6.0.0"
 
 serialize-javascript@^6.0.0:
-  version "6.0.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/serialize-javascript/-/serialize-javascript-6.0.1.tgz#b206efb27c3da0b0ab6b52f48d170b7996458e5c"
-  integrity sha1-sgbvsnw9oLCra1L0jRcLeZZFjlw=
+  version "6.0.2"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/serialize-javascript/-/serialize-javascript-6.0.2.tgz#defa1e055c83bf6d59ea805d8da862254eb6a6c2"
+  integrity sha1-3voeBVyDv21Z6oBdjahiJU62psI=
   dependencies:
     randombytes "^2.1.0"
 

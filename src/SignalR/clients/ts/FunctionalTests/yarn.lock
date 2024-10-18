@@ -3205,9 +3205,9 @@ serialize-error@^8.0.0:
     type-fest "^0.20.2"
 
 serialize-javascript@^6.0.0:
-  version "6.0.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/serialize-javascript/-/serialize-javascript-6.0.1.tgz#b206efb27c3da0b0ab6b52f48d170b7996458e5c"
-  integrity sha1-sgbvsnw9oLCra1L0jRcLeZZFjlw=
+  version "6.0.2"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/serialize-javascript/-/serialize-javascript-6.0.2.tgz#defa1e055c83bf6d59ea805d8da862254eb6a6c2"
+  integrity sha1-3voeBVyDv21Z6oBdjahiJU62psI=
   dependencies:
     randombytes "^2.1.0"
 
@@ -3833,7 +3833,7 @@ wrappy@1:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@8.11.0, ws@>=7.4.6, ws@^7.2.3, ws@^7.4.5, ws@~8.11.0:
+ws@8.11.0, ws@>=7.4.6, ws@^7.2.3, ws@^7.5.10, ws@~8.11.0:
   version "8.12.1"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-8.12.1.tgz#c51e583d79140b5e42e39be48c934131942d4a8f"
   integrity sha1-xR5YPXkUC15C45vkjJNBMZQtSo8=
