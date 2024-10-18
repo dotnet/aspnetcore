@@ -353,11 +353,13 @@ internal sealed class ActionEndpointFactory
 
         // Add metadata inferred from the parameter and/or return type before action-specific metadata.
         // MethodInfo *should* never be null given a ControllerActionDescriptor, but this is unenforced.
+        var metadataCountBeforePopulating = builder.Metadata.Count;
         if (controllerActionDescriptor?.MethodInfo is not null)
         {
             EndpointMetadataPopulator.PopulateMetadata(controllerActionDescriptor.MethodInfo, builder);
         }
 
+        var metadataCountAfterPopulating = builder.Metadata.Count;
         // Add action-specific metadata early so it has a low precedence
         if (action.EndpointMetadata != null)
         {
@@ -368,6 +370,29 @@ internal sealed class ActionEndpointFactory
         }
 
         builder.Metadata.Add(action);
+
+        if (metadataCountAfterPopulating != metadataCountBeforePopulating)
+        {
+            action.EndpointMetadata ??= [];
+            HashSet<int> producesResponseMetadataByAttribute = [];
+            foreach (var endpointMetadataInAttributes in action.EndpointMetadata)
+            {
+                if (endpointMetadataInAttributes is IProducesResponseTypeMetadata metadataInAttributes
+                   && !producesResponseMetadataByAttribute.Contains(metadataInAttributes.StatusCode))
+                {
+                    producesResponseMetadataByAttribute.Add(metadataInAttributes.StatusCode);
+                }
+            }
+
+            foreach (var endpointMetadata in builder.Metadata)
+            {
+                if (endpointMetadata is IProducesResponseTypeMetadata metadata
+                   && !producesResponseMetadataByAttribute.Contains(metadata.StatusCode))
+                {
+                    action.EndpointMetadata.Add(metadata);
+                }
+            }
+        }
 
         // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
         //
