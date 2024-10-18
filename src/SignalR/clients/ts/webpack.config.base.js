@@ -20,7 +20,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         target: options.target,
         resolveLoader: {
             // Special resolution rules for loaders (which are in the 'common' directory)
-            modules: [ path.resolve(__dirname, "common", "node_modules") ],
+            modules: [ path.resolve(__dirname, "@microsoft/common", "node_modules") ],
         },
         module: {
             rules: [
