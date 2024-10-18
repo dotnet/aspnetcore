@@ -3156,6 +3156,55 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["RequiredHeaderParam"]);
     }
 
+    private class ParameterListFromHeaderCommaSeparatedValues
+    {
+        [FromHeader(Name = "q")]
+        public required StringValues? BoundToStringValues { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string? BoundToString { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string[]? BoundToStringArray { get; set; }
+
+        [FromHeader(Name = "q")]
+        public int[]? BoundToIntArray { get; set; }
+    }
+
+    [Theory]
+    [InlineData("", new string[] { }, new int[] {})]
+    [InlineData(" ", new string[] { }, new int[] { })]
+    [InlineData(",", new string[] { }, new int[] { })]
+    [InlineData("100", new string[] { "100" }, new int[] { 100 })]
+    [InlineData("1,2", new string[] { "1", "2" }, new int[] { 1, 2 })]
+    [InlineData("1, 2 ,  3", new string[] { "1", "2", "3" }, new int[] { 1, 2, 3 })]
+    public async Task RequestDelegateFactory_FromHeader_CommaSeparatedValues(string headerValue, string[] expectedStringArray, int[] expectedIntArray)
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["q"] = headerValue;
+
+        void TestAction([AsParameters] ParameterListFromHeaderCommaSeparatedValues args)
+        {
+            httpContext.Items[nameof(args.BoundToStringValues)] = args.BoundToStringValues;
+            httpContext.Items[nameof(args.BoundToString)] = args.BoundToString;
+            httpContext.Items[nameof(args.BoundToStringArray)] = args.BoundToStringArray;
+            httpContext.Items[nameof(args.BoundToIntArray)] = args.BoundToIntArray;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(headerValue, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToString)]);
+        Assert.Equal(new StringValues(headerValue), httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringValues)]);
+        Assert.Equal(expectedStringArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringArray)]);
+        Assert.Equal(expectedIntArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToIntArray)]);
+    }
+
 #nullable disable
     private class ParameterListMixedRequiredStringsFromDifferentSources
     {
