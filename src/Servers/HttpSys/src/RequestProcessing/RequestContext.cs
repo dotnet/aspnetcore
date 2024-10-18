@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
@@ -101,7 +102,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         // Set the status code and reason phrase
         Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
-        Response.ReasonPhrase = HttpReasonPhrase.Get(StatusCodes.Status101SwitchingProtocols);
+        Response.ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
 
         Response.SendOpaqueUpgrade(); // TODO: Async
         Request.SwitchToOpaqueMode();
