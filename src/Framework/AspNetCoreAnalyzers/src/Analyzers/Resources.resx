@@ -321,4 +321,10 @@
   <data name="Analyzer_OverriddenAuthorizeAttribute_Title" xml:space="preserve">
     <value>[Authorize] overridden by [AllowAnonymous] from farther away</value>
   </data>
+  <data name="Analyzer_IncorrectlyConfiguredProblemDetailsWriter_Message" xml:space="preserve">
+    <value>The custom IProblemDetailsWriter must be registered before calling AddControllers, AddControllersWithViews, AddMvc, or AddRazorPages</value>
+  </data>
+  <data name="Analyzer_IncorrectlyConfiguredProblemDetailsWriter_Title" xml:space="preserve">
+    <value>Custom IProblemDetailsWriter is incorrectly configured</value>
+  </data>
 </root>
