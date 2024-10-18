@@ -1,6 +1,12 @@
 #nullable enable
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
+Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.SkipStatusCodePages.get -> bool
+Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.SkipStatusCodePages.set -> void
+Microsoft.AspNetCore.Mvc.ApplicationModels.SkipStatusCodePagesConvention
+Microsoft.AspNetCore.Mvc.ApplicationModels.SkipStatusCodePagesConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
+Microsoft.AspNetCore.Mvc.ApplicationModels.SkipStatusCodePagesConvention.SkipStatusCodePagesConvention() -> void
+virtual Microsoft.AspNetCore.Mvc.ApplicationModels.SkipStatusCodePagesConvention.ShouldApply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> bool
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail, string? instance, int? statusCode, string? title, string? type) -> Microsoft.AspNetCore.Mvc.ObjectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail, string? instance, int? statusCode, string? title, string? type, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary) -> Microsoft.AspNetCore.Mvc.ActionResult!
