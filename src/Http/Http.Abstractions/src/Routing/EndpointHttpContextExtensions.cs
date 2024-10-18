@@ -22,8 +22,7 @@ public static class EndpointHttpContextExtensions
     public static Endpoint? GetEndpoint(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        return context.Features.Get<IEndpointFeature>()?.Endpoint;
+        return context.Endpoint;
     }
 
     /// <summary>
@@ -34,33 +33,14 @@ public static class EndpointHttpContextExtensions
     public static void SetEndpoint(this HttpContext context, Endpoint? endpoint)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        var feature = context.Features.Get<IEndpointFeature>();
-
-        if (endpoint != null)
-        {
-            if (feature == null)
-            {
-                feature = new EndpointFeature();
-                context.Features.Set(feature);
-            }
-
-            feature.Endpoint = endpoint;
-        }
-        else
-        {
-            if (feature == null)
-            {
-                // No endpoint to set and no feature on context. Do nothing
-                return;
-            }
-
-            feature.Endpoint = null;
-        }
+        context.Endpoint = endpoint;
     }
 
     private sealed class EndpointFeature : IEndpointFeature
     {
+        /// <summary>
+        /// Gets or sets the <see cref="Endpoint"/> for the current request.
+        /// </summary>
         public Endpoint? Endpoint { get; set; }
     }
 }
