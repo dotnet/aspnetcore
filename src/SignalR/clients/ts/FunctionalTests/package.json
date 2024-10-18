@@ -1,5 +1,5 @@
 {
-  "name": "functionaltests",
+  "name": "@microsoft/functionaltests",
   "private": true,
   "version": "1.0.0",
   "description": "",

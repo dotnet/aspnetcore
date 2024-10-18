@@ -1,5 +1,5 @@
 {
-  "name": "components.authentication",
+  "name": "@microsoft/components.authentication",
   "private": true,
   "scripts": {
     "clean": "rimraf ./dist/Debug ./dist/Release",

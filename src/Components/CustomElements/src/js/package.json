@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "microsoft.components.customelements",
+  "name": "@microsoft/microsoft.components.customelements",
   "scripts": {
     "clean": "rimraf ./dist/Debug ./dist/Release",
     "prebuild": "npm run clean",

@@ -1,5 +1,5 @@
 {
-  "name": "project-templates",
+  "name": "@microsoft/project-templates",
   "private": true,
   "version": "0.1.0",
   "description": "Project templates dependencies",
