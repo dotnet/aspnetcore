@@ -1,5 +1,5 @@
 {
-  "name": "client-ts",
+  "name": "@microsoft/client-ts",
   "version": "0.0.0",
   "description": "Provides a root to run npm scripts from. DO NOT PUBLISH",
   "private": true,
