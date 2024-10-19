@@ -788,4 +788,23 @@ app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
 
         Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
+
+    [Theory]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] string[]? arr) => arr);""", "",      "[]")]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] string[]? arr) => arr);""", "a,b,c", "[\"a\",\"b\",\"c\"]")]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] int[]? arr) => arr);""",    "1,2,3", "[1,2,3]")]
+    public async Task RequestDelegateGenerator_FromHeader_CommaSeparatedValues(string source, string headerContent, string expectedBody)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Headers["q"] = headerContent;
+            await endpoint.RequestDelegate(httpContext);
+
+            await VerifyResponseBodyAsync(httpContext, expectedBody);
+        }
+    }
 }
