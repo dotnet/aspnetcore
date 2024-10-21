@@ -58,8 +58,6 @@ publishing {
 }
 
 tasks.withType(GenerateMavenPom).all {
-    def matcher = name =~ /generatePomFileFor(\w+)Publication/
-    def publicationName = matcher[0][1]
     destination = layout.buildDirectory.file("libs/signalr-${project.version}.pom").get().asFile
 }
 
