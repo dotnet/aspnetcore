@@ -1039,6 +1039,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
     }
 
+    // We do not want the debugger to stop more than once per user-unhandled exception.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task GetErrorHandledTask(Task taskToHandle, ComponentState? owningComponentState)
     {
         try
