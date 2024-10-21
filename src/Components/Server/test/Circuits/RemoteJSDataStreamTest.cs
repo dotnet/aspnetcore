@@ -287,54 +287,59 @@ public class RemoteJSDataStreamTest
         Assert.False(success);
     }
 
-    [Fact]
-    public async Task ReadAsync_ByteArray_DisposesCancellationTokenSource()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ValueLinkedCts_Works_WhenOneTokenCannotBeCanceled(bool isToken1Cancelable)
     {
-        // Arrange
-        var jsStreamReference = Mock.Of<IJSStreamReference>();
-        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
-        var buffer = new byte[100];
-        var chunk = new byte[100];
-        new Random().NextBytes(chunk);
-
-        // Act
         var cts = new CancellationTokenSource();
-        var sendDataTask = Task.Run(async () =>
-        {
-            await RemoteJSDataStream.ReceiveData(_jsRuntime, GetStreamId(remoteJSDataStream, _jsRuntime), chunkId: 0, chunk, error: null);
-        });
+        var token1 = isToken1Cancelable ? cts.Token : CancellationToken.None;
+        var token2 = isToken1Cancelable ? CancellationToken.None : cts.Token;
 
-        await sendDataTask;
-        var result = await remoteJSDataStream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(token1, token2);
 
-        // Assert
-        Assert.True(cts.Token.CanBeCanceled);
-        Assert.False(cts.IsCancellationRequested);
+        Assert.False(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+
+        cts.Cancel();
+
+        Assert.True(linkedCts.Token.IsCancellationRequested);
     }
 
     [Fact]
-    public async Task ReadAsync_Memory_DisposesCancellationTokenSource()
+    public void ValueLinkedCts_Works_WhenBothTokensCannotBeCanceled()
     {
-        // Arrange
-        var jsStreamReference = Mock.Of<IJSStreamReference>();
-        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
-        var buffer = new Memory<byte>(new byte[100]);
-        var chunk = new byte[100];
-        new Random().NextBytes(chunk);
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(
+            CancellationToken.None,
+            CancellationToken.None);
 
-        // Act
-        var cts = new CancellationTokenSource();
-        var sendDataTask = Task.Run(async () =>
+        Assert.False(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ValueLinkedCts_Works_WhenBothTokensCanBeCanceled(bool shouldCancelToken1, bool shouldCancelToken2)
+    {
+        var cts1 = new CancellationTokenSource();
+        var cts2 = new CancellationTokenSource();
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(cts1.Token, cts2.Token);
+
+        Assert.True(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+
+        if (shouldCancelToken1)
         {
-            await RemoteJSDataStream.ReceiveData(_jsRuntime, GetStreamId(remoteJSDataStream, _jsRuntime), chunkId: 0, chunk, error: null);
-        });
+            cts1.Cancel();
+        }
+        if (shouldCancelToken2)
+        {
+            cts2.Cancel();
+        }
 
-        await sendDataTask;
-        var result = await remoteJSDataStream.ReadAsync(buffer, cts.Token);
-
-        // Assert
-        Assert.True(cts.Token.CanBeCanceled);
-        Assert.False(cts.IsCancellationRequested);
+        Assert.True(linkedCts.Token.IsCancellationRequested);
     }
 
     private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)

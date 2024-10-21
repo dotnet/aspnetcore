@@ -181,18 +181,14 @@ internal sealed class RemoteJSDataStream : Stream
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken))
-        {
-            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
-        }
+        using var linkedCts = ValueLinkedCancellationTokenSource.Create(_streamCancellationToken, cancellationToken);
+        return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
     }
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken))
-        {
-            return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
-        }
+        using var linkedCts = ValueLinkedCancellationTokenSource.Create(_streamCancellationToken, cancellationToken);
+        return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
     }
 
     private async Task ThrowOnTimeout()
@@ -232,5 +228,46 @@ internal sealed class RemoteJSDataStream : Stream
         }
 
         _disposed = true;
+    }
+
+    // A helper for creating and disposing linked CancellationTokenSources
+    // without allocating, when possible.
+    // Internal for testing.
+    internal readonly struct ValueLinkedCancellationTokenSource : IDisposable
+    {
+        private readonly CancellationTokenSource? _linkedCts;
+
+        public readonly CancellationToken Token;
+
+        // For testing.
+        internal bool HasLinkedCancellationTokenSource => _linkedCts is not null;
+
+        public static ValueLinkedCancellationTokenSource Create(
+            CancellationToken token1, CancellationToken token2)
+        {
+            if (!token1.CanBeCanceled)
+            {
+                return new(linkedCts: null, token2);
+            }
+
+            if (!token2.CanBeCanceled)
+            {
+                return new(linkedCts: null, token1);
+            }
+
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token1, token2);
+            return new(linkedCts, linkedCts.Token);
+        }
+
+        private ValueLinkedCancellationTokenSource(CancellationTokenSource? linkedCts, CancellationToken token)
+        {
+            _linkedCts = linkedCts;
+            Token = token;
+        }
+
+        public void Dispose()
+        {
+            _linkedCts?.Dispose();
+        }
     }
 }
