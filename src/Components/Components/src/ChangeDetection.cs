@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class ChangeDetection
 {
     private static readonly ConcurrentDictionary<Type, bool> _immutableNonObjectTypesCache = new();
+
     public static bool MayHaveChanged<T1, T2>(T1 oldValue, T2 newValue)
     {
         var oldIsNotNull = oldValue != null;
