@@ -122,7 +122,7 @@
     <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <NoWarn Condition=" '$(BuildingInsideVisualStudio)' == 'true' ">$(NoWarn);0105</NoWarn>
     <!-- Allow prerelease dependencies in stable packages when we're running the IdentityModel nightly tests -->
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <NoWarn Condition=" '$(IsIdentityModelTestJob)' == 'true' ">$(NoWarn);NU5104</NoWarn>
 
     <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
