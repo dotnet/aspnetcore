@@ -1,16 +1,61 @@
-apply plugin: 'org.junit.platform.gradle.plugin'
+plugins {
+    id 'java'
+}
+
+configurations {
+    antJUnit
+}
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    compile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-    runtime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    implementation 'org.junit.jupiter:junit-jupiter-params:5.11.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
     implementation 'com.google.code.gson:gson:2.8.5'
-    compile 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation project(':core')
     implementation project(':messagepack')
-    compile project(':messagepack')
+    implementation project(':messagepack')
+    antJUnit 'org.apache.ant:ant-junit:1.10.15'
 }
 
-junitPlatform {
-    reportsDir file('test-results')
+sourceSets {
+  test {
+    java {
+      srcDir 'src'
+    }
+  }
 }
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+
+    reports {
+        html.required = false
+        junitXml.outputPerTestCase = true
+        junitXml.required = true
+    }
+}
+
+// Merge test results into a single file for Helix to detect JUnit test file
+task testReport {
+    ext {
+        resultsDir = file("$buildDir/test-results")
+        mergedFile = "test-results/junit-results.xml"
+    }
+
+    doLast {
+        mkdir 'test-results'
+        ant.taskdef(name: 'junitreport',
+                    classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+                    classpath: configurations.antJUnit.asPath)
+
+        ant.junitreport(tofile: mergedFile) {
+            fileset(dir: resultsDir, includes: '**/TEST-*.xml')
+        }
+    }
+}
+
+test.finalizedBy(testReport)
