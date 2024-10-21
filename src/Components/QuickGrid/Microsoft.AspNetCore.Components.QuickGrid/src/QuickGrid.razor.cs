@@ -264,7 +264,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// options UI that was previously displayed.
     /// </summary>
     /// <param name="column">The column whose options are to be displayed, if any are available.</param>
-    public Task ShowColumnOptionsAsync(ColumnBase<TGridItem> column)
+    public Task ShowColumnOptionsAsync(ColumnBase<TGridItem>? column)
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
