@@ -18,7 +18,7 @@ internal static partial class ArgumentNullThrowHelper
 #if INTERNAL_NULLABLE_ATTRIBUTES || NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
         [NotNull]
 #endif
-        object? argument, [CallerArgumentExpression("argument")] string? paramName = null)
+        object? argument, [CallerArgumentExpression(nameof(argument))] string? paramName = null)
     {
 #if !NET7_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
         if (argument is null)
