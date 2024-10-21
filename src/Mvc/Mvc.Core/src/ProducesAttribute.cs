@@ -52,6 +52,9 @@ public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiR
     /// <inheritdoc />
     public Type? Type { get; set; }
 
+    /// <inheritdoc />
+    public string? Description { get; set; }
+
     /// <summary>
     /// Gets or sets the supported response content types. Used to set <see cref="ObjectResult.ContentTypes"/>.
     /// </summary>
