@@ -8,9 +8,9 @@
 .PARAMETER HelixQueues
     Set the Helix queues to use. The list is '+' or ';'-separated.
     Some supported queues:
+    (Centos.7.Amd64.Open)Ubuntu.2204.Amd64.Open.svc@mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-mlnet-helix
     Debian.11.Amd64.Open
     Mariner
-    Redhat.7.Amd64.Open
     Ubuntu.2004.Amd64.Open
     OSX.1200.Amd64.Open
     Windows.10.Amd64.Server20H2.Open

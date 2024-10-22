@@ -2,6 +2,7 @@
   <!-- this file is shared between Helix.proj and .csproj files -->
   <PropertyGroup>
     <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine317>
+    <HelixQueueCentos7>(Centos.7.Amd64.Open)Ubuntu.2204.Amd64.Open.svc@mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-mlnet-helix</HelixQueueCentos7>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
     <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix-amd64</HelixQueueMariner>
@@ -27,14 +28,12 @@
 
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, except in windows-only cases -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
-    <!-- Linux -->
-    <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-
     <!-- Mac -->
     <HelixAvailableTargetQueue Include="OSX.13.Amd64.Open" Platform="OSX" />
 
     <!-- Containers -->
     <HelixAvailableTargetQueue Include="$(HelixQueueAlpine317)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueCentos7)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
