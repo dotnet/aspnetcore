@@ -198,6 +198,12 @@ internal sealed class Http2FrameWriter
                     // Now check the connection window
                     actual = CheckConnectionWindow(actual);
 
+                    // reset to zero, if negative
+                    if (actual < 0)
+                    {
+                        actual = 0;
+                    }
+
                     // Write what we can
                     if (actual < buffer.Length)
                     {
