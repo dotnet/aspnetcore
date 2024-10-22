@@ -410,6 +410,10 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>31624193093a13f765ab5382509e693911264509</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.24515.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>31624193093a13f765ab5382509e693911264509</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.9.24503.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>e11fb6176dbab6b027c946ff030dc14e666e1838</Sha>
