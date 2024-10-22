@@ -38,18 +38,24 @@ export function applyVersions(defaultPackageVersion, workspacePath) {
   return [packagesToPack, renames];
 }
 
-function applyPackageVersion(packagesToPack, defaultPackageVersion) {
+function applyPackageVersion(packagesToPack, packageVersion) {
   const currentDir = process.cwd();
   const renames = [];
   for (const [packagePath, packageJson] of packagesToPack) {
-    const packageName = packageJson.name;
-    const packageVersion = defaultPackageVersion;
-    const packageDir = path.dirname(packagePath);
     // Run npm version packageVersion --no-git-tag-version
     // This will update the package.json version to the specified version without creating a git tag
     // Make a backup of the package.json
     fs.copyFileSync(packagePath, `${packagePath}.bak`);
     renames.push([`${packagePath}.bak`, packagePath]);
+
+    // "npm version ..." fails if it wouldn't change the version which is common for local builds.
+    // Rather than fail the build, we'll produce packages versions with the "-dev" suffix.
+    if (packageJson.version === packageVersion) {
+      continue;
+    }
+
+    const packageName = packageJson.name;
+    const packageDir = path.dirname(packagePath);
 
     process.chdir(packageDir);
     execSync(`npm version ${packageVersion} --no-git-tag-version`, { stdio: 'inherit' });
