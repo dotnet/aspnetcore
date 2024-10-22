@@ -87,6 +87,8 @@ public class ComponentState : IAsyncDisposable
 
     internal Renderer Renderer => _renderer;
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
@@ -106,6 +108,11 @@ public class ComponentState : IAsyncDisposable
         }
         catch (Exception ex)
         {
+            if (ex is not NavigationException)
+            {
+                Debugger.BreakForUserUnhandledException(ex);
+            }
+
             // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
             // event handlers, etc., will all be left untouched as if this component didn't re-render at all. The Renderer will
             // then forcibly clear the descendant subtree by rendering an empty fragment for this component.

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -271,10 +272,22 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         }
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task RunInitAndSetParametersAsync()
     {
-        OnInitialized();
-        var task = OnInitializedAsync();
+        Task task;
+
+        try
+        {
+            OnInitialized();
+            task = OnInitializedAsync();
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Debugger.BreakForUserUnhandledException(ex);
+            throw;
+        }
 
         if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
         {
@@ -307,10 +320,23 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         await CallOnParametersSetAsync();
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     private Task CallOnParametersSetAsync()
     {
-        OnParametersSet();
-        var task = OnParametersSetAsync();
+        Task task;
+
+        try
+        {
+            OnParametersSet();
+            task = OnParametersSetAsync();
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Debugger.BreakForUserUnhandledException(ex);
+            throw;
+        }
+
         // If no async work is to be performed, i.e. the task has already ran to completion
         // or was canceled by the time we got to inspect it, avoid going async and re-invoking
         // StateHasChanged at the culmination of the async work.
@@ -326,6 +352,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             Task.CompletedTask;
     }
 
+    // We do not want the debugger to stop more than once per user-unhandled exception.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task CallStateHasChangedOnAsyncCompletion(Task task)
     {
         try
