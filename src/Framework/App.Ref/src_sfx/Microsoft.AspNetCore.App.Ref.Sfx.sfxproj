@@ -10,6 +10,20 @@
     <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src_sfx\Microsoft.AspNetCore.App.Runtime.Sfx.sfxproj</RuntimePackProjectPath>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <ArchiveName>aspnetcore-targeting-pack</ArchiveName>
+    <InstallerName>aspnetcore-targeting-pack</InstallerName>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <GenerateInstallers>true</GenerateInstallers>
+    <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+    <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
+    <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
+    <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
+    <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
+
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
@@ -17,6 +31,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <LinuxPackageDependency Include="dotnet-targeting-pack-$(DotnetTargetingPackDependencyMajorMinorVersion)" Version="$(DotnetTargetingPackDependencyVersion)" />
   </ItemGroup>
 
   <ItemGroup>
