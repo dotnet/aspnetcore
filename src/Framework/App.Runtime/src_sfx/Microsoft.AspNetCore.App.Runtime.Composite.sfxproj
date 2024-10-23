@@ -18,7 +18,6 @@
     <!-- VMR doesn't produce valid crossgen for the host/build machine https://github.com/dotnet/source-build/issues/3793 -->
     <PublishReadyToRun Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</PublishReadyToRun>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
-    <PublishReadyToRun>true</PublishReadyToRun>
     <!-- Build a composite R2R image -->
     <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     <!-- TODO-Runtime: We aren't publishing the StandardOptimizationData.mibc file into the RuntimeList.xml file, so we cannot consume it easily here -->
