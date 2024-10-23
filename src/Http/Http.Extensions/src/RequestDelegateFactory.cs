@@ -1957,13 +1957,12 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, PropertyInfo itemProperty, string key, RequestDelegateFactoryContext factoryContext, string source)
     {
-        var expressionType = GetExpressionType(parameter.ParameterType);
-        var valueExpression = (source == "header" && expressionType == typeof(string[]))
+        var valueExpression = (source == "header" && parameter.ParameterType.IsArray)
             ? Expression.Call(
                 typeof(ParsingHelpers).GetMethod(nameof(ParsingHelpers.GetHeaderSplit), BindingFlags.Public | BindingFlags.Static, [typeof(IHeaderDictionary), typeof(string)])!,
                 property,
                 Expression.Constant(key))
-            : GetValueFromProperty(property, itemProperty, key, expressionType);
+            : GetValueFromProperty(property, itemProperty, key, GetExpressionType(parameter.ParameterType));
 
         return BindParameterFromValue(parameter, valueExpression, factoryContext, source);
     }
