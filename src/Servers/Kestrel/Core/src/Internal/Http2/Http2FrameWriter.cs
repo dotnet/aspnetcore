@@ -200,7 +200,7 @@ internal sealed class Http2FrameWriter
 
                     // actual is negative means window size has become negative
                     // this can usually happen if the receiver decreases window size before receiving the previous data frame
-                    // in this case, reset to 0 and continue, no data will be set but will wait for window update
+                    // in this case, reset to 0 and continue, no data will be sent but will wait for window update
                     if (actual < 0)
                     {
                         actual = 0;
