@@ -14,7 +14,9 @@
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
-    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+
+    <!-- TODO-Arcade: Allow customizing the package description. -->
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
@@ -23,7 +25,6 @@
     <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetTargetingPackDependencyVersion>
     <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
     <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
-
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>

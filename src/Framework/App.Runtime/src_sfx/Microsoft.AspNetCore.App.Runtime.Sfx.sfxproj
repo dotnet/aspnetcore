@@ -19,14 +19,36 @@
     <PublishReadyToRun Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</PublishReadyToRun>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
 
+    <InstallerName>aspnetcore-runtime</InstallerName>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <GenerateInstallers>true</GenerateInstallers>
+    <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <!-- TODO-Arcade: Allow customizing the package description. -->
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
+    <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
+    <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
+    <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetRuntimeDependencyMajorMinorVersion>
+
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+
+    <!-- TODO: Try to remove this disable property -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
   </ItemGroup>
 
   <ItemGroup>
