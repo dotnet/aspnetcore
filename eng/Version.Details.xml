@@ -394,6 +394,10 @@
       <Sha>31624193093a13f765ab5382509e693911264509</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.24515.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>31624193093a13f765ab5382509e693911264509</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.24515.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>31624193093a13f765ab5382509e693911264509</Sha>
