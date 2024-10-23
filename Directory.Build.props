@@ -143,6 +143,7 @@
   <!-- Source code settings -->
   <PropertyGroup>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
+    <AnalyzerSharedSourceRoot>$(MSBuildThisFileDirectory)src\Analyzers\Analyzers\src\</AnalyzerSharedSourceRoot>
     <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
 
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
