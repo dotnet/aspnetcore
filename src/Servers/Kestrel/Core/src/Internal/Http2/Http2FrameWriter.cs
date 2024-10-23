@@ -198,7 +198,9 @@ internal sealed class Http2FrameWriter
                     // Now check the connection window
                     actual = CheckConnectionWindow(actual);
 
-                    // reset to zero, if negative
+                    // actual is negative means window size has become negative
+                    // this can usually happen if the receiver decreases window size before receiving the previous data frame
+                    // in this case, reset to 0 and continue, no data will be set but will wait for window update
                     if (actual < 0)
                     {
                         actual = 0;
