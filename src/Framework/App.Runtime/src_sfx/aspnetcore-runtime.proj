@@ -61,4 +61,10 @@
               Targets="PublishToDisk"
               Properties="OutputPath=$(OutputPath)" />
   </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(RedistSharedFrameworkLayoutRoot)" />
+  </Target>
 </Project>

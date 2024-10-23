@@ -91,4 +91,10 @@
       <NativeRuntimeAsset Include="@(_ResolvedNativeProjectReferencePaths->ClearMetadata())" />
     </ItemGroup>
   </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(SharedFrameworkLayoutRoot)" />
+  </Target>
 </Project>

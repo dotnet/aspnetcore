@@ -152,4 +152,10 @@
         File="$(ReferencePackageOverridesPath)"
         Overwrite="true" />
   </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(TargetingPackLayoutRoot)" />
+  </Target>
 </Project>
