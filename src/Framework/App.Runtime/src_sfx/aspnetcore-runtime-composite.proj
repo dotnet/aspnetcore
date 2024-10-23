@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+
+    <!-- TODO: Try to remove this disable property -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+  </ItemGroup>
+
+  <!--
+    The aspnetcore-runtime archive contains both the Microsoft.NETCore.App.Runtime layout and the Microsoft.AspNetCore.App.Runtime layout.
+    Download the Microsoft.NETCore.App.Runtime layout.
+  -->
+  <PropertyGroup>
+    <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier).$(ArchiveFormat)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
+    <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
+  </PropertyGroup>
+
+  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuild)' != 'true'" Returns="$(DotNetRuntimeArchive)">
+    <!-- Try various places to find the runtime. It's either released (use official version),
+         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+    <ItemGroup>
+      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(DotNetRuntimeDownloadPath)"
+          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+        <token>$(DotnetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="$(DotNetRuntimeArchive)" />
+  </Target>
+
+  <Target Name="PublishToDisk">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_DownloadAndExtractDotNetRuntime"
+             RemoveProperties="OutputPath" />
+
+    <RemoveDir Directories="$(OutputPath)" />
+    <MakeDir Directories="$(OutputPath)" />
+
+    <!-- Extract the dotnet-runtime archive -->
+    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz'"
+      Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
+
+    <Unzip Condition="'$(ArchiveFormat)' == 'zip'"
+      SourceFiles="$(DotNetRuntimeArchive)"
+      DestinationFolder="$(OutputPath)"
+      OverwriteReadOnlyFiles="true" />
+
+    <MSBuild Projects="Microsoft.AspNetCore.App.Runtime.Composite.sfxproj"
+              Targets="PublishToDisk"
+              Properties="OutputPath=$(OutputPath)" />
+  </Target>
+</Project>
