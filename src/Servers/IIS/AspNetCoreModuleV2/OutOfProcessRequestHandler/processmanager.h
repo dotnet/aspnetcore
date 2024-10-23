@@ -53,12 +53,12 @@ public:
 
         for(DWORD i = 0; i < m_dwProcessesPerApplication; ++i )
         {
-            if( m_ppServerProcessList != NULL && 
-                m_ppServerProcessList[i] != NULL )
+            if( m_ppServerProcessList != nullptr && 
+                m_ppServerProcessList[i] != nullptr )
             {
                 m_ppServerProcessList[i]->SendSignal();
                 m_ppServerProcessList[i]->DereferenceServerProcess();
-                m_ppServerProcessList[i] = NULL;
+                m_ppServerProcessList[i] = nullptr;
             }
         }
 
@@ -107,8 +107,8 @@ public:
     }
 
     PROCESS_MANAGER() : 
-        m_ppServerProcessList( NULL ),
-        m_hNULHandle( NULL ),
+        m_ppServerProcessList(nullptr),
+        m_hNULHandle(nullptr),
         m_cRapidFailCount( 0 ),
         m_dwProcessesPerApplication( 1 ),
         m_dwRouteToProcessIndex( 0 ),
@@ -116,7 +116,7 @@ public:
         m_lStopping(0),
         m_cRefs( 1 )
     {
-        m_ppServerProcessList = NULL;
+        m_ppServerProcessList = nullptr;
         m_fServerProcessListReady = FALSE;
         InitializeSRWLock( &m_srwLock );
     }
@@ -151,14 +151,14 @@ private:
     {
         for(DWORD i = 0; i < m_dwProcessesPerApplication; ++i )
         {
-            if( m_ppServerProcessList != NULL && 
-                m_ppServerProcessList[i] != NULL && 
+            if( m_ppServerProcessList != nullptr &&
+                m_ppServerProcessList[i] != nullptr &&
                 m_ppServerProcessList[i]->GetPort() == pServerProcess->GetPort() )
             {
                 // shutdown pServerProcess if not already shutdown.
                 m_ppServerProcessList[i]->StopProcess();
                 m_ppServerProcessList[i]->DereferenceServerProcess();
-                m_ppServerProcessList[i] = NULL;
+                m_ppServerProcessList[i] = nullptr;
             }
         }
     }
@@ -170,13 +170,13 @@ private:
     {
         for(DWORD i = 0; i < m_dwProcessesPerApplication; ++i )
         {
-            if( m_ppServerProcessList != NULL &&
-                m_ppServerProcessList[i] != NULL )
+            if( m_ppServerProcessList != nullptr &&
+                m_ppServerProcessList[i] != nullptr)
             {
                 // shutdown pServerProcess if not already shutdown.
                 m_ppServerProcessList[i]->SendSignal();
                 m_ppServerProcessList[i]->DereferenceServerProcess();
-                m_ppServerProcessList[i] = NULL;
+                m_ppServerProcessList[i] = nullptr;
             }
         }
     }

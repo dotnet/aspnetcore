@@ -47,6 +47,9 @@ Return Values:
                 // we need to change it to Win32 from ("\\?\")
                 //
 
+                // Buffer overrun while writing to 'pstrPath->QueryStr()'
+                // We know it's not an overrun because we just copied pszName into pstrPath and pszName is at least 4 in length
+#pragma warning(suppress: 6386)
                 pstrPath->QueryStr()[2] = L'?';
             }
 

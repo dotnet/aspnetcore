@@ -140,7 +140,7 @@ PopEntryList(
 {
     PSINGLE_LIST_ENTRY FirstEntry;
     FirstEntry = ListHead->Next;
-    if (FirstEntry != NULL) {
+    if (FirstEntry != nullptr) {
         ListHead->Next = FirstEntry->Next;
     }
 

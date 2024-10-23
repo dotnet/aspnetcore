@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
 
 <Project>
 
@@ -64,7 +64,7 @@
           BeforeTargets="GetSourceBuildCommandConfiguration">
 
     <PropertyGroup>
-      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 
@@ -103,7 +103,7 @@
 
     <PropertyGroup>
       <!-- Disable installing puppeteer browsers when running in source build -->
-      <_AdditionalEnvironmentVariable Condition="$(ArcadeBuildFromSource) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
+      <_AdditionalEnvironmentVariable Condition="$(DotNetBuildSourceOnly) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
     </PropertyGroup>
 
     <Exec

@@ -67,6 +67,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58242")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"

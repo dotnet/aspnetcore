@@ -10,7 +10,6 @@
 #define FREE_MEM(ptr) (VOID)LocalFree( (HLOCAL)(ptr) )
 
 
-
 PTRACE_LOG
 CreateTraceLog(
     IN LONG LogSize,
@@ -46,7 +45,7 @@ Return Value:
     ULONG ulEntrySize = 0;
     ULONG ulTmpResult = 0;
     ULONG ulExtraBytesInHeader = 0;
-    PTRACE_LOG log = NULL;
+    PTRACE_LOG log = nullptr;
     HRESULT hr = S_OK;
 
     //
@@ -74,7 +73,7 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -85,7 +84,7 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
   
     //
@@ -96,13 +95,13 @@ Return Value:
     if ( FAILED(hr) )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     if ( ulTotalSize > (ULONG) 0x7FFFFFFF )
     { 
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -115,7 +114,7 @@ Return Value:
     // Initialize it.
     //
 
-    if( log != NULL ) {
+    if( log != nullptr ) {
 
         RtlZeroMemory( log, ulTotalSize );
 
@@ -130,7 +129,6 @@ Return Value:
 
 }   // CreateTraceLog
 
-
 VOID
 DestroyTraceLog(
     IN PTRACE_LOG Log
@@ -151,7 +149,7 @@ Return Value:
 
 --*/
 {
-        if ( Log != NULL ) {
+        if ( Log != nullptr ) {
         //DBG_ASSERT( Log->Signature == TRACE_LOG_SIGNATURE );
 
         Log->Signature = TRACE_LOG_SIGNATURE_X;
@@ -160,7 +158,6 @@ Return Value:
 
 }   // DestroyTraceLog
 
-
 LONG
 WriteTraceLog(
     IN PTRACE_LOG Log,
@@ -213,7 +210,6 @@ Return Value:
     return index;
 }   // WriteTraceLog
 
-
 VOID
 ResetTraceLog(
     IN PTRACE_LOG Log
@@ -231,4 +227,3 @@ ResetTraceLog(
     Log->NextEntry = -1;
 
 }   // ResetTraceLog
-

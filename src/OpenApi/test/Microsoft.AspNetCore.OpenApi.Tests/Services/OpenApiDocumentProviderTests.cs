@@ -68,7 +68,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         {
             serviceCollection.AddOpenApi(documentName);
         }
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
         return serviceProvider;
     }
 }

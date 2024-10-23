@@ -13,7 +13,7 @@ class STTIMER
 public:
 
     STTIMER()
-        : _pTimer( NULL )
+        : _pTimer( nullptr )
     {
         fInCanel = FALSE;
     }
@@ -25,7 +25,7 @@ public:
         {
             CancelTimer();
             CloseThreadpoolTimer( _pTimer );
-            _pTimer = NULL;
+            _pTimer = nullptr;
         }
     }
 
@@ -39,7 +39,7 @@ public:
     {
         _pTimer = CreateThreadpoolTimer( pfnCallback,
                                          pContext,
-                                         NULL );
+                                         nullptr );
 
         if ( !_pTimer )
         {
@@ -74,9 +74,9 @@ public:
             // re-enabled by setting non-zero initial wait or
             // period values.
             //
-            if (_pTimer != NULL)
+            if (_pTimer != nullptr)
             {
-                SetThreadpoolTimer(_pTimer, NULL, 0, 0);
+                SetThreadpoolTimer(_pTimer, nullptr, 0, 0);
             }
 
             return;
@@ -106,7 +106,7 @@ public:
         // Wait until any callbacks queued prior to disabling
         // have completed.
         //
-        if (_pTimer != NULL)
+        if (_pTimer != nullptr)
         {
             WaitForThreadpoolTimerCallbacks(_pTimer, TRUE);
         }
@@ -124,13 +124,13 @@ public:
     )
     {
         STRU*                   pstruLogFilePath = (STRU*)Context;
-        HANDLE                  hStdoutHandle = NULL;
+        HANDLE                  hStdoutHandle = nullptr;
         SECURITY_ATTRIBUTES     saAttr = { 0 };
         HRESULT                 hr = S_OK;
 
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
         saAttr.bInheritHandle = TRUE;
-        saAttr.lpSecurityDescriptor = NULL;
+        saAttr.lpSecurityDescriptor = nullptr;
 
         hStdoutHandle = CreateFileW(pstruLogFilePath->QueryStr(),
                                     FILE_READ_DATA,
@@ -138,7 +138,7 @@ public:
                                     &saAttr,
                                     OPEN_ALWAYS,
                                     FILE_ATTRIBUTE_NORMAL,
-                                    NULL);
+                                    nullptr);
         if (hStdoutHandle == INVALID_HANDLE_VALUE)
         {
             hr = HRESULT_FROM_WIN32(GetLastError());

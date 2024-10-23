@@ -400,8 +400,8 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 {
     HRESULT             hr = S_OK;
     // Arguments to call where.exe
-    STARTUPINFOW        startupInfo = { 0 };
-    PROCESS_INFORMATION processInformation = { 0 };
+    STARTUPINFOW        startupInfo{};
+    PROCESS_INFORMATION processInformation{};
     SECURITY_ATTRIBUTES securityAttributes;
 
     CHAR                pzFileContents[READ_BUFFER_SIZE];
@@ -409,7 +409,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     HandleWrapper<InvalidHandleTraits>     hStdOutWritePipe;
     HandleWrapper<InvalidHandleTraits>     hProcess;
     HandleWrapper<InvalidHandleTraits>     hThread;
-    CComBSTR            pwzDotnetName = NULL;
+    CComBSTR            pwzDotnetName = nullptr;
     DWORD               dwFilePointer;
     BOOL                fIsCurrentProcess64Bit;
     DWORD               dwExitCode;
@@ -423,7 +423,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
     // Set the security attributes for the read/write pipe
     securityAttributes.nLength = sizeof(securityAttributes);
-    securityAttributes.lpSecurityDescriptor = NULL;
+    securityAttributes.lpSecurityDescriptor = nullptr;
     securityAttributes.bInheritHandle = TRUE;
 
     LOG_INFO(L"Invoking where.exe to find dotnet.exe");
@@ -443,14 +443,14 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     pwzDotnetName = L"\"where.exe\" dotnet.exe";
 
     // Create a process to invoke where.exe
-    FINISHED_LAST_ERROR_IF(!CreateProcessW(NULL,
+    FINISHED_LAST_ERROR_IF(!CreateProcessW(nullptr,
         pwzDotnetName,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         TRUE,
         CREATE_NO_WINDOW,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         &startupInfo,
         &processInformation
     ));
@@ -480,7 +480,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
     // Where succeeded.
     // Reset file pointer to the beginning of the file.
-    dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, NULL, FILE_BEGIN);
+    dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, nullptr, FILE_BEGIN);
     if (dwFilePointer == INVALID_SET_FILE_POINTER)
     {
         FINISHED_IF_FAILED(E_FAIL);
@@ -490,7 +490,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     // As the call to where.exe succeeded (dotnet.exe was found), ReadFile should not hang.
     // TODO consider putting ReadFile in a separate thread with a timeout to guarantee it doesn't block.
     //
-    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL));
+    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, nullptr));
 
     if (dwNumBytesRead >= READ_BUFFER_SIZE)
     {
