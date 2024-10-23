@@ -12,6 +12,7 @@
     <ArchiveName>aspnetcore-targeting-pack</ArchiveName>
     <InstallerName>aspnetcore-targeting-pack</InstallerName>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
 
