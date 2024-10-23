@@ -7,8 +7,7 @@
     <SharedFrameworkFriendlyName>Microsoft ASP.NET Core</SharedFrameworkFriendlyName>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
-    <!-- TODO: Use a harvested platform manifest from the runtime pack instead -->
-    <UseTemplatedPlatformManifest>true</UseTemplatedPlatformManifest>
+    <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src_sfx\Microsoft.AspNetCore.App.Runtime.Sfx.sfxproj</RuntimePackProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,12 +38,6 @@
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
-
-    <!-- Enforce build order. Targeting pack needs to bundle analyzers and information about the runtime. -->
-    <ProjectReference Include="..\..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
