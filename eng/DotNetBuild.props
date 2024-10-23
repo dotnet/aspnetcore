@@ -64,7 +64,7 @@
           BeforeTargets="GetSourceBuildCommandConfiguration">
 
     <PropertyGroup>
-      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 
