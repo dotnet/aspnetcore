@@ -19,12 +19,11 @@
     <PublishReadyToRun Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</PublishReadyToRun>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
 
-    <InstallerName>aspnetcore-runtime</InstallerName>
+    <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
-    <!-- TODO-Arcade: Allow customizing the package description. -->
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>

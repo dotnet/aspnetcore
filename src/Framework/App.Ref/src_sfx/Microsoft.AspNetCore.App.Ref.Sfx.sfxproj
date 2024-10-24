@@ -9,14 +9,14 @@
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
     <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src_sfx\Microsoft.AspNetCore.App.Runtime.Sfx.sfxproj</RuntimePackProjectPath>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
-    <ArchiveName>aspnetcore-targeting-pack</ArchiveName>
-    <InstallerName>aspnetcore-targeting-pack</InstallerName>
+    <ArchiveName>$(TargetingPackInstallerBaseName)</ArchiveName>
+    <InstallerName>$(TargetingPackInstallerBaseName)</InstallerName>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
-    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
+    <!-- <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage> -->
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
 
-    <!-- TODO-Arcade: Allow customizing the package description. -->
+    <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
