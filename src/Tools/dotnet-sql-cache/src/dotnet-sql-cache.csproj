@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <!-- These files should be signed by corefx -->
+    <ExcludePackageFileFromSigning Include="Microsoft.Win32.Registry.dll" />
     <ExcludePackageFileFromSigning Include="sni.dll"  />
     <ExcludePackageFileFromSigning Include="System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
