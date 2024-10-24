@@ -37,6 +37,7 @@ builder.Services.AddOpenApi("schemas-by-ref");
 var app = builder.Build();
 
 app.MapOpenApi();
+app.MapOpenApi("/openapi/{documentName}.yaml");
 if (app.Environment.IsDevelopment())
 {
     app.MapSwaggerUi();
