@@ -29,6 +29,8 @@
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+
+    <PartialCompositeAssemblyListPath>PartialCompositeAssemblyListPath.txt</PartialCompositeAssemblyListPath>
   </PropertyGroup>
 
   <ItemGroup>
