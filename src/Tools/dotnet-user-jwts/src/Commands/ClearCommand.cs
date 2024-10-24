@@ -19,21 +19,43 @@ internal sealed class ClearCommand
                 Resources.ClearCommand_ForceOption_Description,
                 CommandOptionType.NoValue);
 
+            var appsettingsFileOption = cmd.Option(
+                "--appsettings-file",
+                Resources.CreateCommand_appsettingsFileOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), forceOption.HasValue());
+                if (!DevJwtCliHelpers.GetProjectAndSecretsId(cmd.ProjectOption.Value(), cmd.Reporter, out var project, out var userSecretsId))
+                {
+                    return 1;
+                }
+
+                var appsettingsFile = "appsettings.Development.json";
+                if (appsettingsFileOption.HasValue())
+                {
+                    appsettingsFile = appsettingsFileOption.Value();
+                    if (!appsettingsFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cmd.Reporter.Error(Resources.RemoveCommand_InvalidAppsettingsFile_Error);
+                        return 1;
+                    }
+                    else if (!File.Exists(Path.Combine(Path.GetDirectoryName(project), appsettingsFile)))
+                    {
+                        cmd.Reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.GetDirectoryName(project)));
+                        return 1;
+                    }
+                }
+
+                return Execute(cmd.Reporter, project, userSecretsId, forceOption.HasValue(), appsettingsFile);
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool force)
+    private static int Execute(IReporter reporter, string project, string userSecretsId, bool force, string appsettingsFile)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
-        {
-            return 1;
-        }
         var jwtStore = new JwtStore(userSecretsId);
         var count = jwtStore.Jwts.Count;
 
@@ -54,7 +76,7 @@ internal sealed class ClearCommand
             }
         }
 
-        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), appsettingsFile);
         foreach (var jwt in jwtStore.Jwts)
         {
             JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Value.Scheme);

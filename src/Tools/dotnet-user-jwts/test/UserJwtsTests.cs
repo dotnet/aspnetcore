@@ -80,6 +80,23 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_CanModifyExistingSchemeInGivenAppSettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+        app.Run(["create", "--project", project, "--issuer", "new-issuer", "--appsettings-file", "appsettings.Local.json"]);
+        appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+    }
+
+    [Fact]
     public void Print_ReturnsNothingForMissingToken()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -155,6 +172,24 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Remove_RemovesGeneratedTokenInGivenAppsettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json", "--scheme", "Scheme2" });
+
+        app.Run(new[] { "remove", id, "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.Contains("Scheme2", appsettingsContent);
+    }
+
+    [Fact]
     public void Clear_RemovesGeneratedTokens()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -167,6 +202,24 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Assert.Contains("New JWT saved", _console.GetOutput());
 
         app.Run(new[] { "clear", "--project", project, "--force" });
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.DoesNotContain("Scheme2", appsettingsContent);
+    }
+
+    [Fact]
+    public void Clear_RemovesGeneratedTokensInGivenAppsettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json", "--scheme", "Scheme2" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        app.Run(new[] { "clear", "--project", project, "--appsettings-file", "appsettings.Local.json", "--force" });
         var appsettingsContent = File.ReadAllText(appsettings);
         Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
         Assert.DoesNotContain("Scheme2", appsettingsContent);
@@ -626,6 +679,18 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+
+        var app = new Program(_console);
+        app.Run(["create", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
+    }
+
+    [Fact]
     public void Delete_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -638,6 +703,18 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Delete_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+
+        var app = new Program(_console);
+        app.Run(["remove", "some-id", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
+    }
+
+    [Fact]
     public void Clear_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -647,6 +724,18 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         app.Run(["clear"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Clear_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+
+        var app = new Program(_console);
+        app.Run(["clear", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
     }
 
     [Fact]
@@ -701,6 +790,21 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         app.Run(new[] { "create", "--project", targetPath });
 
         Assert.DoesNotContain($"The project file '{targetPath}' does not exist.", _console.GetOutput());
+        Assert.Contains("New JWT saved", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Create_CanHandleRelativePathAsOptionForAppsettingsOption()
+    {
+        var projectPath = fixture.CreateProject();
+        var tempPath = Path.GetTempPath();
+        var targetPath = Path.GetRelativePath(tempPath, projectPath);
+        Directory.SetCurrentDirectory(tempPath);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", targetPath, "--appsettings-file", "appsettings.Local.json" });
+        
+        Assert.DoesNotContain($"Could not find Appsettings file in '{projectPath}'. Check the filename and that the file exists.", _console.GetOutput());
         Assert.Contains("New JWT saved", _console.GetOutput());
     }
 
