@@ -7,7 +7,7 @@
     <SharedFrameworkFriendlyName>Microsoft ASP.NET Core</SharedFrameworkFriendlyName>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
-    <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src_sfx\Microsoft.AspNetCore.App.Runtime.Sfx.sfxproj</RuntimePackProjectPath>
+    <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj</RuntimePackProjectPath>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <ArchiveName>$(TargetingPackInstallerBaseName)</ArchiveName>
     <InstallerName>$(TargetingPackInstallerBaseName)</InstallerName>
