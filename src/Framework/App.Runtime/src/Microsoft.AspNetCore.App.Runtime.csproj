@@ -429,7 +429,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PropertyGroup>
       <CrossgenToolPath>$([System.IO.Path]::Combine('$(Crossgen2PackageRoot)', 'tools', '$(Crossgen2ToolFileName)'))</CrossgenToolPath>
       <CrossgenSymbolsTargetDir>$(TargetDir)</CrossgenSymbolsTargetDir>
-      <CrossgenOptimizationData Condition="'$(RuntimePackageRoot)' != ''">$(RuntimePackageRoot)tools\StandardOptimizationData.mibc</CrossgenOptimizationData>
+      <CrossgenOptimizationData Condition="'$(RuntimePackageRoot)' != ''">$(RuntimePackageRoot)PgoData\StandardOptimizationData.mibc</CrossgenOptimizationData>
       <CrossgenOptimizationData Condition="!Exists('$(CrossgenOptimizationData)')"></CrossgenOptimizationData>
 
       <!-- Escaping (double backslash at end) required due to the way batch processes backslashes. -->
