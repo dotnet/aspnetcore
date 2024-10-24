@@ -1107,7 +1107,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(methodName);
         var filter = new ContentTypeAttribute("text/*")
         {
-            Type = typeof(Order)
+            Type = typeof(Order),
+            Description = "Example"
         };
 
         action.FilterDescriptors = new List<FilterDescriptor>
@@ -1124,6 +1125,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.NotNull(responseTypes.ModelMetadata);
         Assert.Equal(200, responseTypes.StatusCode);
         Assert.Equal(typeof(Order), responseTypes.Type);
+        Assert.Equal("Example", responseTypes.Description);
 
         foreach (var responseFormat in responseTypes.ApiResponseFormats)
         {
@@ -2873,6 +2875,8 @@ public class DefaultApiDescriptionProviderTest
         public int StatusCode { get; set; }
 
         public Type Type { get; set; }
+
+        public string Description { get; set; }
 
         public void SetContentTypes(MediaTypeCollection contentTypes)
         {
