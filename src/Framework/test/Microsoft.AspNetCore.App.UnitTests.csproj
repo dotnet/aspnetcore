@@ -11,8 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Grab RuntimeList.xml because it's not placed in the .dotnet/ folder. -->
-    <None Include="$(ArtifactsObjDir)Microsoft.AspNetCore.App.Runtime\RuntimeList.xml"
+    <!--
+      Grab RuntimeList.xml because it's not placed in the .dotnet/ folder.
+      This depends on internal implementation details of the SharedFramework SDK and should be changed to use a supported mechanism
+      to discover the runtime list.
+    -->
+    <None Include="$(ArtifactsObjDir)Microsoft.AspNetCore.App.Runtime\$(Configuration)\$(DefaultNetCoreTargetFramework)\$(TargetRuntimeIdentifier)\RuntimeList.xml"
         CopyToOutputDirectory="PreserveNewest" />
 
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
