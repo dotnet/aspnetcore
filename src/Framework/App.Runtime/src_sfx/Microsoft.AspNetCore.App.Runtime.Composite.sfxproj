@@ -58,12 +58,14 @@
     <PublishReadyToRunExclusions Include="Microsoft.Extensions.Options.dll" />
     <PublishReadyToRunExclusions Include="Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
     <PublishReadyToRunExclusions Include="Microsoft.Extensions.Primitives.dll" />
-    <!--
-      TODO: We want to only compile a partial subset of assemblies into the composite image.
-      This image is represented by PartialCompositeAssemblyList.txt.
-      We need to figure out how to do this.
-    -->
   </ItemGroup>
+
+  <Target Name="_ComputePartialCompositeRoots" BeforeTargets="ResolveReadyToRunCompilers">
+    <!-- Read list of assemblies that should generate native code for the full assembly in the composite image. -->
+    <ReadLinesFromFile File="$(PartialCompositeAssemblyListPath)">
+      <Output TaskParameter="Lines" ItemName="PublishReadyToRunCompositeRoots" />
+    </ReadLinesFromFile>
+  </Target>
 
   <!-- Add native dependencies to the package when required. -->
   <PropertyGroup>
@@ -92,7 +94,7 @@
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
-  <Target Name="_ResolveCopyLocalNativeReference" DependsOnTargets="ResolveProjectReferences" BeforeTargets="GetFilesToPackage">
+  <Target Name="_AddNativeRuntimeAssets" DependsOnTargets="ResolveProjectReferences" BeforeTargets="GetFilesToPackage">
     <ItemGroup>
       <NativeRuntimeAsset Include="@(_ResolvedNativeProjectReferencePaths->ClearMetadata())" />
     </ItemGroup>
