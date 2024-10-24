@@ -20,8 +20,6 @@
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
 
     <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
-    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
-    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
@@ -39,6 +37,11 @@
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' and '$(LinuxInstallerType)' == 'deb'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(LinuxInstallerType)' == 'rpm'">true</BuildRpmPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -96,4 +99,6 @@
              Targets="PublishToDisk"
              Properties="OutputPath=$(SharedFrameworkLayoutRoot)" />
   </Target>
+
+  <Target Name="ReturnProductVersion" Returns="$(Version)" />
 </Project>

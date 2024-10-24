@@ -32,7 +32,7 @@
     <!-- RequiresDelayedBuild Include="..." / -->
 
     <!-- Enforce build order. Need shared Fx before building the important projects. -->
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

@@ -11,8 +11,6 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <ArchiveName>$(TargetingPackInstallerBaseName)</ArchiveName>
     <InstallerName>$(TargetingPackInstallerBaseName)</InstallerName>
-    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
-    <!-- <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage> -->
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
 
@@ -29,6 +27,11 @@
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' and '$(LinuxInstallerType)' == 'deb'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(LinuxInstallerType)' == 'rpm'">true</BuildRpmPackage>
   </PropertyGroup>
 
   <ItemGroup>
