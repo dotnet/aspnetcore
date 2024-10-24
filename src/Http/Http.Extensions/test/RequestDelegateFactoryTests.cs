@@ -1022,6 +1022,30 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(errorMessage, exception.Message);
     }
 
+    public static object[][] BadArgumentEnumerableActions
+    {
+        get
+        {
+            void TestParameterStringList([AsParameters] List<string> req) { }
+            void TestParameterDictionary([AsParameters] Dictionary<string, string> req) { }
+            void TestParameterIntArray([AsParameters] int[] req) { }
+
+            return new object[][]
+            {
+                new object[] { (Action<List<string>>)TestParameterStringList },
+                new object[] { (Action<Dictionary<string, string>>)TestParameterDictionary },
+                new object[] { (Action<int[]>)TestParameterIntArray }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(BadArgumentEnumerableActions))]
+    public void BuildRequestDelegateThrowsNotSupportedExceptionForEnumerable(Delegate @delegate)
+    {
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(@delegate));
+    }
+
     [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
     {
@@ -2012,6 +2036,15 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileWithAttribute));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormCollection));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormWithAttribute));
+    }
+
+    [Fact]
+    public void CreateThrowsInvalidOperationExceptionIfIFormFileCollectionHasAsParametersAttribute()
+    {
+        void TestAction([AsParameters] IFormFileCollection formFiles) {}
+
+        var ioe = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Equal("The abstract type 'IFormFileCollection' is not supported.", ioe.Message);
     }
 
     [Fact]

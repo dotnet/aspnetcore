@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -361,6 +362,11 @@ internal sealed class ParameterBindingMethodCache
         if (type.IsAbstract)
         {
             throw new InvalidOperationException($"The abstract type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported.");
+        }
+
+        if (typeof(IEnumerable).IsAssignableFrom(type))
+        {
+            throw new InvalidOperationException($"The enumerable type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported.");
         }
 
         var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
