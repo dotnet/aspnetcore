@@ -19,6 +19,7 @@ public class ThreadingAppTest
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        serverFixture.RequiresMultithreadingHeaders = true;
     }
 
     protected override void InitializeAsyncCore()
