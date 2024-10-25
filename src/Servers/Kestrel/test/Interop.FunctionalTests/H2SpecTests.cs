@@ -62,10 +62,7 @@ public class H2SpecTests : LoggedTest
         {
             var dataset = new TheoryData<H2SpecTestCase>();
             // { Test name, Skip Reason }
-            var toSkip = new Dictionary<string, string>
-            {
-                { "http2/6.9.2/2", "https://github.com/dotnet/aspnetcore/issues/47452" }
-            };
+            var toSkip = new Dictionary<string, string>();
 
             var testCases = H2SpecCommands.EnumerateTestCases();
 
