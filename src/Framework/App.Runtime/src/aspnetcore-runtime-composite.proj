@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <!-- We aren't producing a NuGet package here, so disable package validation -->
+    <EnablePackageValidation>false</EnablePackageValidation>
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
