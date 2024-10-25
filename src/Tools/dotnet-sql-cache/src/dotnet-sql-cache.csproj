@@ -26,6 +26,9 @@
     <ExcludePackageFileFromSigning Include="System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="System.Diagnostics.DiagnosticSource.dll" />
     <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
+    <ExcludePackageFileFromSigning Include="System.Security.AccessControl.dll" />
+    <ExcludePackageFileFromSigning Include="System.Security.AccessControl.dll" />
+    <ExcludePackageFileFromSigning Include="System.Security.Principal.Windows.dll" />
     <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
