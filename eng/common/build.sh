@@ -231,7 +231,6 @@ function Build {
     /p:Restore=$restore \
     /p:Build=$build \
     /p:DotNetBuildRepo=$product_build \
-    /p:ArcadeBuildFromSource=$source_build \
     /p:DotNetBuildSourceOnly=$source_build \
     /p:Rebuild=$rebuild \
     /p:Test=$test \

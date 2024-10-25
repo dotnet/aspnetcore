@@ -43,7 +43,7 @@ exit:
     if( bstrPropName )
     {
         SysFreeString( bstrPropName );
-        bstrPropName = NULL;
+        bstrPropName = nullptr;
     }
 
     return hr;
@@ -90,9 +90,9 @@ GetElementStringProperty(
 {
     HRESULT hr = S_OK;
     BSTR bstrPropName = SysAllocString( szPropName );
-    IAppHostProperty* pProperty = NULL;
+    IAppHostProperty* pProperty = nullptr;
 
-    *pbstrPropValue = NULL;
+    *pbstrPropValue = nullptr;
 
     if (!bstrPropName)
     {
@@ -140,8 +140,8 @@ GetElementStringProperty(
 {
     HRESULT hr = S_OK;
     BSTR bstrPropName = SysAllocString( szPropName );
-    IAppHostProperty* pProperty = NULL;
-    BSTR bstrPropValue = NULL;
+    IAppHostProperty* pProperty = nullptr;
+    BSTR bstrPropValue = nullptr;
 
     if (!bstrPropName)
     {
@@ -199,7 +199,7 @@ GetElementChildByName(
 )
 {
     BSTR bstrElementName = SysAllocString(pszElementName);
-    if (bstrElementName == NULL)
+    if (bstrElementName == nullptr)
     {
         return E_OUTOFMEMORY;
     }
@@ -235,13 +235,13 @@ GetElementBoolProperty(
 )
 {
     HRESULT hr = S_OK;
-    IAppHostProperty * pProperty = NULL;
+    IAppHostProperty * pProperty = nullptr;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
     BSTR bstrPropertyName = SysAllocString(pszPropertyName);
-    if ( bstrPropertyName == NULL )
+    if ( bstrPropertyName == nullptr )
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -275,16 +275,16 @@ exit:
 
     VariantClear( &varValue );
 
-    if ( bstrPropertyName != NULL )
+    if ( bstrPropertyName != nullptr )
     {
         SysFreeString( bstrPropertyName );
-        bstrPropertyName = NULL;
+        bstrPropertyName = nullptr;
     }
 
-    if ( pProperty != NULL )
+    if ( pProperty != nullptr )
     {
         pProperty->Release();
-        pProperty = NULL;
+        pProperty = nullptr;
     }
 
     return hr;
@@ -299,13 +299,13 @@ GetElementDWORDProperty(
 )
 {
     HRESULT            hr = S_OK;
-    IAppHostProperty * pProperty = NULL;
+    IAppHostProperty * pProperty = nullptr;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
     BSTR bstrName = SysAllocString(pwszName);
-    if ( bstrName == NULL )
+    if ( bstrName == nullptr )
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -338,16 +338,16 @@ error:
 
     VariantClear( &varValue );
 
-    if ( pProperty != NULL )
+    if ( pProperty != nullptr )
     {
         pProperty->Release();
-        pProperty = NULL;
+        pProperty = nullptr;
     }
 
-    if ( bstrName != NULL )
+    if ( bstrName != nullptr )
     {
         SysFreeString( bstrName );
-        bstrName = NULL;
+        bstrName = nullptr;
     }
 
     return hr;
@@ -361,13 +361,13 @@ GetElementLONGLONGProperty(
 )
 {
     HRESULT            hr = S_OK;
-    IAppHostProperty * pProperty = NULL;
+    IAppHostProperty * pProperty = nullptr;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
     BSTR bstrName = SysAllocString(pwszName);
-    if ( bstrName == NULL )
+    if ( bstrName == nullptr )
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -400,16 +400,16 @@ error:
 
     VariantClear( &varValue );
 
-    if ( pProperty != NULL )
+    if ( pProperty != nullptr )
     {
         pProperty->Release();
-        pProperty = NULL;
+        pProperty = nullptr;
     }
 
-    if ( bstrName != NULL )
+    if ( bstrName != nullptr )
     {
         SysFreeString( bstrName );
-        bstrName = NULL;
+        bstrName = nullptr;
     }
 
     return hr;
@@ -423,13 +423,13 @@ GetElementRawTimeSpanProperty(
 )
 {
     HRESULT hr = S_OK;
-    IAppHostProperty * pProperty = NULL;
+    IAppHostProperty * pProperty = nullptr;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
     BSTR bstrPropertyName = SysAllocString(pszPropertyName);
-    if ( bstrPropertyName == NULL )
+    if ( bstrPropertyName == nullptr )
     {
         hr = HRESULT_FROM_WIN32( ERROR_NOT_ENOUGH_MEMORY );
         goto Finished;
@@ -463,16 +463,16 @@ Finished:
 
     VariantClear( &varValue );
 
-    if ( bstrPropertyName != NULL )
+    if ( bstrPropertyName != nullptr )
     {
         SysFreeString( bstrPropertyName );
-        bstrPropertyName = NULL;
+        bstrPropertyName = nullptr;
     }
 
-    if ( pProperty != NULL )
+    if ( pProperty != nullptr )
     {
         pProperty->Release();
-        pProperty = NULL;
+        pProperty = nullptr;
     }
 
     return hr;
@@ -630,7 +630,7 @@ FindElementInCollection(
     DWORD   count;
     DWORD   i;
 
-    BSTR bstrKeyName = NULL;
+    BSTR bstrKeyName = nullptr;
     PFN_FIND_COMPARE_PROC compareProc;
 
     compareProc = (BehaviorFlags & FIND_ELEMENT_CASE_INSENSITIVE)
@@ -738,7 +738,7 @@ VariantAssign(
 
     pv->vt = VT_BSTR;
     pv->bstrVal = bstr;
-    bstr = NULL;
+    bstr = nullptr;
 
 exit:
 
@@ -761,9 +761,9 @@ GetLocationFromFile(
     CComPtr<IAppHostConfigLocationCollection>   pLocationCollection;
     CComPtr<IAppHostConfigLocation>             pLocation;
 
-    BSTR bstrLocationPath = NULL;
+    BSTR bstrLocationPath = nullptr;
 
-    *ppLocation = NULL;
+    *ppLocation = nullptr;
     *pFound = FALSE;
 
     hr = GetLocationCollection( pAdminMgr,
@@ -819,7 +819,7 @@ GetLocationFromFile(
         pLocation.Release();
 
         SysFreeString( bstrLocationPath );
-        bstrLocationPath = NULL;
+        bstrLocationPath = nullptr;
     }
 
 exit:
@@ -847,10 +847,10 @@ GetSectionFromLocation(
     VARIANT varIndex;
     VariantInit( &varIndex );
 
-    BSTR bstrSectionName = NULL;
+    BSTR bstrSectionName = nullptr;
 
     *pFound = FALSE;
-    *ppSectionElement = NULL;
+    *ppSectionElement = nullptr;
 
     hr = pLocation->get_Count( &count );
     if( FAILED(hr) )
@@ -890,7 +890,7 @@ GetSectionFromLocation(
         pSectionElement.Release();
 
         SysFreeString( bstrSectionName );
-        bstrSectionName = NULL;
+        bstrSectionName = nullptr;
     }
 
 exit:
@@ -914,7 +914,7 @@ GetAdminElement(
     BSTR bstrConfigPath = SysAllocString(szConfigPath);
     BSTR bstrElementName = SysAllocString(szElementName);
 
-    if (bstrConfigPath == NULL || bstrElementName == NULL)
+    if (bstrConfigPath == nullptr || bstrElementName == nullptr)
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -933,15 +933,15 @@ GetAdminElement(
 
 exit:
 
-    if ( bstrElementName != NULL )
+    if ( bstrElementName != nullptr )
     {
         SysFreeString(bstrElementName);
-        bstrElementName = NULL;
+        bstrElementName = nullptr;
     }
-    if ( bstrConfigPath != NULL )
+    if ( bstrConfigPath != nullptr )
     {
         SysFreeString(bstrConfigPath);
-        bstrConfigPath = NULL;
+        bstrConfigPath = nullptr;
     }
 
     return hr;
@@ -1168,7 +1168,7 @@ CompareElementName(
     OUT     BOOL *                      pMatched
     )
 {
-    BSTR bstrElementName = NULL;
+    BSTR bstrElementName = nullptr;
 
     *pMatched = FALSE;  // until proven otherwise
 
@@ -1258,9 +1258,9 @@ GetSitesCollection(
 
     BSTR bstrConfigPath = SysAllocString(szConfigPath);
     BSTR bstrSitesSectionName = SysAllocString(L"system.applicationHost/sites");
-    *pSitesCollection = NULL;
+    *pSitesCollection = nullptr;
 
-    if (bstrConfigPath == NULL || bstrSitesSectionName == NULL)
+    if (bstrConfigPath == nullptr || bstrSitesSectionName == nullptr)
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -1309,9 +1309,9 @@ GetLocationCollection(
     CComPtr<IAppHostConfigFile>         pConfigFile;
 
     BSTR bstrConfigPath = SysAllocString(szConfigPath);
-    *pLocationCollection = NULL;
+    *pLocationCollection = nullptr;
 
-    if (bstrConfigPath == NULL)
+    if (bstrConfigPath == nullptr)
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -1378,7 +1378,7 @@ FindNextElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    *pElement = NULL;
+    *pElement = nullptr;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
     {
@@ -1424,7 +1424,7 @@ FindNextChildElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    *pElement = NULL;
+    *pElement = nullptr;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
     {
@@ -1470,7 +1470,7 @@ FindNextLocation(
     OUT     IAppHostConfigLocation **           pLocation
     )
 {
-    *pLocation = NULL;
+    *pLocation = nullptr;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
     {
@@ -1516,7 +1516,7 @@ FindNextLocationElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    *pElement = NULL;
+    *pElement = nullptr;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
     {
@@ -1552,16 +1552,16 @@ Return Value:
 --*/
 {
     HRESULT                 hr = S_OK;
-    IAppHostAdminManager    *pAdminManager = NULL;
+    IAppHostAdminManager    *pAdminManager = nullptr;
 
-    BSTR                    bstrConfigPath = NULL;
+    BSTR                    bstrConfigPath = nullptr;
 
-    IAppHostElement *       pConfigRedirSection = NULL;
+    IAppHostElement *       pConfigRedirSection = nullptr;
 
 
     BSTR bstrSectionName = SysAllocString(L"configurationRedirection");
 
-    if ( bstrSectionName == NULL )
+    if ( bstrSectionName == nullptr )
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -1569,7 +1569,7 @@ Return Value:
     }
 
     bstrConfigPath = SysAllocString( L"MACHINE/REDIRECTION" );
-    if ( bstrConfigPath == NULL )
+    if ( bstrConfigPath == nullptr )
     {
         hr = E_OUTOFMEMORY;
         DBGERROR_HR(hr);
@@ -1577,7 +1577,7 @@ Return Value:
     }
 
     hr = CoCreateInstance( CLSID_AppHostAdminManager,
-                           NULL,
+                           nullptr,
                            CLSCTX_INPROC_SERVER,
                            IID_IAppHostAdminManager,
                            (VOID **)&pAdminManager );
@@ -1607,7 +1607,7 @@ Return Value:
     }
 
     pConfigRedirSection->Release();
-    pConfigRedirSection = NULL;
+    pConfigRedirSection = nullptr;
 
 
 exit:
@@ -1616,22 +1616,22 @@ exit:
     // dump config exception to setup log file (if available)
     //
 
-    if ( pConfigRedirSection != NULL )
+    if ( pConfigRedirSection != nullptr )
     {
         pConfigRedirSection->Release();
     }
 
-    if ( pAdminManager != NULL )
+    if ( pAdminManager != nullptr )
     {
         pAdminManager->Release();
     }
 
-    if ( bstrConfigPath != NULL )
+    if ( bstrConfigPath != nullptr )
     {
         SysFreeString( bstrConfigPath );
     }
 
-    if ( bstrSectionName != NULL )
+    if ( bstrSectionName != nullptr )
     {
         SysFreeString( bstrSectionName );
     }

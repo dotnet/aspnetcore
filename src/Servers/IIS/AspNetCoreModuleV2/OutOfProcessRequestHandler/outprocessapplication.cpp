@@ -12,17 +12,17 @@ OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
     m_fWebSocketSupported(WEBSOCKET_STATUS::WEBSOCKET_UNKNOWN),
     m_pConfig(std::move(pConfig))
 {
-    m_pProcessManager = NULL;
+    m_pProcessManager = nullptr;
 }
 
 OUT_OF_PROCESS_APPLICATION::~OUT_OF_PROCESS_APPLICATION()
 {
     SRWExclusiveLock lock(m_stopLock);
-    if (m_pProcessManager != NULL)
+    if (m_pProcessManager != nullptr)
     {
         m_pProcessManager->Shutdown();
         m_pProcessManager->DereferenceProcessManager();
-        m_pProcessManager = NULL;
+        m_pProcessManager = nullptr;
     }
 }
 
@@ -30,7 +30,7 @@ HRESULT
 OUT_OF_PROCESS_APPLICATION::Initialize(
 )
 {
-    if (m_pProcessManager == NULL)
+    if (m_pProcessManager == nullptr)
     {
         m_pProcessManager = new PROCESS_MANAGER();
         RETURN_IF_FAILED(m_pProcessManager->Initialize());
@@ -52,7 +52,7 @@ OUT_OF_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
     AppOfflineTrackingApplication::StopInternal(fServerInitiated);
 
-    if (m_pProcessManager != NULL)
+    if (m_pProcessManager != nullptr)
     {
         m_pProcessManager->Shutdown();
     }
@@ -63,7 +63,7 @@ OUT_OF_PROCESS_APPLICATION::CreateHandler(
     _In_  IHttpContext       *pHttpContext,
     _Out_ IREQUEST_HANDLER  **pRequestHandler)
 {
-    IREQUEST_HANDLER* pHandler = NULL;
+    IREQUEST_HANDLER* pHandler = nullptr;
 
     //add websocket check here
     if (m_fWebSocketSupported == WEBSOCKET_STATUS::WEBSOCKET_UNKNOWN)

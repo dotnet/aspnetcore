@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewImports",
-  "precedence": "9900",
-  "identity": "Microsoft.AspNetCore.Mvc.ViewImports.9.0",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewImports.10.0",
   "shortName": "viewimports",
   "sourceName": "ignoreme",
   "primaryOutputs": [

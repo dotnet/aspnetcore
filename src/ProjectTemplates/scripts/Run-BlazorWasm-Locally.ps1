@@ -5,7 +5,7 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
     [ValidateSet("net9.0", "net10.0")]
-    [string] $Framework = "net9.0",
+    [string] $Framework = "net10.0",
     [Parameter(Mandatory = $false)]
     [switch] $NoRestore,
     [Parameter(Mandatory = $false)]

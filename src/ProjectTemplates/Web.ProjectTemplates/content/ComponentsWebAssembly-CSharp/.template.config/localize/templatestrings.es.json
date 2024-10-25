@@ -3,7 +3,7 @@
   "name": "Aplicación independiente WebAssembly de Blazor",
   "description": "Plantilla de proyecto para crear una aplicación Blazor que se ejecuta en WebAssembly. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
   "symbols/auth/choices/None/description": "Sin autenticación",
   "symbols/auth/choices/Individual/description": "Autenticación individual",

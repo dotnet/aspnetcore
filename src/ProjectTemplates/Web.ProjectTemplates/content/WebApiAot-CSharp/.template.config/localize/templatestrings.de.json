@@ -6,7 +6,7 @@
   "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
   "symbols/iisHttpPort/description": "Portnummer, die für den IIS Express HTTP Endpunkt in launchSettings.json verwendet werden soll.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
   "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",

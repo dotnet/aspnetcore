@@ -28,14 +28,12 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasTitle()
     {
         Assert.Equal("Blazor standalone", Browser.Title);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
@@ -69,7 +67,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58242")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -87,7 +85,6 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"
@@ -109,7 +106,6 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void IsStarted()
     {
         // Read from property

@@ -4,7 +4,7 @@
   "description": "用于创建 worker service 的空项目模板。",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",

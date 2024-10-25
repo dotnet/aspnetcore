@@ -49,7 +49,7 @@ public:
         {
         case 0x10000: return L"ANCM";
         }
-        return NULL;
+        return nullptr;
     };
 
     static
@@ -127,8 +127,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -139,13 +139,13 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"AppDescription";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_LPCWSTR; // mof type (string)
             Items[ 1 ].pbData = (PBYTE) pAppDescription;
             Items[ 1 ].cbData  = 
-                 ( Items[ 1 ].pbData == NULL )? 0 : ( sizeof(WCHAR) * (1 + (DWORD) wcslen( (PWSTR) Items[ 1 ].pbData  ) ) );
-            Items[ 1 ].pszDataDescription = NULL;
+                 ( Items[ 1 ].pbData == nullptr )? 0 : ( sizeof(WCHAR) * (1 + (DWORD) wcslen( (PWSTR) Items[ 1 ].pbData  ) ) );
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -194,8 +194,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 2;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -206,13 +206,13 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"FailureDescription";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_LPCWSTR; // mof type (string)
             Items[ 1 ].pbData = (PBYTE) pFailureDescription;
             Items[ 1 ].cbData  = 
-                 ( Items[ 1 ].pbData == NULL )? 0 : ( sizeof(WCHAR) * (1 + (DWORD) wcslen( (PWSTR) Items[ 1 ].pbData  ) ) );
-            Items[ 1 ].pszDataDescription = NULL;
+                 ( Items[ 1 ].pbData == nullptr)? 0 : ( sizeof(WCHAR) * (1 + (DWORD) wcslen( (PWSTR) Items[ 1 ].pbData  ) ) );
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -260,8 +260,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -272,7 +272,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -320,8 +320,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -332,7 +332,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -381,8 +381,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 2;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -393,12 +393,12 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"ErrorCode";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 1 ].pbData = (PBYTE) &ErrorCode;
             Items[ 1 ].cbData = 4;
-            Items[ 1 ].pszDataDescription = NULL;
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -447,8 +447,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -459,12 +459,12 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"InternetStatus";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 1 ].pbData = (PBYTE) &InternetStatus;
             Items[ 1 ].cbData = 4;
-            Items[ 1 ].pszDataDescription = NULL;
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -512,8 +512,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -524,7 +524,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -573,8 +573,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 5;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -585,12 +585,12 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"requestStatus";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 1 ].pbData = (PBYTE) &requestStatus;
             Items[ 1 ].cbData = 4;
-            Items[ 1 ].pszDataDescription = NULL;
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -638,8 +638,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 5;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -650,7 +650,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -699,8 +699,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 5;
             Event.cEventItems = 2;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -711,12 +711,12 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"requestStatus";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 1 ].pbData = (PBYTE) &requestStatus;
             Items[ 1 ].cbData = 4;
-            Items[ 1 ].pszDataDescription = NULL;
+            Items[ 1 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -764,8 +764,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -776,7 +776,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -824,8 +824,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -836,7 +836,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -884,8 +884,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 4;
             Event.cEventItems = 1;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -896,7 +896,7 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -947,8 +947,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 3;
             Event.cEventItems = 4;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -959,23 +959,23 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"File";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_LPCSTR; // mof type (string)
             Items[ 1 ].pbData = (PBYTE) pFile;
             Items[ 1 ].cbData  = 
-                 ( Items[ 1 ].pbData == NULL )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 1 ].pbData ) );
-            Items[ 1 ].pszDataDescription = NULL;
+                 ( Items[ 1 ].pbData == nullptr )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 1 ].pbData ) );
+            Items[ 1 ].pszDataDescription = nullptr;
             Items[ 2 ].pszName = L"Line";
             Items[ 2 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 2 ].pbData = (PBYTE) &Line;
             Items[ 2 ].cbData = 4;
-            Items[ 2 ].pszDataDescription = NULL;
+            Items[ 2 ].pszDataDescription = nullptr;
             Items[ 3 ].pszName = L"HResult";
             Items[ 3 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 3 ].pbData = (PBYTE) &HResult;
             Items[ 3 ].cbData = 4;
-            Items[ 3 ].pszDataDescription = NULL;
+            Items[ 3 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;
@@ -1026,8 +1026,8 @@ public:
             Event.dwEventVersion = 1;
             Event.dwVerbosity = 3;
             Event.cEventItems = 4;
-            Event.pActivityGuid = NULL;
-            Event.pRelatedActivityGuid = NULL;
+            Event.pActivityGuid = nullptr;
+            Event.pRelatedActivityGuid = nullptr;
             Event.dwTimeStamp = 0;
             Event.dwFlags = HTTP_TRACE_EVENT_FLAG_STATIC_DESCRIPTIVE_FIELDS;
     
@@ -1038,24 +1038,24 @@ public:
             Items[ 0 ].dwDataType = HTTP_TRACE_TYPE_LPCGUID; // mof type (object)
             Items[ 0 ].pbData = (PBYTE) pContextId;
             Items[ 0 ].cbData = 16;
-            Items[ 0 ].pszDataDescription = NULL;
+            Items[ 0 ].pszDataDescription = nullptr;
             Items[ 1 ].pszName = L"File";
             Items[ 1 ].dwDataType = HTTP_TRACE_TYPE_LPCSTR; // mof type (string)
             Items[ 1 ].pbData = (PBYTE) pFile;
             Items[ 1 ].cbData  = 
-                 ( Items[ 1 ].pbData == NULL )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 1 ].pbData ) );
-            Items[ 1 ].pszDataDescription = NULL;
+                 ( Items[ 1 ].pbData == nullptr )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 1 ].pbData ) );
+            Items[ 1 ].pszDataDescription = nullptr;
             Items[ 2 ].pszName = L"Line";
             Items[ 2 ].dwDataType = HTTP_TRACE_TYPE_ULONG; // mof type (uint32)
             Items[ 2 ].pbData = (PBYTE) &Line;
             Items[ 2 ].cbData = 4;
-            Items[ 2 ].pszDataDescription = NULL;
+            Items[ 2 ].pszDataDescription = nullptr;
             Items[ 3 ].pszName = L"Description";
             Items[ 3 ].dwDataType = HTTP_TRACE_TYPE_LPCSTR; // mof type (string)
             Items[ 3 ].pbData = (PBYTE) pDescription;
             Items[ 3 ].cbData  = 
-                 ( Items[ 3 ].pbData == NULL )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 3 ].pbData ) );
-            Items[ 3 ].pszDataDescription = NULL;
+                 ( Items[ 3 ].pbData == nullptr )? 0 : (1 + (DWORD) strlen( (PSTR) Items[ 3 ].pbData ) );
+            Items[ 3 ].pszDataDescription = nullptr;
             Event.pEventItems = Items;
             pHttpTraceContext->RaiseTraceEvent( &Event );
             return S_OK;

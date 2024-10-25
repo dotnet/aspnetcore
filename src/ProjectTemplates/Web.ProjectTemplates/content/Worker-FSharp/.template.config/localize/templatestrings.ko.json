@@ -4,7 +4,7 @@
   "description": "Worker Service를 만드는 데 사용하는 빈 프로젝트 템플릿입니다.",
   "symbols/ExcludeLaunchSettings/description": "생성된 템플릿에서 launchSettings.json을 제외할지 여부입니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행"

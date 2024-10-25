@@ -7,12 +7,7 @@
 #include "precomp.h"
 #include "multisz.h"
 
-//
-//  Private Definitions
-//
-
 #define MAXULONG 4294967295
-#define ISWHITE( ch )       ((ch) == L' ' || (ch) == L'\t' || (ch) == L'\r')
 
 //
 //  When appending data, this is the extra amount we request to avoid
@@ -35,81 +30,13 @@ MULTISZ::CalcLength( const WCHAR * str,
         count++;
     }
 
-    if( pcStrings != NULL ) {
+    if( pcStrings != nullptr ) {
         *pcStrings = count;
     }
 
     return total;
 
 }   // MULTISZ::CalcLength
-
-
-BOOL
-MULTISZ::FindString( const WCHAR * str ) const
-{
-    //
-    // Sanity check.
-    //
-
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
-    DBG_ASSERT( *str != '\0' );
-
-    //
-    // Scan it.
-    //
-
-    WCHAR* multisz = QueryStr();
-
-    while( *multisz != '\0' ) {
-
-        if( !::wcscmp( multisz, str ) ) {
-
-            return TRUE;
-
-        }
-
-        multisz += ::wcslen( multisz ) + 1;
-
-    }
-
-    return FALSE;
-
-}   // MULTISZ::FindString
-
-
-BOOL
-MULTISZ::FindStringNoCase( const WCHAR * str ) const
-{
-    //
-    // Sanity check.
-    //
-
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
-    DBG_ASSERT( *str != '\0' );
-
-    //
-    // Scan it.
-    //
-
-    WCHAR* multisz = QueryStr();
-
-    while( *multisz != '\0' ) {
-
-        if( !_wcsicmp( multisz, str ) ) {
-
-            return TRUE;
-
-        }
-
-        multisz += wcslen( multisz ) + 1;
-
-    }
-
-    return FALSE;
-
-}   // MULTISZ::FindStringNoCase
 
 
 VOID
@@ -149,7 +76,7 @@ MULTISZ::AuxInit( const WCHAR * pInit )
 
 BOOL MULTISZ::AuxAppend( const WCHAR * pStr, UINT cbStr, BOOL fAddSlop )
 {
-    DBG_ASSERT( pStr != NULL );
+    DBG_ASSERT( pStr != nullptr );
 
     UINT cbThis = QueryCB();
 
@@ -247,7 +174,7 @@ MULTISZ::CopyToBuffer( WCHAR * lpszBuffer, LPDWORD lpcch) const
 {
    BOOL fReturn = TRUE;
 
-    if ( lpcch == NULL) {
+    if ( lpcch == nullptr ) {
         SetLastError( ERROR_INVALID_PARAMETER);
         return ( FALSE);
     }
@@ -305,7 +232,7 @@ MULTISZ::CopyToBuffer( __out_ecount_opt(*lpcch) WCHAR * lpszBuffer, LPDWORD lpcc
 {
    BOOL fReturn = TRUE;
 
-    if ( lpcch == NULL) {
+    if ( lpcch == nullptr ) {
         SetLastError( ERROR_INVALID_PARAMETER);
         return ( FALSE);
     }
@@ -335,7 +262,7 @@ MULTISZ::Equals(
 // Compares this to pmszRhs, returns TRUE if equal
 //
 {
-    DBG_ASSERT( NULL != pmszRhs );
+    DBG_ASSERT( nullptr != pmszRhs );
 
     PCWSTR pszLhs = First( );
     PCWSTR pszRhs = pmszRhs->First( );
@@ -345,9 +272,9 @@ MULTISZ::Equals(
         return FALSE;
     }
 
-    while( NULL != pszLhs )
+    while( nullptr  != pszLhs )
     {
-        DBG_ASSERT( NULL != pszRhs );
+        DBG_ASSERT( nullptr != pszRhs );
 
         if( 0 != wcscmp( pszLhs, pszRhs ) )
         {
@@ -359,106 +286,6 @@ MULTISZ::Equals(
     }
 
     return TRUE;
-}
-
-HRESULT
-SplitCommaDelimitedString(
-    PCWSTR                      pszList,
-    BOOL                        fTrimEntries,
-    BOOL                        fRemoveEmptyEntries,
-    MULTISZ *                   pmszList
-)
-/*++
-
-Routine Description:
-
-    Split comma delimited string into a multisz. Additional leading empty
-    entries after the first are discarded.
-
-Arguments:
-
-    pszList - List to split up
-    fTrimEntries - Whether each entry should be trimmed before added to multisz
-    fRemoveEmptyEntries - Whether empty entires should be discarded
-    pmszList - Filled with MULTISZ list
-
-Return Value:
-
-    HRESULT
-
---*/
-{
-    HRESULT                 hr = S_OK;
-
-    if ( pszList == NULL ||
-         pmszList == NULL )
-    {
-        DBG_ASSERT( FALSE );
-        hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
-        goto Finished;
-    }
-
-    pmszList->Reset();
-
-    /*
-        pszCurrent: start of the current entry which may be the comma that
-                    precedes the next entry if the entry is empty
-
-        pszNext: the comma that precedes the next entry. If
-                 pszCurrent == pszNext, then the entry is empty
-
-        pszEnd: just past the end of the current entry
-    */
-
-    for ( PCWSTR pszCurrent = pszList,
-                 pszNext = wcschr( pszCurrent, L',' )
-            ;
-            ;
-          pszCurrent = pszNext + 1,
-          pszNext = wcschr( pszCurrent, L',' ) )
-    {
-        PCWSTR pszEnd = NULL;
-
-        if ( pszNext != NULL )
-        {
-            pszEnd = pszNext;
-        }
-        else
-        {
-            pszEnd = pszCurrent + wcslen( pszCurrent );
-        }
-
-        if ( fTrimEntries )
-        {
-            while ( pszCurrent < pszEnd && ISWHITE( pszCurrent[ 0 ] ) )
-            {
-                pszCurrent++;
-            }
-
-            while ( pszEnd > pszCurrent && ISWHITE( pszEnd[ -1 ] ) )
-            {
-                pszEnd--;
-            }
-        }
-
-        if ( pszCurrent != pszEnd || !fRemoveEmptyEntries  )
-        {
-            if ( !pmszList->Append( pszCurrent, (DWORD) ( pszEnd - pszCurrent ) ) )
-            {
-                hr = HRESULT_FROM_WIN32( GetLastError() );
-                goto Finished;
-            }
-        }
-
-        if ( pszNext == NULL )
-        {
-            break;
-        }
-    }
-
-Finished:
-
-    return hr;
 }
 
 #pragma warning(default:4267)

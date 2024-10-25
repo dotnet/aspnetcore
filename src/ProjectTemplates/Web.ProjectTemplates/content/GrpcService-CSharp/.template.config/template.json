@@ -11,8 +11,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
   "groupIdentity": "Microsoft.Web.Grpc",
-  "precedence": "9900",
-  "identity": "Microsoft.Grpc.Service.CSharp.9.0",
+  "precedence": "10000",
+  "identity": "Microsoft.Grpc.Service.CSharp.10.0",
   "shortName": "grpc",
   "tags": {
     "language": "C#",
@@ -58,11 +58,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "defaultValue": "net9.0"
+      "defaultValue": "net10.0"
     },
     "ExcludeLaunchSettings": {
       "type": "parameter",
