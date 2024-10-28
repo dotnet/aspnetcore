@@ -60,6 +60,46 @@ app.MapGet("/", () => "Hello, World!");
 
 app.Run();
 
+
+""";
+
+        // Assert
+        await VerifyCS.VerifyCodeFixAsync(source, [diagnostic], fixedSource);
+    }
+
+    [Fact]
+    public async Task RemovesDeclarationIfItIsFound_WithLeadingTrivia()
+    {
+        // Arrange
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+// This is a test
+
+{|#0:public partial class Program;|}
+""";
+
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.PublicPartialProgramClassNotRequired)
+                .WithLocation(0);
+
+        var fixedSource = """
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+// This is a test
+
+
 """;
 
         // Assert

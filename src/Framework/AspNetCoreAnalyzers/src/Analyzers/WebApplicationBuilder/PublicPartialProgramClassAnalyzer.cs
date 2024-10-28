@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,7 +24,9 @@ public sealed class PublicPartialProgramClassAnalyzer : DiagnosticAnalyzer
             var syntaxNode = context.Node;
             if (IsPublicPartialClassProgram(syntaxNode))
             {
-                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.PublicPartialProgramClassNotRequired, syntaxNode.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.PublicPartialProgramClassNotRequired,
+                    syntaxNode.GetLocation()));
             }
         }, SyntaxKind.ClassDeclaration);
     }
@@ -34,6 +37,8 @@ public sealed class PublicPartialProgramClassAnalyzer : DiagnosticAnalyzer
             && modifiers is { Count: > 1 }
             && modifiers.Any(SyntaxKind.PublicKeyword)
             && modifiers.Any(SyntaxKind.PartialKeyword)
-            && classDeclaration is { Identifier.ValueText: "Program" };
+            && classDeclaration is { Identifier.ValueText: "Program" }
+            && classDeclaration.Parent is CompilationUnitSyntax parentNode
+            && parentNode.DescendantNodes().Count() > 1;
     }
 }

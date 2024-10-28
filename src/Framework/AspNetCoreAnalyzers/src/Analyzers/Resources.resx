@@ -322,9 +322,9 @@
     <value>[Authorize] overridden by [AllowAnonymous] from farther away</value>
   </data>
   <data name="Analyzer_PublicPartialProgramClass_Message" xml:space="preserve">
-    <value>Using public partial class Program { } to make generated Program class public is no longer required. See https://aka.ms/aspnetcore-warnings/ASP0027 for more details.</value>
+    <value>Using public partial class Program { } to make the generated Program class public is no longer required in ASP.NET Core apps. See https://aka.ms/aspnetcore-warnings/ASP0027 for more details.</value>
   </data>
   <data name="Analyzer_PublicPartialProgramClass_Title" xml:space="preserve">
-    <value>Explicit class declaration not required</value>
+    <value>Unnecessary public Program class declaration</value>
   </data>
 </root>

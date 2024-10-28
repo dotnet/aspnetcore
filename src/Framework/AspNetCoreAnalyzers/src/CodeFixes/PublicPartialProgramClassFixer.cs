@@ -25,7 +25,7 @@ public class PublicPartialProgramClassFixer : CodeFixProvider
         foreach (var diagnostic in context.Diagnostics)
         {
             context.RegisterCodeFix(
-                CodeAction.Create("Fix unnecessary public partial class Program",
+                CodeAction.Create("Remove unnecessary public partial class Program declaration",
                     async cancellationToken =>
                     {
                         var editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
@@ -41,7 +41,7 @@ public class PublicPartialProgramClassFixer : CodeFixProvider
                         {
                             return context.Document;
                         }
-                        editor.RemoveNode(classDeclaration, SyntaxRemoveOptions.KeepNoTrivia);
+                        editor.RemoveNode(classDeclaration, SyntaxRemoveOptions.KeepExteriorTrivia);
                         return editor.GetChangedDocument();
                     },
                     equivalenceKey: DiagnosticDescriptors.PublicPartialProgramClassNotRequired.Id),
