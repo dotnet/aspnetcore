@@ -77,6 +77,42 @@ public abstract class HttpContext
     /// </summary>
     public abstract void Abort();
 
+    /// <summary>
+    /// Gets or sets the <see cref="Endpoint"/> for this request. 
+    /// This property interacts with the <see cref="IEndpointFeature.Endpoint"/> and stays in sync with it.
+    /// </summary>
+    public virtual Endpoint? Endpoint
+    {
+        get
+        {
+            if (Features.Get<IEndpointFeature>() is IEndpointFeature feature)
+            {
+                return feature.Endpoint;
+            }
+
+            var newFeature = new EndpointFeature();
+            Features.Set<IEndpointFeature>(newFeature);
+            return newFeature.Endpoint;
+        }
+        set
+        {
+            if (Features.Get<IEndpointFeature>() is IEndpointFeature feature)
+            {
+                feature.Endpoint = value;
+            }
+            else
+            {
+                var newFeature = new EndpointFeature { Endpoint = value };
+                Features.Set<IEndpointFeature>(newFeature);
+            }
+        }
+    }
+
+    private sealed class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint? Endpoint { get; set; }
+    }
+
     private string DebuggerToString()
     {
         return HttpContextDebugFormatter.ContextToString(this, reasonPhrase: null);
@@ -90,7 +126,7 @@ public abstract class HttpContext
         public HttpContextFeatureDebugView Features => new HttpContextFeatureDebugView(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
-        public Endpoint? Endpoint => _context.GetEndpoint();
+        public Endpoint? Endpoint => _context.Endpoint;
         public ConnectionInfo Connection => _context.Connection;
         public WebSocketManager WebSockets => _context.WebSockets;
         public ClaimsPrincipal User => _context.User;

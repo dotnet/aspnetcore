@@ -82,6 +82,7 @@ public sealed class DefaultHttpContext : HttpContext
         _response.Initialize(revision);
         _connection?.Initialize(features, revision);
         _websockets?.Initialize(features, revision);
+        _features.Cache.Endpoint = Features.Get<IEndpointFeature>();
         _active = true;
     }
 
@@ -213,6 +214,34 @@ public sealed class DefaultHttpContext : HttpContext
         }
     }
 
+    /// <summary>
+    /// Gets or sets the <see cref="Endpoint"/> for this request.
+    /// </summary>
+    public override Endpoint? Endpoint
+    {
+        get
+        {
+            var endpointFeature = Features.Get<IEndpointFeature>();
+            if (endpointFeature == null)
+            {
+                endpointFeature = new EndpointFeature();
+                Features.Set(endpointFeature);
+            }
+
+            return endpointFeature.Endpoint;
+        }
+        set
+        {
+            var feature = Features.Get<IEndpointFeature>();
+            if (feature == null)
+            {
+                feature = new EndpointFeature();
+                Features.Set(feature);
+            }
+            feature.Endpoint = value;
+        }
+    }
+
     // This property exists because of backwards compatibility.
     // We send an anonymous object with an HttpContext property
     // via DiagnosticListener in various events throughout the pipeline. Instead
@@ -255,5 +284,11 @@ public sealed class DefaultHttpContext : HttpContext
         public IHttpRequestLifetimeFeature? Lifetime;
         public ISessionFeature? Session;
         public IHttpRequestIdentifierFeature? RequestIdentifier;
+        public IEndpointFeature? Endpoint;
+    }
+
+    private sealed class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint? Endpoint { get; set; }
     }
 }
