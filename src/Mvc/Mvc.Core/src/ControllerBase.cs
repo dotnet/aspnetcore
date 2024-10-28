@@ -1705,6 +1705,65 @@ public abstract class ControllerBase
             EnableRangeProcessing = enableRangeProcessing,
         };
     }
+
+    /// <summary>
+    /// Writes the file directly to the response body with the specified <paramref name="streamWriterCallback" /> (<see cref="StatusCodes.Status200OK"/>), and the
+    /// specified <paramref name="contentType" /> as the Content-Type.
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    /// <returns>The created <see cref="PushFileStreamResult"/> for the response.</returns>
+    [NonAction]
+    public virtual PushFileStreamResult File(Func<Stream, Task> streamWriterCallback, string contentType)
+        => File(streamWriterCallback, contentType, fileDownloadName: null);
+
+    /// <summary>
+    /// Writes the file directly to the response body with the specified <paramref name="streamWriterCallback" /> (<see cref="StatusCodes.Status200OK"/>), the
+    /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    /// <param name="fileDownloadName">The suggested file name.</param>
+    /// <returns>The created <see cref="PushFileStreamResult"/> for the response.</returns>
+    [NonAction]
+    public virtual PushFileStreamResult File(Func<Stream, Task> streamWriterCallback, string contentType, string? fileDownloadName)
+        => new PushFileStreamResult(streamWriterCallback, contentType) { FileDownloadName = fileDownloadName };
+
+    /// <summary>
+    /// Writes the file directly to the response body with the specified <paramref name="streamWriterCallback" /> (<see cref="StatusCodes.Status200OK"/>), and the
+    /// specified <paramref name="contentType" /> as the Content-Type.
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+    /// <returns>The created <see cref="PushFileStreamResult"/> for the response.</returns>
+    [NonAction]
+    public virtual PushFileStreamResult File(Func<Stream, Task> streamWriterCallback, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        => new PushFileStreamResult(streamWriterCallback, contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+        };
+
+    /// <summary>
+    /// Writes the file directly to the response body with the specified <paramref name="streamWriterCallback" /> (<see cref="StatusCodes.Status200OK"/>), the
+    /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    /// <param name="fileDownloadName">The suggested file name.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+    /// <returns>The created <see cref="PushFileStreamResult"/> for the response.</returns>
+    [NonAction]
+    public virtual PushFileStreamResult File(Func<Stream, Task> streamWriterCallback, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        => new PushFileStreamResult(streamWriterCallback, contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName,
+        };
     #endregion
 
     /// <summary>

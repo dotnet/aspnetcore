@@ -236,6 +236,7 @@ public static class MvcCoreServiceCollectionExtensions
         services.TryAddSingleton<IActionResultExecutor<PhysicalFileResult>, PhysicalFileResultExecutor>();
         services.TryAddSingleton<IActionResultExecutor<VirtualFileResult>, VirtualFileResultExecutor>();
         services.TryAddSingleton<IActionResultExecutor<FileStreamResult>, FileStreamResultExecutor>();
+        services.TryAddSingleton<IActionResultExecutor<PushFileStreamResult>, PushFileStreamResultExecutor>();
         services.TryAddSingleton<IActionResultExecutor<FileContentResult>, FileContentResultExecutor>();
         services.TryAddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
         services.TryAddSingleton<IActionResultExecutor<LocalRedirectResult>, LocalRedirectResultExecutor>();
