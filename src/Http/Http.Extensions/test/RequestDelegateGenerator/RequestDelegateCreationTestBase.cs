@@ -287,6 +287,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using Http;
 
 public static class {{className}}
 {
