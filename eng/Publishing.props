@@ -34,11 +34,12 @@
     <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.deb" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.rpm" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tar.gz" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.zip" UploadPathSegment="Runtime" >
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.zip" UploadPathSegment="Runtime" />
 
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime">
       <!-- Exclude wixpack.zip files from checksum generation -->
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </_InstallersToPublish>
