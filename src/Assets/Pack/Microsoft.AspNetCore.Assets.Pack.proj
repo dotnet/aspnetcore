@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk.Web" DefaultTargets="Pack">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>ASP.NET Core static framework assets</Description>
+    <PackageId>Microsoft.AspNetCore.Assets.Pack</PackageId>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The package doesn't produce any lib or ref assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <StaticWebAssetBasePath>_framework</StaticWebAssetBasePath>
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <DisableStaticWebAssetEndpointsBuildPropsFileGeneration>true</DisableStaticWebAssetEndpointsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">..\..\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">..\..\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_BlazorJSFilename Include="blazor.web.js" />
+    <_BlazorJSFilename Include="blazor.server.js" />
+    <_BlazorJSFilename Include="blazor.webassembly.js" />
+
+    <_BlazorJSFile Include="@(_BlazorJSFilename->'$(_BlazorJSContentRoot)\%(Identity)')" />
+  </ItemGroup>
+
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
+
+    <ItemGroup>
+      <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
+    </ItemGroup>
+
+    <Warning
+      Condition="'@(_MissingBlazorJSFile)' != ''"
+      Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Falling back to checked-in copy." />
+
+    <ItemGroup>
+      <_BlazorJSFile Remove="@(_MissingBlazorJSFile)" />
+      <_BlazorJSFile Include="@(_MissingBlazorJSFile->'..\..\Components\Web.JS\dist\Release\%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_GenerateFrameworkPackItems" BeforeTargets="GenerateStaticWebAssetsPackFiles">
+    <ItemGroup>
+      <_AssetCandidates Include="@(_BlazorJSFile)" />
+      <_AssetCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </_AssetCandidates>
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_AssetCandidates->Count())' != '0'"
+      CandidateAssets="@(_AssetCandidates)"
+      ContentRoot="_framework"
+      SourceId="$(PackageId)"
+      SourceType="Discovered"
+      FingerprintCandidates="true"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_FrameworkAssets" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_FrameworkAssets)' != ''"
+      CandidateAssets="@(_FrameworkAssets)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_FrameworkAssetEndpoints" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ComputeEndpointsForReferenceStaticWebAssets
+      Assets="@(_FrameworkAssets)"
+      CandidateEndpoints="@(_FrameworkAssetEndpoints)">
+      <Output TaskParameter="Endpoints" ItemName="_PackFrameworkAssetEndpoints" />
+    </ComputeEndpointsForReferenceStaticWebAssets>
+
+    <GenerateStaticWebAssetsPropsFile
+      StaticWebAssets="@(_FrameworkAssets)"
+      PackagePathPrefix="staticwebassets"
+      TargetPropsFilePath="$(IntermediateOutputPath)StaticWebAssets.targets" />
+
+    <GenerateStaticWebAssetEndpointsPropsFile
+      StaticWebAssets="@(_FrameworkAssets)"
+      StaticWebAssetEndpoints="@(_PackFrameworkAssetEndpoints)"
+      TargetPropsFilePath="$(IntermediateOutputPath)StaticWebAssets.endpoints.targets" />
+
+    <ItemGroup>
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)StaticWebAssets.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.targets</PackagePath>
+      </StaticWebAssetPackageFile>
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)StaticWebAssets.endpoints.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.endpoints.targets</PackagePath>
+      </StaticWebAssetPackageFile>
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="CoreCompile" />
+
+</Project>

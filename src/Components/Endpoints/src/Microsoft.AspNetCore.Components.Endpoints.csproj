@@ -60,28 +60,6 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
-    <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
-    <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
-  </PropertyGroup>
-
-  <!-- blazor.web.js should exist after eng/Npm.Workspace.nodeproj builds. Fall back if not. -->
-  <Target Name="_CheckBlazorWebJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebJSFile)') ">
-    <Warning Text="'$(BlazorWebJSFile)' does not exist. Falling back to checked-in copy." />
-    <PropertyGroup>
-      <BlazorWebJSFile>..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="_AddEmbeddedBlazorWebJS" AfterTargets="_CheckBlazorWebJSPath">
-    <ItemGroup>
-      <EmbeddedResource Include="$(BlazorWebJSFile)" LogicalName="_framework/$(BlazorWebJSFilename)" />
-      <EmbeddedResource Include="$(BlazorWebJSFile).map" LogicalName="_framework/$(BlazorWebJSFilename).map" Condition="Exists('$(BlazorWebJSFile).map')" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />

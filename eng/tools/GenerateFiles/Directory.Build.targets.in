@@ -39,6 +39,16 @@
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
         !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownAspNetCorePack
+      Include="@(KnownAspNetCorePack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
+        !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <!-- Temporary hack until the package is made available via the SDK -->
+    <KnownAspNetCorePack
+      Include="Microsoft.AspNetCore.Assets.Pack"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'${DefaultNetCoreTargetFramework}' == 'net10.0' AND '@(KnownAspNetCorePack->Count())' == '0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -94,6 +104,11 @@
       <WebAssemblySdkPackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
+
+    <KnownAspNetCorePack Update="Microsoft.AspNetCore.Assets.Pack">
+      <AspNetCorePackVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AspNetCorePackVersion>
+    </KnownAspNetCorePack>
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
       <Crossgen2PackVersion
