@@ -38,6 +38,9 @@ public class FormValueProviderFactory : IValueProviderFactory
         {
             form = await request.ReadFormAsync();
         }
+        catch (BadHttpRequestException) {
+            throw;
+        }
         catch (InvalidDataException ex)
         {
             // ReadFormAsync can throw InvalidDataException if the form content is malformed.
