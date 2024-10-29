@@ -7,6 +7,12 @@
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!--
+      Build this project in source-build as we want the archives to be built and this project is the transitive entry point
+      for the shared framework.
+    -->
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>
