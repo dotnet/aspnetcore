@@ -11,7 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
-    <ProjectReference Include="Microsoft.AspNetCore.App.Runtime.sfxproj" />
+    <ProjectReference Include="Microsoft.AspNetCore.App.Runtime.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <!--

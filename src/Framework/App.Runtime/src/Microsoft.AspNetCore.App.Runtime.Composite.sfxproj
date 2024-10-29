@@ -79,12 +79,12 @@
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <!-- A custom item group to be used in targets later.  -->
-      <OutputItemType>_ResolvedNativeProjectReferencePaths</OutputItemType>
+      <OutputItemType>NativeRuntimeAsset</OutputItemType>
       <!-- C++ projects don't invoke GetTargetPath by default when building. -->
       <Targets>Build;GetTargetPath</Targets>
     </ProjectReference>
 
-    <_ResolvedNativeProjectReferencePaths Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
+    <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
   </ItemGroup>
 
@@ -94,11 +94,5 @@
           Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
               !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
-  </Target>
-
-  <Target Name="_AddNativeRuntimeAssets" DependsOnTargets="ResolveProjectReferences" BeforeTargets="GetFilesToPackage">
-    <ItemGroup>
-      <NativeRuntimeAsset Include="@(_ResolvedNativeProjectReferencePaths->ClearMetadata())" />
-    </ItemGroup>
   </Target>
 </Project>
