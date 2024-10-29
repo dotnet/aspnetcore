@@ -356,10 +356,9 @@ internal sealed class OpenApiDocumentService(
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
-        var description = ReasonPhrases.GetReasonPhrase(statusCode);
         var response = new OpenApiResponse
         {
-            Description = description,
+            Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 

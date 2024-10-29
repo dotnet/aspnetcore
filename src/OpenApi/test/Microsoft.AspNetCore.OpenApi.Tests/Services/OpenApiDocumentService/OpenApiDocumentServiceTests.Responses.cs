@@ -304,4 +304,69 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             });
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDescriptionSetByUser()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        const string expectedCreatedDescription = "A new todo item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        // Act
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () =>
+            { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("201", response.Key);
+                    Assert.Equal(expectedCreatedDescription, response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal(expectedBadRequestDescription, response.Value.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesStatusCodeReasonPhraseWhenExplicitDescriptionIsMissing()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = null)] // Explicitly set to NULL
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
+        () =>
+            { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("201", response.Key);
+                    Assert.Equal("Created", response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal("Bad Request", response.Value.Description);
+                });
+        });
+    }
 }
