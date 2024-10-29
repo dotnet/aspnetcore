@@ -373,7 +373,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), Path.Combine("NoSuchDirectory", CertificateName));
 
         // Assert
-        Assert.Equal(EnsureCertificateResult.ErrorExportingTheCertificate, result);
+        Assert.Equal(EnsureCertificateResult.ErrorExportingTheCertificateToNonExistentDirectory, result);
     }
 
     [Fact]
