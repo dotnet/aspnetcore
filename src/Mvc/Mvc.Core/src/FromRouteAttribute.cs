@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// The route parameter name is matched against parameter segments of the route pattern case-insensitively.
 ///
 /// For more information about parameter binding see
-/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding?">Parameter binding</see>.
+/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding">Parameter binding</see>.
 /// </remarks>
 /// <example>
 /// In this example, the value of the 'id' route parameter is bound to the parameter.

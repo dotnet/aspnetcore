@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Note that HTTP header names are case-insensitive, so the header name is matched without regard to case.
 ///
 /// For more information about parameter binding see
-/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding?">Parameter binding</see>.
+/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding">Parameter binding</see>.
 /// </remarks>
 /// <example>
 /// In this example, the value of the 'User-Agent' header is bound to the parameter.

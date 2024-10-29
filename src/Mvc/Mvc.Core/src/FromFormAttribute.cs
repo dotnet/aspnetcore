@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Form parameter names are matched case-insensitively.
 ///
 /// For more information about parameter binding see
-/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding?">Parameter binding</see>.
+/// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding">Parameter binding</see>.
 /// </remarks>
 /// <example>
 /// In this example, the value of the 'name' field in the form-data request body is bound to the name parameter,
