@@ -438,6 +438,26 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
+    <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.24462.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>9d7532585ce71e30ab55f0364d3cecccaf0775d1</Sha>
+    </Dependency>
+    <Dependency Name="optimization.windows_nt-x86.MIBC.Runtime" Version="1.0.0-prerelease.24462.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>9d7532585ce71e30ab55f0364d3cecccaf0775d1</Sha>
+    </Dependency>
+    <Dependency Name="optimization.linux-x64.MIBC.Runtime" Version="1.0.0-prerelease.24462.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>9d7532585ce71e30ab55f0364d3cecccaf0775d1</Sha>
+    </Dependency>
+    <Dependency Name="optimization.windows_nt-arm64.MIBC.Runtime" Version="1.0.0-prerelease.24462.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>9d7532585ce71e30ab55f0364d3cecccaf0775d1</Sha>
+    </Dependency>
+    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.24462.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>9d7532585ce71e30ab55f0364d3cecccaf0775d1</Sha>
+    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.24527.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
