@@ -71,6 +71,8 @@
     <MSBuild Projects="@(ProjectReference)"
               Targets="PublishToDisk"
               Properties="OutputPath=$(OutputPath)" />
+
+    <MakeDir Directories="$(IntermediateOutputPath)"/>
   </Target>
 
   <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
