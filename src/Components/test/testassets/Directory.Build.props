@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Assets\Pack\Microsoft.AspNetCore.Assets.Pack.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(WasmEnableThreads)' == 'true'">
       <_Parameter1>Microsoft.AspNetCore.InternalTesting.RunWebAssemblyE2ETestsWithMultithreading</_Parameter1>
       <_Parameter2>true</_Parameter2>

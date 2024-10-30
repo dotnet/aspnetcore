@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web" DefaultTargets="Pack">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -9,6 +9,7 @@
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
 
     <!-- The package doesn't produce any lib or ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
@@ -19,6 +20,7 @@
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+    <StaticWebAssetsGetBuildAssetsTargets>_GetFrameworkBuildAssets</StaticWebAssetsGetBuildAssetsTargets>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,6 +53,36 @@
     <ItemGroup>
       <_BlazorJSFile Remove="@(_MissingBlazorJSFile)" />
       <_BlazorJSFile Include="@(_MissingBlazorJSFile->'..\..\Components\Web.JS\dist\Release\%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_GetFrameworkBuildAssets" Returns="@(ReferenceAsset)">
+
+    <ItemGroup>
+      <_ReferenceAssetCandidates Include="@(_BlazorJSFile)" />
+      <_ReferenceAssetCandidates>
+        <RelativePath>$(StaticWebAssetBasePath)/%(FileName)%(Extension)</RelativePath>
+        <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
+      </_ReferenceAssetCandidates>
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_ReferenceAssetCandidates->Count())' != '0'"
+      CandidateAssets="@(_ReferenceAssetCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Project"
+      AssetKind="All"
+      FingerprintCandidates="true"
+      BasePath="/"
+    >
+      <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <ReferenceAsset>
+        <ResultType>StaticWebAsset</ResultType>
+      </ReferenceAsset>
     </ItemGroup>
 
   </Target>
@@ -109,8 +141,5 @@
     </ItemGroup>
 
   </Target>
-
-  <Target Name="CreateManifestResourceNames" />
-  <Target Name="CoreCompile" />
 
 </Project>
