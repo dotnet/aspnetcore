@@ -147,6 +147,28 @@ public class Program
     }
 
     [Fact]
+    public async Task DoesNotFix_ExplicitPublicPartialProgramClass()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+public partial class Program
+{
+    public static void Main()
+    {
+        var app = WebApplication.Create();
+
+        app.MapGet("/", () => "Hello, World!");
+
+        app.Run();
+    }
+}
+""";
+
+        await VerifyCS.VerifyCodeFixAsync(source, source);
+    }
+
+    [Fact]
     public async Task DoesNotFix_ExplicitInternalProgramClass()
     {
         var source = """
