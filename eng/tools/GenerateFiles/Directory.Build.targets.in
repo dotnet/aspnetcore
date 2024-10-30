@@ -44,11 +44,6 @@
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
         !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
-    <!-- Temporary hack until the package is made available via the SDK -->
-    <KnownAspNetCorePack
-      Include="Microsoft.AspNetCore.Assets.Pack"
-      TargetFramework="${DefaultNetCoreTargetFramework}"
-      Condition="'${DefaultNetCoreTargetFramework}' == 'net10.0' AND '@(KnownAspNetCorePack->Count())' == '0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -107,7 +102,7 @@
 
     <KnownAspNetCorePack Update="Microsoft.AspNetCore.Assets.Pack">
       <AspNetCorePackVersion
-        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AspNetCorePackVersion>
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</AspNetCorePackVersion>
     </KnownAspNetCorePack>
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">

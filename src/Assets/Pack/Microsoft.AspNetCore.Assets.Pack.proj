@@ -142,4 +142,7 @@
 
   </Target>
 
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="CoreCompile" />
+
 </Project>
