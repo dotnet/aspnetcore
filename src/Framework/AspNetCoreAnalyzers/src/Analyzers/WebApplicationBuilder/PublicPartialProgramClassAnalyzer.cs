@@ -34,12 +34,12 @@ public sealed class PublicPartialProgramClassAnalyzer : DiagnosticAnalyzer
     private static bool IsPublicPartialClassProgram(SyntaxNode syntaxNode)
     {
         return syntaxNode is ClassDeclarationSyntax { Modifiers: { } modifiers } classDeclaration
+            && classDeclaration.Parent is CompilationUnitSyntax parentNode
+            && classDeclaration is { Identifier.ValueText: "Program" }
             && (classDeclaration.Members == null || classDeclaration.Members.Count == 0) // Skip non-empty declarations
             && modifiers is { Count: > 1 }
             && modifiers.Any(SyntaxKind.PublicKeyword)
             && modifiers.Any(SyntaxKind.PartialKeyword)
-            && classDeclaration is { Identifier.ValueText: "Program" }
-            && classDeclaration.Parent is CompilationUnitSyntax parentNode
             && parentNode.DescendantNodes().Count() > 1;
     }
 }

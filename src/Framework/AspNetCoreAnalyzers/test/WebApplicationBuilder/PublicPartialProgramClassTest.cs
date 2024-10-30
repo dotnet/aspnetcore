@@ -168,6 +168,52 @@ public partial class Program
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
+    [Theory]
+    [InlineData("public int Number { get; set; }")]
+    [InlineData("private int _foo = 2;")]
+    public async Task DoesNotFix_ExplicitPublicPartialProgramClass_WithProperty(string contents)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+public partial class Program
+{
+    {{contents}}
+}
+""";
+
+        await VerifyCS.VerifyCodeFixAsync(source, source);
+    }
+
+    [Theory]
+    [InlineData("namespace Foo")]
+    [InlineData("public class Foo")]
+    public async Task DoesNotFix_ExplicitPublicPartialProgramClassInNestedPattern(string parentDefinition)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+{{parentDefinition}}
+{
+    public partial class Program { }
+}
+""";
+
+        await VerifyCS.VerifyCodeFixAsync(source, source);
+    }
+
     [Fact]
     public async Task DoesNotFix_ExplicitInternalProgramClass()
     {
