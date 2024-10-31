@@ -19,6 +19,13 @@
     <TestRequiresRuntimePackDownload>true</TestRequiresRuntimePackDownload>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.AspNetCore.Assets.Pack"
+      Version="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
 
   <PropertyGroup>
