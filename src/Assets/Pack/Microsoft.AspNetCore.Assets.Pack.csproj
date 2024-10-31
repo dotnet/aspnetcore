@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web" DefaultTargets="Pack">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -99,6 +99,7 @@
       Condition="'@(_AssetCandidates->Count())' != '0'"
       CandidateAssets="@(_AssetCandidates)"
       ContentRoot="_framework"
+      AssetKind="All"
       SourceId="$(PackageId)"
       SourceType="Discovered"
       FingerprintCandidates="true"
@@ -131,6 +132,10 @@
       StaticWebAssetEndpoints="@(_PackFrameworkAssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)StaticWebAssets.endpoints.targets" />
 
+    <ComputeStaticWebAssetsTargetPaths Assets="@(_FrameworkAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+
     <ItemGroup>
       <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)StaticWebAssets.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.targets</PackagePath>
@@ -141,8 +146,5 @@
     </ItemGroup>
 
   </Target>
-
-  <Target Name="CreateManifestResourceNames" />
-  <Target Name="CoreCompile" />
 
 </Project>

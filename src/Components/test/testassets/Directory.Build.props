@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <!-- Temporary: Remove after package is provided by the SDK -->
-    <ProjectReference Include="$(RepoRoot)src\Assets\Pack\Microsoft.AspNetCore.Assets.Pack.proj" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.Assets.Pack" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
