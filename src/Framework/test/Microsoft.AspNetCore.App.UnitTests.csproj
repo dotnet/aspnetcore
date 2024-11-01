@@ -95,7 +95,9 @@
     </MSBuild>
 
     <ItemGroup>
-      <_TargetingPackDependencies Include="@(_TargetingPackFiles->WithMetadataValue('Extension','.dll'))" />
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles)" Condition="$([System.String]::new('%(_TargetingPackFiles.Directory)').Contains('analyzers'))" />
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles->WithMetadataValue('OutputItemType','AspNetCoreAnalyzer'))" />
+      <_TargetingPackDependencies Include="@(_TargetingPackFiles->WithMetadataValue('Extension','.dll'))" Exclude="@(_AnalyzersInTargetingPack)" />
 
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>

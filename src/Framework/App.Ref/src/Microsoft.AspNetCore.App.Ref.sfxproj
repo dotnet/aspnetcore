@@ -146,6 +146,16 @@
             '%(ReferencePath.NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
             '%(ReferencePath.NuGetSourceType)' == 'Package' " />
 
+      <!--
+        Use NETCore.App version for Runtime references.
+        This is the same as above except in "stabilized" version builds, where the transport package version
+        would be a non-shipping unstablized version, but the NETCore.App version is the shipping version.
+      -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')"
+      Condition="'%(ReferencePath.NuGetPackageId)' == 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
+                 '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+
+      <!-- Use shared framework version for project references. -->
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
           Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
     </ItemGroup>
