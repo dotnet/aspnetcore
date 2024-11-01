@@ -50,13 +50,11 @@
     <RemoveDir Directories="$(OutputPath)" />
     <MakeDir Directories="$(OutputPath)" />
 
-    <MakeDir Directories="$(IntermediateOutputPath)"/>
-
     <!-- Extract the dotnet-runtime archive -->
-    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz'"
+    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz' and '$(DotNetBuild)' != 'true'"
       Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
 
-    <Unzip Condition="'$(ArchiveFormat)' == 'zip'"
+    <Unzip Condition="'$(ArchiveFormat)' == 'zip' and '$(DotNetBuild)' != 'true'"
       SourceFiles="$(DotNetRuntimeArchive)"
       DestinationFolder="$(OutputPath)"
       OverwriteReadOnlyFiles="true" />
