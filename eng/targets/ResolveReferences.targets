@@ -269,11 +269,12 @@
   -->
   <Target Name="RemoveExtensionsCompileAssets"
       AfterTargets="ResolvePackageAssets"
-      Condition=" '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
+      Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref'
+        OR ( '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
-          ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+          $(_CompileTfmUsingReferenceAssemblies)) ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
           Condition=" '%(NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
