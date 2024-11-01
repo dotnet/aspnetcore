@@ -12,6 +12,11 @@
             <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 
+        <!-- Search references for upgrade policy keys -->
+        <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeyExistsSearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
+
         <!-- Ensure upgrades from 3.0.0 preview 1 and 2 (Preview 3 was not shipped). Conditioned for the 3.0.0 family. Hosting bundle simships x86/x64 so there's
              a single set of upgrade codes. -->
         <?if $(var.Version)=3.0.0.0?>
