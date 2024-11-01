@@ -1,4 +1,9 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.targets"/>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.endpoints.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.endpoints.targets" />
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.debug.targets"
+    Condition="'$(Configuration)' == 'Debug'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.debug.endpoints.targets"
+    Condition="'$(Configuration)' == 'Debug'"/>
 </Project>
