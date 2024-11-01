@@ -294,7 +294,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
         }
         catch (AggregateException)
         {
-            // This test is inheritly racey. The server could try to use blocks that have been disposed.
+            // This test is inherently racey. The server could try to use blocks that have been disposed.
             // Ignore errors related to this:
             //
             // System.AggregateException : Exceptions occurred while accessing blocks(Block is backed by disposed slab)
