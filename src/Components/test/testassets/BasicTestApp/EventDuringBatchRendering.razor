@@ -45,7 +45,7 @@
     @foreach (var item in itemsList)
     {
         <div @key="item">
-            <input @oninput="@(() => itemsList.Reverse())"
+            <input @oninput="@(() => Enumerable.Reverse(itemsList))"
                    @onchange="@(evt => eventLog += $"Change event on item {item.Name} with value {evt.Value}\n")" />
         </div>
     }
