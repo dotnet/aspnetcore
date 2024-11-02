@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -463,6 +464,12 @@ internal class EndpointParameter
         if (type.IsAbstract)
         {
             endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersAbstractType, location, parameterTypeString));
+            return false;
+        }
+
+        if (type.AllInterfaces.Any(x => x.ToString() == typeof(IEnumerable).FullName))
+        {
+            endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersEnumerableType, location, parameterTypeString));
             return false;
         }
 
