@@ -8,6 +8,7 @@
       This version file is required by source-build.
     -->
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <Target Name="WriteBaseRuntimeVersionFile" AfterTargets="Build">
