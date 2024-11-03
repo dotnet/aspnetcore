@@ -211,7 +211,7 @@ internal static class JsonNodeSchemaExtensions
     {
         // Apply constraints in reverse order because when it comes to the routing
         // layer the first constraint that is violated causes routing to short circuit.
-        foreach (var constraint in constraints.Reverse())
+        foreach (var constraint in Enumerable.Reverse(constraints))
         {
             if (constraint is MinRouteConstraint minRouteConstraint)
             {
