@@ -24,7 +24,7 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.3.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.1.23</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.23</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingRedisPackageVersion>2.3.0</MicrosoftExtensionsCachingRedisPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.1.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
@@ -41,7 +41,7 @@
     <MicrosoftExtensionsConfigurationPackageVersion>2.1.1</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.1</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsConfigurationXmlPackageVersion>2.1.1</MicrosoftExtensionsConfigurationXmlPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.3.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.3.0</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
@@ -68,9 +68,9 @@
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>2.1.1</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.1.6</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.1.1</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.3.0</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.1</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.1.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>2.3.0</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>2.1.6</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.1.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
