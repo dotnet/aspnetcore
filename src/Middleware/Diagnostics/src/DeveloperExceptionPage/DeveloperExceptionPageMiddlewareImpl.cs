@@ -67,7 +67,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         _exceptionHandler = DisplayException;
         _serializationContext = CreateSerializationContext(jsonOptions?.Value);
         _problemDetailsService = problemDetailsService;
-        foreach (var filter in filters.Reverse())
+        foreach (var filter in Enumerable.Reverse(filters))
         {
             var nextFilter = _exceptionHandler;
             _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
@@ -228,8 +228,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
         if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
             {
                 HttpContext = httpContext,
-                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
-                Exception = errorContext.Exception 
+                ProblemDetails = CreateProblemDetails(errorContext, httpContext),
+                Exception = errorContext.Exception
             }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
