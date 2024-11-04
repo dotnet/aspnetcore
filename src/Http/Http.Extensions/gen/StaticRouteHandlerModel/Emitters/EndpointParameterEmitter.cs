@@ -389,8 +389,8 @@ internal static class EndpointParameterEmitter
         // Unlike other scenarios, this will result in an exception being thrown
         // at runtime.
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
-            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
+            $"httpContext.RequestServices.GetService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>();" :
+            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>()";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
@@ -404,8 +404,8 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
 
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :
-            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey})";
+            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey});" :
+            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey})";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
