@@ -26,7 +26,7 @@ public class GcmAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext, decipheredtext);
+        Assert.Equal(plaintext.AsSpan(), decipheredtext);
     }
 
     [ConditionalFact]
@@ -100,6 +100,6 @@ public class GcmAuthenticatedEncryptorTests
         //         | 00 00 00 00 (postBuffer)
 
         string retValAsString = Convert.ToBase64String(retVal);
-        Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA", retValAsString);
+        Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA".AsSpan(), retValAsString);
     }
 }
