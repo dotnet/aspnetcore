@@ -44,8 +44,8 @@ public class HtmlHelperPasswordTest
             var data = new TheoryData<ViewDataDictionary<PasswordModel>, object>();
             foreach (var items in HtmlAttributeData)
             {
-                data.Add(viewData, items.ToArray());
-                data.Add(nullModelViewData, items.ToArray());
+                data.Add(viewData, items);
+                data.Add(nullModelViewData, items);
             }
 
             return data;
