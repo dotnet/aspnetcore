@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <inheritdoc />
 internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext> where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;

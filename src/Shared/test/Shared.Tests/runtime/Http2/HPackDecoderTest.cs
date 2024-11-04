@@ -87,6 +87,10 @@ namespace System.Net.Http.Unit.Tests.HPack
             .Concat(_headerValueHuffmanBytes)
             .ToArray();
 
+        private static readonly byte[] _literalEmptyString = new byte[] { 0x00 };
+
+        private static readonly byte[] _literalEmptyStringHuffman = new byte[] { 0x80 };
+
         // &        *
         // 11111000 11111111
         private static readonly byte[] _huffmanLongPadding = new byte[] { 0x82, 0xf8, 0xff };
@@ -145,6 +149,25 @@ namespace System.Net.Http.Unit.Tests.HPack
             // Index it
             _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: _handler);
             Assert.Equal(_headerValueString, _handler.DecodedHeaders[_headerNameString]);
+        }
+
+        [Fact]
+        public void DecodesIndexedHeaderField_DynamicTable_ReferencedEntryRemovedOnInsertion()
+        {
+            // Pre-populate the dynamic table so we'll have something to reference.
+            // This entry will have index 62 (0x3E).
+            _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
+            Assert.Equal(1, _dynamicTable.Count);
+
+            Assert.InRange(_dynamicTable.MaxSize, 1, _literalHeaderNameBytes.Length); // Assert that our string will be too big
+
+            byte[] encoded = (new byte[] { 0x40 | 0x3E }) // Indexing enabled (0x40) | dynamic table (62 = 0x3E) as a 6-integer, 
+                .Concat(_literalHeaderName) // A header value that's too large to fit in the dynamic table
+                .ToArray();
+
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+            Assert.Equal(0, _dynamicTable.Count); // The large entry caused the table to be wiped
+            Assert.Equal(_literalHeaderNameString, _handler.DecodedHeaders[_headerNameString]); // but we got the header anyway
         }
 
         [Fact]
@@ -244,6 +267,43 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_EmptyName()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_literalEmptyString)
+                .Concat(_headerValue)
+                .ToArray();
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_invalid_header_name, string.Empty), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_EmptyValue()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_headerName)
+                .Concat(_literalEmptyString)
+                .ToArray();
+
+            TestDecodeWithoutIndexing(encoded, _headerNameString, string.Empty);
+        }
+
+        [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_EmptyNameAndValue()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_literalEmptyString)
+                .Concat(_literalEmptyString)
+                .ToArray();
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_invalid_header_name, string.Empty), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedName()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -252,6 +312,19 @@ namespace System.Net.Http.Unit.Tests.HPack
                 .ToArray();
 
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
+        }
+
+        [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedName_Empty()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_literalEmptyStringHuffman)
+                .Concat(_headerValue)
+                .ToArray();
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_invalid_header_name, string.Empty), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
         }
 
         [Fact]
@@ -266,6 +339,17 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedValue_Empty()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_headerName)
+                .Concat(_literalEmptyStringHuffman)
+                .ToArray();
+
+            TestDecodeWithoutIndexing(encoded, _headerNameString, string.Empty);
+        }
+
+        [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedNameAndValue()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -274,6 +358,19 @@ namespace System.Net.Http.Unit.Tests.HPack
                 .ToArray();
 
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
+        }
+
+        [Fact]
+        public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedNameAndValue_Empty()
+        {
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(_literalEmptyStringHuffman)
+                .Concat(_literalEmptyStringHuffman)
+                .ToArray();
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_invalid_header_name, string.Empty), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
         }
 
         [Fact]

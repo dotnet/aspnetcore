@@ -29,6 +29,11 @@ public sealed class ImportMap : IComponent
     [Parameter]
     public ImportMapDefinition? ImportMapDefinition { get; set; }
 
+    /// <summary>
+    /// Gets or sets a collection of additional attributes that will be applied to the created <c>script</c> element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _renderHandle = renderHandle;
@@ -57,7 +62,8 @@ public sealed class ImportMap : IComponent
     {
         builder.OpenElement(0, "script");
         builder.AddAttribute(1, "type", "importmap");
-        builder.AddMarkupContent(2, _computedImportMapDefinition!.ToJson());
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddMarkupContent(3, _computedImportMapDefinition!.ToJson());
         builder.CloseElement();
     }
 }

@@ -3,10 +3,13 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -81,7 +84,7 @@ internal class StaticAssetsInvoker
     public IFileInfo FileInfo => _fileInfo ??=
         _fileProvider.GetFileInfo(_resource.AssetPath) is IFileInfo file and { Exists: true } ?
         file :
-        throw new InvalidOperationException($"The file '{_resource.AssetPath}' could not be found.");
+        throw new FileNotFoundException($"The file '{_resource.AssetPath}' could not be found.");
 
     private Task ApplyResponseHeadersAsync(StaticAssetInvocationContext context, int statusCode)
     {
@@ -157,6 +160,14 @@ internal class StaticAssetsInvoker
                 }
                 catch (FileNotFoundException)
                 {
+                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() != null)
+                    {
+                        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+                        if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
+                        {
+                            _logger.EnsureStaticWebAssetsEnabled();
+                        }
+                    }
                     context.Response.Clear();
                 }
                 return;

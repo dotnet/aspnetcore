@@ -1,5 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ImportMap
+Microsoft.AspNetCore.Components.ImportMap.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.ImportMap.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.ImportMap.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
 Microsoft.AspNetCore.Components.ImportMap.HttpContext.set -> void
 Microsoft.AspNetCore.Components.ImportMap.ImportMap() -> void

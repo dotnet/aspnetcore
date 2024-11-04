@@ -657,6 +657,80 @@ public class ExceptionHandlerTest
     }
 
     [Fact]
+    public async Task ExceptionHandler_SelectsStatusCode()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddProblemDetails())
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler(new ExceptionHandlerOptions
+                        {
+                            StatusCodeSelector = ex => ex is ApplicationException
+                                ? StatusCodes.Status409Conflict
+                                : StatusCodes.Status500InternalServerError,
+                        });
+
+                        app.Map("/throw", innerAppBuilder =>
+                        {
+                            innerAppBuilder.Run(_ => throw new ApplicationException("Something bad happened."));
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using (var server = host.GetTestServer())
+        {
+            var client = server.CreateClient();
+            var response = await client.GetAsync("throw");
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task StatusCodeSelector_CanSelect404()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddProblemDetails())
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler(new ExceptionHandlerOptions
+                        {
+                            // 404 is not allowed,
+                            // but as the exception is explicitly mapped to 404 by the StatusCodeSelector,
+                            // it should be set anyway.
+                            AllowStatusCode404Response = false,
+                            StatusCodeSelector = ex => ex is ApplicationException
+                                ? StatusCodes.Status404NotFound
+                                : StatusCodes.Status500InternalServerError,
+                        });
+
+                        app.Map("/throw", innerAppBuilder =>
+                        {
+                            innerAppBuilder.Run(_ => throw new ApplicationException("Something bad happened."));
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using (var server = host.GetTestServer())
+        {
+            var client = server.CreateClient();
+            var response = await client.GetAsync("throw");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task ExceptionHandlerWithOwnBuilder()
     {
         var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);

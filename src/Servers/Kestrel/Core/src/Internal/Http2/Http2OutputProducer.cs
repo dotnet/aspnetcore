@@ -12,6 +12,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <remarks>
+/// Owned by <see cref="Http2Stream"/>.
+/// <para/>
+/// Tracks the outgoing stream flow control window.
+/// <para/>
+/// Reusable after calling <see cref="StreamReset"/> (<see cref="Reset"/> is unrelated and does nothing).
+/// </remarks>
 internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;
@@ -21,7 +28,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     private readonly MemoryPool<byte> _memoryPool;
     private readonly Http2Stream _stream;
-    private readonly object _dataWriterLock = new object();
+    private readonly Lock _dataWriterLock = new();
     private readonly Pipe _pipe;
     private readonly ConcurrentPipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
@@ -239,9 +246,9 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    // This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
-    // For HTTP/2 we abort the stream.
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
+    // This is called when a CancellationToken fires mid-write.
+    // In HTTP/1.x, this aborts the entire connection. For HTTP/2 we abort the stream.
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
     }
@@ -469,6 +476,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
+
     public Span<byte> GetSpan(int sizeHint = 0)
     {
         lock (_dataWriterLock)
@@ -590,7 +599,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal void OnRequestProcessingEnded()
     {
-        var shouldCompleteStream = false;
+        bool shouldCompleteStream;
         lock (_dataWriterLock)
         {
             if (_requestProcessingComplete)
@@ -616,7 +625,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal ValueTask<FlushResult> CompleteResponseAsync()
     {
-        var shouldCompleteStream = false;
+        bool shouldCompleteStream;
         ValueTask<FlushResult> task = default;
 
         lock (_dataWriterLock)
@@ -696,8 +705,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     public bool TryUpdateStreamWindow(int bytes)
     {
-        var schedule = false;
-
+        bool schedule;
         lock (_dataWriterLock)
         {
             var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;

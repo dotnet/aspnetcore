@@ -214,7 +214,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
             Action<IApplicationBuilder> configure = _startup!.Configure;
             if (startupFilters != null)
             {
-                foreach (var filter in startupFilters.Reverse())
+                foreach (var filter in Enumerable.Reverse(startupFilters))
                 {
                     configure = filter.Configure(configure);
                 }

@@ -7,7 +7,6 @@ using System.Net.Http.Formatting;
 using BasicWebSite;
 using BasicWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.AspNetCore.TestHost;
@@ -137,7 +136,6 @@ public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<Ba
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55932")]
     [Fact]
     public async Task TestingInfrastructure_RedirectHandlerFollowsStatusCode303()
     {

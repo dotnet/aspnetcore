@@ -265,6 +265,11 @@ public class ScriptTagHelper : UrlResolutionTagHelper
             output.CopyHtmlAttribute(SrcAttributeName, context);
         }
 
+        if (Type != null)
+        {
+            output.CopyHtmlAttribute(TypeAttributeName, context);
+        }
+
         // If there's no "src" attribute in output.Attributes this will noop.
         ProcessUrlAttribute(SrcAttributeName, output);
 

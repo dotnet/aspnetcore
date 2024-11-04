@@ -53,7 +53,8 @@ internal static class JsonTypeInfoExtensions
     internal static string? GetSchemaReferenceId(this JsonTypeInfo jsonTypeInfo, bool isTopLevel = true)
     {
         var type = jsonTypeInfo.Type;
-        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(type))
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (isTopLevel && OpenApiConstants.PrimitiveTypes.Contains(underlyingType ?? type))
         {
             return null;
         }
@@ -65,17 +66,17 @@ internal static class JsonTypeInfoExtensions
             return simpleName;
         }
 
-        if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Enumerable, ElementType: { } elementType })
+        // Although arrays are enumerable types they are not encoded correctly
+        // with JsonTypeInfoKind.Enumerable so we handle the Enumerble type
+        // case here.
+        if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Enumerable } || type.IsArray)
         {
-            var elementTypeInfo = jsonTypeInfo.Options.GetTypeInfo(elementType);
-            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
+            return null;
         }
 
-        if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Dictionary, KeyType: { } keyType, ElementType: { } valueType })
+        if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Dictionary })
         {
-            var keyTypeInfo = jsonTypeInfo.Options.GetTypeInfo(keyType);
-            var valueTypeInfo = jsonTypeInfo.Options.GetTypeInfo(valueType);
-            return $"DictionaryOf{keyTypeInfo.GetSchemaReferenceId(isTopLevel: false)}And{valueTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
+            return null;
         }
 
         return type.GetSchemaReferenceId(jsonTypeInfo.Options);
@@ -88,14 +89,6 @@ internal static class JsonTypeInfoExtensions
         if (_simpleTypeToName.TryGetValue(type, out var simpleName))
         {
             return simpleName;
-        }
-
-        // Although arrays are enumerable types they are not encoded correctly
-        // with JsonTypeInfoKind.Enumerable so we handle that here
-        if (type.IsArray && type.GetElementType() is { } elementType)
-        {
-            var elementTypeInfo = options.GetTypeInfo(elementType);
-            return $"ArrayOf{elementTypeInfo.GetSchemaReferenceId(isTopLevel: false)}";
         }
 
         // Special handling for anonymous types

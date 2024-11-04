@@ -65,6 +65,6 @@ public sealed class InternalServerError<TValue> : IResult, IEndpointMetadataProv
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status500InternalServerError, typeof(TValue), new[] { "application/json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status500InternalServerError, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

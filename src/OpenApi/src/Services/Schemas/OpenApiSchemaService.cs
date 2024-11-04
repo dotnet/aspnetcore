@@ -32,7 +32,7 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
-    private readonly OpenApiOptions _openApiOptions = optionsMonitor.Get(documentName);
+    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new OpenApiJsonSchemaContext(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
         // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
@@ -66,7 +66,8 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                    [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                    [OpenApiConstants.SchemaId] = "IFormFile"
                 };
             }
             else if (type == typeof(IFormFileCollection))
@@ -77,23 +78,36 @@ internal sealed class OpenApiSchemaService(
                     [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                        [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                        [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                        [OpenApiConstants.SchemaId] = "IFormFile"
                     }
                 };
             }
             // STJ uses `true` in place of an empty object to represent a schema that matches
-            // anything. We override this default behavior here to match the style traditionally
-            // expected in OpenAPI documents.
-            if (type == typeof(object))
+            // anything (like the `object` type) or types with user-defined converters. We override
+            // this default behavior here to match the format expected in OpenAPI v3.
+            if (schema.GetValueKind() == JsonValueKind.True)
             {
                 schema = new JsonObject();
             }
-            schema.ApplyPrimitiveTypesAndFormats(context);
-            schema.ApplySchemaReferenceId(context);
-            schema.ApplyPolymorphismOptions(context);
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider } jsonPropertyInfo)
+            var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
+            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
+            schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+            if (context.PropertyInfo is { } jsonPropertyInfo)
             {
+                // Short-circuit STJ's handling of nested properties, which uses a reference to the
+                // properties type schema with a schema that uses a document level reference.
+                // For example, if the property is a `public NestedTyped Nested { get; set; }` property,
+                // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
+                if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
+                {
+                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
+                }
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+            }
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            {
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
@@ -112,7 +126,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, bool captureSchemaByRef = false, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -122,27 +136,81 @@ internal sealed class OpenApiSchemaService(
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
-        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
+        // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
+        // particularly in the case of maxDepth.
+        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
-        _schemaStore.PopulateSchemaIntoReferenceCache(schema);
+        await ApplySchemaTransformersAsync(schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        _schemaStore.PopulateSchemaIntoReferenceCache(schema, captureSchemaByRef);
         return schema;
     }
 
-    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        if (schemaTransformers.Length == 0)
+        {
+            return;
+        }
+        var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
-            Type = type,
+            JsonTypeInfo = jsonTypeInfo,
+            JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
-            ApplicationServices = serviceProvider
+            ApplicationServices = scopedServiceProvider
         };
-        for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
+        for (var i = 0; i < schemaTransformers.Length; i++)
         {
-            var transformer = _openApiOptions.SchemaTransformers[i];
-            await transformer(schema, context, cancellationToken);
+            // Reset context object to base state before running each transformer.
+            var transformer = schemaTransformers[i];
+            await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
+        }
+    }
+
+    private async Task InnerApplySchemaTransformersAsync(OpenApiSchema schema,
+        JsonTypeInfo jsonTypeInfo,
+        JsonPropertyInfo? jsonPropertyInfo,
+        OpenApiSchemaTransformerContext context,
+        IOpenApiSchemaTransformer transformer,
+        CancellationToken cancellationToken = default)
+    {
+        context.UpdateJsonTypeInfo(jsonTypeInfo, jsonPropertyInfo);
+        await transformer.TransformAsync(schema, context, cancellationToken);
+
+        // Only apply transformers on polymorphic schemas where we can resolve the derived
+        // types associated with the base type.
+        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            var anyOfIndex = 0;
+            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
+                if (schema.AnyOf.Count <= anyOfIndex)
+                {
+                    break;
+                }
+                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, null, context, transformer, cancellationToken);
+                anyOfIndex++;
+            }
+        }
+
+        if (schema.Items is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
+            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+
+        if (schema.Properties is { Count: > 0 })
+        {
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                {
+                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
+                }
+            }
         }
     }
 

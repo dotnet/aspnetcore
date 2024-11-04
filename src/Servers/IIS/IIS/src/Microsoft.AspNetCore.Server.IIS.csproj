@@ -21,6 +21,7 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" LinkBase="Shared\RequestProcessing\" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />

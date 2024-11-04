@@ -7,35 +7,35 @@
       Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
-  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 9.0. -->
   <ItemGroup>
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAppHostPack->Count())' != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
-      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownRuntimePack->Count())' != '0' AND
         !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownFrameworkReference->Count())' != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownILLinkPack
-      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownILLinkPack->Count())' != '0' AND
         !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownILCompilerPack
-      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownILCompilerPack->Count())' != '0' AND
         !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownWebAssemblySdkPack
-      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
         !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
@@ -44,7 +44,7 @@
   <ItemGroup>
     <!--
       Reference base shared framework at incoming dependency flow version, not bundled sdk version.
-      Apply this to all projects that target the default tfm (e.g. net8.0) or a rid-based variant of it (e.g. net8.0-windows)
+      Apply this to all projects that target the default tfm (e.g. net9.0) or a rid-based variant of it (e.g. net9.0-windows)
     -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
@@ -122,8 +122,9 @@
 
   <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
   <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
-    <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
-    <EnableRuntimePackDownload>false</EnableRuntimePackDownload>
+    <!-- Allow additional targeting and runtime packs to be downloaded only if required by a test. -->
+    <EnableTargetingPackDownload Condition="'$(TestRequiresTargetingPackDownload)' != 'true'">false</EnableTargetingPackDownload>
+    <EnableRuntimePackDownload Condition="'$(TestRequiresRuntimePackDownload)' != 'true'">false</EnableRuntimePackDownload>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 

@@ -59,5 +59,10 @@ internal static partial class LoggerExtensions
     [LoggerMessage(16, LogLevel.Warning,
         "The WebRootPath was not found: {WebRootPath}. Static files may be unavailable.", EventName = "WebRootPathNotFound")]
     public static partial void WebRootPathNotFound(this ILogger logger, string webRootPath);
+
+    [LoggerMessage(17, LogLevel.Warning,
+        "The application is not running against the published output and Static Web Assets are not enabled." +
+        " To configure static web assets in other environments, call 'StaticWebAssetsLoader.UseStaticWebAssets(IWebHostEnvironment, IConfiguration)' to enable them.", EventName = "StaticWebAssetsNotEnabled")]
+    public static partial void EnsureStaticWebAssetsEnabled(this ILogger logger);
 }
 

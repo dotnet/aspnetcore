@@ -6,20 +6,34 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging;
+using RazorWebSite;
+using System.Reflection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 /// <summary>
 /// These tests are for scenarios when <see cref="MvcOptions.RespectBrowserAcceptHeader"/> is <c>False</c>, which is the default.
 /// </summary>
-public class DoNotRespectBrowserAcceptHeaderTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
+public class DoNotRespectBrowserAcceptHeaderTests : LoggedTest
 {
-    public DoNotRespectBrowserAcceptHeaderTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<FormatterWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<FormatterWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Theory]
     [InlineData("application/xml,*/*;q=0.2")]

@@ -16,35 +16,27 @@
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
     <!-- Skip puppeteer tests until https://github.com/dotnet/aspnetcore/issues/54176 is resolved -->
-    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1;npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_NpmAdditionalEnvironmentVariables>
+    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
-  <Target Name="_VerifyNPMCache" Condition="$(ContinuousIntegrationBuild) == 'true'" >
-    <Message Text="Verifying NPM cache..." Importance="high" />
-    <Exec
-      Command="npm cache verify"
-      WorkingDirectory="$(MSBuildThisFileDirectory).."
-      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
-  </Target>
-
-  <Target Name="Restore" DependsOnTargets="_VerifyNPMCache">
+  <Target Name="Restore">
     <Message Text="Restoring NPM packages..." Importance="high" />
     <Exec
-      Command="npm ci --offline"
+      Command="npm ci"
       WorkingDirectory="$(MSBuildThisFileDirectory).."
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
   <Target Name="Build">
     <PropertyGroup>
-      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     </PropertyGroup>
     <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
 
     <Message Text="Building NPM packages..." Importance="high" />
 
     <Exec
-      Condition="$(ContinuousIntegrationBuild) == 'true'"
       Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
@@ -61,11 +53,16 @@
 
   <Target Name="Pack">
     <PropertyGroup>
-      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
     <ItemGroup>
       <_NpmGeneratedPackages Include="$(PackageOutputPath)/*.tgz" />
     </ItemGroup>

@@ -5,22 +5,16 @@ See https://github.com/aspnet/Benchmarks#benchmarks for usage guidance on using 
 
 ### Running the benchmarks
 
-The TestApp is a regular BlazorWASM project and can be run using `dotnet run`. The Driver is an app that connects against an existing Selenium server, and speaks the Benchmark protocol. You generally do not need to run the Driver locally, but if you were to do so, you can either start a selenium-server instance and run using `dotnet run [<selenium-server-port>]` or run it inside a Linux-based docker container.
+The TestApp is a regular BlazorWASM project and can be run using `dotnet run`. The Driver is an app that uses Playwright to launch a browser and run the test app, reporting benchmark results in Crank's protocol format. You generally do not need to run the Driver locally, you can do so if needed via `dotnet run`.
 
-Here are the commands you would need to run it locally inside docker:
-
-1. `dotnet publish -c Release Driver/Wasm.Performance.Driver.csproj`
-2. `docker build -t blazor-local -f ./local.dockerfile . `
-3. `docker run -it blazor-local`
-
-To run the benchmark app in the Benchmark server, run
+The benchmark app can also be run using [Crank](https://github.com/dotnet/crank?tab=readme-ov-file). To run the benchmark app in the Benchmark server, follow the Crank installation steps and then run:
 
 ```
-dotnet run -- --config aspnetcore/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json application.endpoints <BenchmarkServerUri> --scenario blazorwasmbenchmark
+crank --config https://github.com/dotnet/aspnetcore/blob/main/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json?raw=true --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true --scenario blazorwasmbenchmark --profile aspnet-perf-lin
 ```
 
 If you have local changes that you'd like to benchmark, the easiest way is to push your local changes and tell the server to use your branch:
 
 ```
-dotnet run -- --config aspnetcore/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json application.endpoints <BenchmarkServerUri> --scenario blazorwasmbenchmark --application.buildArguments "gitBranch=mylocalchanges"
+crank --config https://github.com/dotnet/aspnetcore/blob/main/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json?raw=true --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true --scenario blazorwasmbenchmark --profile aspnet-perf-lin --application.buildArguments gitBranch=myLocalChanges --application.source.branchOrCommit myLocalChanges
 ```

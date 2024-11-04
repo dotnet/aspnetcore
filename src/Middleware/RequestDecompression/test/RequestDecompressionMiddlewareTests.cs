@@ -319,7 +319,7 @@ public class RequestDecompressionMiddlewareTests
 
         if (isDecompressed)
         {
-            Assert.Empty(contentEncodingHeader);
+            Assert.Equal(0, contentEncodingHeader.Count);
 
             AssertDecompressedWithLog(logMessages, contentEncoding);
             Assert.Equal(uncompressedBytes, outputBytes);

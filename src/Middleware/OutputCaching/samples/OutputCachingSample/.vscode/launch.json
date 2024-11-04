@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net9.0/OutputCachingSample.dll",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/OutputCachingSample.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

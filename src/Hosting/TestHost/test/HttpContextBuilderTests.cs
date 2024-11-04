@@ -107,7 +107,9 @@ public class HttpContextBuilderTests
         var task = server.SendAsync(c => { });
 
         Assert.False(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(task.Wait(50));
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         block.Set();
         var context = await task;
     }

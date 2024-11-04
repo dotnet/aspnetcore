@@ -280,6 +280,11 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
                 reader.Read();
+                if (reader.TokenType == JsonTokenType.False)
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    break;
+                }
                 var additionalPropsConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.AdditionalProperties = additionalPropsConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
                 break;
@@ -300,11 +305,15 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.DiscriminatorMappingKeyword:
                 reader.Read();
                 var mappings = ReadDictionary<string>(ref reader);
-                schema.Discriminator.Mapping = mappings;
+                if (mappings is not null)
+                {
+                    schema.Discriminator.Mapping = mappings;
+                }
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
-                schema.Extensions.Add(OpenApiConstants.SchemaId, new OpenApiString(reader.GetString()));
+                schema.Annotations ??= new Dictionary<string, object>();
+                schema.Annotations.Add(OpenApiConstants.SchemaId, reader.GetString());
                 break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
@@ -312,6 +321,10 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Enum = [ReadOpenApiAny(ref reader, out var constType)];
                 schema.Type = constType;
+                break;
+            case OpenApiSchemaKeywords.RefKeyword:
+                reader.Read();
+                schema.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = reader.GetString() };
                 break;
             default:
                 reader.Skip();

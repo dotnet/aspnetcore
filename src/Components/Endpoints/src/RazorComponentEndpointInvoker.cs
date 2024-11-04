@@ -33,6 +33,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;

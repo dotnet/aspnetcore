@@ -1,1 +1,14 @@
 #nullable enable
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager.CanDeleteKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete) -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CanDeleteKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete) -> bool
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.get -> int?
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.set -> void
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.Element.get -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool

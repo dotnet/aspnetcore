@@ -99,7 +99,7 @@ if [ "$?" == "0" ]; then
     PackageSources+=('dotnet3.1-internal-transport')
 fi
 
-DotNetVersions=('5' '6' '7' '8')
+DotNetVersions=('5' '6' '7' '8' '9')
 
 for DotNetVersion in ${DotNetVersions[@]} ; do
     FeedPrefix="dotnet${DotNetVersion}";

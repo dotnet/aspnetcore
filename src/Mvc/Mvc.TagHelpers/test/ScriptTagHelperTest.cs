@@ -113,7 +113,7 @@ public class ScriptTagHelperTest
         Assert.Equal(expectedAttributes, output.Attributes);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_Data
     {
         get
         {
@@ -295,7 +295,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_NoSrc_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_NoSrc_Data
     {
         get
         {
@@ -383,7 +383,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> DoesNotRunWhenARequiredAttributeIsMissing_Data
     {
         get
         {
@@ -1023,6 +1023,44 @@ public class ScriptTagHelperTest
         Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
         var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
         Assert.Equal(expectedContent, content);
+    }
+
+    [Theory]
+    [InlineData("~/js/site.js")]
+    [InlineData("/approot/js/site.js")]
+    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection_PreservesModule(string path)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", path),
+                    new TagHelperAttribute("type", "module"),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            return value.StartsWith("~/", StringComparison.Ordinal) ?
+                value.Replace("~/", "/approot/") :
+                value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.ViewContext.HttpContext.Request.PathBase = "/approot";
+        helper.Src = path;
+        helper.Type = "module";
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("module", output.Attributes["type"].Value);
+        Assert.Equal("/approot/js/site.fingerprint.js", output.Attributes["src"].Value);
     }
 
     private static ScriptTagHelper GetHelper(

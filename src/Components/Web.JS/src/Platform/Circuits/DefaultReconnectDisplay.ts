@@ -20,6 +20,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   overlay: HTMLDivElement;
 
+  host: HTMLDivElement;
+
   dialog: HTMLDivElement;
 
   rejoiningAnimation: HTMLDivElement;
@@ -36,10 +38,15 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.overlay = this.document.createElement('div');
     this.overlay.className = DefaultReconnectDisplay.ReconnectOverlayClassName;
-    this.overlay.id = dialogId;
 
-    this.dialog = this.document.createElement('div');
+    this.host = this.document.createElement('div');
+    this.host.id = dialogId;
+
+    const shadow = this.host.attachShadow({ mode: 'open' });
+    this.dialog = document.createElement('div');
     this.dialog.className = DefaultReconnectDisplay.ReconnectDialogClassName;
+    shadow.appendChild(this.style);
+    shadow.appendChild(this.overlay);
 
     this.rejoiningAnimation = document.createElement('div');
     this.rejoiningAnimation.className = DefaultReconnectDisplay.RejoiningAnimationClassName;
@@ -71,18 +78,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   show(): void {
-    if (!this.document.contains(this.overlay)) {
-      this.document.body.appendChild(this.overlay);
-    }
-
-    if (!this.document.contains(this.style)) {
-      this.document.body.appendChild(this.style);
+    if (!this.document.contains(this.host)) {
+      this.document.body.appendChild(this.host);
     }
 
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
     this.status.innerHTML = 'Rejoining the server...';
-    this.overlay.style.display = 'block';
+    this.host.style.display = 'block';
     this.overlay.classList.add(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }
 
@@ -96,7 +99,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   hide(): void {
-    this.overlay.style.display = 'none';
+    this.host.style.display = 'none';
     this.overlay.classList.remove(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }
 

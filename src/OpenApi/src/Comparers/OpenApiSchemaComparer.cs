@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -26,25 +24,29 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             return true;
         }
 
-        return Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
+        // Compare property equality in an order that should help us find inequality faster
+        return
+            x.Type == y.Type &&
+            x.Format == y.Format &&
+            SchemaIdEquals(x, y) &&
+            ComparerHelpers.DictionaryEquals(x.Properties, y.Properties, Instance) &&
+            OpenApiDiscriminatorComparer.Instance.Equals(x.Discriminator, y.Discriminator) &&
+            Instance.Equals(x.AdditionalProperties, y.AdditionalProperties) &&
             x.AdditionalPropertiesAllowed == y.AdditionalPropertiesAllowed &&
-            x.AllOf.SequenceEqual(y.AllOf, Instance) &&
-            x.AnyOf.SequenceEqual(y.AnyOf, Instance) &&
+            ComparerHelpers.ListEquals(x.AllOf, y.AllOf, Instance) &&
+            ComparerHelpers.ListEquals(x.AnyOf, y.AnyOf, Instance) &&
             x.Deprecated == y.Deprecated &&
             OpenApiAnyComparer.Instance.Equals(x.Default, y.Default) &&
             x.Description == y.Description &&
-            OpenApiDiscriminatorComparer.Instance.Equals(x.Discriminator, y.Discriminator) &&
             OpenApiAnyComparer.Instance.Equals(x.Example, y.Example) &&
             x.ExclusiveMaximum == y.ExclusiveMaximum &&
             x.ExclusiveMinimum == y.ExclusiveMinimum &&
-            x.Extensions.Count == y.Extensions.Count
-            && x.Extensions.Keys.All(k => y.Extensions.ContainsKey(k) && x.Extensions[k] is IOpenApiAny anyX && y.Extensions[k] is IOpenApiAny anyY && OpenApiAnyComparer.Instance.Equals(anyX, anyY)) &&
+            x.Extensions.Count == y.Extensions.Count &&
+            ComparerHelpers.DictionaryEquals(x.Extensions, y.Extensions, OpenApiAnyComparer.Instance) &&
             OpenApiExternalDocsComparer.Instance.Equals(x.ExternalDocs, y.ExternalDocs) &&
-            x.Enum.SequenceEqual(y.Enum, OpenApiAnyComparer.Instance) &&
-            x.Format == y.Format &&
+            ComparerHelpers.ListEquals(x.Enum, y.Enum, OpenApiAnyComparer.Instance) &&
             Instance.Equals(x.Items, y.Items) &&
             x.Title == y.Title &&
-            x.Type == y.Type &&
             x.Maximum == y.Maximum &&
             x.MaxItems == y.MaxItems &&
             x.MaxLength == y.MaxLength &&
@@ -54,18 +56,43 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             x.MinLength == y.MinLength &&
             x.MinProperties == y.MinProperties &&
             x.MultipleOf == y.MultipleOf &&
-            x.OneOf.SequenceEqual(y.OneOf, Instance) &&
+            ComparerHelpers.ListEquals(x.OneOf, y.OneOf, Instance) &&
             Instance.Equals(x.Not, y.Not) &&
             x.Nullable == y.Nullable &&
             x.Pattern == y.Pattern &&
-            x.Properties.Keys.All(k => y.Properties.ContainsKey(k) && Instance.Equals(x.Properties[k], y.Properties[k])) &&
             x.ReadOnly == y.ReadOnly &&
-            x.Required.Order().SequenceEqual(y.Required.Order()) &&
+            x.Required.Count == y.Required.Count && x.Required.SetEquals(y.Required) &&
             OpenApiReferenceComparer.Instance.Equals(x.Reference, y.Reference) &&
             x.UniqueItems == y.UniqueItems &&
             x.UnresolvedReference == y.UnresolvedReference &&
             x.WriteOnly == y.WriteOnly &&
             OpenApiXmlComparer.Instance.Equals(x.Xml, y.Xml);
+    }
+
+    private static bool SchemaIdEquals(OpenApiSchema x, OpenApiSchema y)
+    {
+        if (x.Annotations == null && y.Annotations == null)
+        {
+            return true;
+        }
+        if (x.Annotations == null || y.Annotations == null)
+        {
+            return false;
+        }
+        if (x.Annotations.TryGetValue(OpenApiConstants.SchemaId, out var xSchemaId)
+            && y.Annotations.TryGetValue(OpenApiConstants.SchemaId, out var ySchemaId))
+        {
+            if (xSchemaId == null && ySchemaId == null)
+            {
+                return true;
+            }
+            if (xSchemaId == null || ySchemaId == null)
+            {
+                return false;
+            }
+            return xSchemaId.Equals(ySchemaId);
+        }
+        return true;
     }
 
     public int GetHashCode(OpenApiSchema obj)

@@ -56,13 +56,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private Http3MessageBody? _messageBody;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
-    private readonly object _completionLock = new();
+    private readonly Lock _completionLock = new();
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
     protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
@@ -560,6 +561,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             TryClose();
         }
 
+        _http3Output.Complete();
+
         // Stream will be pooled after app completed.
         // Wait to signal app completed after any potential aborts on the stream.
         _appCompletedTaskSource.SetResult(null);
@@ -757,10 +760,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             Http3FrameType.CancelPush or
             Http3FrameType.GoAway or
             Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             // The server should never receive push promise
             Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             _ => ProcessUnknownFrameAsync(),
         };
     }
@@ -778,7 +781,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
-            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Body)
@@ -877,7 +880,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
         if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
         {
-            throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
 
         // DATA frame after trailing headers is invalid.
@@ -885,7 +888,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
             var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data));
-            throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
 
         if (InputRemaining.HasValue)
@@ -899,12 +902,20 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             InputRemaining -= payload.Length;
         }
 
-        foreach (var segment in payload)
+        lock (_completionLock)
         {
-            RequestBodyPipe.Writer.Write(segment.Span);
-        }
+            if (IsAborted || IsAbortedRead)
+            {
+                return Task.CompletedTask;
+            }
 
-        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+            foreach (var segment in payload)
+            {
+                RequestBodyPipe.Writer.Write(segment.Span);
+            }
+
+            return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
+        }
     }
 
     protected override void OnReset()
@@ -1157,7 +1168,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 pathBuffer[i] = (byte)ch;
             }
 
-            Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
+            Path = PathDecoder.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
 
             return true;
         }

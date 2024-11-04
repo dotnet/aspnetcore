@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Channels;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -17,7 +15,7 @@ internal static class ReflectionHelper
     // and 'stream' types from the client are allowed to inherit from accepted 'stream' types
     public static bool IsStreamingType(Type type, bool mustBeDirectType = false)
     {
-        // TODO #2594 - add Streams here, to make sending files easy
+        // TODO https://github.com/dotnet/aspnetcore/issues/5316 - add Streams here, to make sending files easy
 
         if (IsIAsyncEnumerable(type))
         {
@@ -70,5 +68,28 @@ internal static class ReflectionHelper
         }
 
         return null;
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:UnrecognizedReflectionPattern",
+        Justification = "The 'IAsyncEnumerator<>' Type must exist and so trimmer kept it. In which case " +
+            "It also kept it on any type which implements it. The below call to GetInterfaces " +
+            "may return fewer results when trimmed but it will return 'IAsyncEnumerator<>' " +
+            "if the type implemented it, even after trimming.")]
+    public static Type GetIAsyncEnumeratorInterface(Type type)
+    {
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>))
+        {
+            return type;
+        }
+
+        foreach (Type typeToCheck in type.GetInterfaces())
+        {
+            if (typeToCheck.IsGenericType && typeToCheck.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>))
+            {
+                return typeToCheck;
+            }
+        }
+
+        throw new InvalidOperationException($"Type '{type}' does not implement IAsyncEnumerator<>");
     }
 }

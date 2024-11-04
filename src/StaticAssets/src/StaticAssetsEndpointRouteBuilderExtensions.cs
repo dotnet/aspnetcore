@@ -36,7 +36,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
 
         var result = MapStaticAssetsCore(endpoints, staticAssetsManifestPath);
 
-        if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
+        if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(result.IsBuildManifest, endpoints.ServiceProvider))
         {
             StaticAssetDevelopmentRuntimeHandler.EnableSupport(endpoints, result, environment, result.Descriptors);
         }
@@ -56,7 +56,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
 
         var manifest = ResolveManifest(manifestPath);
 
-        var dataSource = StaticAssetsManifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints);
+        var dataSource = StaticAssetsManifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints, manifest.IsBuildManifest());
         return dataSource.DefaultBuilder;
     }
 
@@ -89,9 +89,9 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var environment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        var result = StaticAssetsManifest.CreateDataSource(endpoints, "", manifest.Endpoints).DefaultBuilder;
+        var result = StaticAssetsManifest.CreateDataSource(endpoints, "", manifest.Endpoints, manifest.IsBuildManifest()).DefaultBuilder;
 
-        if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
+        if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(result.IsBuildManifest, endpoints.ServiceProvider))
         {
             StaticAssetDevelopmentRuntimeHandler.EnableSupport(endpoints, result, environment, result.Descriptors);
         }

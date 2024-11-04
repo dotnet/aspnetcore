@@ -1,20 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
-using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -852,7 +849,10 @@ public class ChunkedRequestTests : LoggedTest
     [Fact]
     public async Task ClosingConnectionMidChunkPrefixThrows()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var readStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 #pragma warning disable CS0618 // Type or member is obsolete
         var exTcs = new TaskCompletionSource<BadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -898,6 +898,8 @@ public class ChunkedRequestTests : LoggedTest
                 Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]

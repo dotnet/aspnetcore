@@ -1770,10 +1770,10 @@ public class WebApplicationTests
     {
         var builder = WebApplication.CreateEmptyBuilder(new());
 
-        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
-        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
-        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
-        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
+        Assert.DoesNotContain(builder.Services, descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>));
+        Assert.DoesNotContain(builder.Services, descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>));
+        Assert.DoesNotContain(builder.Services, descriptor => descriptor.ServiceType == typeof(IServer));
+        Assert.DoesNotContain(builder.Services, descriptor => descriptor.ServiceType == typeof(EndpointDataSource));
 
         // These services are still necessary
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
@@ -1932,7 +1932,7 @@ public class WebApplicationTests
         await app.StartAsync();
 
         var ds = app.Services.GetRequiredService<EndpointDataSource>();
-        Assert.Equal(1, ds.Endpoints.Count);
+        Assert.Single(ds.Endpoints);
         Assert.Equal("One", ds.Endpoints[0].DisplayName);
 
         var client = app.GetTestClient();

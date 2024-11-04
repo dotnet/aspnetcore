@@ -1,0 +1,42 @@
+﻿@page "/focus-on-navigate/stream"
+@using System.Threading.Channels
+@using System.Diagnostics
+@attribute [StreamRendering]
+
+<h1 data-focus-on-navigate>Stream rendered element to focus</h1>
+
+<input type="text" id="focusable-input" placeholder="Focusable element" />
+
+<p id="streaming-status">@(_doneStreaming ? "Complete" : "Streaming...")</p>
+
+@code {
+    private static Task? s_streamingTask;
+
+    private bool _doneStreaming;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (s_streamingTask is not null)
+        {
+            // Running in a test, so wait for the test to signal completion.
+            // Tests that rely on delays tend to be flaky, and we can't require
+            // a page interaction to end streaming because that moves focus.
+            // So, we allow tests to configure a task that controls the completion
+            // of streaming.
+            await s_streamingTask;
+            s_streamingTask = null;
+        }
+        else
+        {
+            // Not running in a test, so simulate a delay.
+            await Task.Delay(1000);
+        }
+
+        _doneStreaming = true;
+    }
+
+    public static void SetStreamingTask(Task task)
+    {
+        s_streamingTask = task;
+    }
+}

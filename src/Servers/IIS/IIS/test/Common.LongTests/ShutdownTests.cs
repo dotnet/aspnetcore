@@ -49,7 +49,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessStarted(deploymentResult),
             EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
     }
@@ -256,7 +256,7 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -293,7 +293,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -330,7 +330,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -640,7 +640,7 @@ public class ShutdownTests : IISFunctionalTestBase
             var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-            Assert.True(false, "Should not reach here");
+            Assert.Fail("Should not reach here");
         }
         catch (HttpRequestException)
         {

@@ -145,7 +145,14 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
+        var headerName = name.GetAsciiString();
+        var headerValue = value.GetAsciiOrUTF8String(HeaderValueEncoding);
+        if (headerName.Contains('\0') || headerValue.Contains('\0'))
+        {
+            throw new InvalidOperationException();
+        }
+
+        _decodedHeaders[headerName] = headerValue;
     }
 
     void IHttpStreamHeadersHandler.OnHeadersComplete(bool endStream) { }

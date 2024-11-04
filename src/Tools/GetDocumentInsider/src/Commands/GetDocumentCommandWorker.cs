@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -267,6 +267,12 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
+        if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))
+        {
+            _reporter.WriteError(Resources.FileNameFormatInvalid);
+            return false;
+        }
+
         // Write out the documents.
         var found = false;
         Directory.CreateDirectory(_context.OutputDirectory);
@@ -279,7 +285,8 @@ internal sealed class GetDocumentCommandWorker
                 _context.OutputDirectory,
                 generateMethod,
                 service,
-                generateWithVersionMethod);
+                generateWithVersionMethod,
+                _context.FileName);
             if (filePath == null)
             {
                 return false;
@@ -308,7 +315,8 @@ internal sealed class GetDocumentCommandWorker
         string outputDirectory,
         MethodInfo generateMethod,
         object service,
-        MethodInfo? generateWithVersionMethod)
+        MethodInfo? generateWithVersionMethod,
+        string fileName)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
@@ -326,7 +334,10 @@ internal sealed class GetDocumentCommandWorker
                 }
                 else
                 {
-                    _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    if (!string.IsNullOrWhiteSpace(_context.OpenApiVersion))
+                    {
+                        _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    }
                     arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
                 }
             }
@@ -352,7 +363,9 @@ internal sealed class GetDocumentCommandWorker
             return null;
         }
 
-        var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+        fileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : projectName;
+
+        var filePath = GetDocumentPath(documentName, fileName, outputDirectory);
         _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
         try
         {
@@ -371,13 +384,14 @@ internal sealed class GetDocumentCommandWorker
         return filePath;
     }
 
-    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
+    private static string GetDocumentPath(string documentName, string fileName, string outputDirectory)
     {
         string path;
+
         if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
         {
             // Leave default document name out of the filename.
-            path = projectName + JsonExtension;
+            path = fileName + JsonExtension;
         }
         else
         {
@@ -392,7 +406,7 @@ internal sealed class GetDocumentCommandWorker
                 sanitizedDocumentName = sanitizedDocumentName.Replace(InvalidFilenameString, DotString);
             }
 
-            path = $"{projectName}_{documentName}{JsonExtension}";
+            path = $"{fileName}_{documentName}{JsonExtension}";
         }
 
         if (!string.IsNullOrEmpty(outputDirectory))

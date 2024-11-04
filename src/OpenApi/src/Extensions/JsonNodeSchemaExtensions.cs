@@ -12,6 +12,7 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.OpenApi.Models;
@@ -27,7 +28,8 @@ internal static class JsonNodeSchemaExtensions
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
         [typeof(bool)] = new() { Type = "boolean" },
-        [typeof(byte)] = new() { Type = "string", Format = "byte" },
+        [typeof(byte)] = new() { Type = "integer", Format = "uint8" },
+        [typeof(byte[])] = new() { Type = "string", Format = "byte" },
         [typeof(int)] = new() { Type = "integer", Format = "int32" },
         [typeof(uint)] = new() { Type = "integer", Format = "uint32" },
         [typeof(long)] = new() { Type = "integer", Format = "int64" },
@@ -40,7 +42,7 @@ internal static class JsonNodeSchemaExtensions
         [typeof(DateTime)] = new() { Type = "string", Format = "date-time" },
         [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
         [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
-        [typeof(char)] = new() { Type = "string" },
+        [typeof(char)] = new() { Type = "string", Format = "char" },
         [typeof(Uri)] = new() { Type = "string", Format = "uri" },
         [typeof(string)] = new() { Type = "string" },
         [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
@@ -167,7 +169,8 @@ internal static class JsonNodeSchemaExtensions
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
         var type = context.TypeInfo.Type;
         var underlyingType = Nullable.GetUnderlyingType(type);
@@ -176,7 +179,7 @@ internal static class JsonNodeSchemaExtensions
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
-            schema[OpenApiConstants.SchemaId] = context.TypeInfo.GetSchemaReferenceId();
+            schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
             schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
             // Clear out patterns that the underlying JSON schema generator uses to represent
             // validations for DateTime, DateTimeOffset, and integers.
@@ -193,7 +196,7 @@ internal static class JsonNodeSchemaExtensions
     {
         // Apply constraints in reverse order because when it comes to the routing
         // layer the first constraint that is violated causes routing to short circuit.
-        foreach (var constraint in constraints.Reverse())
+        foreach (var constraint in Enumerable.Reverse(constraints))
         {
             if (constraint is MinRouteConstraint minRouteConstraint)
             {
@@ -315,19 +318,43 @@ internal static class JsonNodeSchemaExtensions
         {
             schema.ApplyRouteConstraints(constraints);
         }
+
+        if (parameterDescription.Source is { } bindingSource && SupportsNullableProperty(bindingSource))
+        {
+            schema[OpenApiSchemaKeywords.NullableKeyword] = false;
+        }
+
+        // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
+        // rules but can be optional.
+        static bool SupportsNullableProperty(BindingSource bindingSource) =>bindingSource == BindingSource.Header
+            || bindingSource == BindingSource.Query
+            || bindingSource == BindingSource.Path
+            || bindingSource == BindingSource.Form
+            || bindingSource == BindingSource.FormFile;
     }
 
     /// <summary>
-    /// Applies the polymorphism options to the target schema following OpenAPI v3's conventions.
+    /// Applies the polymorphism options defined by System.Text.Json to the target schema following OpenAPI v3's
+    /// conventions for the discriminator property.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplyPolymorphismOptions(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void MapPolymorphismOptionsToDiscriminator(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        // The `context.Path.Length == 0` check is used to ensure that we only apply the polymorphism options
+        // The `context.BaseTypeInfo == null` check is used to ensure that we only apply the polymorphism options
         // to the top-level schema and not to any nested schemas that are generated.
-        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.Path.Length == 0)
+        if (context.TypeInfo.PolymorphismOptions is { } polymorphismOptions && context.BaseTypeInfo == null)
         {
+            // System.Text.Json supports serializing to a non-abstract base class if no discriminator is provided.
+            // OpenAPI requires that all polymorphic sub-schemas have an associated discriminator. If the base type
+            // doesn't declare itself as its own derived type via [JsonDerived], then it can't have a discriminator,
+            // which OpenAPI requires. In that case, we exit early to avoid mapping the polymorphism options
+            // to the `discriminator` property and return an un-discriminated `anyOf` schema instead.
+            if (IsNonAbstractTypeWithoutDerivedTypeReference(context))
+            {
+                return;
+            }
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -339,7 +366,7 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"#/components/schemas/{context.TypeInfo.GetSchemaReferenceId()}{jsonDerivedType.GetSchemaReferenceId()}";
+                    mappings[$"{discriminator}"] = $"#/components/schemas/{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
@@ -352,12 +379,31 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
-    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context)
+    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
+    internal static void ApplySchemaReferenceId(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
-        if (context.TypeInfo.GetSchemaReferenceId() is { } schemaReferenceId)
+        if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }
+        // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
+        if (context.BaseTypeInfo == context.TypeInfo &&
+            IsNonAbstractTypeWithoutDerivedTypeReference(context))
+        {
+            schema[OpenApiConstants.SchemaId] = "Base";
+        }
+    }
+
+    /// <summary>
+    /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is not defined as its
+    /// own derived type.
+    /// </summary>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithoutDerivedTypeReference(JsonSchemaExporterContext context)
+    {
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type);
     }
 
     /// <summary>

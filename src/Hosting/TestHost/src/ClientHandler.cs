@@ -159,7 +159,7 @@ public class ClientHandler : HttpMessageHandler
                 // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
                 if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                 {
-                    req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    req.Headers.Append(header.Key, string.Join(' ', header.Value));
                 }
                 else
                 {

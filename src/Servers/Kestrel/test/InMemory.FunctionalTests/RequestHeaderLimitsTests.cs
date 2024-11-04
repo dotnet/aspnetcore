@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
-using Xunit;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -24,9 +24,12 @@ public class RequestHeaderLimitsTests : LoggedTest
     [InlineData(5, 1337)]
     public async Task ServerAcceptsRequestWithHeaderTotalSizeWithinLimit(int headerCount, int extraLimit)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var headers = MakeHeaders(headerCount);
 
-        await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length + extraLimit))
+        await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length + extraLimit, meterFactory: testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -43,6 +46,8 @@ public class RequestHeaderLimitsTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -56,9 +61,12 @@ public class RequestHeaderLimitsTests : LoggedTest
     [InlineData(5, 1337)]
     public async Task ServerAcceptsRequestWithHeaderCountWithinLimit(int headerCount, int maxHeaderCount)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var headers = MakeHeaders(headerCount);
 
-        await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
+        await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount, meterFactory: testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -75,6 +83,8 @@ public class RequestHeaderLimitsTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -82,9 +92,12 @@ public class RequestHeaderLimitsTests : LoggedTest
     [InlineData(5)]
     public async Task ServerRejectsRequestWithHeaderTotalSizeOverLimit(int headerCount)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var headers = MakeHeaders(headerCount);
 
-        await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length - 1))
+        await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length - 1, meterFactory: testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -98,6 +111,8 @@ public class RequestHeaderLimitsTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded, m.Tags));
     }
 
     [Theory]
@@ -106,9 +121,12 @@ public class RequestHeaderLimitsTests : LoggedTest
     [InlineData(5, 4)]
     public async Task ServerRejectsRequestWithHeaderCountOverLimit(int headerCount, int maxHeaderCount)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var headers = MakeHeaders(headerCount);
 
-        await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
+        await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount, meterFactory: testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -122,6 +140,8 @@ public class RequestHeaderLimitsTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestHeaderCountExceeded, m.Tags));
     }
 
     private static string MakeHeaders(int count)
@@ -138,7 +158,7 @@ public class RequestHeaderLimitsTests : LoggedTest
             .Select(i => $"Header-{i}: value{i}\r\n")));
     }
 
-    private TestServer CreateServer(int? maxRequestHeaderCount = null, int? maxRequestHeadersTotalSize = null)
+    private TestServer CreateServer(int? maxRequestHeaderCount = null, int? maxRequestHeadersTotalSize = null, IMeterFactory meterFactory = null)
     {
         var options = new KestrelServerOptions { AddServerHeader = false };
 
@@ -152,7 +172,8 @@ public class RequestHeaderLimitsTests : LoggedTest
             options.Limits.MaxRequestHeadersTotalSize = maxRequestHeadersTotalSize.Value;
         }
 
-        return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext(LoggerFactory)
+        var kestrelMetrics = meterFactory != null ? new KestrelMetrics(meterFactory) : null;
+        return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext(LoggerFactory, metrics: kestrelMetrics)
         {
             ServerOptions = options
         });

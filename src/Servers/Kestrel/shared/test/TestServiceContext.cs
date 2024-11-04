@@ -64,7 +64,10 @@ internal class TestServiceContext : ServiceContext
 
         DateHeaderValueManager.OnHeartbeat();
         Metrics = metrics;
+        ShutdownTimeout = TestConstants.DefaultTimeout;
     }
+
+    public TimeSpan ShutdownTimeout { get; set; }
 
     public ILoggerFactory LoggerFactory { get; set; }
 

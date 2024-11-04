@@ -11,19 +11,23 @@ namespace Microsoft.AspNetCore.StaticAssets;
 public sealed class StaticAssetsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lck;
+    private readonly bool _isBuildManifest;
     private readonly List<StaticAssetDescriptor> _descriptors;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal StaticAssetsEndpointConventionBuilder(object lck, List<StaticAssetDescriptor> descriptors, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
+    internal StaticAssetsEndpointConventionBuilder(object lck, bool isBuildManifest, List<StaticAssetDescriptor> descriptors, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
     {
         _lck = lck;
+        _isBuildManifest = isBuildManifest;
         _descriptors = descriptors;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
     }
 
     internal List<StaticAssetDescriptor> Descriptors => _descriptors;
+
+    internal bool IsBuildManifest => _isBuildManifest;
 
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)

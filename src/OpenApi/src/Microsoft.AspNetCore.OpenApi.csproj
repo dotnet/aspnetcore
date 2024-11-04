@@ -7,7 +7,7 @@
     <!-- Needed to support compiling Utf8BufferTextWriter implementation shared with SignalR -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.</Description>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
     <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>

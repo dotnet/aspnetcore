@@ -8,7 +8,6 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -1251,7 +1250,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54447")]
     public void CanBindToFormWithFiles()
     {
         var profilePicture = TempFile.Create(_tempDirectory, "txt", "This is a profile picture.");
@@ -1466,7 +1464,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54757")]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry()
     {
         Navigate("about:blank");
@@ -1489,7 +1486,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54757")]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry_Streaming()
     {
         Navigate("about:blank");
@@ -1596,7 +1592,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             if (!dispatch.FormIsEnhanced)
             {
                 // Verify the same form element is *not* still in the page
-                Assert.Throws<StaleElementReferenceException>(() => form.GetAttribute("method"));
+                Browser.True(() => IsElementStale(form));
             }
             else if (!dispatch.SuppressEnhancedNavigation)
             {
@@ -1646,6 +1642,19 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void GoTo(string relativePath)
     {
         Navigate($"{ServerPathBase}/{relativePath}");
+    }
+
+    private static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
     }
 
     private struct TempFile

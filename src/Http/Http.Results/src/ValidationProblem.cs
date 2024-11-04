@@ -39,7 +39,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>.
     /// </summary>
-    public string ContentType => "application/problem+json";
+    public string ContentType => ContentTypeConstants.ProblemDetailsContentType;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>
@@ -76,6 +76,6 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(HttpValidationProblemDetails), new[] { "application/problem+json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, ContentTypeConstants.ProblemDetailsContentTypes));
     }
 }

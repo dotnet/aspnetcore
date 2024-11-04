@@ -447,7 +447,7 @@ public class SetCookieHeaderValueTest
 
     [Theory]
     [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
-    public void SetCookieHeaderValue_ParseList_ExcludesInvalidValues(IList<SetCookieHeaderValue> cookies, string[] input)
+    public void SetCookieHeaderValue_ParseList_ExcludesInvalidValues(IList<SetCookieHeaderValue>? cookies, string[] input)
     {
         var results = SetCookieHeaderValue.ParseList(input);
         // ParseList always returns a list, even if empty. TryParseList may return null (via out).
@@ -456,7 +456,7 @@ public class SetCookieHeaderValueTest
 
     [Theory]
     [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
-    public void SetCookieHeaderValue_TryParseList_ExcludesInvalidValues(IList<SetCookieHeaderValue> cookies, string[] input)
+    public void SetCookieHeaderValue_TryParseList_ExcludesInvalidValues(IList<SetCookieHeaderValue>? cookies, string[] input)
     {
         bool result = SetCookieHeaderValue.TryParseList(input, out var results);
         Assert.Equal(cookies, results);
@@ -467,7 +467,7 @@ public class SetCookieHeaderValueTest
     [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
     public void SetCookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-            IList<SetCookieHeaderValue> cookies,
+            IList<SetCookieHeaderValue>? cookies,
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
             string[] input)
     {
@@ -478,7 +478,7 @@ public class SetCookieHeaderValueTest
     [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
     public void SetCookieHeaderValue_TryParseStrictList_FailsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-            IList<SetCookieHeaderValue> cookies,
+            IList<SetCookieHeaderValue>? cookies,
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
             string[] input)
     {

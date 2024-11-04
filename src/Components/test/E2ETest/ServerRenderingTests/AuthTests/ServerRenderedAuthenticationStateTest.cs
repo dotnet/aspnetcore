@@ -12,11 +12,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.AuthTests;
 
 public class ServerRenderedAuthenticationStateTest
-     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+     : ServerTestBase<TrimmingServerFixture<RazorComponentEndpointsStartup<App>>>
 {
     public ServerRenderedAuthenticationStateTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        TrimmingServerFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {

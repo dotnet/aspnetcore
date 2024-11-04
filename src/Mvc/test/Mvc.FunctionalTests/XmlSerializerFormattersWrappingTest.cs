@@ -5,24 +5,34 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
 using XmlFormattersWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
+public class XmlSerializerFormattersWrappingTest : LoggedTest
 {
-    public XmlSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<Startup>(LoggerFactory);
         Client = Factory.CreateDefaultClient();
     }
 
-    public WebApplicationFactory<Startup> Factory { get; }
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Theory]
     [InlineData("http://localhost/IEnumerable/ValueTypes")]

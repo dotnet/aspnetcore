@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
-                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>

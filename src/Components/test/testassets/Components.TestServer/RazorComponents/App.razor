@@ -11,12 +11,21 @@
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
         </Found>
         <NotFound>There's nothing here</NotFound>
     </Router>
+    <script>
+        // This script must come before blazor.web.js to test that
+        // the framework does the right thing when an element is already focused.
+        const elementToFocus = document.querySelector('[data-focus-on-load]');
+        if (elementToFocus) {
+            elementToFocus.focus();
+        }
+    </script>
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
     <script src="_content/TestContentPackage/counterInterop.js"></script>
+    <script src="js/circuitContextTest.js"></script>
     <script>
         // This is called by the Components.WasmMinimal project.
         function getQueryParam(key) {

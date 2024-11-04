@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -21,7 +22,10 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = $"{nameof(DeserializedAuthenticationStateProvider)} uses the {nameof(PersistentComponentState)} APIs to deserialize the token, which are already annotated.")]
+        Justification = $"{nameof(DeserializedAuthenticationStateProvider)} uses the {nameof(DynamicDependencyAttribute)} to preserve the necessary members.")]
+    [DynamicDependency(JsonSerialized, typeof(AuthenticationStateData))]
+    [DynamicDependency(JsonSerialized, typeof(IList<ClaimData>))]
+    [DynamicDependency(JsonSerialized, typeof(ClaimData))]
     public DeserializedAuthenticationStateProvider(PersistentComponentState state, IOptions<AuthenticationStateDeserializationOptions> options)
     {
         if (!state.TryTakeFromJson<AuthenticationStateData?>(PersistenceKey, out var authenticationStateData) || authenticationStateData is null)

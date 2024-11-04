@@ -20,9 +20,9 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     private bool _streamPoolHeartbeatInitialized;
     // Ticks updated once per-second in heartbeat event.
     private long _heartbeatTimestamp;
-    private readonly object _poolLock = new object();
+    private readonly Lock _poolLock = new();
 
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
     private readonly QuicConnection _connection;
     private readonly QuicTransportContext _context;
     private readonly ILogger _log;

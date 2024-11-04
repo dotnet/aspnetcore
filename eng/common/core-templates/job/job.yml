@@ -19,25 +19,20 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
+  enableMicrobuildForMacAndLinux: false
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
   enableBuildRetry: false
-  disableComponentGovernance: ''
-  componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
   name: ''
+  componentGovernanceSteps: []
   preSteps: []
   artifactPublishSteps: []
   runAsPublic: false
-
-# Sbom related params
-  enableSbom: true
-  PackageVersion: 9.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
 
 # 1es specific parameters
   is1ESPipeline: ''
@@ -133,18 +128,11 @@ jobs:
       - ${{ preStep }}
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-      - task: MicroBuildSigningPlugin@4
-        displayName: Install MicroBuild plugin
-        inputs:
-          signType: $(_SignType)
-          zipSources: false
-          feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-        env:
-          TeamName: $(_TeamName)
-          MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
+    - template: /eng/common/core-templates/steps/install-microbuild.yml
+      parameters:
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
-        condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@1
@@ -170,34 +158,15 @@ jobs:
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
-  - template: /eng/common/core-templates/steps/component-governance.yml
-    parameters:
-      is1ESPipeline: ${{ parameters.is1ESPipeline }}
-      ${{ if eq(parameters.disableComponentGovernance, '') }}:
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
-          disableComponentGovernance: false
-        ${{ else }}:
-          disableComponentGovernance: true
-      ${{ else }}:
-        disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
-      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
+  - ${{ each step in parameters.componentGovernanceSteps }}:
+    - ${{ step }}
 
-  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: MicroBuildCleanup@1
-        displayName: Execute Microbuild cleanup tasks
-        condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
-        continueOnError: ${{ parameters.continueOnError }}
-        env:
-          TeamName: $(_TeamName)
-  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
-    - template: /eng/common/core-templates/steps/generate-sbom.yml
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/core-templates/steps/cleanup-microbuild.yml
       parameters:
-        is1ESPipeline: ${{ parameters.is1ESPipeline }}
-        PackageVersion: ${{ parameters.packageVersion}}
-        BuildDropPath: ${{ parameters.buildDropPath }}
-        IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
-        publishArtifacts: false
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
+        continueOnError: ${{ parameters.continueOnError }}
 
   # Publish test results
   - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:

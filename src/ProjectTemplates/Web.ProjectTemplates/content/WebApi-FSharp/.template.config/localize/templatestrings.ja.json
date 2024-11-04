@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json の IIS Express HTTP エンドポイントに使用するポート番号。",
   "symbols/iisHttpsPort/description": "launchSettings.json の IIS Express HTTPS エンドポイントに使用するポート番号。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",

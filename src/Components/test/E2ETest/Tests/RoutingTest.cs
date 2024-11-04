@@ -26,6 +26,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase);
@@ -1082,6 +1085,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57153")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
@@ -1675,7 +1679,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");
@@ -1692,7 +1695,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void NavigationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");

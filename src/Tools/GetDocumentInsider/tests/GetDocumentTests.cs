@@ -144,4 +144,86 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
         Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_invalid.json")));
     }
+
+    [Theory]
+    [InlineData("customFileName")]
+    [InlineData("custom-File_Name")]
+    [InlineData("custom_File-Name")]
+    [InlineData("custom1File2Name")]
+    public void GetDocument_WithValidFileName_Works(string fileName)
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--file-name", fileName
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        Assert.True(File.Exists(Path.Combine(outputPath.FullName, $"{fileName}.json")));
+        Assert.True(File.Exists(Path.Combine(outputPath.FullName, $"{fileName}_internal.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
+    }
+
+    [Theory]
+    [InlineData("customFile=ù^*Name")]
+    [InlineData("&$*")]
+    public void GetDocument_WithInvalideFileName_Errors(string fileName)
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--file-name", fileName
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+
+        Assert.Contains("FileName format invalid, only Alphanumeric and \"_ -\" authorized", _console.GetOutput());
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, $"{fileName}.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
+    }
+
+    [Fact]
+    public void GetDocument_WithEmptyFileName_Works()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--file-name", ""
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, ".json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "_internal.json")));
+        Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
+        Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
+    }
 }

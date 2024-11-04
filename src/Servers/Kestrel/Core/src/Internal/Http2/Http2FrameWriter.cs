@@ -14,6 +14,21 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Encodes HTTP/2 stream responses as frames and sends them over the wire.
+/// </summary>
+/// <remarks>
+/// Owned by <see cref="Http2Connection"/>.
+/// <para/>
+/// Since a connection has multiple streams, this class maintains a <see cref="Channel{T}"/> (i.e. bounded queue)
+/// of <see cref="Http2OutputProducer"/> instances (each of which is owned by a stream) that want to write frames.
+/// <para/>
+/// Reuses a single <see cref="Http2Frame"/>, which it populates based on the next <see cref="Http2OutputProducer"/>
+/// (and corresponding <see cref="Http2Stream{TContext}"/>) and then serializes to binary in
+/// <see cref="WriteToOutputPipe"/>.
+/// <para/>
+/// Tracks the outgoing connection window size while <see cref="Http2OutputProducer"/> tracks the stream window size.
+/// </remarks>
 internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
@@ -56,7 +71,7 @@ internal sealed class Http2FrameWriter
 
     private bool IsFlowControlQueueLimitEnabled => _maximumFlowControlQueueSize > 0;
 
-    private readonly object _writeLock = new object();
+    private readonly Lock _writeLock = new();
     private readonly Http2Frame _outgoingFrame;
     private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
     private readonly ConcurrentPipeWriter _outputWriter;
@@ -84,7 +99,7 @@ internal sealed class Http2FrameWriter
     private bool _completed;
     private bool _aborted;
 
-    private readonly object _windowUpdateLock = new();
+    private readonly Lock _windowUpdateLock = new();
     private long _connectionWindow;
     private readonly Queue<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
     // This is the stream that consumed the last set of connection window
@@ -154,7 +169,7 @@ internal sealed class Http2FrameWriter
             // exceeding the channel size.  Disconnecting seems appropriate in this case.
             var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
             _log.Http2QueueOperationsExceeded(_connectionId, ex);
-            _http2Connection.Abort(ex);
+            _http2Connection.Abort(ex, Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.OutputQueueSizeExceeded);
         }
     }
 
@@ -182,6 +197,17 @@ internal sealed class Http2FrameWriter
 
                     // Now check the connection window
                     actual = CheckConnectionWindow(actual);
+
+                    // actual is negative means window size has become negative
+                    // this can usually happen if the receiver decreases window size before receiving the previous data frame
+                    // in this case, reset to 0 and continue, no data will be sent but will wait for window update
+                    // RFC 9113 section 6.9.2 specifically calls out that the window size can go negative.  As required,
+                    // we continue to track the negative value but use 0 for the remainder of this write to avoid 
+                    // out-of-range errors.
+                    if (actual < 0)
+                    {
+                        actual = 0;
+                    }
 
                     // Write what we can
                     if (actual < buffer.Length)
@@ -323,14 +349,17 @@ internal sealed class Http2FrameWriter
 
     private async Task HandleFlowControlErrorAsync()
     {
-        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+        const ConnectionEndReason reason = ConnectionEndReason.InvalidWindowUpdateSize;
+        const Http2ErrorCode http2ErrorCode = Http2ErrorCode.FLOW_CONTROL_ERROR;
+
+        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, http2ErrorCode, reason);
         _log.Http2ConnectionError(_connectionId, connectionError);
-        await WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR);
+        await WriteGoAwayAsync(int.MaxValue, http2ErrorCode);
 
         // Prevent Abort() from writing an INTERNAL_ERROR GOAWAY frame after our FLOW_CONTROL_ERROR.
         Complete();
         // Stop processing any more requests and immediately close the connection.
-        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError));
+        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError), http2ErrorCode, reason);
     }
 
     private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
@@ -527,7 +556,7 @@ internal sealed class Http2FrameWriter
         catch (Exception ex)
         {
             _log.HPackEncodingError(_connectionId, streamId, ex);
-            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.ErrorWritingHeaders);
         }
     }
 
@@ -568,7 +597,7 @@ internal sealed class Http2FrameWriter
             catch (Exception ex)
             {
                 _log.HPackEncodingError(_connectionId, streamId, ex);
-                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.ErrorWritingHeaders);
             }
 
             return TimeFlushUnsynchronizedAsync();
@@ -1099,7 +1128,7 @@ internal sealed class Http2FrameWriter
         if (!_aborted && IsFlowControlQueueLimitEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
         {
             _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
-            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
+            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.FlowControlQueueSizeExceeded);
         }
     }
 }

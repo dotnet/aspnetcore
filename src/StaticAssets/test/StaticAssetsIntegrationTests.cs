@@ -492,6 +492,7 @@ public class StaticAssetsIntegrationTests
             var lastModified = DateTimeOffset.UtcNow;
             File.WriteAllText(filePath, resource.Content);
             var hash = GetEtag(resource.Content);
+            manifest.ManifestType = "Build";
             manifest.Endpoints.Add(new StaticAssetDescriptor
             {
                 Route = resource.Path,

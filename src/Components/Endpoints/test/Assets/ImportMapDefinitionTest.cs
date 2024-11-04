@@ -116,7 +116,7 @@ public class ImportMapDefinitionTest
                 "./jquery.js": "./jquery.fingerprint.js"
               },
               "integrity": {
-                "jquery.fingerprint.js": "sha384-abc123"
+                "./jquery.fingerprint.js": "sha384-abc123"
               }
             }
             """.Replace("\r\n", "\n");

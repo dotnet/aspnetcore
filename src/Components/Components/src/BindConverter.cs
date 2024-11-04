@@ -1677,6 +1677,10 @@ public static class BindConverter
             "ReflectionAnalysis",
             "IL2075:MakeGenericMethod",
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076:MakeGenericMethod",
+            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             if (!_cache.TryGetValue(typeof(T), out var formatter))
@@ -1863,6 +1867,10 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2075:MakeGenericMethod",
+            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076:MakeGenericMethod",
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {

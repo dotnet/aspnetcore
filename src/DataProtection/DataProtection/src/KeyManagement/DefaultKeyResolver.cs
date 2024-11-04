@@ -147,26 +147,20 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
 
     private IKey? FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey? fallbackKey)
     {
-        // Keys created before this time should have propagated to all instances.
-        var propagationCutoff = now - _keyPropagationWindow;
+        // find the preferred default key (allowing for server-to-server clock skew)
 
-        // Prefer the most recently activated key that's old enough to have propagated to all instances.
-        // If no such key exists, fall back to the *least* recently activated key that's too new to have
-        // propagated to all instances.
-
-        // An unpropagated key can still be preferred insofar as we wouldn't want to generate a replacement
-        // for it (as the replacement would also be unpropagated).
-
-        // Note that the two sort orders are opposite: we want the *newest* key that's old enough
-        // (to have been propagated) or the *oldest* key that's too new.
-        var activatedKeys = allKeys.Where(key => key.ActivationDate <= now + _maxServerToServerClockSkew);
-        var preferredDefaultKey = (from key in activatedKeys
-                                   where key.CreationDate <= propagationCutoff
+        // Note: another approach would be to prefer the *least-recently* activated key if none
+        // are old enough to have been propagated.  We tried that and reverted it because it
+        // made us less resilient against bad keys.  This way, we'll reject a bad key and generate
+        // a replacement and then the next instance to run will pick up the replacement, rather
+        // than the bad key.  It did have the conceptual advantage of being more similar to the
+        // fallback code below and the hypothetical advantage of making it easier for instances
+        // to choose the same key in the event of a race (though we never managed to show that
+        // empirically.  See also https://github.com/dotnet/aspnetcore/issues/57137.
+        var preferredDefaultKey = (from key in allKeys
+                                   where key.ActivationDate <= now + _maxServerToServerClockSkew
                                    orderby key.ActivationDate descending, key.KeyId ascending
-                                   select key).Concat(from key in activatedKeys
-                                                      where key.CreationDate > propagationCutoff
-                                                      orderby key.ActivationDate ascending, key.KeyId ascending
-                                                      select key).FirstOrDefault();
+                                   select key).FirstOrDefault();
 
         var decryptRetriesRemaining = _maxDecryptRetries;
 
@@ -192,7 +186,8 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         // key has propagated to all callers (so its creation date should be before the previous
         // propagation period), and we cannot use revoked keys. The fallback key may be expired.
 
-        // As above, the two sort orders are opposite.
+        // Note that the two sort orders are opposite: we want the *newest* key that's old enough
+        // (to have been propagated) or the *oldest* key that's too new.
 
         // Unlike for the preferred key, we don't choose a fallback key and then reject it if
         // CanCreateAuthenticatedEncryptor is false.  We want to end up with *some* key, so we
@@ -200,10 +195,10 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         var unrevokedKeys = allKeys.Where(key => !key.IsRevoked);
         fallbackKey = (from key in (from key in unrevokedKeys
                                     where !ReferenceEquals(key, preferredDefaultKey) // Don't reconsider it as a fallback
-                                    where key.CreationDate <= propagationCutoff
+                                    where key.CreationDate <= now - _keyPropagationWindow
                                     orderby key.CreationDate descending
                                     select key).Concat(from key in unrevokedKeys
-                                                       where key.CreationDate > propagationCutoff
+                                                       where key.CreationDate > now - _keyPropagationWindow
                                                        orderby key.CreationDate ascending
                                                        select key)
                        where CanCreateAuthenticatedEncryptor(key, ref decryptRetriesRemaining)

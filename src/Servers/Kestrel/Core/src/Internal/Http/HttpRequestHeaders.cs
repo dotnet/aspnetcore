@@ -147,7 +147,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private unsafe void AppendUnknownHeaders(string name, string valueString)
+    private void AppendUnknownHeaders(string name, string valueString)
     {
         name = GetInternedHeaderName(name);
         Unknown.TryGetValue(name, out var existing);

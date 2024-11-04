@@ -27,7 +27,7 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILogge
 
     // We are going to compile a function that maps all the properties for the type.
     // Beware that the code below is not the actual exact code, just a simplification to understand what is happening at a high level.
-    // The general flow is as follows. For a type like Address { Street, City, Country, ZipCode }
+    // The general flow is as follows. For a type like Address { Street, City, CountryRegion, ZipCode }
     // we will generate a function that looks like:
     // public bool TryRead(ref FormDataReader reader, Type type, FormDataSerializerOptions options, out Address? result, out bool found)
     // {
@@ -35,11 +35,11 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILogge
     //     bool succeeded = true;
     //     string street;
     //     string city;
-    //     string country;
+    //     string countryRegion;
     //     string zipCode;
     //     FormDataConveter<string> streetConverter;
     //     FormDataConveter<string> cityConverter;
-    //     FormDataConveter<string> countryConverter;
+    //     FormDataConveter<string> countryRegionConverter;
     //     FormDataConveter<string> zipCodeConverter;
 
     //     var streetConverter = options.ResolveConverter(typeof(string));
@@ -54,11 +54,11 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILogge
     //     found ||= foundProperty;
     //     reader.PopPrefix("City");
     //
-    //     var countryConverter = options.ResolveConverter(typeof(string));
-    //     reader.PushPrefix("Country");
-    //     succeeded &= countryConverter.TryRead(ref reader, typeof(string), options, out street, out foundProperty);
+    //     var countryRegionConverter = options.ResolveConverter(typeof(string));
+    //     reader.PushPrefix("CountryRegion");
+    //     succeeded &= countryRegionConverter.TryRead(ref reader, typeof(string), options, out street, out foundProperty);
     //     found ||= foundProperty;
-    //     reader.PopPrefix("Country");
+    //     reader.PopPrefix("CountryRegion");
     //
     //     var zipCodeConverter = options.ResolveConverter(typeof(string));
     //     reader.PushPrefix("ZipCode");
@@ -71,7 +71,7 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILogge
     //         result = new Address();
     //         result.Street = street;
     //         result.City = city;
-    //         result.Country = country;
+    //         result.CountryRegion = countryRegion;
     //         result.ZipCode = zipCode;
     //     }
     //     else

@@ -9,6 +9,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Enable NuGet static graph evaluation to optimize incremental restore -->
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <!-- Workaround obsolete X509Certificate ctor: https://github.com/dotnet/docs/issues/41662 -->
+    <NoWarn>$(NoWarn);SYSLIB0057</NoWarn>
 
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>

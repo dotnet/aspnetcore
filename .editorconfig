@@ -463,3 +463,13 @@ dotnet_diagnostic.IDE0161.severity = silent
 [{**/Shared/**.cs,**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
 # IDE0005: Remove unused usings. Ignore for shared src files since imports for those depend on the projects in which they are included.
 dotnet_diagnostic.IDE0005.severity = silent
+
+# Verify settings
+[*.{received,verified}.{txt,xml,json}]
+charset = "utf-8-bom"
+end_of_line = lf
+indent_size = unset
+indent_style = unset
+insert_final_newline = false
+tab_width = unset
+trim_trailing_whitespace = false

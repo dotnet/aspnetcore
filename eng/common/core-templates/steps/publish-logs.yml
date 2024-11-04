@@ -32,10 +32,11 @@ steps:
       '$(MaestroAccessToken)'
       '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
-      '$(akams-client-secret)'
       '$(microsoft-symbol-server-pat)'
       '$(symweb-symbol-server-pat)'
+      '$(dnceng-symbol-server-pat)'
       '$(dn-bot-all-orgs-build-rw-code-rw)'
+      '$(System.AccessToken)'
       ${{parameters.CustomSensitiveDataList}}
   continueOnError: true
   condition: always()
@@ -46,6 +47,7 @@ steps:
     SourceFolder: '$(Build.SourcesDirectory)/PostBuildLogs'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
+  condition: always()
 
 - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
   parameters:

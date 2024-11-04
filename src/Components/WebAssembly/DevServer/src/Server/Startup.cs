@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,27 +30,28 @@ internal sealed class Startup
 
         app.UseWebAssemblyDebugging();
 
-        bool applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
+        var webHostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+        var applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
 
-        if (applyCopHeaders)
+        app.Use(async (ctx, next) =>
         {
-            app.Use(async (ctx, next) =>
+            if (ctx.Request.Path.StartsWithSegments("/_framework/blazor.boot.json"))
             {
-                if (ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+                ctx.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
+            }
+            else if (applyCopHeaders && ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+            {
+                var fileExtension = Path.GetExtension(ctx.Request.Path);
+                if (string.Equals(fileExtension, ".js", StringComparison.OrdinalIgnoreCase) || string.Equals(fileExtension, ".mjs", StringComparison.OrdinalIgnoreCase))
                 {
-                    string fileExtension = Path.GetExtension(ctx.Request.Path);
-                    if (string.Equals(fileExtension, ".js"))
-                    {
-                        // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                        ApplyCrossOriginPolicyHeaders(ctx);
-                    }
+                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                    ApplyCrossOriginPolicyHeaders(ctx);
                 }
+            }
 
-                await next(ctx);
-            });
-        }
+            await next(ctx);
+        });
 
-        //app.UseBlazorFrameworkFiles();
         app.UseRouting();
 
         app.UseStaticFiles(new StaticFileOptions

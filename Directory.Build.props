@@ -130,6 +130,9 @@
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
 
+    <!-- don't warn about calling ConfigureAwait in test methods. we already commonly get off the xunit threads because they cause issues. -->
+    <NoWarn>$(NoWarn);xUnit1030</NoWarn>
+
     <!-- don't warn about unnecessary trim warning suppressions. can be removed with preview 6. -->
     <NoWarn>$(NoWarn);IL2121</NoWarn>
 
@@ -238,6 +241,18 @@
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- PackageReadmeFile specifies the package readme file name in the package. PackageReadmeFilePath points to the package readme file on disk. -->
+    <EnableDefaultPackageReadmeFile Condition="'$(EnableDefaultPackageReadmeFile)' == '' and '$(IsShipping)' != 'false'">true</EnableDefaultPackageReadmeFile>
+    <PackageReadmeFilePath Condition="'$(PackageReadmeFilePath)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true'">PACKAGE.md</PackageReadmeFilePath>
+    <PackageReadmeFile Condition="'$(PackageReadmeFile)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true' and Exists('$(PackageReadmeFilePath)' )">PACKAGE.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!-- Add a package README file -->
+  <ItemGroup Condition="'$(PackageReadmeFilePath)' != '' and Exists('$(PackageReadmeFilePath)' )">
+    <None Include="$(PackageReadmeFilePath)" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <PropertyGroup>
     <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it. -->

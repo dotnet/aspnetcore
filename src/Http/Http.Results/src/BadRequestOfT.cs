@@ -65,6 +65,6 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, ISt
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(TValue), new[] { "application/json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status400BadRequest, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

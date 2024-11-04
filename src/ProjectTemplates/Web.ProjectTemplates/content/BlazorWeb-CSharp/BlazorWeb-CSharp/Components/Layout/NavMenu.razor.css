@@ -16,7 +16,7 @@
 }
 
 .top-row {
-    height: 3.5rem;
+    min-height: 3.5rem;
     background-color: rgba(0,0,0,0.4);
 }
 

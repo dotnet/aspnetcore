@@ -50,8 +50,8 @@ public static class OutputCacheServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.Configure(configureOptions);
         services.AddOutputCache();
+        services.Configure(configureOptions);
 
         return services;
     }

@@ -114,7 +114,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
         };
     }
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 

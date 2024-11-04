@@ -65,6 +65,6 @@ public sealed class Conflict<TValue> : IResult, IEndpointMetadataProvider, IStat
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict, typeof(TValue), new[] { "application/json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status409Conflict, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

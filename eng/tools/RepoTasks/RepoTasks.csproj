@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net472</TargetFrameworks>
     <DefineConstants Condition="'$(TargetFramework)' == 'net472'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
     <Optimize>false</Optimize>
@@ -22,7 +22,16 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Compile Remove="GenerateTestDevCert.cs" />
+    <Compile Remove="shared\CertificateGeneration\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
@@ -31,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.IO.Redist" Version="$(MicrosoftIoRedistVersion)" />
     <PackageReference Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
@@ -45,4 +55,5 @@
       <HintPath>$(WiXSdkPath)\Microsoft.Deployment.WindowsInstaller.Package.dll</HintPath>
     </Reference>
   </ItemGroup>
+
 </Project>

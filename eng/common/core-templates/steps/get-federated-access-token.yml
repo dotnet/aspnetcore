@@ -3,6 +3,14 @@ parameters:
   type: string
 - name: outputVariableName
   type: string
+- name: is1ESPipeline
+  type: boolean
+- name: stepName
+  type: string
+  default: 'getFederatedAccessToken'
+- name: condition
+  type: string
+  default: ''
 # Resource to get a token for. Common values include:
 # - '499b84ac-1321-427f-aa17-267ca6975798' for Azure DevOps
 # - 'https://storage.azure.com/' for storage
@@ -10,10 +18,16 @@ parameters:
 - name: resource
   type: string
   default: '499b84ac-1321-427f-aa17-267ca6975798'
+- name: isStepOutputVariable
+  type: boolean
+  default: false
 
 steps:
 - task: AzureCLI@2
   displayName: 'Getting federated access token for feeds'
+  name: ${{ parameters.stepName }}
+  ${{ if ne(parameters.condition, '') }}:
+    condition: ${{ parameters.condition }}
   inputs:
     azureSubscription: ${{ parameters.federatedServiceConnection }}
     scriptType: 'pscore'
@@ -25,4 +39,4 @@ steps:
         exit 1
       }
       Write-Host "Setting '${{ parameters.outputVariableName }}' with the access token value"
-      Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariableName }};issecret=true]$accessToken"
+      Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariableName }};issecret=true;isOutput=${{ parameters.isStepOutputVariable }}]$accessToken"

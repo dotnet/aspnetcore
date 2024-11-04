@@ -8,7 +8,6 @@ import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { Platform, getGlobalThis, isArrayBuffer } from "./Utils";
-import { configureAbortController, configureFetch } from "./DynamicImports";
 
 export class FetchHttpClient extends HttpClient {
     private readonly _abortControllerType: { prototype: AbortController, new(): AbortController };
@@ -21,19 +20,38 @@ export class FetchHttpClient extends HttpClient {
         super();
         this._logger = logger;
 
-        // This is how you do "reference" arguments
-        const fetchObj = { _fetchType: undefined, _jar: undefined };
-        if (configureFetch(fetchObj)) {
-            this._fetchType = fetchObj._fetchType!;
-            this._jar = fetchObj._jar;
+        // Node added a fetch implementation to the global scope starting in v18.
+        // We need to add a cookie jar in node to be able to share cookies with WebSocket
+        if (typeof fetch === "undefined" || Platform.isNode) {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
+            // Cookies aren't automatically handled in Node so we need to add a CookieJar to preserve cookies across requests
+            this._jar = new (requireFunc("tough-cookie")).CookieJar();
+
+            if (typeof fetch === "undefined") {
+                this._fetchType = requireFunc("node-fetch");
+            } else {
+                // Use fetch from Node if available
+                this._fetchType = fetch;
+            }
+
+            // node-fetch doesn't have a nice API for getting and setting cookies
+            // fetch-cookie will wrap a fetch implementation with a default CookieJar or a provided one
+            this._fetchType = requireFunc("fetch-cookie")(this._fetchType, this._jar);
         } else {
             this._fetchType = fetch.bind(getGlobalThis());
         }
+        if (typeof AbortController === "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
 
-        this._abortControllerType = AbortController;
-        const abortObj = { _abortControllerType: this._abortControllerType };
-        if (configureAbortController(abortObj)) {
-            this._abortControllerType = abortObj._abortControllerType;
+            // Node needs EventListener methods on AbortController which our custom polyfill doesn't provide
+            this._abortControllerType = requireFunc("abort-controller");
+        } else {
+            this._abortControllerType = AbortController;
         }
     }
 

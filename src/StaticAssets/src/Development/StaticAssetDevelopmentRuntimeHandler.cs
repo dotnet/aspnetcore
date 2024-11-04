@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -156,11 +155,11 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         throw new InvalidOperationException("The original asset was not found.");
     }
 
-    internal static bool IsEnabled(IServiceProvider serviceProvider, IWebHostEnvironment environment)
+    internal static bool IsEnabled(bool isBuildManifest, IServiceProvider serviceProvider)
     {
         var config = serviceProvider.GetRequiredService<IConfiguration>();
         var explicitlyConfigured = bool.TryParse(config[ReloadStaticAssetsAtRuntimeKey], out var hotReload);
-        return (!explicitlyConfigured && environment.IsDevelopment()) || (explicitlyConfigured && hotReload);
+        return (!explicitlyConfigured && isBuildManifest) || (explicitlyConfigured && hotReload);
     }
 
     internal static void EnableSupport(

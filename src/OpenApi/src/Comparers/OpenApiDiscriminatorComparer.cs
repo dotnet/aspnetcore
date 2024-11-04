@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -27,7 +26,7 @@ internal sealed class OpenApiDiscriminatorComparer : IEqualityComparer<OpenApiDi
 
         return x.PropertyName == y.PropertyName &&
             x.Mapping.Count == y.Mapping.Count &&
-            x.Mapping.Keys.All(key => y.Mapping.ContainsKey(key) && x.Mapping[key] == y.Mapping[key]);
+            ComparerHelpers.DictionaryEquals(x.Mapping, y.Mapping, StringComparer.Ordinal);
     }
 
     public int GetHashCode(OpenApiDiscriminator obj)

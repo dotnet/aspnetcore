@@ -11,6 +11,10 @@ using System.Linq;
 
 namespace Microsoft.Extensions.ApiDescriptions;
 
+/// <summary>
+/// Provides an implementation of <see cref="IDocumentProvider"/> to use for build-time generation of OpenAPI documents.
+/// </summary>
+/// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use.</param>
 internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) : IDocumentProvider
 {
     /// <summary>
@@ -21,8 +25,8 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// <param name="writer">A text writer associated with the document to write to.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer)
     {
-        var optionsSnapshot = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
-        var namedOption = optionsSnapshot.Get(documentName);
+        var options = serviceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
+        var namedOption = options.Get(documentName);
         var resolvedOpenApiVersion = namedOption.OpenApiVersion;
         await GenerateAsync(documentName, writer, resolvedOpenApiVersion);
     }
@@ -40,7 +44,8 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // document to a file. See https://github.com/microsoft/OpenAPI.NET/issues/421 for
         // more info.
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
-        var document = await targetDocumentService.GetOpenApiDocumentAsync();
+        using var scopedService = serviceProvider.CreateScope();
+        var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
         var jsonWriter = new OpenApiJsonWriter(writer);
         document.Serialize(jsonWriter, openApiSpecVersion);
     }
