@@ -51,8 +51,8 @@ public class ClaimsAuthorizationRequirementTests
     public void ToString_ShouldReturnPredicateDescriptionWhenPredicateIsUsed()
     {
         // Arrange
-        Predicate<Claim> claimPredicate = claim => claim.Type == "Permissions" && claim.Value.Contains("CanViewPage");
-        var requirement = CreateRequirement(claimPredicate);
+        Func<Claim, bool> match = claim => claim.Type == "Permissions" && claim.Value.Contains("CanViewPage");
+        var requirement = CreateRequirement(match);
 
         // Act
         var formattedValue = requirement.ToString();
@@ -66,7 +66,7 @@ public class ClaimsAuthorizationRequirementTests
         return new ClaimsAuthorizationRequirement(claimType, allowedValues);
     }
 
-    private ClaimsAuthorizationRequirement CreateRequirement(Predicate<Claim> match)
+    private ClaimsAuthorizationRequirement CreateRequirement(Func<Claim, bool> match)
     {
         return new ClaimsAuthorizationRequirement(match);
     }

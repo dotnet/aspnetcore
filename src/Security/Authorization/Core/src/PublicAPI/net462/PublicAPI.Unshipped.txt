@@ -1,6 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(System.Predicate<System.Security.Claims.Claim!>! match) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimsAuthorizationRequirement(System.Predicate<System.Security.Claims.Claim!>! match) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(System.Func<System.Security.Claims.Claim!, bool>! match) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
+Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimsAuthorizationRequirement(System.Func<System.Security.Claims.Claim!, bool>! match) -> void
 *REMOVED*Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimType.get -> string!
 Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimType.get -> string?
-Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.Match.get -> System.Predicate<System.Security.Claims.Claim!>?
+Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.Match.get -> System.Func<System.Security.Claims.Claim!, bool>?

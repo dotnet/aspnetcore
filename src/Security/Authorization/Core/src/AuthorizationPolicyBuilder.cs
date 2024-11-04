@@ -148,7 +148,7 @@ public class AuthorizationPolicyBuilder
     /// </summary>
     /// <param name="match">The predicate to evaluate the claims.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public AuthorizationPolicyBuilder RequireClaim(Predicate<Claim> match)
+    public AuthorizationPolicyBuilder RequireClaim(Func<Claim, bool> match)
     {
         ArgumentNullThrowHelper.ThrowIfNull(match);
 

@@ -37,7 +37,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/>.
     /// </summary>
     /// <param name="match">The predicate to evaluate the claims.</param>
-    public ClaimsAuthorizationRequirement(Predicate<Claim> match)
+    public ClaimsAuthorizationRequirement(Func<Claim, bool> match)
     {
         ArgumentNullThrowHelper.ThrowIfNull(match);
 
@@ -60,7 +60,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     /// A predicate to evaluate the claims.
     /// Used if specified instead of <see cref="ClaimType"/> and <see cref="AllowedValues"/>.
     /// </summary>
-    public Predicate<Claim>? Match { get; }
+    public Func<Claim, bool>? Match { get; }
 
     /// <summary>
     /// Makes a decision if authorization is allowed based on the claims requirements specified.
@@ -75,7 +75,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
 
             if (requirement.Match != null)
             {
-                found = context.User.HasClaim(requirement.Match);
+                found = context.User.HasClaim(new Predicate<Claim>(requirement.Match));
             }
             else if (requirement._emptyAllowedValues)
             {
