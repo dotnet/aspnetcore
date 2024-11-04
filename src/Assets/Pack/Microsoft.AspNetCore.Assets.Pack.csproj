@@ -73,7 +73,7 @@
       <_ReferenceAssetCandidates Include="@(_BlazorJSFile)" />
       <_ReferenceAssetCandidates Include="@(_BlazorJSMapFile)" />
       <_ReferenceAssetCandidates>
-        <RelativePath>$(StaticWebAssetBasePath)/%(FileName)%(Extension)</RelativePath>
+        <RelativePath>$(StaticWebAssetBasePath)\%(FileName)%(Extension)</RelativePath>
         <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
       </_ReferenceAssetCandidates>
     </ItemGroup>
@@ -82,7 +82,7 @@
       Condition="'@(_ReferenceAssetCandidates->Count())' != '0'"
       CandidateAssets="@(_ReferenceAssetCandidates)"
       SourceId="$(PackageId)"
-      SourceType="Project"
+      SourceType="Discovered"
       AssetKind="All"
       FingerprintCandidates="true"
       BasePath="$(StaticWebAssetBasePath)"
