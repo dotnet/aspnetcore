@@ -85,7 +85,7 @@
       SourceType="Project"
       AssetKind="All"
       FingerprintCandidates="true"
-      BasePath="/"
+      BasePath="$(StaticWebAssetBasePath)"
     >
       <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
     </DefineStaticWebAssets>
