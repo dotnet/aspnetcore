@@ -26,7 +26,7 @@ public class GcmAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext.AsSpan(), decipheredtext);
+        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
     }
 
     [ConditionalFact]
