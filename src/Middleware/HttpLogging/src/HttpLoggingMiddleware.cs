@@ -48,23 +48,33 @@ internal sealed class HttpLoggingMiddleware
     /// <returns></returns>HttpResponseLog.cs
     public Task Invoke(HttpContext context)
     {
-        if (!_logger.IsEnabled(LogLevel.Information))
+        if (context.Request.Protocol.StartsWith("HTTP"))
         {
-            // Logger isn't enabled.
-            return _next(context);
+            if (!_logger.IsEnabled(LogLevel.Information))
+            {
+                // Logger isn't enabled.
+                return _next(context);
+            }
+
+            var options = _options.CurrentValue;
+            var loggingAttribute = context.GetEndpoint()?.Metadata.GetMetadata<HttpLoggingAttribute>();
+            var loggingFields = loggingAttribute?.LoggingFields ?? options.LoggingFields;
+
+            if (_interceptors.Length == 0 && loggingFields == HttpLoggingFields.None)
+            {
+                // Logging is disabled for this endpoint and there are no interceptors to turn it on.
+                return _next(context);
+            }
+
+            return InvokeInternal(context, options, loggingAttribute, loggingFields);
         }
-
-        var options = _options.CurrentValue;
-        var loggingAttribute = context.GetEndpoint()?.Metadata.GetMetadata<HttpLoggingAttribute>();
-        var loggingFields = loggingAttribute?.LoggingFields ?? options.LoggingFields;
-
-        if (_interceptors.Length == 0 && loggingFields == HttpLoggingFields.None)
+        else
         {
-            // Logging is disabled for this endpoint and there are no interceptors to turn it on.
-            return _next(context);
-        }
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync("Invalid request protocol.");
 
-        return InvokeInternal(context, options, loggingAttribute, loggingFields);
+            return Task.CompletedTask;
+        }
     }
 
     private async Task InvokeInternal(HttpContext context, HttpLoggingOptions options,
