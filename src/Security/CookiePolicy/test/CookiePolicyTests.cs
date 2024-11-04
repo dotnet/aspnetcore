@@ -58,10 +58,10 @@ public class CookiePolicyTests
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; secure".AsSpan(), transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; secure".AsSpan(), transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; secure".AsSpan(), transaction.SetCookie[2]);
-                    Assert.Equal("D=D; path=/; secure".AsSpan(), transaction.SetCookie[3]);
+                    Assert.Equal("A=A; path=/; secure", transaction.SetCookie[0]);
+                    Assert.Equal("B=B; path=/; secure", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/; secure", transaction.SetCookie[2]);
+                    Assert.Equal("D=D; path=/; secure", transaction.SetCookie[3]);
                 }));
     }
 
@@ -398,10 +398,10 @@ public class CookiePolicyTests
         Assert.NotNull(transaction.SetCookie);
         Assert.Single(transaction.SetCookie);
         var cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[0]);
-        Assert.Equal("TestCookie".AsSpan(), cookie.Name);
+        Assert.Equal("TestCookie", cookie.Name);
         Assert.True(cookie.HttpOnly);
         Assert.True(cookie.Secure);
-        Assert.Equal("/".AsSpan(), cookie.Path);
+        Assert.Equal("/", cookie.Path);
         Assert.Contains("extension", cookie.Extensions);
     }
 
@@ -450,25 +450,25 @@ public class CookiePolicyTests
         Assert.Equal(3, transaction.SetCookie.Count);
 
         var cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[0]);
-        Assert.Equal("TestCookie".AsSpan(), cookie.Name);
-        Assert.Equal("chunks-2".AsSpan(), cookie.Value);
+        Assert.Equal("TestCookie", cookie.Name);
+        Assert.Equal("chunks-2", cookie.Value);
         Assert.True(cookie.HttpOnly);
         Assert.True(cookie.Secure);
-        Assert.Equal("/".AsSpan(), cookie.Path);
+        Assert.Equal("/", cookie.Path);
         Assert.Contains("ext", cookie.Extensions);
 
         cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[1]);
-        Assert.Equal("TestCookieC1".AsSpan(), cookie.Name);
+        Assert.Equal("TestCookieC1", cookie.Name);
         Assert.True(cookie.HttpOnly);
         Assert.True(cookie.Secure);
-        Assert.Equal("/".AsSpan(), cookie.Path);
+        Assert.Equal("/", cookie.Path);
         Assert.Contains("ext", cookie.Extensions);
 
         cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[2]);
-        Assert.Equal("TestCookieC2".AsSpan(), cookie.Name);
+        Assert.Equal("TestCookieC2", cookie.Name);
         Assert.True(cookie.HttpOnly);
         Assert.True(cookie.Secure);
-        Assert.Equal("/".AsSpan(), cookie.Path);
+        Assert.Equal("/", cookie.Path);
         Assert.Contains("ext", cookie.Extensions);
     }
 

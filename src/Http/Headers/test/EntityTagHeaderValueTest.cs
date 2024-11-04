@@ -32,7 +32,7 @@ public class EntityTagHeaderValueTest
     public void Ctor_ETagValidFormat_SuccessfullyCreated()
     {
         var etag = new EntityTagHeaderValue("\"tag\"");
-        Assert.Equal("\"tag\"", etag.Tag.ToString());
+        Assert.Equal("\"tag\"", etag.Tag);
         Assert.False(etag.IsWeak, "IsWeak");
     }
 
@@ -40,7 +40,7 @@ public class EntityTagHeaderValueTest
     public void Ctor_ETagValidFormatAndIsWeak_SuccessfullyCreated()
     {
         var etag = new EntityTagHeaderValue("\"e tag\"", true);
-        Assert.Equal("\"e tag\"", etag.Tag.ToString());
+        Assert.Equal("\"e tag\"", etag.Tag);
         Assert.True(etag.IsWeak, "IsWeak");
     }
 
