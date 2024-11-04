@@ -84,7 +84,7 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Single(queryCollection);
-        Assert.Equal(new[] { "value1", "" }, queryCollection[""]);
+        Assert.Equal(new[] { "value1", "" }, queryCollection[""].ToArray());
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Equal(2, queryCollection.Count);
-        Assert.Equal(new[] { "valueA", "valueC" }, queryCollection["key1"]);
+        Assert.Equal(new[] { "valueA", "valueC" }, queryCollection["key1"].ToArray());
         Assert.Equal("valueB", queryCollection["key2"].FirstOrDefault());
     }
 
@@ -113,7 +113,7 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Equal(2, queryCollection.Count);
-        Assert.Equal(new[] { "valueA", "valueC", "valueD" }, queryCollection["key1"]);
+        Assert.Equal(new[] { "valueA", "valueC", "valueD" }, queryCollection["key1"].ToArray());
         Assert.Equal("valueB", queryCollection["key2"].FirstOrDefault());
     }
 
