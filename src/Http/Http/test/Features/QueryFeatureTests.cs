@@ -215,7 +215,7 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Single(queryCollection);
-        Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, queryCollection["fields [todoItems]"]);
+        Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, queryCollection["fields [todoItems]"].ToArray());
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Equal(12, queryCollection.Count);
-        Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }, queryCollection["KEY"]);
+        Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }, queryCollection["KEY"].ToArray());
     }
 
     [Fact]
@@ -249,6 +249,6 @@ public class QueryFeatureTests
         var queryCollection = provider.Query;
 
         Assert.Equal(1, queryCollection.Count);
-        Assert.Equal(new[] { "1", "2", "3", "4", "5" }, queryCollection["KEY"]);
+        Assert.Equal(new[] { "1", "2", "3", "4", "5" }, queryCollection["KEY"].ToArray());
     }
 }
