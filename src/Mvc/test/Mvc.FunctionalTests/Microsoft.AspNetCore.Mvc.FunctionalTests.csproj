@@ -46,7 +46,6 @@
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\..\shared\Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
-    <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
     <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
