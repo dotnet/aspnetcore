@@ -18,4 +18,12 @@
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Temporary: Remove after package is provided by the SDK -->
+    <Reference
+      Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true' AND '$(OutputType)' == 'Exe'"
+      Include="Microsoft.AspNetCore.Assets.Pack"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

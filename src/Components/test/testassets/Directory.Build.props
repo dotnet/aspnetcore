@@ -14,11 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Temporary: Remove after package is provided by the SDK -->
-    <Reference Include="Microsoft.AspNetCore.Assets.Pack" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(WasmEnableThreads)' == 'true'">
       <_Parameter1>Microsoft.AspNetCore.InternalTesting.RunWebAssemblyE2ETestsWithMultithreading</_Parameter1>
       <_Parameter2>true</_Parameter2>
