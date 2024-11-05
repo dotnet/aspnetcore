@@ -30,8 +30,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
-    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' and '$(LinuxInstallerType)' == 'deb'">true</BuildDebPackage>
-    <BuildRpmPackage Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(LinuxInstallerType)' == 'rpm'">true</BuildRpmPackage>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
+    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
   </PropertyGroup>
 
   <ItemGroup>
@@ -170,5 +171,16 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishToDisk"
              Properties="OutputPath=$(TargetingPackLayoutRoot)" />
+  </Target>
+
+  <Target Name="AddLinuxPackageInformation" BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties">
+    <ItemGroup>
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref" />
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref/$(Version)" />
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref/$(Version)/data" />
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref/$(Version)/analyzers" />
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref/$(Version)/ref" />
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/packs/Microsoft.AspNetCore.App.Ref/$(Version)/ref/$(TargetFramework)" />
+    </ItemGroup>
   </Target>
 </Project>

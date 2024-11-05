@@ -42,8 +42,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
-    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' and '$(LinuxInstallerType)' == 'deb'">true</BuildDebPackage>
-    <BuildRpmPackage Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(LinuxInstallerType)' == 'rpm'">true</BuildRpmPackage>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -96,4 +96,10 @@
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />
+
+  <Target Name="AddLinuxPackageInformation" BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties">
+    <ItemGroup>
+      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/shared/Microsoft.AspNetCore.App;$(LinuxInstallRoot)/shared/Microsoft.AspNetCore.App/$(Version)" />
+    </ItemGroup>
+  </Target>
 </Project>
