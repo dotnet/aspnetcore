@@ -6,6 +6,7 @@
     <PackageId>Microsoft.AspNetCore.App.Internal.Assets</PackageId>
     <IsPackable>true</IsPackable>
     <OutputType>Library</OutputType>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -30,8 +31,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">..\..\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
-    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">..\..\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
   </PropertyGroup>
 
   <ItemGroup>

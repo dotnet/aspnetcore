@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.endpoints.targets" />
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.debug.targets"
-    Condition="'$(Configuration)' == 'Debug'" />
+    Condition="'$(UseDebugBlazorAssets)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.debug.endpoints.targets"
-    Condition="'$(Configuration)' == 'Debug'"/>
+    Condition="'$(UseDebugBlazorAssets)' == 'true'"/>
 </Project>
