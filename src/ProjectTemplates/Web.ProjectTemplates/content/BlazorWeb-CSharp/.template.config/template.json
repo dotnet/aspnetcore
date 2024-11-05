@@ -344,7 +344,7 @@
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "InteractivePerPage",
-      "displayName": "_Interactivity location",
+      "displayName": "Interactivity _location",
       "description": "Chooses which components will have interactive rendering enabled",
       "isEnabled": "(InteractivityPlatform != \"None\")",
       "choices": [
@@ -372,7 +372,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "true",
-      "displayName": "_Include sample pages",
+      "displayName": "Include _sample pages",
       "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
     },
     "Empty": {
