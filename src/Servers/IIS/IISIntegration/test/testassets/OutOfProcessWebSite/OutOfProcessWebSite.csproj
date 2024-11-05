@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <DefineConstants>$(DefineConstants);NETCOREAPP2_0_CUSTOM_DEFINE</DefineConstants>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>

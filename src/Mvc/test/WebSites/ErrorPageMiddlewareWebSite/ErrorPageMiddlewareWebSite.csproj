@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
     <!-- We want to validate runtime parser \ compilation exceptions -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>

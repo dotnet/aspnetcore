@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
