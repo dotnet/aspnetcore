@@ -1818,7 +1818,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.App.So
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{2B858B82-5F0B-4A24-B3C0-5E99149F70D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Assets.Pack", "src\Assets\Pack\Microsoft.AspNetCore.Assets.Pack.csproj", "{2AAE7819-BC3E-48F4-9CFA-5DD4CD5FFD62}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.App.Internal.Assets", "src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj", "{2AAE7819-BC3E-48F4-9CFA-5DD4CD5FFD62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

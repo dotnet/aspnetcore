@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference
-      Include="Microsoft.AspNetCore.Assets.Pack"
+      Include="Microsoft.AspNetCore.App.Internal.Assets"
       Version="${MicrosoftAspNetCoreAppRuntimeVersion}"
       ReferenceOutputAssembly="false" />
   </ItemGroup>

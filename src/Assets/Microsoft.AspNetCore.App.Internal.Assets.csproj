@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>ASP.NET Core static framework assets</Description>
-    <PackageId>Microsoft.AspNetCore.Assets.Pack</PackageId>
+    <PackageId>Microsoft.AspNetCore.App.Internal.Assets</PackageId>
     <IsPackable>true</IsPackable>
     <OutputType>Library</OutputType>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>

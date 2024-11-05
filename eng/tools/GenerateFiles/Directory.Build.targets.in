@@ -100,7 +100,7 @@
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
 
-    <KnownAspNetCorePack Update="Microsoft.AspNetCore.Assets.Pack">
+    <KnownAspNetCorePack Update="Microsoft.AspNetCore.App.Internal.Assets">
       <AspNetCorePackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</AspNetCorePackVersion>
     </KnownAspNetCorePack>
