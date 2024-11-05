@@ -299,7 +299,7 @@
     <GrpcAuthVersion>2.57.0</GrpcAuthVersion>
     <GrpcNetClientVersion>2.57.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.57.0</GrpcToolsVersion>
-    <MessagePackVersion>2.5.108</MessagePackVersion>
+    <MessagePackVersion>2.5.187</MessagePackVersion>
     <MicrosoftIdentityWebVersion>3.2.0</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>3.2.0</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.2.0</MicrosoftIdentityWebUIVersion>
