@@ -47,23 +47,12 @@
 
     <ItemGroup>
       <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
-      <_MissingBlazorJSMapFile Include="@(_BlazorJSMapFile)" Condition="!EXISTS('%(_BlazorJSMapFile.FullPath)')" />
-
-      <_AllMissingBlazorJSFiles Include="@(_MissingBlazorJSFile)" />
-      <_AllMissingBlazorJSFiles Include="@(_MissingBlazorJSMapFile)" />
+      <_MissingBlazorJSFile Include="@(_BlazorJSMapFile)" Condition="!EXISTS('%(_BlazorJSMapFile.FullPath)')" />
     </ItemGroup>
 
-    <Warning
-      Condition="'@(_AllMissingBlazorJSFiles)' != ''"
-      Text="'%(_AllMissingBlazorJSFiles.Identity)' does not exist. Falling back to checked-in copy." />
-
-    <ItemGroup>
-      <_BlazorJSFile Remove="@(_MissingBlazorJSFile)" />
-      <_BlazorJSFile Include="@(_MissingBlazorJSFile->'..\..\Components\Web.JS\dist\Release\%(Filename)%(Extension)')" />
-
-      <_BlazorJSMapFile Remove="@(_MissingBlazorJSMapFile)" />
-      <_BlazorJSMapFile Include="@(_MissingBlazorJSMapFile->'..\..\Components\Web.JS\dist\Release\%(Filename)%(Extension)')" />
-    </ItemGroup>
+    <Error
+      Condition="'@(_MissingBlazorJSFile)' != ''"
+      Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Run 'npm run build' in the repo root to generate the file." />
 
   </Target>
 
