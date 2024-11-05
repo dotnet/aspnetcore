@@ -44,6 +44,7 @@
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
+    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
   </PropertyGroup>
 
   <ItemGroup>
