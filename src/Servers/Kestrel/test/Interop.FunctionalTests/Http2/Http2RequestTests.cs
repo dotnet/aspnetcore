@@ -239,13 +239,17 @@ public class Http2RequestTests : LoggedTest
             async c =>
             {
                 await syncPoint.WaitToContinue();
+
                 var memory = c.Response.BodyWriter.GetMemory(randomBytes.Length);
+
                 logger.LogInformation($"Server writing {randomBytes.Length} bytes response");
                 randomBytes.CopyTo(memory);
+
                 // It's important for this test that the large write is the last data written to
                 // the response and it's not awaited by the request delegate.
                 logger.LogInformation($"Server advancing {randomBytes.Length} bytes response");
                 c.Response.BodyWriter.Advance(randomBytes.Length);
+
                 if (hasTrailers)
                 {
                     c.Response.AppendTrailer("test-trailer", "value!");
