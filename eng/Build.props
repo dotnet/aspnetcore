@@ -113,11 +113,6 @@
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
 
-      <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND ('$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64')">
-        <ProjectToBuild Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj" />
-        <ProjectToBuild Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj" />
-      </ItemGroup>
-
       <ItemGroup>
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
