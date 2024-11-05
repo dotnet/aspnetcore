@@ -219,6 +219,70 @@ public class Http2RequestTests : LoggedTest
         }
     }
 
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/41074")]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GET_RequestReturnsLargeData_GracefulShutdownDuringRequest_RequestGracefullyCompletes(bool hasTrailers)
+    {
+        // Enable client logging.
+        // Test failure on CI could be from HttpClient bug.
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
+        // Arrange
+        const int DataLength = 500_000;
+        var randomBytes = Enumerable.Range(1, DataLength).Select(i => (byte)((i % 10) + 48)).ToArray();
+
+        var syncPoint = new SyncPoint();
+
+        ILogger logger = null;
+        var builder = CreateHostBuilder(
+            async c =>
+            {
+                await syncPoint.WaitToContinue();
+                var memory = c.Response.BodyWriter.GetMemory(randomBytes.Length);
+                logger.LogInformation($"Server writing {randomBytes.Length} bytes response");
+                randomBytes.CopyTo(memory);
+                // It's important for this test that the large write is the last data written to
+                // the response and it's not awaited by the request delegate.
+                logger.LogInformation($"Server advancing {randomBytes.Length} bytes response");
+                c.Response.BodyWriter.Advance(randomBytes.Length);
+                if (hasTrailers)
+                {
+                    c.Response.AppendTrailer("test-trailer", "value!");
+                }
+            },
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
+
+        using var host = builder.Build();
+        logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Test");
+
+        var client = HttpHelpers.CreateClient();
+
+        // Act
+        await host.StartAsync().DefaultTimeout();
+
+        var longRunningTask = StartLongRunningRequestAsync(logger, host, client);
+
+        logger.LogInformation("Waiting for request on server");
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+
+        logger.LogInformation("Stopping server");
+        var stopTask = host.StopAsync();
+
+        syncPoint.Continue();
+
+        var (readData, trailers) = await longRunningTask.DefaultTimeout();
+        await stopTask.DefaultTimeout();
+
+        // Assert
+        Assert.Equal(randomBytes, readData);
+        if (hasTrailers)
+        {
+            Assert.Equal("value!", trailers.GetValues("test-trailer").Single());
+        }
+    }
+
     private static async Task<(byte[], HttpResponseHeaders)> StartLongRunningRequestAsync(ILogger logger, IHost host, HttpMessageInvoker client)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
