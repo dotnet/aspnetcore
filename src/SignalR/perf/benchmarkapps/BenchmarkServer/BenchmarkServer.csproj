@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <!-- SignalR is versioned 1.0 alongside the 2.1 version of AspNetCore.All, this converts the .All version to the SignalR version -->
     <MessagePackPackageVersion Condition=" '$(BenchmarksTargetFramework)' != '' ">$([System.String]::Copy($(MicrosoftAspNetCoreAllPackageVersion)).Replace('2.1', '1.0'))</MessagePackPackageVersion>
   </PropertyGroup>
