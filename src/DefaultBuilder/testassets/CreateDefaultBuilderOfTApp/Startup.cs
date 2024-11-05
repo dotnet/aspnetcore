@@ -58,7 +58,7 @@ namespace CreateDefaultBuilderOfTApp
             }
 
             // Verify allowed hosts were loaded
-            var hosts = string.Join(',', hostFilteringOptions.Value.AllowedHosts);
+            var hosts = string.Join(",", hostFilteringOptions.Value.AllowedHosts);
             if (!string.Equals("example.com,localhost", hosts, StringComparison.Ordinal))
             {
                 return $"AllowedHosts not loaded into Options.";
