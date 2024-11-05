@@ -1,5 +1,5 @@
 {
-  "name": "common",
+  "name": "@microsoft/common",
   "version": "1.0.0",
   "description": "Common dependencies used during dev time. DO NOT PUBLISH",
   "private": true,
