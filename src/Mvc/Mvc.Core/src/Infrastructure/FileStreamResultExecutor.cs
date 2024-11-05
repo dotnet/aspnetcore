@@ -28,7 +28,7 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(result);
 
-        using (result.FileStream)
+        await using (result.FileStream)
         {
             Log.ExecutingFileResult(Logger, result);
 

@@ -35,7 +35,7 @@ internal static class HttpHelpers
         throw new Exception($"Couldn't find {nameof(HttpProtocolException)}. Original error: {ex}");
     }
 
-    public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false)
+    public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false, int? maxResponseHeadersLength = null)
     {
         var handler = new SocketsHttpHandler();
         handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
@@ -53,6 +53,11 @@ internal static class HttpHelpers
         if (idleTimeout != null)
         {
             handler.PooledConnectionIdleTimeout = idleTimeout.Value;
+        }
+
+        if (maxResponseHeadersLength != null)
+        {
+            handler.MaxResponseHeadersLength = maxResponseHeadersLength.Value;
         }
 
         return new HttpMessageInvoker(handler);

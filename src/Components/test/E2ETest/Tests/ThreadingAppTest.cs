@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class ThreadingAppTest
-    : ServerTestBase<BlazorWasmTestAppFixture<ThreadingApp.Program>>, IDisposable
+    : ServerTestBase<BlazorWasmTestAppFixture<ThreadingApp.Program>>
 {
     public ThreadingAppTest(
         BrowserFixture browserFixture,
@@ -19,78 +19,81 @@ public class ThreadingAppTest
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        serverFixture.RequiresMultithreadingHeaders = true;
     }
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasTitle()
     {
         Assert.Equal("Blazor standalone", Browser.Title);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54497")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
         var mainHeaderSelector = By.TagName("h1");
 
         // Verify we start at home, with the home link highlighted
-        Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Hello, world!", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Home", item.Text.Trim()));
 
         // Click on the "counter" link
         Browser.Exists(By.LinkText("Counter")).Click();
 
         // Verify we're now on the counter page, with that nav link (only) highlighted
-        Assert.Equal("Counter", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Counter", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Counter", item.Text.Trim()));
 
         // Verify we can navigate back to home too
         Browser.Exists(By.LinkText("Home")).Click();
-        Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Hello, world!", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Home", item.Text.Trim()));
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53723")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58242")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
         Browser.Exists(By.LinkText("Counter")).Click();
-        Assert.Equal("Counter", Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
 
-        var countDisplayElement = Browser.Exists(By.CssSelector("h1 + p"));
         // see that initial state is zero
-        Browser.Equal("Current count: 0", () => countDisplayElement.Text);
+        Browser.Equal("Current count: 0", () => Browser.Exists(By.CssSelector("h1 + p")).Text);
 
         // start the test
-        var testThreadsButton = Browser.Exists(By.Id("TestThreads"));
-        testThreadsButton.Click();
+        Browser.Exists(By.Id("TestThreads")).Click();
 
         // wait and see timer increase
-        Browser.NotEqual("Current count: 0", () => countDisplayElement.Text);
+        Browser.NotEqual("Current count: 0", () => Browser.Exists(By.CssSelector("h1 + p")).Text);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"
         Browser.Exists(By.LinkText("Fetch data")).Click();
-        Assert.Equal("Weather forecast", Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Weather forecast", () => Browser.Exists(By.TagName("h1")).Text);
 
         // Wait until loaded
         var tableSelector = By.CssSelector("table.table");
@@ -107,6 +110,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void IsStarted()
     {
         // Read from property
@@ -126,12 +130,5 @@ public class ThreadingAppTest
     {
         var app = Browser.Exists(By.TagName("app"));
         Browser.NotEqual("Loading...", () => app.Text);
-    }
-
-    public void Dispose()
-    {
-        // Make the tests run faster by navigating back to the home page when we are done
-        // If we don't, then the next test will reload the whole page before it starts
-        Browser.Exists(By.LinkText("Home")).Click();
     }
 }

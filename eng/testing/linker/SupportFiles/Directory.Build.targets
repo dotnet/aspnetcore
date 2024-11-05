@@ -13,24 +13,24 @@
     <PackageReference Include="Microsoft.DotNet.ILCompiler"
                       Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
 
-    <!-- Workaround when there is no vNext SDK available; copy known packs info from 8.0. -->
-    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+    <!-- Workaround when there is no vNext SDK available; copy known packs info from 9.0. -->
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownAppHostPack->Count())' != '0' AND
                                  !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net9.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownRuntimePack->Count())' != '0' AND
                                  !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net9.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownFrameworkReference->Count())' != '0' AND
                                  !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILLinkPack->Count())' != '0' AND
                                  !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net9.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
                                  !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
@@ -49,19 +49,19 @@
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
-      <RuntimePackRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
       <AppHostPackVersion
         Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</AppHostPackVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownAppHostPack>
 
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
         Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 
   </ItemGroup>
@@ -73,6 +73,10 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
     <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

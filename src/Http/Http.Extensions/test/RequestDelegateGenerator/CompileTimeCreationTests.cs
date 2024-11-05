@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -427,7 +429,7 @@ app.MapGet("/", () => "Hello world!");
         Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
     }
 
-    public static IEnumerable<object[]> NullResult
+    public static IEnumerable<object[]> NullResultWithNullAnnotation
     {
         get
         {
@@ -443,7 +445,7 @@ app.MapGet("/", () => "Hello world!");
     }
 
     [Theory]
-    [MemberData(nameof(NullResult))]
+    [MemberData(nameof(NullResultWithNullAnnotation))]
     public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(string innerSource, string message)
     {
         var source = $"""
@@ -456,6 +458,21 @@ app.MapGet("/", {innerSource});
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
 
         Assert.Equal(message, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("Task<bool> () => null!")]
+    [InlineData("Task<bool?> () => null!")]
+    public async Task AwaitableRequestDelegateThrowsNullReferenceExceptionOnUnannotatedNullDelegate(string innerSource)
+    {
+        var source = $"""
+app.MapGet("/", {innerSource});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        _ = await Assert.ThrowsAsync<NullReferenceException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 
     [Theory]
@@ -672,6 +689,7 @@ namespace Microsoft.AspNetCore.Builder
     public async Task TestHandlingOfGenericWithNullableReferenceTypes()
     {
         var source = """
+#nullable enable
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
@@ -720,5 +738,54 @@ namespace TestApp
 
         var diagnostics = updatedCompilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
+    }
+
+    [Fact]
+    public async Task RequestDelegateGenerator_SkipsComplexFormParameter()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] Todo todo) => { });
+app.MapPost("/", ([FromForm] Todo todo, IFormFile formFile) => { });
+app.MapPost("/", ([FromForm] Todo todo, [FromForm] int[] ids) => { });
+""";
+        var (generatorRunResult, _) = await RunGeneratorAsync(source);
+
+        // Emits diagnostics but no generated sources
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Empty(result.GeneratedSources);
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
+    }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/55840
+    [Fact]
+    public async Task RequestDelegatePopulatesFromOptionalFormParameterStringArray()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
+{
+    httpContext.Items["message"] = message;
+});
+""";
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["message"] = new(["hello", "bye"])
+        });
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
 }

@@ -156,7 +156,6 @@ public static class ServerRazorComponentsBuilderExtensions
                     }
                 }
             }
-
         }
 
         private sealed class ServerComponentsSocketFeature(

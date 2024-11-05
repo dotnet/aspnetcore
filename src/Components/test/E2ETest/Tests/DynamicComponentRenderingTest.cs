@@ -27,7 +27,7 @@ public class DynamicComponentRenderingTest : ServerTestBase<ToggleExecutionModeS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         app = Browser.MountTestComponent<DynamicComponentRendering>();
         testCasePicker = new SelectElement(app.FindElement(By.Id("dynamic-component-case-picker")));
     }

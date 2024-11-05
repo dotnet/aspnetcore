@@ -100,6 +100,6 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted, typeof(TValue), new[] { "application/json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status202Accepted, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

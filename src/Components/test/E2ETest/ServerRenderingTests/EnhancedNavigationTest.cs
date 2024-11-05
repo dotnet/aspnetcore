@@ -643,6 +643,25 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
+    [Fact]
+    public void CanUpdateHrefOnLinkTagWithIntegrity()
+    {
+        // Represents issue https://github.com/dotnet/aspnetcore/issues/54250
+        // Previously, if the "integrity" attribute appeared after "href", then we'd be unable
+        // to update "href" because the new content wouldn't match the existing "integrity".
+        // This is fixed by ensuring we update "integrity" first in all cases.
+
+        Navigate($"{ServerPathBase}/nav/page-with-link-tag/1");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("PageWithLinkTag 1", () => originalH1Elem.Text);
+        Browser.Equal("rgba(255, 0, 0, 1)", () => originalH1Elem.GetCssValue("color"));
+
+        Browser.Exists(By.LinkText("Go to page with link tag 2")).Click();
+        Browser.Equal("PageWithLinkTag 2", () => originalH1Elem.Text);
+        Browser.Equal("rgba(0, 0, 255, 1)", () => originalH1Elem.GetCssValue("color"));
+    }
+
     private void AssertEnhancedUpdateCountEquals(long count)
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 

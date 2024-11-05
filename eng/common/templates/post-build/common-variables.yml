@@ -1,24 +1,8 @@
 variables:
-  - group: Publish-Build-Assets
+- template: /eng/common/core-templates/post-build/common-variables.yml
+  parameters:
+    # Specifies whether to use 1ES
+    is1ESPipeline: false
 
-  # Whether the build is internal or not
-  - name: IsInternalBuild
-    value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
-
-  # Default Maestro++ API Endpoint and API Version
-  - name: MaestroApiEndPoint
-    value: "https://maestro.dot.net"
-  - name: MaestroApiAccessToken
-    value: $(MaestroAccessToken)
-  - name: MaestroApiVersion
-    value: "2020-02-20"
-
-  - name: SourceLinkCLIVersion
-    value: 3.0.0
-  - name: SymbolToolVersion
-    value: 1.0.1
-  - name: BinlogToolVersion
-    value: 1.0.9
-
-  - name: runCodesignValidationInjection
-    value: false
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

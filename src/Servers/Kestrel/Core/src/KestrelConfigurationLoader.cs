@@ -192,6 +192,27 @@ public class KestrelConfigurationLoader
     }
 
     /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName) => NamedPipeEndpoint(pipeName, _ => { });
+
+    /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        EndpointsToAdd.Add(() =>
+        {
+            Options.ListenNamedPipe(pipeName, configure);
+        });
+
+        return this;
+    }
+
+    /// <summary>
     /// Open a socket file descriptor.
     /// </summary>
     public KestrelConfigurationLoader HandleEndpoint(ulong handle) => HandleEndpoint(handle, _ => { });

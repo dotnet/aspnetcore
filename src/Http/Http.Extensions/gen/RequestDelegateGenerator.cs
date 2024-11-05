@@ -5,14 +5,12 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -54,7 +52,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
         var interceptorDefinitions = endpoints
-            .GroupWith((endpoint) => endpoint.Location, EndpointDelegateComparer.Instance)
+            .GroupWith((endpoint) => endpoint.InterceptableLocation, EndpointDelegateComparer.Instance)
             .Select((endpointWithLocations, _) =>
             {
                 var endpoint = endpointWithLocations.Source;
@@ -62,7 +60,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var location in endpointWithLocations.Elements)
                 {
-                    codeWriter.WriteLine($$"""[InterceptsLocation(@"{{location.File}}", {{location.LineNumber}}, {{location.CharacterNumber}})]""");
+#pragma warning disable RSEXPERIMENTAL002 // Experimental interceptable location API
+                    codeWriter.WriteLine(location.GetInterceptsLocationAttributeSyntax());
+#pragma warning restore RSEXPERIMENTAL002
                 }
                 codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}{endpointWithLocations.Index}(");
                 codeWriter.Indent++;
@@ -241,6 +241,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.EmitterContext.HasJsonBodyOrQuery);
                 var hasResponseMetadata = endpoints.Any(endpoint => endpoint.EmitterContext.HasResponseMetadata);
                 var requiresPropertyAsParameterInfo = endpoints.Any(endpoint => endpoint.EmitterContext.RequiresPropertyAsParameterInfo);
+                var requiresParameterBindingMetadataClass = endpoints.Any(endpoint => endpoint.EmitterContext.RequiresParameterBindingMetadataClass);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -258,6 +259,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (requiresPropertyAsParameterInfo)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.PropertyAsParameterInfoClass);
+                }
+
+                if (requiresParameterBindingMetadataClass)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ParameterBindingMetadataClass);
                 }
 
                 return stringWriter.ToString();

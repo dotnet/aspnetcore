@@ -88,14 +88,14 @@ public partial class CreatedAtRouteResultTests
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new CreatedAtRoute(null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]

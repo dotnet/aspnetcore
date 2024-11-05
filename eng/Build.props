@@ -88,7 +88,7 @@
         <!-- Build the targeting pack installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targetting pack installer logic
+        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
         harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
         getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
@@ -114,7 +114,7 @@
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
       </ItemGroup>
 
-      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
+      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
@@ -174,6 +174,7 @@
                           $(RepoRoot)src\Mvc\**\*.*proj;
                           $(RepoRoot)src\Azure\**\*.*proj;
                           $(RepoRoot)src\SignalR\**\*.csproj;
+                          $(RepoRoot)src\StaticAssets\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
                           $(RepoRoot)src\FileProviders\**\*.csproj;
@@ -219,6 +220,7 @@
                           $(RepoRoot)src\Mvc\**\src\*.csproj;
                           $(RepoRoot)src\Azure\**\src\*.csproj;
                           $(RepoRoot)src\SignalR\**\src\*.csproj;
+                          $(RepoRoot)src\StaticAssets\src\*.csproj;
                           $(RepoRoot)src\Components\**\src\*.csproj;
                           $(RepoRoot)src\FileProviders\**\src\*.csproj;
                           $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;

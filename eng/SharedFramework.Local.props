@@ -107,6 +107,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Connections" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticAssets" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
   </ItemGroup>

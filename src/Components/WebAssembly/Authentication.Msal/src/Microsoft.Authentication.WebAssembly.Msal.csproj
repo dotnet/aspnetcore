@@ -44,10 +44,21 @@
       CandidateAssets="@(_InteropBuildOutput)"
       RelativePathFilter="**.js"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_InteropBuildStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_InteropBuildOutput)' != ''"
+      CandidateAssets="@(_InteropBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_InteropBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
+      <StaticWebAsset Include="@(_InteropBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_InteropBuildStaticWebAssetEndpoint)" />
       <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
       <FileWrites Include="$(_InteropBuildOutput)" />
     </ItemGroup>

@@ -1466,7 +1466,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh");
@@ -1484,11 +1484,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Navigate().Back();
         Browser.Equal(startUrl, () => Browser.Url);
     }
-    
+
     [Fact]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry_Streaming()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh-streaming");
@@ -1592,7 +1592,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             if (!dispatch.FormIsEnhanced)
             {
                 // Verify the same form element is *not* still in the page
-                Assert.Throws<StaleElementReferenceException>(() => form.GetAttribute("method"));
+                Browser.True(() => IsElementStale(form));
             }
             else if (!dispatch.SuppressEnhancedNavigation)
             {
@@ -1642,6 +1642,19 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void GoTo(string relativePath)
     {
         Navigate($"{ServerPathBase}/{relativePath}");
+    }
+
+    private static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
     }
 
     private struct TempFile

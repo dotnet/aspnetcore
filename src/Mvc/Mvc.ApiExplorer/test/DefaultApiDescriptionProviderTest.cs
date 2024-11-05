@@ -633,7 +633,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.Empty(description.SupportedResponseTypes);
     }
 
-    public static TheoryData ReturnsActionResultWithProducesAndProducesContentTypeData
+    public static TheoryData<Type, string, List<FilterDescriptor>> ReturnsActionResultWithProducesAndProducesContentTypeData
     {
         get
         {
@@ -1107,7 +1107,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(methodName);
         var filter = new ContentTypeAttribute("text/*")
         {
-            Type = typeof(Order)
+            Type = typeof(Order),
+            Description = "Example"
         };
 
         action.FilterDescriptors = new List<FilterDescriptor>
@@ -1124,6 +1125,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.NotNull(responseTypes.ModelMetadata);
         Assert.Equal(200, responseTypes.StatusCode);
         Assert.Equal(typeof(Order), responseTypes.Type);
+        Assert.Equal("Example", responseTypes.Description);
 
         foreach (var responseFormat in responseTypes.ApiResponseFormats)
         {
@@ -1577,7 +1579,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1596,7 +1598,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1615,7 +1617,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1634,7 +1636,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1653,7 +1655,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1672,7 +1674,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1691,7 +1693,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -2873,6 +2875,8 @@ public class DefaultApiDescriptionProviderTest
         public int StatusCode { get; set; }
 
         public Type Type { get; set; }
+
+        public string Description { get; set; }
 
         public void SetContentTypes(MediaTypeCollection contentTypes)
         {

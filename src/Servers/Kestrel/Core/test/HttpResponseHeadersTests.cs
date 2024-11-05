@@ -1,21 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -28,12 +25,20 @@ public class HttpResponseHeadersTests
         {
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+            var connectionContext = Mock.Of<ConnectionContext>();
+            var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
+
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
+
             var http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: new TestServiceContext(),
-                connectionContext: Mock.Of<ConnectionContext>(),
+                connectionContext: connectionContext,
                 transport: pair.Transport,
                 memoryPool: memoryPool,
-                connectionFeatures: new FeatureCollection());
+                connectionFeatures: connectionFeatures,
+                metricsContext: metricsContext);
 
             var http1Connection = new Http1Connection(http1ConnectionContext);
 
@@ -41,7 +46,7 @@ public class HttpResponseHeadersTests
 
             IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
 
-            Assert.Equal(0, headers.Count);
+            Assert.Empty(headers);
             Assert.False(headers.IsReadOnly);
         }
     }
@@ -390,6 +395,18 @@ public class HttpResponseHeadersTests
         dictionary.Clear();
 
         Assert.Null(headers.ContentLength);
+    }
+
+    [Fact]
+    public void ContentLengthEnumerableWithoutOtherKnownHeader()
+    {
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["content-length"] = "1024";
+        Assert.Single(headers);
+        headers["unknown"] = "value";
+        Assert.Equal(2, headers.Count()); // NB: enumerable count, not property
+        headers["host"] = "myhost";
+        Assert.Equal(3, headers.Count()); // NB: enumerable count, not property
     }
 
     private static long ParseLong(string value)

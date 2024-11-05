@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Core components of ASP.NET Core networking protocol stack.</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
@@ -14,13 +14,14 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
 
     <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="System.IO.Pipelines" />
+
+    <Reference Include="System.IO.Pipelines" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"/>
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CodeAnalysis\*.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

@@ -107,7 +107,7 @@ internal static class Utilities
     internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
     {
         var factory = new TestRequestContextFactory(server);
-        using var acceptContext = new AsyncAcceptContext(server, factory);
+        using var acceptContext = new AsyncAcceptContext(server, factory, server.Logger);
 
         async Task<RequestContext> AcceptAsync()
         {

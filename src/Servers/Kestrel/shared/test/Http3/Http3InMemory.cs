@@ -93,6 +93,8 @@ internal class Http3InMemory
 
     internal TestMultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
 
+    internal Dictionary<string, object> ConnectionTags => MultiplexedConnectionContext.Tags.ToDictionary(t => t.Key, t => t.Value);
+
     internal long GetStreamId(long mask)
     {
         var id = (_currentStreamId << 2) | mask;
@@ -223,10 +225,12 @@ internal class Http3InMemory
 
     public async Task InitializeConnectionAsync(RequestDelegate application)
     {
-        MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this)
+        MultiplexedConnectionContext ??= new TestMultiplexedConnectionContext(this)
         {
             ConnectionId = "TEST"
         };
+
+        var metricsContext = MultiplexedConnectionContext.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
 
         var httpConnectionContext = new HttpMultiplexedConnectionContext(
             connectionId: MultiplexedConnectionContext.ConnectionId,
@@ -237,7 +241,8 @@ internal class Http3InMemory
             serviceContext: _serviceContext,
             memoryPool: _memoryPool,
             localEndPoint: null,
-            remoteEndPoint: null);
+            remoteEndPoint: null,
+            metricsContext: metricsContext);
         httpConnectionContext.TimeoutControl = _timeoutControl;
 
         _httpConnection = new HttpConnection(httpConnectionContext);
@@ -766,7 +771,7 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        _headerHandler.DecodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+        _headerHandler.DecodedHeaders[name.GetAsciiString()] = value.GetAsciiOrUTF8String();
     }
 
     public void OnHeadersComplete(bool endHeaders)
@@ -776,12 +781,12 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
     public void OnStaticIndexedHeader(int index)
     {
         var knownHeader = H3StaticTable.Get(index);
-        _headerHandler.DecodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)knownHeader.Value);
+        _headerHandler.DecodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiString()] = HttpUtilities.GetAsciiOrUTF8String((ReadOnlySpan<byte>)knownHeader.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
-        _headerHandler.DecodedHeaders[((Span<byte>)H3StaticTable.Get(index).Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+        _headerHandler.DecodedHeaders[((Span<byte>)H3StaticTable.Get(index).Name).GetAsciiString()] = value.GetAsciiOrUTF8String();
     }
 
     public void Complete()
@@ -791,7 +796,7 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 
     public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        _headerHandler.DecodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+        _headerHandler.DecodedHeaders[name.GetAsciiString()] = value.GetAsciiOrUTF8String();
     }
 }
 
@@ -981,7 +986,7 @@ internal class Http3ControlStream : Http3StreamBase
     }
 }
 
-internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature
+internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature, IConnectionMetricsTagsFeature
 {
     public readonly Channel<ConnectionContext> ToServerAcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
     {
@@ -1006,7 +1011,10 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         Features.Set<IConnectionHeartbeatFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
         Features.Set<IConnectionMetricsContextFeature>(this);
+        Features.Set<IConnectionMetricsTagsFeature>(this);
         ConnectionClosedRequested = ConnectionClosingCts.Token;
+
+        MetricsContext = TestContextFactory.CreateMetricsContext(this);
     }
 
     public override string ConnectionId { get; set; }
@@ -1024,7 +1032,10 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         get => _error ?? -1;
         set => _error = value;
     }
+
     public ConnectionMetricsContext MetricsContext { get; }
+
+    public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
 
     public override void Abort()
     {

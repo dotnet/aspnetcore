@@ -7,7 +7,7 @@ using System.IO.Pipelines;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// Represents a store for cached responses that uses a <see cref="IBufferWriter{byte}"/> as the target.
+/// Represents a store for cached responses that uses a <see cref="IBufferWriter{Byte}"/> as the target.
 /// </summary>
 public interface IOutputCacheBufferStore : IOutputCacheStore
 {

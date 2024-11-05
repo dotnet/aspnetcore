@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// An XML repository backed by the Windows registry.
 /// </summary>
 [SupportedOSPlatform("windows")]
-public class RegistryXmlRepository : IXmlRepository
+public class RegistryXmlRepository : IDeletableXmlRepository
 {
     private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
@@ -154,5 +154,64 @@ public class RegistryXmlRepository : IXmlRepository
         // data corruption if power is lost while the registry file is being flushed to the file system,
         // but the window for that should be small enough that we shouldn't have to worry about it.
         RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
+    }
+
+    /// <inheritdoc/>
+    public virtual bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
+
+        var deletableElements = new List<DeletableElement>();
+
+        foreach (var valueName in RegistryKey.GetValueNames())
+        {
+            var element = ReadElementFromRegKey(RegistryKey, valueName);
+            if (element is not null)
+            {
+                deletableElements.Add(new DeletableElement(valueName, element));
+            }
+        }
+
+        chooseElements(deletableElements);
+
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        foreach (var deletableElement in elementsToDelete)
+        {
+            var valueName = deletableElement.ValueName;
+            _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
+            try
+            {
+                RegistryKey.DeleteValue(valueName, throwOnMissingValue: false);
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                // Stop processing deletions to avoid deleting a revocation entry for a key that we failed to delete.
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(string valueName, XElement element)
+        {
+            ValueName = valueName;
+            Element = element;
+        }
+
+        /// <inheritdoc/>
+        public XElement Element { get; }
+
+        /// <summary>The name of the registry value from which <see cref="Element"/> was read.</summary>
+        public string ValueName { get; }
+
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }

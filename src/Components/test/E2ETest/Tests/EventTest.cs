@@ -26,7 +26,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -62,7 +62,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("True", () => Browser.FindElement(By.Id("button-received-focus-out")).Text);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53724")]
     [Fact]
     public void MouseOverAndMouseOut_CanTrigger()
     {
@@ -73,7 +72,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var other = Browser.Exists(By.Id("other"));
+        var other = Browser.Exists(By.Id("mouseover_label"));
 
         // Mouse over the button and then back off
         var actions = new Actions(Browser)
@@ -155,8 +154,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var other = Browser.Exists(By.Id("other"));
-
         // Mousedown
         var actions = new Actions(Browser).ClickAndHold(input);
 
@@ -202,7 +199,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52783")]
     public void Cancel_CanTrigger()
     {
         Browser.MountTestComponent<DialogEventsComponent>();

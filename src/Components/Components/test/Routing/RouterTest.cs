@@ -111,7 +111,7 @@ public class RouterTest
                 Assert.True(true);
                 return;
             }
-            Assert.True(false, "OnUpdateDisplay called more than once.");
+            Assert.Fail("OnUpdateDisplay called more than once.");
         };
         _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
@@ -164,7 +164,7 @@ public class RouterTest
                 Assert.True(true);
                 return;
             }
-            Assert.True(false, "OnUpdateDisplay called more than once.");
+            Assert.Fail("OnUpdateDisplay called more than once.");
         };
         _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 

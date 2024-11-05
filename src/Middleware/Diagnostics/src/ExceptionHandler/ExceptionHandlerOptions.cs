@@ -38,4 +38,12 @@ public class ExceptionHandlerOptions
     /// the original exception.
     /// </summary>
     public bool AllowStatusCode404Response { get; set; }
+
+    /// <summary>
+    /// Gets or sets a delegate used to map an exception to a http status code.
+    /// </summary>
+    /// <remarks>
+    /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code 500 is used.
+    /// </remarks>
+    public Func<Exception, int>? StatusCodeSelector { get; set; }
 }

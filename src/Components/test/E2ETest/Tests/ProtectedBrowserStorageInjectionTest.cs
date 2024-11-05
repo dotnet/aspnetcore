@@ -23,7 +23,7 @@ public class ProtectedBrowserStorageInjectionTest : ServerTestBase<ToggleExecuti
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<ProtectedBrowserStorageInjectionComponent>();
     }
 

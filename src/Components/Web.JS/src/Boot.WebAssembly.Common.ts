@@ -14,7 +14,7 @@ import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { WebAssemblyComponentDescriptor, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { MonoConfig } from 'dotnet-runtime';
+import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 
@@ -97,8 +97,8 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   });
 
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => {
-    dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta);
+  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => {
+    dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta, updatedTypes ?? null);
   };
 
   Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');

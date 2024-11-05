@@ -11,7 +11,7 @@
   <Target Name="PublishTestAssets"
       BeforeTargets="Build;Publish;RunTests;VSTest"
       Condition=" '$(ExcludeFromBuild)' != 'true' AND
-        '$(DotNetBuildFromSource)' != 'true' AND
+        ('$(DotNetBuild)' != 'true' or '$(DotNetBuildTests)' == 'true') AND
         '@(TestAssetProjectReference->Count())' != '0' ">
     <ItemGroup>
       <_ProjectsToPublish Include="@(TestAssetProjectReference)" />

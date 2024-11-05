@@ -18,6 +18,7 @@ verbosity='minimal'
 run_restore=''
 run_build=true
 run_pack=false
+run_publish=false
 run_tests=false
 build_all=false
 build_deps=true
@@ -62,6 +63,7 @@ Options:
     --[no-]build                      Compile projects. (Implies --no-restore)
     --[no-]pack                       Produce packages.
     --[no-]test                       Run tests.
+    --[no-]publish                    Run publish.
 
     --projects                        A list of projects to build. (Must be an absolute path.)
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
@@ -151,6 +153,12 @@ while [[ $# -gt 0 ]]; do
             ;;
         -no-pack|-nopack)
             run_pack=false
+            ;;
+        -publish)
+            run_publish=true
+            ;;
+        -no-publish|-nopublish)
+            run_publish=false
             ;;
         -test|-t)
             run_tests=true
@@ -258,6 +266,7 @@ if [ "$build_managed" = true ] || ([ "$build_all" = true ] && [ "$build_managed"
     if [ -z "$build_nodejs" ]; then
         if [ -x "$(command -v node)" ]; then
             __warn "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected on PATH."
+            __warn "Note that if you are running Source Build, building NodeJS projects will be disabled later on."
             build_nodejs=true
         else
             __warn "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
@@ -273,7 +282,7 @@ fi
 # Only set these MSBuild properties if they were explicitly set by build parameters.
 [ ! -z "$build_java" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildJava=$build_java"
 [ ! -z "$build_native" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNative=$build_native"
-[ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
+[ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
 
@@ -286,6 +295,7 @@ if [ "$run_build" = false ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:NoBuild=true"
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
+msbuild_args[${#msbuild_args[*]}]="-p:Publish=$run_publish"
 msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
 
 msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
@@ -328,6 +338,10 @@ fi
 if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
 fi
+
+# tools.sh expects the remaining arguments to be available via the $properties string array variable
+# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
+properties=$msbuild_args
 
 # Import Arcade
 . "$DIR/common/tools.sh"

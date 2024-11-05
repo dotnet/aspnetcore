@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -39,7 +38,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<GracefulTermination>();
         Browser.Equal("Graceful Termination", () => Browser.Exists(By.TagName("h1")).Text);
 
@@ -62,7 +61,6 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44185")]
     public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
     {
         // Arrange & Act

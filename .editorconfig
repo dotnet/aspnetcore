@@ -4,7 +4,7 @@
 ;
 ; Here are some resources for what's supported for .NET/C#
 ; https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
-; https://learn.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+; https://learn.microsoft.com/visualstudio/ide/editorconfig-code-style-settings-reference
 ;
 ; Be **careful** editing this because some of the rules don't support adding a severity level
 ; For instance if you change to `dotnet_sort_system_directives_first = true:warning` (adding `:warning`)
@@ -147,7 +147,7 @@ dotnet_diagnostic.CA1823.severity = warning
 dotnet_diagnostic.CA1825.severity = warning
 
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1826.severity = suggestion
 
 # CA1827: Do not use Count() or LongCount() when Any() can be used
 dotnet_diagnostic.CA1827.severity = warning
@@ -253,6 +253,9 @@ dotnet_diagnostic.CA2014.severity = warning
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = warning
+
+# CA2022: Avoid inexact read with `Stream.Read`
+dotnet_diagnostic.CA2022.severity = warning
 
 # CA2200: Rethrow to preserve stack details
 dotnet_diagnostic.CA2200.severity = warning
@@ -407,6 +410,8 @@ dotnet_diagnostic.CA2007.severity = suggestion
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
+# CA2022: Avoid inexact read with `Stream.Read`
+dotnet_diagnostic.CA2022.severity = suggestion
 # CA2201: Do not raise reserved exception types
 dotnet_diagnostic.CA2201.severity = suggestion
 # CA2249: Use string.Contains instead of string.IndexOf to improve readability.
@@ -458,3 +463,13 @@ dotnet_diagnostic.IDE0161.severity = silent
 [{**/Shared/**.cs,**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
 # IDE0005: Remove unused usings. Ignore for shared src files since imports for those depend on the projects in which they are included.
 dotnet_diagnostic.IDE0005.severity = silent
+
+# Verify settings
+[*.{received,verified}.{txt,xml,json}]
+charset = "utf-8-bom"
+end_of_line = lf
+indent_size = unset
+indent_style = unset
+insert_final_newline = false
+tab_width = unset
+trim_trailing_whitespace = false

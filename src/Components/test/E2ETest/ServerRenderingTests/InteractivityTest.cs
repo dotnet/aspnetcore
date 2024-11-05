@@ -4,6 +4,7 @@
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
@@ -1142,8 +1143,56 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     public void InteractiveServerRootComponent_CanAccessCircuitContext()
     {
         Navigate($"{ServerPathBase}/interactivity/circuit-context");
+        CircuitContextTest.TestCircuitContextCore(Browser);
+    }
 
-        Browser.Equal("True", () => Browser.FindElement(By.Id("has-circuit-context")).Text);
+    [Fact]
+    public void InteractiveServerRootComponents_CanBecomeInteractive_WithoutInterferingWithOtherCircuits()
+    {
+        // Start by setting up 2 tabs with interactive server components.
+        SetUpPageWithOneInteractiveServerComponent();
+
+        var firstWindow = Browser.CurrentWindowHandle;
+        Browser.SwitchTo().NewWindow(WindowType.Tab);
+        var secondWindow = Browser.CurrentWindowHandle;
+
+        SetUpPageWithOneInteractiveServerComponent();
+
+        // Start streaming in the second tab.
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        // Add an interactive server component while streaming.
+        // This will update the existing component, but the new component
+        // won't become interactive until streaming ends.
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        // Add an interactive server component in the first tab.
+        // This component will become interactive immediately because the response
+        // that rendered the component will have completed quickly.
+        Browser.SwitchTo().Window(firstWindow);
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        // Stop streaming in the second tab.
+        // This will activate the pending component for interactivity.
+        // This check verifies that a circuit can activate components from its most
+        // recent response, even if that response isn't the most recent between all
+        // circuits.
+        Browser.SwitchTo().Window(secondWindow);
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        void SetUpPageWithOneInteractiveServerComponent()
+        {
+            Navigate($"{ServerPathBase}/streaming-interactivity");
+
+            Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+            Browser.Click(By.Id(AddServerPrerenderedId));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+        }
     }
 
     private void BlockWebAssemblyResourceLoad()

@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
@@ -13,14 +11,14 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -190,6 +188,7 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Null(await Http3Api.MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
 
         await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -219,6 +218,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.MultiplexedConnectionContext.Abort();
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -245,6 +245,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.SettingsError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
+        MetricsAssert.Equal(ConnectionEndReason.InvalidSettings, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -264,6 +265,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.StreamCreationError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
+        MetricsAssert.Equal(ConnectionEndReason.StreamCreationError, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -285,6 +287,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(f)));
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -309,6 +312,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -332,6 +336,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.CloseServerGracefully();
 
         await Http3Api.WaitForConnectionStopAsync(0, true, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -352,6 +357,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -587,6 +593,190 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.NotNull(trailersFirst);
         Assert.NotNull(trailersLast);
         Assert.NotSame(trailersFirst, trailersLast);
+    }
+
+    [Fact]
+    public async Task WriteBeforeFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await Http3Api.InitializeConnectionAsync(async c =>
+        {
+            try
+            {
+                var length = 0;
+                var memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                await c.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, c.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        var requestStream = await Http3Api.CreateRequestStream(new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+        });
+
+        await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
+
+        await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectDataAsync();
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
+        Assert.True(requestStream.Disposed);
+
+        await tcs.Task;
+    }
+
+    [Fact]
+    public async Task WriteAfterFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await Http3Api.InitializeConnectionAsync(async c =>
+        {
+            try
+            {
+                await c.Response.StartAsync();
+
+                var length = 0;
+                var memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                await c.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, c.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        var requestStream = await Http3Api.CreateRequestStream(new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+        });
+
+        await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
+
+        await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectDataAsync();
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
+        Assert.True(requestStream.Disposed);
+
+        await tcs.Task;
+    }
+
+    [Fact]
+    public async Task ErrorCodeIsValidOnConnectionTimeout()
+    {
+        // This test loosely repros the scenario in https://github.com/dotnet/aspnetcore/issues/57933.
+        // In particular, there's a request from the server and, once a response has been sent,
+        // the (simulated) transport throws a QuicException that surfaces through AcceptAsync.
+        // This test confirms that Http3Connection.ProcessRequestsAsync doesn't (indirectly) cause
+        // IProtocolErrorCodeFeature.Error to be set to (or left at) -1, which System.Net.Quic will
+        // not accept.
+
+        // Used to signal that a request has been sent and a response has been received
+        var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        // Used to signal that the connection context has been aborted
+        var abortTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // InitializeConnectionAsync consumes the connection context, so set it first
+        Http3Api.MultiplexedConnectionContext = new ThrowingMultiplexedConnectionContext(Http3Api, skipCount: 2, requestTcs, abortTcs);
+        await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+        var requestStream = await Http3Api.CreateRequestStream(Headers, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        requestTcs.SetResult();
+
+        // By the time the connection context is aborted, the error code feature has been updated
+        await abortTcs.Task.DefaultTimeout();
+
+        Http3Api.CloseServerGracefully();
+
+        var errorCodeFeature = Http3Api.MultiplexedConnectionContext.Features.Get<IProtocolErrorCodeFeature>();
+        Assert.InRange(errorCodeFeature.Error, 0, (1L << 62) - 1); // Valid range for HTTP/3 error codes
+    }
+
+    private sealed class ThrowingMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private int _skipCount;
+        private readonly TaskCompletionSource _requestTcs;
+        private readonly TaskCompletionSource _abortTcs;
+
+        /// <summary>
+        /// After <paramref name="skipCount"/> calls to <see cref="AcceptAsync"/>, the next call will throw a <see cref="QuicException"/>
+        /// (after waiting for <see cref="_requestTcs"/> to be set).
+        ///
+        /// <paramref name="abortTcs"/> lets this type signal that <see cref="Abort"/> has been called.
+        /// </summary>
+        public ThrowingMultiplexedConnectionContext(Http3InMemory testBase, int skipCount, TaskCompletionSource requestTcs, TaskCompletionSource abortTcs)
+            : base(testBase)
+        {
+            _skipCount = skipCount;
+            _requestTcs = requestTcs;
+            _abortTcs = abortTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            if (_skipCount-- <= 0)
+            {
+                await _requestTcs.Task.DefaultTimeout();
+                throw new System.Net.Quic.QuicException(
+                    System.Net.Quic.QuicError.ConnectionTimeout,
+                    applicationErrorCode: null,
+                    "Connection timed out waiting for a response from the peer.");
+            }
+            return await base.AcceptAsync(cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            _abortTcs.SetResult();
+            base.Abort(abortReason);
+        }
     }
 
     private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)

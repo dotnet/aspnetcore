@@ -109,7 +109,7 @@ When tests are run as part of the CI infrastructure, a number of different timeo
 
 ##### Helix job timeout
 
-When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](eng/targets/Helix.props):
+When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](/eng/targets/Helix.props): 
 
 ```xml
 <HelixTimeout>00:45:00</HelixTimeout>
@@ -126,7 +126,7 @@ Note that some test projects might override this value in their project file and
 
 ##### Helix runner timeout
 
-The [Helix test runner](eng/tools/HelixTestRunner) launches the actual process that runs tests within a Helix job and when doing so configures its own timeout that is 5 minutes less than the Helix job timeout, e.g. if the Helix job timeout is 45 minutes, the Helix test runner process timeout will be 40 minutes.
+The [Helix test runner](/eng/tools/HelixTestRunner) launches the actual process that runs tests within a Helix job and when doing so configures its own timeout that is 5 minutes less than the Helix job timeout, e.g. if the Helix job timeout is 45 minutes, the Helix test runner process timeout will be 40 minutes.
 
 If this timeout is exceeded, the Helix test runner will capture a dump of the test process before terminating it and printing a message in the console log, e.g.:
 
@@ -136,7 +136,7 @@ If this timeout is exceeded, the Helix test runner will capture a dump of the te
 
 ##### Helix runner `dotnet test` timeout
 
-When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](eng/tools/HelixTestRunner/TestRunner.cs)
+When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](/eng/tools/HelixTestRunner/TestRunner.cs)
 
 ```csharp
 public async Task<int> RunTestsAsync()

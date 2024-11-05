@@ -1,2 +1,4 @@
 #nullable enable
+*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes) -> void
+static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!

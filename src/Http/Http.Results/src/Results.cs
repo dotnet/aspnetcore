@@ -359,7 +359,7 @@ public static partial class Results
     /// </summary>
     /// <param name="fileStream">The <see cref="System.IO.Stream"/> with the contents of the file.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -390,7 +390,7 @@ public static partial class Results
     /// </summary>
     /// <param name="stream">The <see cref="System.IO.Stream"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -418,7 +418,7 @@ public static partial class Results
     /// </summary>
     /// <param name="pipeReader">The <see cref="System.IO.Pipelines.PipeReader"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -439,14 +439,10 @@ public static partial class Results
 
     /// <summary>
     /// Allows writing directly to the response body.
-    /// <para>
-    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
-    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
-    /// </para>
     /// </summary>
     /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -691,6 +687,21 @@ public static partial class Results
         => error is null ? TypedResults.UnprocessableEntity() : TypedResults.UnprocessableEntity(error);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError()
+        => InternalServerError<object>(null);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError<TValue>(TValue? error)
+        => error is null ? TypedResults.InternalServerError() : TypedResults.InternalServerError(error);
+
+    /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
@@ -701,12 +712,33 @@ public static partial class Results
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+        => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static IResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
         => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
 
     /// <summary>
@@ -731,13 +763,41 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult ValidationProblem(
         IDictionary<string, string[]> errors,
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return ValidationProblem(errors, detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response
+    /// with a <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static IResult ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
         var problemDetails = new HttpValidationProblemDetails(errors)
         {
@@ -754,7 +814,7 @@ public static partial class Results
         return TypedResults.Problem(problemDetails);
     }
 
-    private static void CopyExtensions(IDictionary<string, object?>? extensions, HttpValidationProblemDetails problemDetails)
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, HttpValidationProblemDetails problemDetails)
     {
         if (extensions is not null)
         {
@@ -767,7 +827,7 @@ public static partial class Results
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created()
         => TypedResults.Created();

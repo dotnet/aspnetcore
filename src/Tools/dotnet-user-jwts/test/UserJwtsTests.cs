@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
 public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output) : IClassFixture<UserJwtsTestFixture>
 {
-    private readonly TestConsole _console = new TestConsole(output);
+    private readonly TestConsole _console = new(output);
 
     [Fact]
     public void List_NoTokensForNewProject()
@@ -71,12 +71,10 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
-        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
-        var id = matches.SingleOrDefault().Groups[1].Value;
 
         var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
         Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
-        app.Run(new[] { "create", "--project", project, "--issuer", "new-issuer"  });
+        app.Run(["create", "--project", project, "--issuer", "new-issuer"]);
         appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
         Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
     }
@@ -208,7 +206,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         app.Run(new[] { "key", "--reset", "--force", "--project", project });
         Assert.Contains("New signing key created:", _console.GetOutput());
 
-        using FileStream openStream = File.OpenRead(secretsFilePath);
+        using var openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
         Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)));
@@ -423,11 +421,39 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
   }
 }");
         var app = new Program(_console);
-        app.Run(new[] { "create", "--project", project});
+        app.Run(new[] { "create", "--project", project });
         var output = _console.GetOutput();
 
         Assert.Contains("New JWT saved", output);
-        using FileStream openStream = File.OpenRead(secretsFilePath);
+        using var openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.NotNull(secretsJson);
+        var signingKey = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)].AsArray());
+        Assert.Equal(32, signingKey["Length"].GetValue<int>());
+        Assert.True(Convert.TryFromBase64String(signingKey["Value"].GetValue<string>(), new byte[32], out var _));
+        Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
+        Assert.Equal("baz", fooField["Bar"].GetValue<string>());
+    }
+
+    [Fact]
+    public async Task Create_GracefullyHandles_PrepopulatedSecrets_WithCommasAndComments()
+    {
+        var projectPath = fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
+        await File.WriteAllTextAsync(secretsFilePath,
+@"{
+  ""Foo"": {
+    ""Bar"": ""baz"",
+    //""Bar"": ""baz"",
+  }
+}");
+        var app = new Program(_console);
+        app.Run(["create", "--project", project]);
+        var output = _console.GetOutput();
+
+        Assert.Contains("New JWT saved", output);
+        using var openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
         var signingKey = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)].AsArray());
@@ -444,7 +470,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         var project = Path.Combine(projectPath, "TestProject.csproj");
 
         var app = new Program(_console);
-        app.Run(new[] { "create", "--project", project});
+        app.Run(new[] { "create", "--project", project });
         var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
         var id = matches.SingleOrDefault().Groups[1].Value;
         app.Run(new[] { "print", id, "--project", project, "--show-all" });
@@ -466,7 +492,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         Assert.Contains("New JWT saved", _console.GetOutput());
 
-        using FileStream openStream = File.OpenRead(secretsFilePath);
+        using var openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")));
         var signingKey = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray());
@@ -488,7 +514,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         Assert.Contains("New JWT saved", _console.GetOutput());
 
-        using FileStream openStream = File.OpenRead(secretsFilePath);
+        using var openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")));
         var signingKeys = secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray();
@@ -510,7 +536,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         Assert.Contains("New JWT saved", _console.GetOutput());
 
-        using FileStream openStream = File.OpenRead(secretsFilePath);
+        using var openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         var signingKey1 = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray());
         Assert.Equal("test-issuer", signingKey1["Issuer"].GetValue<string>());
@@ -580,7 +606,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Directory.SetCurrentDirectory(projectPath);
 
         var app = new Program(_console);
-        app.Run(new[] { "create" });
+        app.Run(["create"]);
 
         Assert.DoesNotContain("No project found at `-p|--project` path or current directory.", _console.GetOutput());
         Assert.Contains("New JWT saved", _console.GetOutput());
@@ -593,7 +619,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Directory.SetCurrentDirectory(path.FullName);
 
         var app = new Program(_console);
-        app.Run(new[] { "create" });
+        app.Run(["create"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
         Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
@@ -606,7 +632,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Directory.SetCurrentDirectory(path.FullName);
 
         var app = new Program(_console);
-        app.Run(new[] { "remove", "some-id" });
+        app.Run(["remove", "some-id"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
@@ -618,7 +644,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Directory.SetCurrentDirectory(path.FullName);
 
         var app = new Program(_console);
-        app.Run(new[] { "clear" });
+        app.Run(["clear"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
@@ -630,7 +656,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Directory.SetCurrentDirectory(path.FullName);
 
         var app = new Program(_console);
-        app.Run(new[] { "list" });
+        app.Run(["list"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
@@ -669,7 +695,6 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         var projectPath = fixture.CreateProject();
         var tempPath = Path.GetTempPath();
         var targetPath = Path.GetRelativePath(tempPath, projectPath);
-        var project = Path.Combine(projectPath, "TestProject.csproj");
         Directory.SetCurrentDirectory(tempPath);
 
         var app = new Program(_console);

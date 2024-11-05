@@ -14,11 +14,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="${MicrosoftAspNetCoreAuthenticationNegotiateVersion}" Condition="'$(WindowsAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="${MicrosoftAspNetCoreOpenApiVersion}" Condition="'$(EnableOpenAPI)' == 'True' AND '$(UsingMinimalAPIs)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="${MicrosoftAspNetCoreOpenApiVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
     <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="${MicrosoftIdentityWebGraphServiceClientVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCoreVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
 
   <!--#endif -->

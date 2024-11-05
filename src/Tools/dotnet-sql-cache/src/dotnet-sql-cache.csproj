@@ -17,6 +17,7 @@
     <Reference Include="Microsoft.Data.SqlClient" />
     <Reference Include="Azure.Identity" />
     <Reference Include="System.Private.Uri" />
+    <Reference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>

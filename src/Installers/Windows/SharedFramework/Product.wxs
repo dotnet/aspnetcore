@@ -60,6 +60,7 @@
             <ComponentRef Id="C_ProductVersion_NonNative" />
             <ComponentRef Id="C_ProductInstallDir_NonNative" />
             <?endif?>
+            <ComponentRef Id="C_ProductCentralVersion" />
         </ComponentGroup>
 
         <DirectoryRef Id="SharedFolder">
@@ -72,6 +73,12 @@
             <?endif?>
 
             <?define ProductVersionKey=SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v$(var.MajorVersion).$(var.MinorVersion)\$(var.PackageVersion)?>
+
+            <?ifdef ProductVersionCentralKey?>
+            <?undef ProductVersionCentralKey?>
+            <?endif?>
+
+            <?define ProductVersionCentralKey=SOFTWARE\dotnet\Setup\InstalledVersions\$(var.Platform)\sharedfx\Microsoft.AspNetCore.App?>
 
             <Component Id="C_ProductVersion">
                 <?if $(var.Platform)=x64 ?>
@@ -110,5 +117,11 @@
             </Component>
             <?endif?>
         </DirectoryRef>
+
+        <Component Id="C_ProductCentralVersion" Directory="TARGETDIR" Win64="no">
+            <RegistryKey Key="$(var.ProductVersionCentralKey)" Root="HKLM">
+                <RegistryValue Action="write" Name="$(var.PackageVersion)" Type="integer" Value="1" KeyPath="yes"/>
+            </RegistryKey>
+        </Component>
     </Fragment>
 </Wix>

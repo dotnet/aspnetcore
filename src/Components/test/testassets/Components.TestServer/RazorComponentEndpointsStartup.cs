@@ -9,6 +9,7 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -32,7 +33,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         })
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents();
+            .AddInteractiveServerComponents()
+            .AddAuthenticationStateSerialization(options =>
+            {
+                bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
+                options.SerializeAllClaims = serializeAllClaims;
+            });
+
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -57,17 +64,38 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
             if (!env.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
             }
 
-            app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
+
+            app.Use((ctx, nxt) =>
+            {
+                if (ctx.Request.Query.ContainsKey("add-csp"))
+                {
+                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+                }
+                return nxt();
+            });
+
             _ = app.UseEndpoints(endpoints =>
             {
+                var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+                if (File.Exists(contentRootStaticAssetsPath))
+                {
+                    endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+                }
+                else
+                {
+                    endpoints.MapStaticAssets();
+                }
+
                 _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>
@@ -90,18 +118,21 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         });
     }
 
-    private static void UseFakeAuthState(IApplicationBuilder app)
+    internal static void UseFakeAuthState(IApplicationBuilder app)
     {
         app.Use((HttpContext context, Func<Task> next) =>
         {
             // Completely insecure fake auth system with no password for tests. Do not do anything like this in real apps.
             // It accepts a query parameter 'username' and then sets or deletes a cookie to hold that, and supplies a principal
             // using this username (taken either from the cookie or query param).
+            string GetQueryOrDefault(string queryKey, string defaultValue) =>
+                context.Request.Query.TryGetValue(queryKey, out var value) ? value : defaultValue;
+
             const string cookieKey = "fake_username";
-            context.Request.Cookies.TryGetValue(cookieKey, out var username);
-            if (context.Request.Query.TryGetValue("username", out var usernameFromQuery))
+            var username = GetQueryOrDefault("username", context.Request.Cookies[cookieKey]);
+
+            if (context.Request.Query.ContainsKey("username"))
             {
-                username = usernameFromQuery;
                 if (string.IsNullOrEmpty(username))
                 {
                     context.Response.Cookies.Delete(cookieKey);
@@ -113,15 +144,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 }
             }
 
+            var nameClaimType = GetQueryOrDefault("nameClaimType", ClaimTypes.Name);
+            var roleClaimType = GetQueryOrDefault("roleClaimType", ClaimTypes.Role);
+
             if (!string.IsNullOrEmpty(username))
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, username),
+                    new Claim(nameClaimType, username),
+                    new Claim(roleClaimType, "test-role-1"),
+                    new Claim(roleClaimType, "test-role-2"),
                     new Claim("test-claim", "Test claim value"),
                 };
 
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType"));
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType", nameClaimType, roleClaimType));
             }
 
             return next();

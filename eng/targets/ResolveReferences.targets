@@ -20,7 +20,7 @@
 
   <PropertyGroup>
     <EnableCustomReferenceResolution
-      Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildFromSource)' != 'true' OR '$(ExcludeFromSourceBuild)' != 'true')">true</EnableCustomReferenceResolution>
+      Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildSourceOnly)' != 'true' OR '$(ExcludeFromSourceOnlyBuild)' != 'true')">true</EnableCustomReferenceResolution>
 
     <ResolveReferencesDependsOn>
       ResolveCustomReferences;
@@ -206,11 +206,6 @@
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
-
-    <Warning
-        Condition=" '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != '' "
-        Code="BUILD001"
-        Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
 
     <Error
         Condition=" '$(IsServicingBuild)' == 'true' AND '@(UnusedBaselinePackageReference->Count())' != '0' "

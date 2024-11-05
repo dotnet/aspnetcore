@@ -3,7 +3,7 @@
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR Message Pack protocol library. */
-export const VERSION = "0.0.0-DEV_BUILD";
+export { VERSION } from "./pkg-version";
 
 export { MessagePackHubProtocol } from "./MessagePackHubProtocol";
 

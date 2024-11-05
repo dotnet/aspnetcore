@@ -50,6 +50,43 @@ public abstract partial class AllowedWebSocketCompressionTests(
             Assert.DoesNotContain("Content-Security-Policy", response.Headers.Select(h => h.Key));
         }
     }
+
+    [Fact]
+    public async Task EmbeddingServerAppInsideIframe_WorksWithMultipleCspHeaders()
+    {
+        Navigate("/subdir/iframe?add-csp");
+
+        var logs = Browser.GetBrowserLogs(LogLevel.Severe);
+
+        Assert.Empty(logs);
+
+        // Get the iframe element from the page, and inspect its contents for a p element with id inside-iframe
+        var iframe = Browser.FindElement(By.TagName("iframe"));
+        Browser.SwitchTo().Frame(iframe);
+        Browser.Exists(By.Id("inside-iframe"));
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.GetAsync("/subdir/iframe?add-csp");
+        response.EnsureSuccessStatusCode();
+
+        if (ExpectedPolicy != null)
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'",
+                    $"frame-ancestors {ExpectedPolicy}"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+        else
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+    }
 }
 
 public abstract partial class BlockedWebSocketCompressionTests(

@@ -223,7 +223,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         static ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -250,7 +252,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(initialHandlerCount, completedHandlerCount);
 
         ValueTask HandleLocationChanging(LocationChangingContext context)
@@ -276,7 +280,9 @@ public class NavigationManagerTest
         Assert.False(navigation1.IsCompleted);
         tcs.SetResult();
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         async ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -328,7 +334,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         static ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -346,7 +354,7 @@ public class NavigationManagerTest
         var invokedHandlerCount = 0;
 
         // The first two handlers run, but the third doesn't because the navigation gets prevented after the second.
-        var expectedInvokedHandlerCount = 2; 
+        var expectedInvokedHandlerCount = 2;
 
         navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
         navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
@@ -357,7 +365,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(expectedInvokedHandlerCount, invokedHandlerCount);
 
         ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
@@ -391,7 +401,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.True(currentContext.DidPreventNavigation);
         Assert.True(currentContext.CancellationToken.IsCancellationRequested);
         Assert.False(isHandlerCompleted);
@@ -428,7 +440,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.True(currentContext.DidPreventNavigation);
         Assert.True(currentContext.CancellationToken.IsCancellationRequested);
         Assert.False(isFirstHandlerCompleted);
@@ -455,7 +469,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";
@@ -479,7 +493,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
+    public async Task LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
         var baseUri = "scheme://host/";
@@ -503,7 +517,9 @@ public class NavigationManagerTest
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(navigation1.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(blockNavigationHandlerCount, canceledBlockNavigationHandlerCount);
 
         async ValueTask HandleLocationChanging_BlockNavigation(LocationChangingContext context)
@@ -556,11 +572,13 @@ public class NavigationManagerTest
         await tcs.Task.WaitAsync(Timeout);
 
         // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.IsCompletedSuccessfully);
         Assert.False(navigation1.Result);
 
         Assert.True(navigation2.IsCompletedSuccessfully);
         Assert.True(navigation2.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         async ValueTask HandleLocationChanging(LocationChangingContext context)
         {
@@ -615,6 +633,7 @@ public class NavigationManagerTest
         await tcs.Task.WaitAsync(Timeout);
 
         // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(navigation1.IsCompletedSuccessfully);
         Assert.False(navigation1.Result);
 
@@ -623,6 +642,7 @@ public class NavigationManagerTest
 
         Assert.True(navigation3.IsCompletedSuccessfully);
         Assert.True(navigation3.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         Assert.Equal(expectedCanceledHandlerCount, canceledHandlerCount);
         Assert.Equal(0, completedHandlerCount);
@@ -798,13 +818,13 @@ public class NavigationManagerTest
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52407")]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange
         var baseUri = "scheme://host/";
         var navigationManager = new TestNavigationManager(baseUri);
+        var blockPreventNavigationTcs = new TaskCompletionSource();
         var navigationPreventedTcs = new TaskCompletionSource();
         var completeHandlerTcs = new TaskCompletionSource();
         LocationChangingContext currentContext = null;
@@ -814,10 +834,14 @@ public class NavigationManagerTest
         // Act/Assert
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
 
+        // Unblock the location changing handler to let it cancel the navigation, now that we know the
+        // navigation wasn't canceled synchronously
+        blockPreventNavigationTcs.SetResult();
+
         // Wait for the navigation to be prevented asynchronously
         await navigationPreventedTcs.Task.WaitAsync(Timeout);
 
-        // Assert that we have prevented the navigation but the cancellation token has requested cancellation
+        // Assert that we have prevented the navigation but the cancellation token has not requested cancellation
         Assert.True(currentContext.DidPreventNavigation);
         Assert.False(currentContext.CancellationToken.IsCancellationRequested);
 
@@ -835,7 +859,7 @@ public class NavigationManagerTest
             currentContext = context;
 
             // Force the navigation to be prevented asynchronously
-            await Task.Yield();
+            await blockPreventNavigationTcs.Task;
 
             context.PreventNavigation();
             navigationPreventedTcs.SetResult();

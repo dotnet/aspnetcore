@@ -69,9 +69,9 @@ public class Startup
             return true;
         }
 
-        // Cover Chrome 50-69, because some versions are broken by SameSite=None, 
+        // Cover Chrome 50-69, because some versions are broken by SameSite=None,
         // and none in this range require it.
-        // Note: this covers some pre-Chromium Edge versions, 
+        // Note: this covers some pre-Chromium Edge versions,
         // but pre-Chromium Edge does not require SameSite=None.
         if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
         {

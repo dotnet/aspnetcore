@@ -3,7 +3,7 @@
   "name": "Razor Class Library",
   "description": "A project for creating a Razor class library that targets .NET",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/SupportPagesAndViews/displayName": "Support pages and views",
   "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views to this library.",

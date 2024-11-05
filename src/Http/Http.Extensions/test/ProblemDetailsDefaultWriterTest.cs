@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Http.Json;
-using System.Text.Json.Serialization;
-using Microsoft.CodeAnalysis;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
@@ -26,6 +25,8 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -52,6 +53,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Title, problemDetails.Title);
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -61,6 +63,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -82,7 +85,7 @@ public partial class DefaultProblemDetailsWriterTest
         //Assert
         stream.Position = 0;
         var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
-        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "extensionKey", 5 } }));
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "extensionKey", 5 }, {"traceId", expectedTraceId } }));
     }
 
     [Fact]
@@ -92,6 +95,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ValidationProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -113,7 +117,7 @@ public partial class DefaultProblemDetailsWriterTest
         //Assert
         stream.Position = 0;
         var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
-        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "errors", 5 } }));
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "errors", 5 }, {"traceId", expectedTraceId } }));
     }
 
     [Fact]
@@ -125,6 +129,7 @@ public partial class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream);
         var originalProblemDetails = new ProblemDetails();
 
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -153,6 +158,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Title, problemDetails.Title);
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -165,6 +171,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -191,6 +198,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Title, problemDetails.Title);
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -203,6 +211,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -229,6 +238,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Title, problemDetails.Title);
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -238,6 +248,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new HttpValidationProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -267,6 +278,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
         Assert.Equal(expectedProblem.Errors, problemDetails.Errors);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -279,6 +291,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new HttpValidationProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -308,6 +321,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
         Assert.Equal(expectedProblem.Errors, problemDetails.Errors);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -320,6 +334,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new CustomProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -349,6 +364,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
         Assert.Equal(expectedProblem.ExtraProperty, problemDetails.ExtraProperty);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -361,6 +377,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new CustomProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -390,6 +407,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
         Assert.Equal(expectedProblem.ExtraProperty, problemDetails.ExtraProperty);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -402,6 +420,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         var expectedProblem = new CustomProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -431,6 +450,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
         Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
         Assert.Equal(expectedProblem.ExtraProperty, problemDetails.ExtraProperty);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
@@ -441,6 +461,7 @@ public partial class DefaultProblemDetailsWriterTest
         var stream = new MemoryStream();
         var context = CreateContext(stream);
         var expectedProblem = new ProblemDetails();
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         expectedProblem.Extensions["Extension1"] = "Extension1-Value";
         expectedProblem.Extensions["Extension2"] = "Extension2-Value";
 
@@ -467,6 +488,11 @@ public partial class DefaultProblemDetailsWriterTest
             {
                 Assert.Equal("Extension2", extension.Key);
                 Assert.Equal("Extension2-Value", extension.Value.ToString());
+            },
+            (extension) =>
+            {
+                Assert.Equal("traceId", extension.Key);
+                Assert.Equal(expectedTraceId, extension.Value.ToString());
             });
     }
 
@@ -482,6 +508,7 @@ public partial class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream);
         var expectedProblem = new ProblemDetails();
         var customExtensionData = new CustomExtensionData("test");
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
         expectedProblem.Extensions["Extension"] = customExtensionData;
 
         var problemDetailsContext = new ProblemDetailsContext()
@@ -507,6 +534,11 @@ public partial class DefaultProblemDetailsWriterTest
                 var value = Assert.IsType<JsonElement>(extension.Value);
 
                 Assert.Equal(expectedExtension.GetProperty("data").GetString(), value.GetProperty("data").GetString());
+            },
+            (extension) =>
+            {
+                Assert.Equal("traceId", extension.Key);
+                Assert.Equal(expectedTraceId, extension.Value.ToString());
             });
     }
 
@@ -517,6 +549,7 @@ public partial class DefaultProblemDetailsWriterTest
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
 
         //Act
         await writer.WriteAsync(new ProblemDetailsContext() { HttpContext = context });
@@ -528,12 +561,14 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal(StatusCodes.Status500InternalServerError, problemDetails.Status);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Fact]
     public async Task WriteAsync_Applies_CustomConfiguration()
     {
         // Arrange
+        const string expectedTraceId = "new-traceId-Value";
         var options = new ProblemDetailsOptions()
         {
             CustomizeProblemDetails = (context) =>
@@ -541,6 +576,7 @@ public partial class DefaultProblemDetailsWriterTest
                 context.ProblemDetails.Status = StatusCodes.Status406NotAcceptable;
                 context.ProblemDetails.Title = "Custom Title";
                 context.ProblemDetails.Extensions["new-extension"] = new { TraceId = Guid.NewGuid() };
+                context.ProblemDetails.Extensions["traceId"] = expectedTraceId;
             }
         };
         var writer = GetWriter(options);
@@ -562,6 +598,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("Custom Title", problemDetails.Title);
         Assert.Contains("new-extension", problemDetails.Extensions);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     [Theory]
@@ -600,6 +637,8 @@ public partial class DefaultProblemDetailsWriterTest
     [InlineData("application/*")]
     [InlineData("application/json")]
     [InlineData("application/problem+json")]
+    [InlineData("application/json; charset=utf-8")]
+    [InlineData("application/json; v=1.0")]
     public void CanWrite_ReturnsTrue_WhenJsonAccepted(string contentType)
     {
         // Arrange

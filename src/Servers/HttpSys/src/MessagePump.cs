@@ -162,7 +162,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         Debug.Assert(RequestContextFactory != null);
 
         // Allocate and accept context per loop and reuse it for all accepts
-        var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
+        var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory, _logger);
 
         var loop = new AcceptLoop(acceptContext, this);
 
@@ -279,29 +279,38 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
                     continue;
                 }
 
-                try
+                if (_preferInlineScheduling)
                 {
-                    if (_preferInlineScheduling)
+                    try
                     {
                         await requestContext.ExecuteAsync();
                     }
-                    else
+                    catch (Exception ex)
+                    {
+                        // Request processing failed
+                        // Log the error message, release throttle and move on
+                        Log.RequestListenerProcessError(_messagePump._logger, ex);
+                    }
+                }
+                else
+                {
+                    try
                     {
                         // Queue another accept before we execute the request
                         ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
 
                         // Use this thread to start the execution of the request (avoid the double threadpool dispatch)
                         await requestContext.ExecuteAsync();
-
-                        // We're done with this thread
-                        return;
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Request processing failed
-                    // Log the error message, release throttle and move on
-                    Log.RequestListenerProcessError(_messagePump._logger, ex);
+                    catch (Exception ex)
+                    {
+                        // Request processing failed
+                        // Log the error message, release throttle and move on
+                        Log.RequestListenerProcessError(_messagePump._logger, ex);
+                    }
+
+                    // We're done with this thread, accept loop was continued via ThreadPool.UnsafeQueueUserWorkItem
+                    return;
                 }
             }
 

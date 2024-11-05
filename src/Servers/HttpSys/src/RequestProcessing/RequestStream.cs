@@ -77,10 +77,12 @@ internal sealed partial class RequestStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException(Resources.Exception_NoSeek);
 
-    public override void Flush() => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override void Flush()
+    {
+        // No-op
+    }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-        => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     internal void SwitchToOpaqueMode()
     {

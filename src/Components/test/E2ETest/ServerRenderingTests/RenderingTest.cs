@@ -28,15 +28,14 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49975")]
     public void CanRenderLargeComponentsWithServerRenderMode()
     {
         Navigate($"{ServerPathBase}/large-html-server");
         var result = new string('*', 50000);
 
-        Assert.Equal(result, Browser.FindElement(By.Id("webassembly-prerender")).Text);
-        Assert.Equal(result, Browser.FindElement(By.Id("server-prerender")).Text);
-        Assert.Equal(result, Browser.FindElement(By.Id("server-prerender")).Text);
+        Browser.Equal(result, () => Browser.FindElement(By.Id("webassembly-prerender")).Text);
+        Browser.Equal(result, () => Browser.FindElement(By.Id("server-no-prerender")).Text);
+        Browser.Equal(result, () => Browser.FindElement(By.Id("server-prerender")).Text);
     }
 
     [Fact]

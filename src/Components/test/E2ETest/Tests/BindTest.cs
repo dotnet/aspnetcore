@@ -26,7 +26,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<BindCasesComponent>();
         Browser.Exists(By.Id("bind-cases"));
     }

@@ -31,7 +31,6 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
-    <Reference Include="Azure.Identity" /> <!-- Direct dependency to fix CG -->
   </ItemGroup>
 
   <ItemGroup>

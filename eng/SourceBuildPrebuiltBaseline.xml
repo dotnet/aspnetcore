@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file or making other Source Build related changes, include @dotnet/source-build as a reviewer. -->
 <!-- See aka.ms/dotnet/prebuilts for guidance on what pre-builts are and how to eliminate them. -->
 
 <UsageData>
@@ -11,12 +11,13 @@
     <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.4*" />
 
     <!-- Only used by the ASP.NET Core CI, not needed for source build -->
-    <UsagePattern IdentityGlob="System.Composition/6.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition.AttributedModel/*7.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition.Convention/*7.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition.Hosting/*7.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition/8.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.AttributedModel/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Convention/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Hosting/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Runtime/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.TypedParts/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
@@ -26,20 +27,31 @@
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*3.3.1*" />
+    <UsagePattern IdentityGlob="System.Composition/1.0.*" />
     <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.IO.Pipelines/8.0.*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
-
-    <!--
-      To be removed when the SDK is bringing this version, see https://github.com/dotnet/aspnetcore/issues/51339
-      -->
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Ref/*8.0*" />
 
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
     <UsagePattern IdentityGlob="Microsoft.NET.ILLink.Tasks/*9.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*10.0.*" />
 
     <!-- Transivite dependency of Microsoft.CodeAnalysis.ExternalAccess.AspNetCore -> Microsoft.CodeAnalysis.Features.
          In product build the dependency is bumped to latest, which also bumps the version of DiaSymReader  -->
     <UsagePattern IdentityGlob="Microsoft.DiaSymReader/*2.0.0*" />
+
+    <!-- Transitive dependency of Roslyn dependencies. -->
+    <UsagePattern IdentityGlob="System.Text.Json/8.0.0*" />
+    <UsagePattern IdentityGlob="System.Text.Encodings.Web/8.0.0*" />
+
+    <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
+    <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
   </IgnorePatterns>
+
+  <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
+  <Usages>
+    <Usage Id="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24405.7"/>
+    <Usage Id="Newtonsoft.Json" Version="13.0.1" />
+    <Usage Id="System.Security.Cryptography.Xml" Version="6.0.0" />
+  </Usages>
 </UsageData>

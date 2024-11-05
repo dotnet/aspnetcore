@@ -45,13 +45,13 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
     [InlineData(true, typeof(InteractiveAutoRenderMode), (string)null)]
-    // [InlineData(true, typeof(InteractiveAutoRenderMode), "AutoStreaming")] https://github.com/dotnet/aspnetcore/issues/50810
+    [InlineData(true, typeof(InteractiveAutoRenderMode), "AutoStreaming")]
     [InlineData(false, typeof(InteractiveServerRenderMode), (string)null)]
     [InlineData(false, typeof(InteractiveServerRenderMode), "ServerStreaming")]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
-    // [InlineData(false, typeof(InteractiveAutoRenderMode), (string)null)] https://github.com/dotnet/aspnetcore/issues/50810
-    // [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")] https://github.com/dotnet/aspnetcore/issues/50810
+    [InlineData(false, typeof(InteractiveAutoRenderMode), (string)null)]
+    [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")]
     public void CanRenderComponentWithPersistedState(bool suppressEnhancedNavigation, Type renderMode, string streaming)
     {
         var mode = renderMode switch
@@ -83,7 +83,11 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         else
         {
-            SuppressEnhancedNavigation(true);
+            EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true);
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
         }
 
         if (mode != "auto")
@@ -92,21 +96,11 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         else
         {
-            if (suppressEnhancedNavigation)
-            {
-                BlockWebAssemblyResourceLoad();
-            }
             // For auto mode, validate that the state is persisted for both runtimes and is able
             // to be loaded on server and wasm.
             RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "server");
 
             UnblockWebAssemblyResourceLoad();
-
-            if (suppressEnhancedNavigation)
-            {
-                RenderWebAssemblyComponentAndWaitForWebAssemblyRuntime(returnUrl: Browser.Url);
-            }
-
             Browser.Navigate().Refresh();
 
             RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "wasm");
@@ -151,6 +145,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     private void UnblockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockLoadBootResource()");
+        Browser.Exists(By.Id("unblocked-wasm"));
     }
 
     private void RenderComponentsWithPersistentStateAndValidate(
@@ -159,9 +154,8 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         Type renderMode,
         string streaming,
         string interactiveRuntime = null,
-        string stateValue = null)
+        string stateValue = "restored")
     {
-        stateValue ??= "restored";
         // No need to navigate if we are using enhanced navigation, the tests will have already navigated to the page via a link.
         if (suppressEnhancedNavigation)
         {
@@ -198,10 +192,12 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             streamingCompleted: false,
             interactiveRuntime: interactiveRuntime);
 
-        if (streaming != null)
+        if (streaming == null)
         {
-            Browser.Click(By.Id("end-streaming"));
+            return;
         }
+
+        Browser.Click(By.Id("end-streaming"));
 
         AssertPageState(
             mode: mode,
@@ -240,19 +236,4 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             Browser.Equal("Streaming: True", () => Browser.FindElement(By.Id("streaming")).Text);
         }
     }
-
-    private void RenderWebAssemblyComponentAndWaitForWebAssemblyRuntime(string returnUrl = null)
-    {
-        Navigate("subdir/persistent-state/page-with-webassembly-interactivity");
-
-        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-counter")).Text);
-
-        if (returnUrl is not null)
-        {
-            Navigate(returnUrl);
-        }
-    }
-
-    private void SuppressEnhancedNavigation(bool shouldSuppress)
-        => EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress);
 }

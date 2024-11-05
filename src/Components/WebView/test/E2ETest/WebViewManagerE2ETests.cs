@@ -15,11 +15,10 @@ public class WebViewManagerE2ETests
     //   There's probably some way to make it work, but it's not currently a supported Blazor Hybrid scenario anyway
     // - macOS is skipped due to the test not being able to detect when the WebView is ready. There's probably an issue
     //   with the JS code sending a WebMessage to C# and not being sent properly or detected properly.
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50802")]
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX,
         SkipReason = "On Helix/Ubuntu the native Photino assemblies can't be found, and on macOS it can't detect when the WebView is ready")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/50802", Queues = "Windows.Amd64.Server2022.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50802")]
     public async Task CanLaunchPhotinoWebViewAndClickButton()
     {
         var photinoTestProgramExePath = typeof(WebViewManagerE2ETests).Assembly.Location;

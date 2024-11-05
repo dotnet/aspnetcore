@@ -180,7 +180,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
     /// <summary>
-    /// Gets a CSS class string that combines the <c>class</c> attribute and and a string indicating
+    /// Gets a CSS class string that combines the <c>class</c> attribute and a string indicating
     /// the status of the field being edited (a combination of "modified", "valid", and "invalid").
     /// Derived components should typically use this value for the primary HTML element's 'class' attribute.
     /// </summary>

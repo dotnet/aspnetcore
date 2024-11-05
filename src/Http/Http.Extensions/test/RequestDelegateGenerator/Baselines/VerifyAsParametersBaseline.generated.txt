@@ -14,7 +14,7 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
-        public InterceptsLocationAttribute(string filePath, int line, int column)
+        public InterceptsLocationAttribute(int version, string data)
         {
         }
     }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
         private static readonly string[] PutVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
 
-        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -72,6 +72,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(int) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Value", new PropertyAsParameterInfo(true, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(int) })?.GetParameters()[1]), hasTryParse: true, hasBindAsync: false, isOptional: true));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -197,7 +199,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -208,6 +210,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct)!.GetProperty("HttpContext")!), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Value", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct)!.GetProperty("Value")!), hasTryParse: true, hasBindAsync: false, isOptional: false));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -326,7 +330,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPut2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -337,6 +341,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(System.Security.Claims.ClaimsPrincipal), typeof(Microsoft.AspNetCore.Http.HttpRequest), typeof(Microsoft.AspNetCore.Http.HttpResponse) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("User", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext)!.GetProperty("User")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(System.Security.Claims.ClaimsPrincipal), typeof(Microsoft.AspNetCore.Http.HttpRequest), typeof(Microsoft.AspNetCore.Http.HttpResponse) })?.GetParameters()[1]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Request", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext)!.GetProperty("Request")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(System.Security.Claims.ClaimsPrincipal), typeof(Microsoft.AspNetCore.Http.HttpRequest), typeof(Microsoft.AspNetCore.Http.HttpResponse) })?.GetParameters()[2]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Response", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext)!.GetProperty("Response")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(System.Security.Claims.ClaimsPrincipal), typeof(Microsoft.AspNetCore.Http.HttpRequest), typeof(Microsoft.AspNetCore.Http.HttpResponse) })?.GetParameters()[3]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -426,7 +434,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPatch3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -438,7 +446,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
-                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Todo", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody)!.GetProperty("Todo")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct) })?.GetParameters()[1]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -545,7 +555,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 49, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet4(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -557,6 +567,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Value", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[1]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 var parameterInfos = methodInfo.GetParameters();
                 var Value_ParameterInfo = new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[1]);
                 PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(Value_ParameterInfo, options.EndpointBuilder);
@@ -659,7 +671,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 50, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPost5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -671,7 +683,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
-                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Todo", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService)!.GetProperty("Todo")!), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Service", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService)!.GetProperty("Service")!), hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -1058,6 +1072,33 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
 
         public new bool IsOptional { get; }
+    }
+    %GENERATEDCODEATTRIBUTE%
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
+    {
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
+
+        public string Name { get; }
+
+        public bool HasTryParse { get; }
+
+        public bool HasBindAsync { get; }
+
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
     }
 
     %GENERATEDCODEATTRIBUTE%

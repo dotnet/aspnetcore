@@ -27,7 +27,7 @@ public class GetHeaderSplitBenchmark
     public void SplitSingleHeader()
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValue");
-        if (values.Count != 1)
+        if (values.Length != 1)
         {
             throw new Exception();
         }
@@ -37,7 +37,7 @@ public class GetHeaderSplitBenchmark
     public void SplitSingleQuotedHeader()
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValueQuoted");
-        if (values.Count != 1)
+        if (values.Length != 1)
         {
             throw new Exception();
         }
@@ -47,7 +47,7 @@ public class GetHeaderSplitBenchmark
     public void SplitDoubleHeader()
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "doubleValue");
-        if (values.Count != 2)
+        if (values.Length != 2)
         {
             throw new Exception();
         }
@@ -57,7 +57,7 @@ public class GetHeaderSplitBenchmark
     public void SplitManyHeaders()
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "manyValue");
-        if (values.Count != 6)
+        if (values.Length != 6)
         {
             throw new Exception();
         }

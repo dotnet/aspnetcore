@@ -65,6 +65,11 @@ $ErrorActionPreference = 'Stop'
 # Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
 [string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
 
+# True if the build is a product build
+[bool]$productBuild = if (Test-Path variable:productBuild) { $productBuild } else { $false }
+
+[String[]]$properties = if (Test-Path variable:properties) { $properties } else { @() }
+
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
 }
@@ -249,7 +254,6 @@ function Retry($downloadBlock, $maxRetries = 5) {
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unable to download file in $maxRetries attempts."
       break
     }
-
   }
 }
 
@@ -379,8 +383,8 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/RoslynTools.MSBuild/versions/17.8.1-2
-  $defaultXCopyMSBuildVersion = '17.8.1-2'
+  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/Microsoft.DotNet.Arcade.MSBuild.Xcopy/versions/17.10.0-pre.4.0
+  $defaultXCopyMSBuildVersion = '17.10.0-pre.4.0'
 
   if (!$vsRequirements) {
     if (Get-Member -InputObject $GlobalJson.tools -Name 'vs') {
@@ -419,7 +423,6 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion
   } else {
-
     if (Get-Member -InputObject $GlobalJson.tools -Name 'xcopy-msbuild') {
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
@@ -445,7 +448,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
     if ($xcopyMSBuildVersion.Trim() -ine "none") {
         $vsInstallDir = InitializeXCopyMSBuild $xcopyMSBuildVersion $install
         if ($vsInstallDir -eq $null) {
-            throw "Could not xcopy msbuild. Please check that package 'RoslynTools.MSBuild @ $xcopyMSBuildVersion' exists on feed 'dotnet-eng'."
+            throw "Could not xcopy msbuild. Please check that package 'Microsoft.DotNet.Arcade.MSBuild.Xcopy @ $xcopyMSBuildVersion' exists on feed 'dotnet-eng'."
         }
     }
     if ($vsInstallDir -eq $null) {
@@ -482,7 +485,7 @@ function InstallXCopyMSBuild([string]$packageVersion) {
 }
 
 function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
-  $packageName = 'RoslynTools.MSBuild'
+  $packageName = 'Microsoft.DotNet.Arcade.MSBuild.Xcopy'
   $packageDir = Join-Path $ToolsDir "msbuild\$packageVersion"
   $packagePath = Join-Path $packageDir "$packageName.$packageVersion.nupkg"
 
@@ -499,6 +502,10 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
       Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
     })
 
+    if (!(Test-Path $packagePath)) {
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "See https://dev.azure.com/dnceng/internal/_wiki/wikis/DNCEng%20Services%20Wiki/1074/Updating-Microsoft.DotNet.Arcade.MSBuild.Xcopy-WAS-RoslynTools.MSBuild-(xcopy-msbuild)-generation?anchor=troubleshooting for help troubleshooting issues with XCopy MSBuild"
+      throw
+    }
     Unzip $packagePath $packageDir
   }
 
@@ -646,7 +653,7 @@ function GetNuGetPackageCachePath() {
       $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
       $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
-      $env:RESTORENOCACHE = $true
+      $env:RESTORENOHTTPCACHE = $true
     }
   }
 
@@ -850,7 +857,8 @@ function MSBuild-Core() {
     }
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null) {
+    # Skip this when the build is a child of the VMR orchestrator build.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$productBuild -and -not($properties -like "*DotNetBuildRepo=true*")) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -892,7 +900,7 @@ function IsWindowsPlatform() {
 }
 
 function Get-Darc($version) {
-  $darcPath  = "$TempDir\darc\$(New-Guid)"
+  $darcPath  = "$TempDir\darc\$([guid]::NewGuid())"
   if ($version -ne $null) {
     & $PSScriptRoot\darc-init.ps1 -toolpath $darcPath -darcVersion $version | Out-Host
   } else {

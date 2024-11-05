@@ -26,9 +26,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.WaitUntilTestSelectorReady();
     }
 
@@ -859,7 +862,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
-        
+
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
         var relativeCanceledUri = "/mycanceledtestpath";
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir{relativeCanceledUri}";
@@ -955,7 +958,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
-        
+
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
         var expectedCanceledRelativeUri = $"/subdir/some-path-0";
 
@@ -1000,7 +1003,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
-        
+
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
 
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/some-path-0";
@@ -1082,6 +1085,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57153")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
@@ -1182,7 +1186,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
-        
+
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
 
         Browser.FindElement(By.Id("programmatic-navigation")).Click();
@@ -1211,7 +1215,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
-        
+
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
 
         Browser.FindElement(By.Id("internal-link-navigation")).Click();
@@ -1675,7 +1679,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");
@@ -1692,7 +1695,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void NavigationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");

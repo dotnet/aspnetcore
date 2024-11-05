@@ -22,6 +22,7 @@ public class KeyboardEventArgsReaderTest
             Repeat = true,
             ShiftKey = true,
             Type = "type1",
+            IsComposing = true,
         };
 
         var jsonElement = GetJsonElement(args);
@@ -39,6 +40,7 @@ public class KeyboardEventArgsReaderTest
         Assert.Equal(args.Repeat, result.Repeat);
         Assert.Equal(args.ShiftKey, result.ShiftKey);
         Assert.Equal(args.Type, result.Type);
+        Assert.Equal(args.IsComposing, result.IsComposing);
     }
 
     private static JsonElement GetJsonElement<T>(T args)

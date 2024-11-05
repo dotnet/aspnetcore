@@ -3,7 +3,7 @@
   "name": "App autonoma Blazor WebAssembly",
   "description": "Modello di progetto per la creazione di un'app Blazor eseguita in WebAssembly. Questo modello può essere usato per app Web con interfacce utente dinamiche.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/auth/choices/None/description": "Nessuna autenticazione",
   "symbols/auth/choices/Individual/description": "Autenticazione singola",

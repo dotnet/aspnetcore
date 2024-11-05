@@ -23,7 +23,7 @@ public interface IAuthorizationService
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy; otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     /// <remarks>
     /// Resource is an optional parameter and may be null. Please ensure that you check it is not
@@ -43,7 +43,7 @@ public interface IAuthorizationService
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
     /// Returns a flag indicating whether the user, and optional resource has fulfilled the policy.
-    /// <value>true</value> when the policy has been fulfilled; otherwise <value>false</value>.
+    /// <c>true</c> when the policy has been fulfilled; otherwise <c>false</c>.
     /// </returns>
     /// <remarks>
     /// Resource is an optional parameter and may be null. Please ensure that you check it is not

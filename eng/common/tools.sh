@@ -68,6 +68,9 @@ fi
 runtime_source_feed=${runtime_source_feed:-''}
 runtime_source_feed_key=${runtime_source_feed_key:-''}
 
+# True if the build is a product build
+product_build=${product_build:-false}
+
 # Resolve any symlinks in the given path.
 function ResolvePath {
   local path=$1
@@ -141,7 +144,7 @@ function InitializeDotNetCli {
   if [[ $global_json_has_runtimes == false && -n "${DOTNET_INSTALL_DIR:-}" && -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
     dotnet_root="$DOTNET_INSTALL_DIR"
   else
-    dotnet_root="$repo_root/.dotnet"
+    dotnet_root="${repo_root}.dotnet"
 
     export DOTNET_INSTALL_DIR="$dotnet_root"
 
@@ -344,14 +347,14 @@ function InitializeBuildTool {
   fi
 }
 
-# Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
+# Set RestoreNoHttpCache as a workaround for https://github.com/NuGet/Home/issues/3116
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
-      export NUGET_PACKAGES="$HOME/.nuget/packages"
+      export NUGET_PACKAGES="$HOME/.nuget/packages/"
     else
-      export NUGET_PACKAGES="$repo_root/.packages"
-      export RESTORENOCACHE=true
+      export NUGET_PACKAGES="$repo_root/.packages/"
+      export RESTORENOHTTPCACHE=true
     fi
   fi
 
@@ -435,7 +438,7 @@ function StopProcesses {
 }
 
 function MSBuild {
-  local args=$@
+  local args=( "$@" )
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
@@ -470,7 +473,7 @@ function MSBuild {
     args+=( "-logger:$selectedPath" )
   fi
 
-  MSBuild-Core ${args[@]}
+  MSBuild-Core "${args[@]}"
 }
 
 function MSBuild-Core {
@@ -503,7 +506,8 @@ function MSBuild-Core {
       echo "Build failed with exit code $exit_code. Check errors above."
 
       # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-      if [[ "$ci" == "true" && -n ${SYSTEM_TEAMPROJECT:-} ]]; then
+      # Skip this when the build is a child of the VMR orchestrator build.
+      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$product_build" != true && "$properties" != *"DotNetBuildRepo=true"* ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error

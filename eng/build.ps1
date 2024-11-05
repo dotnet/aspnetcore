@@ -12,6 +12,12 @@ build projects, run tests, and generate code.
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
+.PARAMETER PrepareMachine
+In CI, Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
+
+.PARAMETER NativeToolsOnMachine
+Turns on native tooling handling. On CI machines, promotes native tools listed in global.json to the path.
+
 .PARAMETER Restore
 Run restore.
 
@@ -39,11 +45,14 @@ Run tests.
 .PARAMETER Sign
 Run code signing.
 
+.PARAMETER Publish
+Run publishing.
+
 .PARAMETER Configuration
 Debug or Release
 
 .PARAMETER Architecture
-The CPU architecture to build for (x64, x86, arm). Default=x64
+The CPU architecture to build for (x64, x86, arm64). Default=x64
 
 .PARAMETER Projects
 A list of projects to build. Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
@@ -57,7 +66,7 @@ You can also use -NoBuildManaged to suppress this project type.
 
 .PARAMETER BuildNative
 Build native projects (C++).
-This is the default for x64 and x86 builds but useful when you want to build _only_ native projects.
+This is the default but useful when you want to build _only_ native projects.
 You can use -NoBuildNative to suppress this project type.
 
 .PARAMETER BuildNodeJS
@@ -124,6 +133,8 @@ Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSou
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
     [switch]$CI,
+    [switch]$PrepareMachine,
+    [switch]$NativeToolsOnMachine,
 
     # Build lifecycle options
     [switch]$Restore,
@@ -133,12 +144,13 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
+    [switch]$Publish, # Run arcade publishing
 
     [Alias('c')]
     [ValidateSet('Debug', 'Release')]
     $Configuration,
 
-    [ValidateSet('x64', 'x86', 'arm', 'arm64')]
+    [ValidateSet('x64', 'x86', 'arm64')]
     $Architecture = 'x64',
 
     # A list of projects which should be built.
@@ -209,7 +221,7 @@ if ($Projects) {
     }
 }
 # When adding new sub-group build flags, add them to this check.
-elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava -or $OnlyBuildRepoTasks)) {
     Write-Warning "No default group of projects was specified, so building the managed and native projects and their dependencies. Run ``build.cmd -help`` for more details."
 
     # The goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -223,6 +235,7 @@ if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
         if ($node) {
             $nodeHome = Split-Path -Parent (Split-Path -Parent $node.Path)
             Write-Host -f Magenta "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected in $nodeHome."
+            Write-Host -f Magenta "Note that if you are running Source Build, building NodeJS projects will be disabled later on."
             $BuildNodeJS = $true
         }
         else {
@@ -254,6 +267,7 @@ if (-not $RunBuild) { $MSBuildArguments += "/p:NoBuild=true" }
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
+$MSBuildArguments += "/p:Publish=$Publish"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
@@ -297,69 +311,16 @@ if ($NoBuildJava) { $dotnetBuildArguments += "/p:BuildJava=false"; $BuildJava = 
 if ($BuildJava) { $dotnetBuildArguments += "/p:BuildJava=true" }
 if ($NoBuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=false"; $BuildManaged = $false }
 if ($BuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=true" }
-if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=false"; $BuildNodeJS = $false }
-if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
+if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJSUnlessSourcebuild=false"; $BuildNodeJS = $false }
+if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJSUnlessSourcebuild=true" }
 
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
 # managed and native projects.
-$performDesktopBuild = ($BuildInstallers -and $Architecture -ne "arm") -or `
-    ($BuildNative -and -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase))
+$performDesktopBuild = $BuildInstallers -or $BuildNative
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
-$foundJdk = $false
-$javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-$localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
-if (Test-Path "$localJdkPath\bin\javac.exe") {
-    $foundJdk = $true
-    Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
-    $env:JAVA_HOME = $localJdkPath
-}
-elseif ($env:JAVA_HOME) {
-    if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
-        Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
-    }
-    else {
-        Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
-        $foundJdk = $true
-    }
-}
-elseif ($javac) {
-    $foundJdk = $true
-    $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
-    $env:JAVA_HOME = $javaHome
-    Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
-}
-else {
-    try {
-        $jdkRegistryKeys = @(
-            "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
-            "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
-        )
-        $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if ($jdkRegistryKey) {
-            $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
-            $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-            if (Test-Path "${javaHome}\bin\javac.exe") {
-                $env:JAVA_HOME = $javaHome
-                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
-                $foundJdk = $true
-            }
-        }
-    }
-    catch {
-        Write-Verbose "Failed to detect Java: $_"
-    }
-}
-
-if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
-    $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
-}
-
-if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
-}
 
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
@@ -385,8 +346,67 @@ Remove-Item variable:global:_DotNetInstallDir -ea Ignore
 Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
 Remove-Item variable:global:_MSBuildExe -ea Ignore
 
+# tools.ps1 expects the remaining arguments to be available via the $properties string array variable
+# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
+[string[]] $properties = $MSBuildArguments
+
 # Import Arcade
 . "$PSScriptRoot/common/tools.ps1"
+
+function LocateJava {
+    $foundJdk = $false
+    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+    $localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
+    if (Test-Path "$localJdkPath\bin\javac.exe") {
+        $foundJdk = $true
+        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+        $env:JAVA_HOME = $localJdkPath
+    }
+    elseif ($env:JAVA_HOME) {
+        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
+        }
+        else {
+            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+            $foundJdk = $true
+        }
+    }
+    elseif ($javac) {
+        $foundJdk = $true
+        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+        $env:JAVA_HOME = $javaHome
+        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+    }
+    else {
+        try {
+            $jdkRegistryKeys = @(
+                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+            )
+            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($jdkRegistryKey) {
+                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+                if (Test-Path "${javaHome}\bin\javac.exe") {
+                    $env:JAVA_HOME = $javaHome
+                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                    $foundJdk = $true
+                }
+            }
+        }
+        catch {
+            Write-Verbose "Failed to detect Java: $_"
+        }
+    }
+
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+    }
+
+    if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+        Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
+    }
+}
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
 # $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
@@ -419,6 +439,17 @@ try {
     # the toolset is a better default behavior.
     $tmpRestore = $restore
     $restore = $true
+
+    # Initialize the native tools before locating java.
+    if ($NativeToolsOnMachine) {
+        $env:NativeToolsOnMachine=$true
+        # Do not promote native tools except in cases where -NativeToolsOnMachine is passed.
+        # Currently the JDK is laid out in an incorrect pattern: https://github.com/dotnet/dnceng/issues/2185
+        InitializeNativeTools
+    }
+
+    # Locate java, now that we may have java available after initializing native tools.
+    LocateJava
 
     $toolsetBuildProj = InitializeToolset
 
@@ -478,10 +509,6 @@ finally {
     if ($DumpProcesses -or $ci) {
         Stop-Job -Name DumpProcesses
         Remove-Job -Name DumpProcesses
-    }
-
-    if ($ci) {
-        & "$PSScriptRoot/scripts/KillProcesses.ps1"
     }
 }
 

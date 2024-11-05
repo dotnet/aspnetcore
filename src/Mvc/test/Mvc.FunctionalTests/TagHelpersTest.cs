@@ -6,12 +6,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class TagHelpersTest :
-    IClassFixture<MvcTestFixture<TagHelpersWebSite.Startup>>,
-    IClassFixture<MvcEncodedTestFixture<TagHelpersWebSite.Startup>>
+public class TagHelpersTest : LoggedTest
 {
     // Some tests require comparing the actual response body against an expected response baseline
     // so they require a reference to the assembly on which the resources are located, in order to
@@ -19,17 +19,26 @@ public class TagHelpersTest :
     // use it on all the rest of the tests.
     private static readonly Assembly _resourcesAssembly = typeof(TagHelpersTest).GetTypeInfo().Assembly;
 
-    public TagHelpersTest(
-        MvcTestFixture<TagHelpersWebSite.Startup> fixture,
-        MvcEncodedTestFixture<TagHelpersWebSite.Startup> encodedFixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
-        EncodedClient = encodedFixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TagHelpersWebSite.Startup>(LoggerFactory);
+        EncodedFactory = new MvcEncodedTestFixture<TagHelpersWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
+        EncodedClient = EncodedFactory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
 
-    public HttpClient EncodedClient { get; }
+    public MvcTestFixture<TagHelpersWebSite.Startup> Factory { get; private set; }
+    public MvcEncodedTestFixture<TagHelpersWebSite.Startup> EncodedFactory { get; private set; }
+    public HttpClient Client { get; private set; }
+
+    public HttpClient EncodedClient { get; private set; }
 
     [Theory]
     [InlineData("Index")]
@@ -117,7 +126,7 @@ public class TagHelpersTest :
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
     }
 
-    public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
+    public static TheoryData<string, string> TagHelpersAreInheritedFromViewImportsPagesData
     {
         get
         {

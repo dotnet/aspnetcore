@@ -123,14 +123,15 @@ internal sealed partial class ComponentHub : Hub
             var store = !string.IsNullOrEmpty(applicationState) ?
                 new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
                 new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
-
+            var resourceCollection = Context.GetHttpContext().GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                 components,
                 circuitClient,
                 baseUri,
                 uri,
                 Context.User,
-                store);
+                store,
+                resourceCollection);
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization

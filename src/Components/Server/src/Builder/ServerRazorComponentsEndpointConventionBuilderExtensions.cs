@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -54,7 +55,8 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
                         var original = b.RequestDelegate;
                         b.RequestDelegate = async context =>
                         {
-                            context.Response.Headers.Add("Content-Security-Policy", $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}");
+                            var headers = context.Response.Headers;
+                            headers.ContentSecurityPolicy = StringValues.Concat(headers.ContentSecurityPolicy, $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}");
                             await original(context);
                         };
                     }

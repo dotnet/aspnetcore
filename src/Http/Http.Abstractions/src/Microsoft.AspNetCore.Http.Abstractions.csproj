@@ -20,8 +20,8 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 
-    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
@@ -31,11 +31,13 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\ValueListBuilder.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results" />
   </ItemGroup>
 
   <ItemGroup>

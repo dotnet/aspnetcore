@@ -1,0 +1,624 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample | schemas-by-ref",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/schemas-by-ref/typed-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/multiple-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-no-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/iresult-with-produces": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/primitives": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "The ID associated with the Todo item.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of Todos to fetch",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/product": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/account": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Account"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/array-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/list-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/ienumerable-of-ints": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/frozen-dictionary-of-ints": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/shape": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Shape"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/weatherforecastbase": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecastBase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/person": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Person"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Person": {
+        "required": [
+          "discriminator"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PersonStudent"
+          },
+          {
+            "$ref": "#/components/schemas/PersonTeacher"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "discriminator",
+          "mapping": {
+            "student": "#/components/schemas/PersonStudent",
+            "teacher": "#/components/schemas/PersonTeacher"
+          }
+        }
+      },
+      "PersonStudent": {
+        "properties": {
+          "discriminator": {
+            "enum": [
+              "student"
+            ],
+            "type": "string"
+          },
+          "gpa": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "PersonTeacher": {
+        "required": [
+          "subject"
+        ],
+        "properties": {
+          "discriminator": {
+            "enum": [
+              "teacher"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Shape": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ShapeTriangle"
+          },
+          {
+            "$ref": "#/components/schemas/ShapeSquare"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "triangle": "#/components/schemas/ShapeTriangle",
+            "square": "#/components/schemas/ShapeSquare"
+          }
+        }
+      },
+      "ShapeSquare": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "square"
+            ],
+            "type": "string"
+          },
+          "area": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ShapeTriangle": {
+        "properties": {
+          "$type": {
+            "enum": [
+              "triangle"
+            ],
+            "type": "string"
+          },
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Triangle": {
+        "type": "object",
+        "properties": {
+          "hypotenuse": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sides": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "WeatherForecastBase": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity"
+          },
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries"
+          },
+          {
+            "$ref": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "0": "#/components/schemas/WeatherForecastBaseWeatherForecastWithCity",
+            "1": "#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries",
+            "2": "#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithCity": {
+        "required": [
+          "city"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              0
+            ],
+            "type": "integer"
+          },
+          "city": {
+            "type": "string"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithLocalNews": {
+        "required": [
+          "news"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              2
+            ],
+            "type": "integer"
+          },
+          "news": {
+            "type": "string"
+          }
+        }
+      },
+      "WeatherForecastBaseWeatherForecastWithTimeSeries": {
+        "required": [
+          "summary"
+        ],
+        "properties": {
+          "$type": {
+            "enum": [
+              1
+            ],
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

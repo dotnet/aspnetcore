@@ -3,13 +3,13 @@
 
 using System.Globalization;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Net.Http.Headers;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -30,13 +30,29 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
-    public void CanRenderNonstreamingPageWithoutInjectingStreamingMarkers()
+    public async Task CanRenderNonstreamingPageWithoutInjectingStreamingMarkersOrHeaders()
     {
         Navigate(ServerPathBase);
 
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
         Assert.DoesNotContain("<blazor-ssr", Browser.PageSource);
+
+        using var httpClient = new HttpClient();
+        using var response = await httpClient.GetAsync(new Uri(_serverFixture.RootUri, ServerPathBase));
+        response.EnsureSuccessStatusCode();
+
+        Assert.False(response.Content.Headers.Contains(HeaderNames.ContentEncoding));
+    }
+
+    [Fact]
+    public async Task DoesRenderStreamingPageWithStreamingHeadersToDisableBuffering()
+    {
+        using var httpClient = new HttpClient();
+        using var response = await httpClient.GetAsync(new Uri(_serverFixture.RootUri, $"{ServerPathBase}/streaming"), HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+
+        Assert.Equal("identity", response.Content.Headers.ContentEncoding.Single());
     }
 
     [Theory]
@@ -229,7 +245,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async void StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
+    public async Task StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
     {
         IWebElement originalH1Elem;
 

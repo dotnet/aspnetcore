@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,14 +15,14 @@ namespace Microsoft.AspNetCore.HostFiltering;
 public class HostFilteringMiddleware
 {
     // Matches Http.Sys.
-    private static readonly byte[] DefaultResponse = Encoding.ASCII.GetBytes(
-        "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\">\r\n"
-            + "<HTML><HEAD><TITLE>Bad Request</TITLE>\r\n"
-            + "<META HTTP-EQUIV=\"Content-Type\" Content=\"text/html; charset=us-ascii\"></ HEAD >\r\n"
-            + "<BODY><h2>Bad Request - Invalid Hostname</h2>\r\n"
-            + "<hr><p>HTTP Error 400. The request hostname is invalid.</p>\r\n"
-            + "</BODY></HTML>"
-    );
+    private static readonly byte[] DefaultResponse = (
+        "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\"http://www.w3.org/TR/html4/strict.dtd\">\r\n"u8
+            + "<HTML><HEAD><TITLE>Bad Request</TITLE>\r\n"u8
+            + "<META HTTP-EQUIV=\"Content-Type\" Content=\"text/html; charset=us-ascii\"></ HEAD >\r\n"u8
+            + "<BODY><h2>Bad Request - Invalid Hostname</h2>\r\n"u8
+            + "<hr><p>HTTP Error 400. The request hostname is invalid.</p>\r\n"u8
+            + "</BODY></HTML>"u8
+        ).ToArray();
 
     private readonly RequestDelegate _next;
     private readonly ILogger<HostFilteringMiddleware> _logger;

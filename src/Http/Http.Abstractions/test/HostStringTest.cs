@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.InternalTesting;
@@ -18,6 +18,7 @@ public class HostStringTests
     }
 
     [Theory]
+    [InlineData(null, "")]
     [InlineData("localhost", "localhost")]
     [InlineData("1.2.3.4", "1.2.3.4")]
     [InlineData("[2001:db8:a0b:12f0::1]", "[2001:db8:a0b:12f0::1]")]
@@ -26,7 +27,7 @@ public class HostStringTests
     [InlineData("1.2.3.4:5000", "1.2.3.4")]
     [InlineData("[2001:db8:a0b:12f0::1]:5000", "[2001:db8:a0b:12f0::1]")]
     [InlineData("本地主機:5000", "本地主機")]
-    public void Domain_ExtractsHostFromValue(string sourceValue, string expectedDomain)
+    public void Domain_ExtractsHostFromValue(string? sourceValue, string expectedDomain)
     {
         // Arrange
         var hostString = new HostString(sourceValue);

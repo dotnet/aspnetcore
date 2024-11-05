@@ -6,7 +6,7 @@
   "symbols/kestrelHttpPort/description": "launchSettings.json içinde HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",

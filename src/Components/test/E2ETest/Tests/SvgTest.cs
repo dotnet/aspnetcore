@@ -23,7 +23,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]

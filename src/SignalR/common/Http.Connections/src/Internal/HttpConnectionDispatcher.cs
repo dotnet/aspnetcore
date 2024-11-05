@@ -344,7 +344,7 @@ internal sealed partial class HttpConnectionDispatcher
             var queryStringVersionValue = queryStringVersion.ToString();
             if (!int.TryParse(queryStringVersionValue, out clientProtocolVersion))
             {
-                error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
+                error = $"The client requested a non-integer protocol version.";
                 Log.InvalidNegotiateProtocolVersion(_logger, queryStringVersionValue);
             }
             else if (clientProtocolVersion < options.MinimumProtocolVersion)

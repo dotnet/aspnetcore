@@ -14,6 +14,7 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf ./dist",
+    "prebuild": "rimraf ./src/pkg-version.ts && node -e \"const fs = require('fs'); const packageJson = require('./package.json'); fs.writeFileSync('./src/pkg-version.ts', 'export const VERSION = \\'' + packageJson.version + '\\';');\"",
     "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:webworker",
     "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
@@ -44,19 +45,10 @@
     "eventsource": "^2.0.2",
     "fetch-cookie": "^2.0.3",
     "node-fetch": "^2.6.7",
-    "ws": "^7.4.5"
+    "ws": "^7.5.10"
   },
   "overrides": {
     "ansi-regex": "5.0.1",
     "tough-cookie": ">=4.1.3"
-  },
-  "browser": {
-    "./src/DynamicImports.ts": "./src/DynamicImports.browser.ts",
-    "abort-controller": false,
-    "eventsource": false,
-    "fetch-cookie": false,
-    "node-fetch": false,
-    "ws": false,
-    "tough-cookie": false
   }
 }

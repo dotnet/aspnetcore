@@ -6,7 +6,9 @@ using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
@@ -14,10 +16,11 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
+internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime, IInternalWebJSInProcessRuntime
 {
+    public static readonly DefaultWebAssemblyJSRuntime Instance = new();
+
     private readonly RootComponentTypeCache _rootComponentCache = new();
-    internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -106,12 +109,13 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperationBatch))]
+    [DynamicDependency(JsonSerialized, typeof(ComponentMarkerKey))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
     internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
     {
-        var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+        var deserialized = JsonSerializer.Deserialize(
             operationsJson,
-            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+            WebAssemblyJsonSerializerContext.Default.RootComponentOperationBatch)!;
 
         for (var i = 0; i < deserialized.Operations.Length; i++)
         {
@@ -161,4 +165,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
+
+    string IInternalWebJSInProcessRuntime.InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        => InvokeJS(identifier, argsJson, resultType, targetInstanceId);
 }

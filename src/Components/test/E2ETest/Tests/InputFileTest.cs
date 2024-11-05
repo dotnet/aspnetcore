@@ -31,7 +31,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDirectory);
 
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<InputFileComponent>();
     }
 

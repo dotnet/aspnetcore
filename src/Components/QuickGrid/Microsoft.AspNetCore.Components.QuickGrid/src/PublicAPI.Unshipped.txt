@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.set -> void

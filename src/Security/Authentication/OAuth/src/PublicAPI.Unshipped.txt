@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.AdditionalAuthorizationParameters.get -> System.Collections.Generic.IDictionary<string!, string!>!

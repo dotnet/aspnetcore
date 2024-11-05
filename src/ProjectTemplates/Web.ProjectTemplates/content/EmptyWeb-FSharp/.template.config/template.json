@@ -8,8 +8,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "9900",
-  "identity": "Microsoft.Web.Empty.FSharp.9.0",
+  "precedence": "10000",
+  "identity": "Microsoft.Web.Empty.FSharp.10.0",
   "shortName": "web",
   "tags": {
     "language": "F#",
@@ -126,12 +126,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "copyrightYear": {
       "type": "generated",

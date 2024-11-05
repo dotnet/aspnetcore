@@ -27,7 +27,7 @@ public partial class HeaderModelBinderProvider : IModelBinderProvider
 
         var modelMetadata = context.Metadata;
         var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<HeaderModelBinderProvider>();
+        var logger = loggerFactory.CreateLogger(typeof(HeaderModelBinderProvider));
 
         if (!IsSimpleType(modelMetadata))
         {

@@ -156,7 +156,7 @@ public class StringWithQualityHeaderValueTest
     [InlineData("decimal_part_too_long;q=0.123456789")]
     [InlineData("decimal_part_too_long;q=0.123456789 ")]
     [InlineData("no_integer_part;q=.1")]
-    public void Parse_SetOfInvalidValueStrings_Throws(string input)
+    public void Parse_SetOfInvalidValueStrings_Throws(string? input)
     {
         Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.Parse(input));
     }

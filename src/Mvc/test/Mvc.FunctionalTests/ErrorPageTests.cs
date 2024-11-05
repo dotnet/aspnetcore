@@ -12,46 +12,44 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 /// <summary>
 /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.
 /// </summary>
-public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
+public class ErrorPageTests : LoggedTest
 {
     private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
         "One or more compilation references may be missing. " +
         "If you're seeing this in a published application, set 'CopyRefAssembliesToPublishDirectory' to true in your project file to ensure files in the refs directory are published.");
-    private readonly AssemblyTestLog _assemblyTestLog;
 
-    private readonly MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> _fixture;
-
-    public ErrorPageTests(
-        MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture,
-        ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        _assemblyTestLog = AssemblyTestLog.ForAssembly(GetType().Assembly);
-
-        var loggerProvider = _assemblyTestLog.CreateLoggerFactory(testOutputHelper, GetType().Name);
-
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
-        Client = factory
-            .WithWebHostBuilder(builder => builder.ConfigureLogging(l => l.Services.AddSingleton<ILoggerFactory>(loggerProvider)))
-            .CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>(LoggerFactory)
+            .WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+        Client = Factory.CreateDefaultClient();
         // These tests want to verify runtime compilation and formatting in the HTML of the error page
         Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-
-        _fixture = fixture;
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<ErrorPageMiddlewareWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CompilationFailuresAreListedByErrorPageMiddleware()
     {
         // Arrange
-        var factory = _fixture.Factories.FirstOrDefault() ?? _fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+        var factory = Factory.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
         factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
 
         var client = factory.CreateDefaultClient();

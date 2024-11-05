@@ -237,6 +237,16 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public ICollection<string> Scope { get; } = new HashSet<string>();
 
     /// <summary>
+    /// Gets the additional parameters that will be included in the authorization request.
+    /// </summary>
+    /// <remarks>
+    /// The additional parameters can be used to customize the authorization request,
+    /// providing extra information or fulfilling specific requirements of the OpenIdConnect provider.
+    /// These parameters are typically, but not always, appended to the query string.
+    /// </remarks>
+    public IDictionary<string, string> AdditionalAuthorizationParameters { get; } = new Dictionary<string, string>();
+
+    /// <summary>
     /// Requests received on this path will cause the handler to invoke SignOut using the SignOutScheme.
     /// </summary>
     public PathString RemoteSignOutPath { get; set; }
@@ -398,4 +408,13 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// When using TokenHandler, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>.
     /// </remarks>
     public bool UseSecurityTokenValidator { get; set; }
+
+    /// <summary>
+    /// Controls wether the handler should push authorization parameters on the
+    /// backchannel before redirecting to the identity provider. See <see
+    /// href="https://tools.ietf.org/html/9126"/>.
+    /// </summary>
+    /// <value>Defaults to <see
+    /// cref="PushedAuthorizationBehavior.UseIfAvailable" />.</value>
+    public PushedAuthorizationBehavior PushedAuthorizationBehavior { get; set; } = PushedAuthorizationBehavior.UseIfAvailable;
 }

@@ -10,13 +10,20 @@ internal static class HeaderEncoding
 {
     internal static unsafe string GetString(byte* pBytes, int byteCount, bool useLatin1)
     {
+        string header;
         if (useLatin1)
         {
-            return new ReadOnlySpan<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
+            header = new ReadOnlySpan<byte>(pBytes, byteCount).GetLatin1String();
         }
         else
         {
-            return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding.UTF8);
+            header = new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8String(Encoding.UTF8);
         }
+
+        if (header.Contains('\0'))
+        {
+            throw new InvalidOperationException();
+        }
+        return header;
     }
 }

@@ -300,6 +300,41 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     }
 
     [Fact]
+    public async Task ErrorPageShowsEndpointMetadata()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(httpContext =>
+                    {
+                        var endpoint = new Endpoint(null, new EndpointMetadataCollection("my metadata"), null);
+                        httpContext.SetEndpoint(endpoint);
+                        throw new Exception("Test exception");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var client = server.CreateClient();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+        var response = await client.GetAsync("/path");
+
+        // Assert
+        var responseText = await response.Content.ReadAsStringAsync();
+        Assert.Contains("my metadata", responseText);
+    }
+
+    [Fact]
     public async Task StatusCodeFromBadHttpRequestExceptionIsPreserved()
     {
         const int statusCode = 418;
@@ -442,7 +477,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         Assert.Equal("An error occurred", await response.Content.ReadAsStringAsync());
     }
 
-    public static TheoryData CompilationExceptionData
+    public static TheoryData<List<CompilationFailure>> CompilationExceptionData
     {
         get
         {

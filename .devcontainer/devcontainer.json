@@ -31,9 +31,12 @@
   "remoteEnv": {
     "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
     "DOTNET_MULTILEVEL_LOOKUP": "0",
-    "TARGET": "net9.0",
+    "TARGET": "net10.0",
     "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "true"
   },
   // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 8
+  }
 }

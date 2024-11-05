@@ -3,6 +3,20 @@
   <PropertyGroup>
     <RepoRoot>${RepoRoot}</RepoRoot>
     <ArtifactsBinDir>${ArtifactsBinDir}</ArtifactsBinDir>
+
+    <!--
+      These properties are required so that we know where to find the locally-built shared framework and targeting pack
+      when creating a custom "dotnet" root for executing generated templates.
+    -->
+    <TargetingPackLayoutRoot>${TargetingPackLayoutRoot}</TargetingPackLayoutRoot>
+    <SharedFrameworkLayoutRoot>${SharedFrameworkLayoutRoot}</SharedFrameworkLayoutRoot>
+
+    <!--
+      Because some template projects require Microsoft.NETCore.App.Runtime.Mono.browser-wasm, we need to allow
+      the download of additional targeting and runtime packs.
+    -->
+    <TestRequiresTargetingPackDownload>true</TestRequiresTargetingPackDownload>
+    <TestRequiresRuntimePackDownload>true</TestRequiresRuntimePackDownload>
   </PropertyGroup>
 
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />

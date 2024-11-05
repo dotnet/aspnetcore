@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
@@ -22,7 +23,7 @@ internal static class StaticRouteHandlerModelEmitter
         // IResult (int arg0, Todo arg1) => throw null!
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseType} ()";
+            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseTypeDisplayName} ()";
         }
         var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{EmitUnwrappedParameterType(p)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
 
@@ -30,7 +31,7 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return $"void ({parameterTypeList})";
         }
-        return $"{endpoint.Response.WrappedResponseType} ({parameterTypeList})";
+        return $"{endpoint.Response.WrappedResponseTypeDisplayName} ({parameterTypeList})";
     }
 
     private static string EmitUnwrappedParameterType(EndpointParameter p)
@@ -88,7 +89,7 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine($"var task = handler({endpoint.EmitArgumentList()});");
         }
-        if (endpoint.Response.IsAwaitable && endpoint.Response.ResponseType?.NullableAnnotation == NullableAnnotation.Annotated)
+        if (endpoint.Response.IsAwaitable && endpoint.Response.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated)
         {
             codeWriter.WriteLine("if (task == null)");
             codeWriter.StartBlock();
@@ -199,21 +200,26 @@ internal static class StaticRouteHandlerModelEmitter
 
     private static void EmitBuiltinResponseTypeMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        if (endpoint.Response is not { } response)
         {
             return;
         }
 
-        if (response.HasNoResponse || response.IsIResult)
+        if (!endpoint.Response.IsAwaitable && (response.HasNoResponse || response.IsIResult))
         {
             return;
         }
 
-        if (responseType.SpecialType == SpecialType.System_String)
+        endpoint.EmitterContext.HasResponseMetadata = true;
+        if (response.ResponseType?.SpecialType == SpecialType.System_String)
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
-        else
+        else if (response.IsAwaitable && response.ResponseType == null)
+        {
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(void), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+        }
+        else if (response.ResponseType is { } responseType)
         {
             codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
@@ -325,7 +331,7 @@ internal static class StaticRouteHandlerModelEmitter
             {
                 codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
             }
-            codeWriter.WriteLine("#nullable restore");
+            codeWriter.WriteLine("#nullable enable");
             codeWriter.Indent--;
             codeWriter.WriteLine("};");
             codeWriter.WriteLine("foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)");
@@ -358,9 +364,45 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
+    public static void EmitParameterBindingMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        var emitParametersLocal = true;
+        foreach (var parameter in endpoint.Parameters)
+        {
+            endpoint.EmitterContext.RequiresParameterBindingMetadataClass = true;
+            if (parameter.EndpointParameters is not null)
+            {
+                foreach (var propertyAsParameter in parameter.EndpointParameters)
+                {
+                    EmitParameterBindingMetadataForParameter(propertyAsParameter, codeWriter);
+                }
+            }
+            else
+            {
+                if (emitParametersLocal)
+                {
+                    codeWriter.WriteLine("var parameters = methodInfo.GetParameters();");
+                    emitParametersLocal = false;
+                }
+                EmitParameterBindingMetadataForParameter(parameter, codeWriter);
+            }
+        }
+
+        static void EmitParameterBindingMetadataForParameter(EndpointParameter parameter, CodeWriter codeWriter)
+        {
+            var parameterName = SymbolDisplay.FormatLiteral(parameter.SymbolName, true);
+            var parameterInfo = parameter.IsProperty ? parameter.PropertyAsParameterInfoConstruction : $"parameters[{parameter.Ordinal}]";
+            var hasTryParse = parameter.IsParsable ? "true" : "false";
+            var hasBindAsync = parameter.Source == EndpointParameterSource.BindAsync ? "true" : "false";
+            var isOptional = parameter.IsOptional ? "true" : "false";
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata({parameterName}, {parameterInfo}, hasTryParse: {hasTryParse}, hasBindAsync: {hasBindAsync}, isOptional: {isOptional}));");
+        }
+    }
+
     public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
     {
         endpoint.EmitAcceptsMetadata(codeWriter);
+        endpoint.EmitParameterBindingMetadata(codeWriter);
         endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
         endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
         endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
@@ -380,7 +422,7 @@ internal static class StaticRouteHandlerModelEmitter
         else if (endpoint.Response?.IsAwaitable == true)
         {
             codeWriter.WriteLine($"var task = handler({endpoint.EmitFilteredArgumentList()});");
-            if (endpoint.Response?.ResponseType?.NullableAnnotation == NullableAnnotation.Annotated)
+            if (endpoint.Response?.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 codeWriter.WriteLine("if (task == null)");
                 codeWriter.StartBlock();

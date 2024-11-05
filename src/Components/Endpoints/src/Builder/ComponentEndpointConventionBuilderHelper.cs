@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 
@@ -19,5 +20,11 @@ public static class ComponentEndpointConventionBuilderHelper
     {
         builder.AddRenderMode(renderMode);
     }
+
+    /// <summary>
+    /// This method is not recommended for use outside of the Blazor framework.
+    /// </summary>
+    /// <param name="builder"></param>
+    public static IEndpointRouteBuilder GetEndpointRouteBuilder(RazorComponentsEndpointConventionBuilder builder) => builder.EndpointRouteBuilder;
 }
 

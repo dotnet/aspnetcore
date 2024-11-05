@@ -19,6 +19,7 @@ public class Program
         var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
         {
             ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Remote client authentication"] = (BuildWebHost<RemoteAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
@@ -33,7 +34,8 @@ public class Program
             ["Blazor web with server-side blazor root component"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
-            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
+            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
+            ["Global Interactivity"] = (BuildWebHost<RazorComponentEndpointsStartup<GlobalInteractivityApp>>(CreateAdditionalArgs(args)), "/subdir"),
         };
 
         var mainHost = BuildWebHost(args);
@@ -54,14 +56,21 @@ public class Program
         var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot")
             .Value;
+        var finalArgs = new List<string>();
+        finalArgs.AddRange(args);
+        finalArgs.AddRange(
+        [
+            "--contentroot", contentRoot,
+            "--pathbase", "/subdir",
+            "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
+        ]);
 
-        var finalArgs = args.Concat(new[]
+        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
         {
-                "--contentroot", contentRoot,
-                "--pathbase", "/subdir",
-                "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
-            }).ToArray();
-        var host = DevServerProgram.BuildWebHost(finalArgs);
+            finalArgs.Add("--apply-cop-headers");
+        }
+
+        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 

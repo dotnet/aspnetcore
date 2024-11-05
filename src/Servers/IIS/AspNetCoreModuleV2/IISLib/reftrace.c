@@ -4,7 +4,6 @@
 #include <windows.h>
 #include "reftrace.h"
 
-
 PTRACE_LOG
 CreateRefTraceLog(
     IN LONG LogSize,
@@ -40,7 +39,6 @@ Return Value:
 
 }   // CreateRefTraceLog
 
-
 VOID
 DestroyRefTraceLog(
     IN PTRACE_LOG Log
@@ -66,7 +64,6 @@ Return Value:
 
 }   // DestroyRefTraceLog
 
-
 //
 // N.B. For RtlCaptureBacktrace() to work properly, the calling function
 // *must* be __cdecl, and must have a "normal" stack frame. So, we decorate
@@ -119,8 +116,6 @@ Return Value:
 }   // WriteRefTraceLog
 
 
-
-
 LONG
 __cdecl
 WriteRefTraceLogEx(

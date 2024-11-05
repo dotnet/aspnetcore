@@ -4,7 +4,7 @@
   "description": "Çalışan hizmeti oluşturmaya yönelik boş proje şablonu.",
   "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
