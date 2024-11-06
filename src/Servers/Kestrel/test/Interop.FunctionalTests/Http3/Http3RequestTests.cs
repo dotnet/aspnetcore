@@ -1992,6 +1992,10 @@ public class Http3RequestTests : LoggedTest
         var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        // Wait 2.5 seconds in debug (local development) and 15 seconds in production (CI)
+        // Use half the default timeout to ensure the host shuts down before the test throws an error while waiting.
+        var shutdownTimeout = Microsoft.AspNetCore.InternalTesting.TaskExtensions.DefaultTimeoutTimeSpan / 2;
+
         var builder = CreateHostBuilder(async context =>
         {
             context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
@@ -2022,7 +2026,7 @@ public class Http3RequestTests : LoggedTest
                 listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
         },
-        shutdownTimeout: TimeSpan.FromSeconds(2));
+        shutdownTimeout: shutdownTimeout);
 
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())
