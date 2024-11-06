@@ -100,6 +100,6 @@ public class GcmAuthenticatedEncryptorTests
         //         | 00 00 00 00 (postBuffer)
 
         string retValAsString = Convert.ToBase64String(retVal);
-        Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA".AsSpan(), retValAsString);
+        Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA", retValAsString);
     }
 }
