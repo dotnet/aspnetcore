@@ -247,6 +247,8 @@
     <!-- Allow overriding the public base URL for Unified Build scenarios to pull assets from a local build. -->
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.azureedge.net/public/</PublicBaseURL>
     <InternalBaseURL>https://dotnetbuilds.azureedge.net/internal/</InternalBaseURL>
+    <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
+    <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(InstallersOutputPath)</CrossArchitectureInstallerBasePath>
   </PropertyGroup>
 
   <!-- Try various places to find the runtime. It's either released (use official version),
