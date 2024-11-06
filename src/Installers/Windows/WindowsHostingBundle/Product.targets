@@ -83,7 +83,7 @@
     -->
     <ItemGroup>
       <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)/Runtime/%(RemoteAsset.Identity)')" />
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)Runtime/%(RemoteAsset.Identity)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "

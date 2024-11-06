@@ -558,7 +558,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   -->
   <Target Name="_DownloadAndExtractDotNetRuntime">
     <ItemGroup>
-      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)/$(DotNetRuntimeDownloadPath)')" />
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)$(DotNetRuntimeDownloadPath)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
