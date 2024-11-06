@@ -441,15 +441,15 @@ public class OpenIdConnectChallengeTests
         Assert.True(nonceCookie.Expires.HasValue);
         Assert.True(nonceCookie.Expires > DateTime.UtcNow);
         Assert.True(nonceCookie.HttpOnly);
-        Assert.Equal("/signin-oidc".AsSpan(), nonceCookie.Path);
-        Assert.Equal("N".AsSpan(), nonceCookie.Value);
+        Assert.Equal("/signin-oidc", nonceCookie.Path.AsSpan());
+        Assert.Equal("N", nonceCookie.Value.AsSpan());
         Assert.Equal(Net.Http.Headers.SameSiteMode.None, nonceCookie.SameSite);
 
         var correlationCookie = challengeCookies.Where(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal)).Single();
         Assert.True(correlationCookie.Expires.HasValue);
         Assert.True(nonceCookie.Expires > DateTime.UtcNow);
         Assert.True(correlationCookie.HttpOnly);
-        Assert.Equal("/signin-oidc".AsSpan(), correlationCookie.Path);
+        Assert.Equal("/signin-oidc", correlationCookie.Path.AsSpan());
         Assert.False(StringSegment.IsNullOrEmpty(correlationCookie.Value));
         Assert.Equal(Net.Http.Headers.SameSiteMode.None, correlationCookie.SameSite);
 

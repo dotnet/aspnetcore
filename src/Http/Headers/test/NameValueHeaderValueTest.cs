@@ -29,7 +29,7 @@ public class NameValueHeaderValueTest
     public void Ctor_NameValidFormat_SuccessfullyCreated()
     {
         var nameValue = new NameValueHeaderValue("text", null);
-        Assert.Equal("text".AsSpan(), nameValue.Name);
+        Assert.Equal("text", nameValue.Name.AsSpan());
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class NameValueHeaderValueTest
 
         // Change one value and verify the other is unchanged.
         pair0.Value = "othervalue";
-        Assert.Equal("othervalue".AsSpan(), pair0.Value);
+        Assert.Equal("othervalue", pair0.Value.AsSpan());
         Assert.Null(pair1.Value.Value);
     }
 
@@ -84,7 +84,7 @@ public class NameValueHeaderValueTest
 
         // Change one value and verify the other is unchanged.
         pair0.Value = "othervalue";
-        Assert.Equal("othervalue".AsSpan(), pair0.Value);
+        Assert.Equal("othervalue", pair0.Value.AsSpan());
         Assert.Null(pair1.Value.Value);
         Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
     }
@@ -100,8 +100,8 @@ public class NameValueHeaderValueTest
 
         // Change one value and verify the other is unchanged.
         pair0.Value = "othervalue";
-        Assert.Equal("othervalue".AsSpan(), pair0.Value);
-        Assert.Equal("value".AsSpan(), pair1.Value);
+        Assert.Equal("othervalue", pair0.Value.AsSpan());
+        Assert.Equal("value", pair1.Value.AsSpan());
     }
 
     [Fact]
@@ -117,8 +117,8 @@ public class NameValueHeaderValueTest
 
         // Change one value and verify the other is unchanged.
         pair0.Value = "othervalue";
-        Assert.Equal("othervalue".AsSpan(), pair0.Value);
-        Assert.Equal("value".AsSpan(), pair1.Value);
+        Assert.Equal("othervalue", pair0.Value.AsSpan());
+        Assert.Equal("value", pair1.Value.AsSpan());
         Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
     }
 
@@ -134,8 +134,8 @@ public class NameValueHeaderValueTest
 
         // Change one value and verify the other is unchanged.
         pair2.Value = "othervalue";
-        Assert.Equal("othervalue".AsSpan(), pair2.Value);
-        Assert.Equal("value".AsSpan(), pair1.Value);
+        Assert.Equal("othervalue", pair2.Value.AsSpan());
+        Assert.Equal("value", pair1.Value.AsSpan());
     }
 
     [Fact]
