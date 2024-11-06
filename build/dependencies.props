@@ -24,7 +24,7 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.1.23</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.23</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingRedisPackageVersion>2.3.0</MicrosoftExtensionsCachingRedisPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.1.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
@@ -68,7 +68,7 @@
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>2.1.1</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.1.6</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.1.1</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.1</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>8.0.2</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.1.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.1.6</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.1.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
