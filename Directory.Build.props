@@ -243,6 +243,33 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <OfficialBaseURL>https://dotnetcli.azureedge.net/dotnet/</OfficialBaseURL>
+    <!-- Allow overriding the public base URL for Unified Build scenarios to pull assets from a local build. -->
+    <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.azureedge.net/public/</PublicBaseURL>
+    <InternalBaseURL>https://dotnetbuilds.azureedge.net/internal/</InternalBaseURL>
+  </PropertyGroup>
+
+  <!-- Try various places to find the runtime. It's either released (use official version),
+        public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+  <ItemGroup Condition="'$(DotNetBuild) ' != 'true'">
+    <RemoteAssetBaseURL Include="$(OfficialBaseURL)" />
+    <RemoteAssetBaseURL Include="$(PublicBaseURL)" />
+    <!-- Include the token here as we'll generate the URLs to download based on this item group. -->
+    <RemoteAssetBaseURL Include="$(InternalBaseURL)"
+                        Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+      <token>$(DotnetRuntimeSourceFeedKey)</token>
+    </RemoteAssetBaseURL>
+  </ItemGroup>
+
+  <!--
+    Only try downloading from the "public" base URL when doing a vertical build.
+    In a vertical build, the public URL will be overwritten to point to local build artifacts.
+  -->
+  <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
+    <RemoteAssetBaseURL Include="$(PublicBaseURL)" />
+  </ItemGroup>
+
+  <PropertyGroup>
     <!-- PackageReadmeFile specifies the package readme file name in the package. PackageReadmeFilePath points to the package readme file on disk. -->
     <EnableDefaultPackageReadmeFile Condition="'$(EnableDefaultPackageReadmeFile)' == '' and '$(IsShipping)' != 'false'">true</EnableDefaultPackageReadmeFile>
     <PackageReadmeFilePath Condition="'$(PackageReadmeFilePath)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true'">PACKAGE.md</PackageReadmeFilePath>
