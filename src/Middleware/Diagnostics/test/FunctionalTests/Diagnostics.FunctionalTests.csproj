@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
     <!-- Mitigation for long path issues -->
@@ -14,7 +14,6 @@
     <ProjectReference Include="..\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj" />
     <ProjectReference Include="..\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj" />
     <ProjectReference Include="..\testassets\WelcomePageSample\WelcomePageSample.csproj" />
-    <ProjectReference Include="..\..\..\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj" />
   </ItemGroup>
 
   <ItemGroup>

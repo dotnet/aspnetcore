@@ -12,6 +12,7 @@
       https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json;
       https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json;
       https://pkgs.dev.azure.com/dnceng/public/_packaging/aspnet-21/nuget/v3/index.json;
+      https://pkgs.dev.azure.com/dnceng/public/_packaging/extensions-int-ce077d5/nuget/v3/index.json;
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
       $(RestoreSources);

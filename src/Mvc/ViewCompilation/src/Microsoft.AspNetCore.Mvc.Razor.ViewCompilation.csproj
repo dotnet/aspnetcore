@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
 
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -73,8 +73,6 @@
         copyright=$(Copyright);
         AssemblyName=$(AssemblyName);
 
-        OutputBinary=$(OutputPath)netcoreapp2.0\$(AssemblyName).dll;
-        OutputSymbol=$(OutputPath)netcoreapp2.0\$(AssemblyName).pdb;
         TaskBinary=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll;
         TaskSymbol=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.pdb;
 

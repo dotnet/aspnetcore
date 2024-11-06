@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.TestHost
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
 #if NETCOREAPP2_1
                 Assert.Equal("HTTP/2.0", context.Request.Protocol);
-#elif NET461 || NETCOREAPP2_0
+#elif NET462 || NETCOREAPP2_0
                 Assert.Equal("HTTP/1.1", context.Request.Protocol);
 #else
     Unspecified Framework
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.TestHost
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
 #if NETCOREAPP2_1
                 Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
-#elif NET461 || NETCOREAPP2_0
+#elif NET462 || NETCOREAPP2_0
                 Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
 #else
     Unspecified Framework
