@@ -73,8 +73,6 @@
         copyright=$(Copyright);
         AssemblyName=$(AssemblyName);
 
-        OutputBinary=$(OutputPath)netcoreapp2.0\$(AssemblyName).dll;
-        OutputSymbol=$(OutputPath)netcoreapp2.0\$(AssemblyName).pdb;
         TaskBinary=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll;
         TaskSymbol=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.pdb;
 
