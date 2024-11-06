@@ -246,8 +246,6 @@
     <OfficialBaseURL>https://dotnetcli.azureedge.net/dotnet/</OfficialBaseURL>
     <!-- Allow overriding the public base URL for Unified Build scenarios to pull assets from a local build. -->
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.azureedge.net/public/</PublicBaseURL>
-    <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
-    <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
     <InternalBaseURL>https://dotnetbuilds.azureedge.net/internal/</InternalBaseURL>
     <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
     <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(InstallersOutputPath)</CrossArchitectureInstallerBasePath>
@@ -270,7 +268,9 @@
     In a vertical build, the public URL will be overwritten to point to local build artifacts.
   -->
   <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
-    <RemoteAssetBaseURL Include="$(PublicBaseURL)" />
+    <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
+    <RemoteAssetBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'" Include="$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))" />
+    <RemoteAssetBaseURL Condition="!$(PublicBaseURL.StartsWith('file:')) or '$(OS)' == 'Windows_NT'" Include="$(PublicBaseURL)" />
   </ItemGroup>
 
   <PropertyGroup>

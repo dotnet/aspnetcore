@@ -77,13 +77,12 @@
 
   <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
       Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-    <!--
-      Try various places to find the runtime. It's either released (use official version), public but
-      unreleased (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal).
-    -->
+    <PropertyGroup>
+      <_CurrentRemoteAsset>%(RemoteAsset.Identity)</_CurrentRemoteAsset>
+    </PropertyGroup>
     <ItemGroup>
       <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)Runtime/%(RemoteAsset.Identity)')" />
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)Runtime/$(_CurrentRemoteAsset)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "
