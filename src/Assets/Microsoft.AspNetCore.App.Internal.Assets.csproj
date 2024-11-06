@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web" DefaultTargets="Pack">
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Pack">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -14,21 +14,7 @@
 
     <!-- The package doesn't produce any lib or ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-
-    <StaticWebAssetBasePath>_framework</StaticWebAssetBasePath>
-    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
-    <DisableStaticWebAssetEndpointsBuildPropsFileGeneration>true</DisableStaticWebAssetEndpointsBuildPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
-    <StaticWebAssetsGetBuildAssetsTargets>_GetFrameworkBuildAssets</StaticWebAssetsGetBuildAssetsTargets>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="build\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildTransitive\*" Pack="true" PackagePath="%(Identity)" />
-  </ItemGroup>
 
   <PropertyGroup>
     <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
@@ -44,8 +30,15 @@
     <_BlazorJSMapFile Include="@(_BlazorJSFilename->'$(_BlazorJSContentRoot)\%(Identity).map')" />
   </ItemGroup>
 
-  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="@(_BlazorJSFile)" Pack="true" PackagePath="_framework\%(FileName)%(Extension)" />
+    <None Include="@(_BlazorJSMapFile)" Pack="true" PackagePath="_framework\debug\%(FileName)%(Extension)" />
+  </ItemGroup>
 
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
     <ItemGroup>
       <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
       <_MissingBlazorJSFile Include="@(_BlazorJSMapFile)" Condition="!EXISTS('%(_BlazorJSMapFile.FullPath)')" />
@@ -54,149 +47,6 @@
     <Error
       Condition="'@(_MissingBlazorJSFile)' != ''"
       Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Run 'npm run build' in the repo root to generate the file." />
-
-  </Target>
-
-  <Target Name="_GetFrameworkBuildAssets" Returns="@(ReferenceAsset)">
-
-    <ItemGroup>
-      <_ReferenceAssetCandidates Include="@(_BlazorJSFile)" />
-      <_ReferenceAssetCandidates Include="@(_BlazorJSMapFile)" />
-      <_ReferenceAssetCandidates>
-        <RelativePath>$(StaticWebAssetBasePath)\%(FileName)%(Extension)</RelativePath>
-        <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
-      </_ReferenceAssetCandidates>
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      Condition="'@(_ReferenceAssetCandidates->Count())' != '0'"
-      CandidateAssets="@(_ReferenceAssetCandidates)"
-      SourceId="$(PackageId)"
-      SourceType="Discovered"
-      AssetKind="All"
-      FingerprintCandidates="true"
-      BasePath="$(StaticWebAssetBasePath)"
-    >
-      <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
-    </DefineStaticWebAssets>
-
-    <ItemGroup>
-      <ReferenceAsset>
-        <ResultType>StaticWebAsset</ResultType>
-      </ReferenceAsset>
-    </ItemGroup>
-
-  </Target>
-
-  <Target Name="_GenerateFrameworkPackItems" BeforeTargets="GenerateStaticWebAssetsPackFiles">
-    <ItemGroup>
-      <_AssetCandidates Include="@(_BlazorJSFile)" />
-      <_AssetCandidates>
-        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-        <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
-      </_AssetCandidates>
-
-      <_DebugAssetCandidates Include="@(_BlazorJSMapFile)" />
-      <_DebugAssetCandidates>
-        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-        <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
-      </_DebugAssetCandidates>
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      Condition="'@(_AssetCandidates->Count())' != '0'"
-      CandidateAssets="@(_AssetCandidates)"
-      AssetKind="All"
-      SourceId="$(PackageId)"
-      SourceType="Discovered"
-      FingerprintCandidates="true"
-      BasePath="$(StaticWebAssetBasePath)"
-    >
-      <Output TaskParameter="Assets" ItemName="_FrameworkAssets" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      Condition="'@(_DebugAssetCandidates->Count())' != '0'"
-      CandidateAssets="@(_DebugAssetCandidates)"
-      AssetKind="All"
-      SourceId="$(PackageId)"
-      SourceType="Discovered"
-      FingerprintCandidates="true"
-      BasePath="$(StaticWebAssetBasePath)"
-    >
-      <Output TaskParameter="Assets" ItemName="_DebugFrameworkAssets" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssetEndpoints
-      Condition="'@(_FrameworkAssets)' != ''"
-      CandidateAssets="@(_FrameworkAssets)"
-      ExistingEndpoints="@()"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
-      <Output TaskParameter="Endpoints" ItemName="_FrameworkAssetEndpoints" />
-    </DefineStaticWebAssetEndpoints>
-
-    <DefineStaticWebAssetEndpoints
-      Condition="'@(_DebugFrameworkAssets)' != ''"
-      CandidateAssets="@(_DebugFrameworkAssets)"
-      ExistingEndpoints="@()"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
-      <Output TaskParameter="Endpoints" ItemName="_DebugFrameworkAssetEndpoints" />
-    </DefineStaticWebAssetEndpoints>
-
-    <ComputeEndpointsForReferenceStaticWebAssets
-      Assets="@(_FrameworkAssets)"
-      CandidateEndpoints="@(_FrameworkAssetEndpoints)">
-      <Output TaskParameter="Endpoints" ItemName="_PackFrameworkAssetEndpoints" />
-    </ComputeEndpointsForReferenceStaticWebAssets>
-
-    <ComputeEndpointsForReferenceStaticWebAssets
-      Assets="@(_DebugFrameworkAssets)"
-      CandidateEndpoints="@(_DebugFrameworkAssetEndpoints)">
-      <Output TaskParameter="Endpoints" ItemName="_PackDebugFrameworkAssetEndpoints" />
-    </ComputeEndpointsForReferenceStaticWebAssets>
-
-    <GenerateStaticWebAssetsPropsFile
-      StaticWebAssets="@(_FrameworkAssets)"
-      PackagePathPrefix="staticwebassets"
-      TargetPropsFilePath="$(IntermediateOutputPath)Assets.Pack.targets" />
-
-    <GenerateStaticWebAssetsPropsFile
-      StaticWebAssets="@(_DebugFrameworkAssets)"
-      PackagePathPrefix="staticwebassets"
-      TargetPropsFilePath="$(IntermediateOutputPath)Assets.Pack.debug.targets" />
-
-    <GenerateStaticWebAssetEndpointsPropsFile
-      StaticWebAssets="@(_FrameworkAssets)"
-      StaticWebAssetEndpoints="@(_PackFrameworkAssetEndpoints)"
-      TargetPropsFilePath="$(IntermediateOutputPath)Assets.Pack.endpoints.targets" />
-
-    <GenerateStaticWebAssetEndpointsPropsFile
-      StaticWebAssets="@(_DebugFrameworkAssets)"
-      StaticWebAssetEndpoints="@(_PackDebugFrameworkAssetEndpoints)"
-      TargetPropsFilePath="$(IntermediateOutputPath)Assets.Pack.debug.endpoints.targets" />
-
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_FrameworkAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
-    </ComputeStaticWebAssetsTargetPaths>
-    <ComputeStaticWebAssetsTargetPaths Assets="@(_DebugFrameworkAssets)" PathPrefix="staticwebassets" AdjustPathsForPack="true">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
-    </ComputeStaticWebAssetsTargetPaths>
-
-    <ItemGroup>
-      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)Assets.Pack.targets">
-        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.targets</PackagePath>
-      </StaticWebAssetPackageFile>
-      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)Assets.Pack.endpoints.targets">
-        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.endpoints.targets</PackagePath>
-      </StaticWebAssetPackageFile>
-      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)Assets.Pack.debug.targets">
-        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.debug.targets</PackagePath>
-      </StaticWebAssetPackageFile>
-      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)Assets.Pack.debug.endpoints.targets">
-        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.debug.endpoints.targets</PackagePath>
-      </StaticWebAssetPackageFile>
-    </ItemGroup>
-
   </Target>
 
 </Project>
