@@ -141,10 +141,6 @@
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Data.Sqlite" AllMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="ship" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.3" Category="ship" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.3" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Analyzer="true" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" AllMetapackage="true" AppMetapackage="true" Category="ship" />

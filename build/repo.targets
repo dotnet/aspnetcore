@@ -16,7 +16,8 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
-    <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories</CompileDependsOn>
+    <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects</CompileDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildSiteExtension;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
