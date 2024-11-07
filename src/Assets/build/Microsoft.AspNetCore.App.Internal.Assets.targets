@@ -9,13 +9,15 @@
   <PropertyGroup>
     <BlazorFrameworkStaticWebAssetRoot Condition="'$(BlazorFrameworkStaticWebAssetRoot)' == ''">$(MSBuildThisFileDirectory)..\_framework</BlazorFrameworkStaticWebAssetRoot>
     <BlazorFrameworkStaticWebAssetDebugRoot Condition="'$(BlazorFrameworkStaticWebAssetDebugRoot)' == ''">$(MSBuildThisFileDirectory)..\_framework\debug</BlazorFrameworkStaticWebAssetDebugRoot>
+
+    <_UsingBlazorFrameworkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">true</_UsingBlazorFrameworkStaticWebAssets>
   </PropertyGroup>
 
-  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(OutputType)' == 'Exe'">
+  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(_UsingBlazorFrameworkStaticWebAssets)' == 'true' AND '$(OutputType)' == 'Exe'">
     <ItemGroup>
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\*" />
       <_FrameworkStaticWebAssetCandidate
-        Condition="'$(UseDebugBlazorAssets)' == 'true'"
+        Condition="'$(UseBlazorFrameworkDebugAssets)' == 'true'"
         Include="$(BlazorFrameworkStaticWebAssetDebugRoot)\*" />
       <_FrameworkStaticWebAssetCandidate>
         <RelativePath>_framework\%(FileName)%(Extension)</RelativePath>
@@ -26,7 +28,7 @@
     <DefineStaticWebAssets
       Condition="'@(_FrameworkStaticWebAssetCandidate->Count())' != '0'"
       CandidateAssets="@(_FrameworkStaticWebAssetCandidate)"
-      SourceId="$(PackageId)"
+      SourceId="Microsoft.AspNetCore.App.Internal.Assets"
       SourceType="Discovered"
       AssetKind="All"
       FingerprintCandidates="true"
@@ -37,7 +39,7 @@
     <DefineStaticWebAssetEndpoints
       Condition="'@(_FrameworkStaticWebAsset)' != ''"
       CandidateAssets="@(_FrameworkStaticWebAsset)"
-      ExistingEndpoints="@()"
+      ExistingEndpoints=""
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
       <Output TaskParameter="Endpoints" ItemName="_FrameworkStaticAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
