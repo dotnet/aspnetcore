@@ -71,7 +71,13 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
+      <PropertyGroup>
+        <_BuildWindowsInstallers Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">true</_BuildWindowsInstallers>
+        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x86' ">Win32</_WixTargetPlatform>
+        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x64' ">x64</_WixTargetPlatform>
+        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64' ">ARM64</_WixTargetPlatform>
+      </PropertyGroup>
+      <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
@@ -103,7 +109,26 @@
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
 
-        <!-- Windows hosting bundled -->
+        <!-- Windows hosting bundle -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+      </ItemGroup>
+
+      <!-- In a vertical build, only build the MSIs for the current vertical in the first pass and build the hosting bundle in the second pass -->
+      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
+        <!-- Build the ANCM custom action -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+        <!-- Build the ANCM msis -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+        <!-- Build the targeting pack installers -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+        <!-- Build the SharedFramework installers -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+        <!-- Build the SharedFramework wixlib -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
+      </ItemGroup>
+
+      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 

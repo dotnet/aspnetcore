@@ -32,15 +32,8 @@
   </PropertyGroup>
 
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuild)' != 'true'" Returns="$(DotNetRuntimeArchive)">
-    <!-- Try various places to find the runtime. It's either released (use official version),
-         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
     <ItemGroup>
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/$(DotNetRuntimeDownloadPath)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(DotNetRuntimeDownloadPath)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(DotNetRuntimeDownloadPath)"
-          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)$(DotNetRuntimeDownloadPath)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "

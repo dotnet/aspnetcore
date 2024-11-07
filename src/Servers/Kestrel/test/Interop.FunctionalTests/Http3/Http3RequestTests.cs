@@ -1992,6 +1992,10 @@ public class Http3RequestTests : LoggedTest
         var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        // Wait 2.5 seconds in debug (local development) and 15 seconds in production (CI)
+        // Use half the default timeout to ensure the host shuts down before the test throws an error while waiting.
+        var shutdownTimeout = Microsoft.AspNetCore.InternalTesting.TaskExtensions.DefaultTimeoutTimeSpan / 2;
+
         var builder = CreateHostBuilder(async context =>
         {
             context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
@@ -2021,7 +2025,8 @@ public class Http3RequestTests : LoggedTest
                 listenOptions.Protocols = protocol;
                 listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
-        });
+        },
+        shutdownTimeout: shutdownTimeout);
 
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())
@@ -2061,17 +2066,21 @@ public class Http3RequestTests : LoggedTest
                 }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
             }
 
+            Logger.LogInformation("Getting read task");
             var readTask = await readAsyncTask.Task.DefaultTimeout();
 
             // Assert
+            Logger.LogInformation("Waiting for error from read task");
             var ex = await Assert.ThrowsAnyAsync<Exception>(() => readTask).DefaultTimeout();
-            while (ex.InnerException != null)
+
+            var rootException = ex;
+            while (rootException.InnerException != null)
             {
-                ex = ex.InnerException;
+                rootException = rootException.InnerException;
             }
 
-            Assert.IsType<ConnectionAbortedException>(ex);
-            Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", ex.Message);
+            Assert.IsType<ConnectionAbortedException>(rootException);
+            Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", rootException.Message);
 
             await requestAbortedTcs.Task.DefaultTimeout();
 
@@ -2191,8 +2200,8 @@ public class Http3RequestTests : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
-    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
+    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, TimeSpan? shutdownTimeout = null)
     {
-        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
+        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel, shutdownTimeout: shutdownTimeout);
     }
 }
