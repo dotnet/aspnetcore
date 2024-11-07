@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
@@ -20,8 +21,8 @@ public static class OpenApiServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
     /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
     /// <example>
-    /// This method is commonly used to add OpenAPI services to the service collection of a
-    /// <see cref="WebApplicationBuilder"/>, as shown in the following example:
+    /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
+    /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
     /// <code>
     /// var builder = WebApplication.CreateBuilder(args);
     /// builder.Services.AddOpenApi("MyWebApi");
@@ -41,8 +42,8 @@ public static class OpenApiServiceCollectionExtensions
     /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
     /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
     /// <example>
-    /// This method is commonly used to add OpenAPI services to the service collection of a
-    /// <see cref="WebApplicationBuilder"/>, as shown in the following example:
+    /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
+    /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
     /// <code>
     /// var builder = WebApplication.CreateBuilder(args);
     /// builder.Services.AddOpenApi("MyWebApi", options => {
@@ -71,8 +72,8 @@ public static class OpenApiServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
     /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
     /// <example>
-    /// This method is commonly used to add OpenAPI services to the service collection of a
-    /// <see cref="WebApplicationBuilder"/>, as shown in the following example:
+    /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
+    /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
     /// <code>
     /// var builder = WebApplication.CreateBuilder(args);
     /// builder.Services.AddOpenApi(options => {
@@ -89,8 +90,8 @@ public static class OpenApiServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
     /// <example>
-    /// This method is commonly used to add OpenAPI services to the service collection of a
-    /// <see cref="WebApplicationBuilder"/>, as shown in the following example:
+    /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
+    /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
     /// <code>
     /// var builder = WebApplication.CreateBuilder(args);
     /// builder.Services.AddOpenApi();
