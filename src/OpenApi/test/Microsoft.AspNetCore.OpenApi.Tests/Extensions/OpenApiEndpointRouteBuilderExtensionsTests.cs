@@ -75,10 +75,11 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
     }
 
     [Theory]
-    [InlineData("/openapi.json", "application/json;charset=utf-8")]
-    [InlineData("/openapi.yaml", "application/yaml;charset=utf-8")]
-    [InlineData("/openapi.yml", "application/yaml;charset=utf-8")]
-    public async Task MapOpenApi_ReturnsDefaultDocumentIfNoNameProvided(string expectedPath, string expectedContentType)
+    [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.toml", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
+    [InlineData("/openapi.yml", "text/plain+yaml;charset=utf-8", true)]
+    public async Task MapOpenApi_ReturnsDefaultDocumentIfNoNameProvided(string expectedPath, string expectedContentType, bool isYaml)
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
@@ -97,6 +98,10 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Equal(expectedContentType, context.Response.ContentType);
+        var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // String check to validate that generated document starts with YAML syntax
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
             Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
@@ -128,10 +133,10 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
     }
 
     [Theory]
-    [InlineData("/openapi.json", "application/json;charset=utf-8")]
-    [InlineData("/openapi.yaml", "application/yaml;charset=utf-8")]
-    [InlineData("/openapi.yml", "application/yaml;charset=utf-8")]
-    public async Task MapOpenApi_ReturnsDocumentIfNameProvidedInQuery(string expectedPath, string expectedContentType)
+    [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
+    [InlineData("/openapi.yml", "text/plain+yaml;charset=utf-8", true)]
+    public async Task MapOpenApi_ReturnsDocumentIfNameProvidedInQuery(string expectedPath, string expectedContentType, bool isYaml)
     {
         // Arrange
         var documentName = "v2";
@@ -154,6 +159,10 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Equal(expectedContentType, context.Response.ContentType);
+        var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // String check to validate that generated document starts with YAML syntax
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
             Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);

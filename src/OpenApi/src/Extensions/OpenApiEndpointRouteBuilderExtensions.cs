@@ -52,7 +52,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                         if (UseYaml(pattern))
                         {
                             document.Serialize(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
-                            context.Response.ContentType = "application/yaml;charset=utf-8";
+                            context.Response.ContentType = "text/plain+yaml;charset=utf-8";
                         }
                         else
                         {
