@@ -90,7 +90,7 @@
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </V5AssetsCandidates>
     </ItemGroup>
-    
+
     <DefineStaticWebAssets Condition="'@(V4AssetsCandidates->Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="V4Assets" />
     </DefineStaticWebAssets>
@@ -106,7 +106,7 @@
     >
       <Output TaskParameter="Endpoints" ItemName="V4AssetEndpoints" />
     </DefineStaticWebAssetEndpoints>
-    
+
     <DefineStaticWebAssetEndpoints
       Condition="'@(V5Assets)' != ''"
       CandidateAssets="@(V5Assets)"
@@ -122,11 +122,13 @@
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V4Assets)"
       StaticWebAssetEndpoints="@(V4AssetEndpoints)"
+      PackagePathPrefix="staticwebassets/V4"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.endpoints.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V5Assets)"
       StaticWebAssetEndpoints="@(V5AssetEndpoints)"
+      PackagePathPrefix="staticwebassets/V5"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets" />
 
     <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
