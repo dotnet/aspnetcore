@@ -29,7 +29,7 @@
       Condition="'@(_FrameworkStaticWebAssetCandidate->Count())' != '0'"
       CandidateAssets="@(_FrameworkStaticWebAssetCandidate)"
       SourceId="Microsoft.AspNetCore.App.Internal.Assets"
-      SourceType="Discovered"
+      SourceType="Project"
       AssetKind="All"
       FingerprintCandidates="true"
       BasePath="$(StaticWebAssetBasePath)">
