@@ -25,6 +25,7 @@ public class RequestLocalizationMiddlewareTest
     [InlineData("zh-Hans-CN", "zh-Hans")]
     [InlineData("zh-Hant-TW", "zh-Hant")]
     [InlineData("zh-TW", "zh-Hant")]
+    [InlineData("zh-Hans-CN", "")]
     public async Task RequestLocalizationMiddleware_ShouldFallBackToParentCultures_RegradlessOfHyphenSeparatorCheck(string requestedCulture, string parentCulture)
     {
         using var host = new HostBuilder()
