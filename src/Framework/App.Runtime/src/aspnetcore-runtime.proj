@@ -28,9 +28,9 @@
     Download the Microsoft.NETCore.App.Runtime layout.
   -->
   <PropertyGroup>
-    <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
+    <!-- Use the Microsoft.Internal.Runtime.AspNetCore.Transport package as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier).$(ArchiveFormat)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
   </PropertyGroup>
 
