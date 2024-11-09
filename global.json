@@ -6,10 +6,10 @@
     "dotnet": "10.0.100-alpha.1.24510.13",
     "runtimes": {
       "dotnet/x86": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+        "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
       ],
       "dotnet": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+        "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
       ]
     },
     "vs": {
