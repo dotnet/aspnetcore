@@ -126,8 +126,8 @@
         copyright=$(Copyright);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskDirNet46=@(TaskDirNet46)\**\*;
-        TaskDirNetStandard=@(TaskDirNetStandard)\**\*;
+        TaskDirNet46=$(TaskDirNet46)\**\*;
+        TaskDirNetStandard=$(TaskDirNetStandard)\**\*;
 
         <!-- Include the assembly and symbols from the tools project -->
         ToolAssembly=$(OutputPath)tools\**\*;
