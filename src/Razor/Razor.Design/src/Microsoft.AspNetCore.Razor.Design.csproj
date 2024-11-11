@@ -11,6 +11,8 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <TaskDirNet46>$(OutputPath)\tasks\net46\</TaskDirNet46>
+    <TaskDirNetStandard>$(OutputPath)\tasks\netstandard2.0\</TaskDirNetStandard>
   </PropertyGroup>
 
   <!-- 
@@ -73,10 +75,16 @@
       <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNetStandard" />
     </MSBuild>
 
-    <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(OutputPath)\tasks\net46\">
+    <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(TaskDirNet46)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
-    <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(OutputPath)\tasks\netstandard2.0\">
+    <Copy SourceFiles="@(TaskSymbolNet46)" DestinationFolder="$(TaskDirNet46)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+    <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(TaskDirNetStandard)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+    <Copy SourceFiles="@(TaskSymbolNetStandard)" DestinationFolder="$(TaskDirNetStandard)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
@@ -118,10 +126,8 @@
         copyright=$(Copyright);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskAssemblyNet46=@(TaskAssemblyNet46);
-        TaskSymbolNet46=@(TaskSymbolNet46);
-        TaskAssemblyNetStandard=@(TaskAssemblyNetStandard);
-        TaskSymbolNetStandard=@(TaskSymbolNetStandard);
+        TaskDirNet46=@(TaskDirNet46)\**\*;
+        TaskDirNetStandard=@(TaskDirNetStandard)\**\*;
 
         <!-- Include the assembly and symbols from the tools project -->
         ToolAssembly=$(OutputPath)tools\**\*;
