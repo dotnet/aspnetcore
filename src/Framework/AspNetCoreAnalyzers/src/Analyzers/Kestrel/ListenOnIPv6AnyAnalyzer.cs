@@ -64,8 +64,6 @@ public class ListenOnIPv6AnyAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny, ipAddressArgumentSyntax.GetLocation()));
         }
-
-        
     }
 
     private static bool IsIPAddressType(IParameterSymbol? parameter) => parameter is 

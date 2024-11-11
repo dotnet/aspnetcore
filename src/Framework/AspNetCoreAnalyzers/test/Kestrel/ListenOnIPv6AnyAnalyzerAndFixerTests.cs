@@ -11,27 +11,32 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
 
 namespace Microsoft.AspNetCore.Analyzers.Kestrel;
 
-public class ListenOnIPv6AnyAnalyzerTests
+public class ListenOnIPv6AnyAnalyzerAndFixerTests
 {
     [Fact] // do we need any other scenarios except the direct usage one?
     public async Task ReportsDiagnostic_IPAddressAsLocalVariable()
     {
         var source = GetKestrelSetupSource("myIp", "var myIp = IPAddress.Any;");
-
-        await VerifyCS.VerifyAnalyzerAsync(source, [
-            new DiagnosticResult(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny).WithLocation(0)
-        ]);
+        await VerifyCS.VerifyAnalyzerAsync(source, codeSampleDiagnosticResult);
     }
 
     [Fact]
     public async Task ReportsDiagnostic_ExplicitUsage()
     {
         var source = GetKestrelSetupSource("IPAddress.Any");
-
-        await VerifyCS.VerifyAnalyzerAsync(source, [
-            new DiagnosticResult(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny).WithLocation(0)
-        ]);
+        await VerifyCS.VerifyAnalyzerAsync(source, codeSampleDiagnosticResult);
     }
+
+    [Fact]
+    public async Task CodeFix_ExplicitUsage()
+    {
+        var source = GetKestrelSetupSource("IPAddress.Any");
+        var fixedSource = GetKestrelSetupSource("IPAddress.IPv6Any");
+        await VerifyCS.VerifyCodeFixAsync(source, codeSampleDiagnosticResult, fixedSource);
+    }
+
+    private static DiagnosticResult codeSampleDiagnosticResult
+        = new DiagnosticResult(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny).WithLocation(0);
 
     static string GetKestrelSetupSource(string ipAddressArgument, string extraInlineCode = null) => $$"""
         using Microsoft.Extensions.Hosting;

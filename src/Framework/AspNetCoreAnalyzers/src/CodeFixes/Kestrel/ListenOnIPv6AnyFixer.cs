@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Analyzers;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Fixers.Kestrel;
 
@@ -29,24 +30,21 @@ public class ListenOnIPv6AnyFixer : CodeFixProvider
                     "Consider using IPAddress.IPv6Any instead of IPAddress.Any",
                     async cancellationToken =>
                     {
-                        throw new System.NotImplementedException();
+                        var editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
+                        var root = await context.Document.GetSyntaxRootAsync(cancellationToken);
+                        if (root is null)
+                        {
+                            return context.Document;
+                        }
 
-                        //var editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
-                        //var root = await context.Document.GetSyntaxRootAsync(cancellationToken);
-                        //if (root is null)
-                        //{
-                        //    return context.Document;
-                        //}
+                        var argumentSyntax = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<ArgumentSyntax>();
+                        if (argumentSyntax is null)
+                        {
+                            return context.Document;
+                        }
 
-                        //var classDeclaration = root.FindNode(diagnostic.Location.SourceSpan)
-                        //    .FirstAncestorOrSelf<ClassDeclarationSyntax>();
-                        //if (classDeclaration is null)
-                        //{
-                        //    return context.Document;
-                        //}
-                        //editor.RemoveNode(classDeclaration, SyntaxRemoveOptions.KeepExteriorTrivia);
-                        //return editor.GetChangedDocument();
-
+                        editor.ReplaceNode(argumentSyntax, argumentSyntax.WithExpression(SyntaxFactory.ParseExpression("IPAddress.IPv6Any")));
+                        return editor.GetChangedDocument();
                     },
                     equivalenceKey: DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny.Id),
                 diagnostic);
