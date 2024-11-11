@@ -106,7 +106,7 @@ public abstract class WebSocketsTests : FunctionalTestsBase
     }
 
     [ConditionalFact]
-    public async Task Compression()
+    public async Task AttemptCompressionWorks()
     {
         var webSocketUri = Fixture.DeploymentResult.ApplicationBaseUri;
         webSocketUri = webSocketUri.Replace("http:", "ws:");
@@ -115,7 +115,9 @@ public abstract class WebSocketsTests : FunctionalTestsBase
         cws.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
         await cws.ConnectAsync(new Uri(webSocketUri + "WebSocketAllowCompression"), default);
 
-        var expected = Fixture.DeploymentParameters.HostingModel == HostingModel.InProcess ? "permessage-deflate; client_max_window_bits=15" : "None";
+        // Compression doesn't work with OutOfProcess, let's make sure the websocket extensions aren't forwarded and the connection still works
+        var expected = Fixture.DeploymentParameters.HostingModel == HostingModel.InProcess
+            ? "permessage-deflate; client_max_window_bits=15" : "None";
         await ReceiveMessage(cws, expected);
 
         for (int i = 0; i < 1000; i++)
