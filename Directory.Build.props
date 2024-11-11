@@ -253,7 +253,7 @@
 
   <!-- Try various places to find the runtime. It's either released (use official version),
         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
-  <ItemGroup Condition="'$(DotNetBuild) ' != 'true'">
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
     <RemoteAssetBaseURL Include="$(OfficialBaseURL)" />
     <RemoteAssetBaseURL Include="$(PublicBaseURL)" />
     <!-- Include the token here as we'll generate the URLs to download based on this item group. -->
