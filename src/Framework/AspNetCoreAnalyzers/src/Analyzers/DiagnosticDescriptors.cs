@@ -233,4 +233,14 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers",
         customTags: WellKnownDiagnosticTags.Unnecessary);
+
+    internal static readonly DiagnosticDescriptor KestrelShouldListenOnIPv6AnyInsteadOfIpAny = new(
+        "ASP0028",
+        new LocalizableResourceString(nameof(Resources.Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message), Resources.ResourceManager, typeof(Resources)), // make a doc? https://aka.ms/aspnetcore-warnings/ASP0027
+        "Usage",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers",
+        customTags: WellKnownDiagnosticTags.Unnecessary);
 }
