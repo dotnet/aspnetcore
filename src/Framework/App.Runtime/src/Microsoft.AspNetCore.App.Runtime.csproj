@@ -30,7 +30,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Target framework is not appended to this because native assets do not have a target framework. -->
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
-    <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
+    <!-- Use the Runtime.AspNetCore.Transport package as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime-pgo-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
