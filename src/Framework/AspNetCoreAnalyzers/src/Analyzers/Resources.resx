@@ -331,6 +331,6 @@
     <value>Consider using IPAddress.IPv6Any instead of IPAddress.Any</value>
   </data>
   <data name="Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message" xml:space="preserve">
-    <value>If server does not specifically reject IPv6, IPAddress.IPv6Any is preferred over IPAddress.Any usage due to safety and performance reasons. See https://aka.ms/aspnetcore-warnings/ASP0028 for more details.</value>
+    <value>If the server does not specifically reject IPv6, IPAddress.IPv6Any is preferred over IPAddress.Any usage for safety and performance reasons. See https://aka.ms/aspnetcore-warnings/ASP0028 for more details.</value>
   </data>
 </root>

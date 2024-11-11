@@ -241,6 +241,5 @@ internal static class DiagnosticDescriptors
         "Usage",
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        helpLinkUri: "https://aka.ms/aspnet/analyzers",
-        customTags: WellKnownDiagnosticTags.Unnecessary);
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
