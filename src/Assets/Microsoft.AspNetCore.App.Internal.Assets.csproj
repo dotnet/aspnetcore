@@ -22,12 +22,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_BlazorJSFilename Include="blazor.web.js" />
-    <_BlazorJSFilename Include="blazor.server.js" />
-    <_BlazorJSFilename Include="blazor.webassembly.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js" />
 
-    <_BlazorJSFile Include="@(_BlazorJSFilename->'$(_BlazorJSContentRoot)\%(Identity)')" />
-    <_BlazorJSMapFile Include="@(_BlazorJSFilename->'$(_BlazorJSContentRoot)\%(Identity).map')" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js.map" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js.map" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js.map" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,13 +36,11 @@
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="%(Identity)" />
     <None Include="buildTransitive\*" Pack="true" PackagePath="%(Identity)" />
     <None Include="@(_BlazorJSFile)" Pack="true" PackagePath="_framework\%(FileName)%(Extension)" />
-    <None Include="@(_BlazorJSMapFile)" Pack="true" PackagePath="_framework\debug\%(FileName)%(Extension)" />
   </ItemGroup>
 
   <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
     <ItemGroup>
       <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
-      <_MissingBlazorJSFile Include="@(_BlazorJSMapFile)" Condition="!EXISTS('%(_BlazorJSMapFile.FullPath)')" />
     </ItemGroup>
 
     <Error
