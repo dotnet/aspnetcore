@@ -45,6 +45,7 @@
     <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll"  />
     <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll"  />
     <SignedPackageFile Include="rzc.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
   </ItemGroup>
 
   <Target Name="_BuildDependencyProjects">
