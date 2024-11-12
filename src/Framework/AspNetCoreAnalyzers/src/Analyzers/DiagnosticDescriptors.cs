@@ -237,7 +237,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor KestrelShouldListenOnIPv6AnyInsteadOfIpAny = new(
         "ASP0028",
         new LocalizableResourceString(nameof(Resources.Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Title), Resources.ResourceManager, typeof(Resources)),
-        new LocalizableResourceString(nameof(Resources.Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message), Resources.ResourceManager, typeof(Resources)), // make a doc? https://aka.ms/aspnetcore-warnings/ASP0027
+        new LocalizableResourceString(nameof(Resources.Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message), Resources.ResourceManager, typeof(Resources)),
         "Usage",
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
