@@ -52,6 +52,10 @@ public class ListenOnIPv6AnyAnalyzer : DiagnosticAnalyzer
 
         var args = kestrelOptionsListenExpressionSyntax.ArgumentList;
         var ipAddressArgumentSyntax = args.Arguments.FirstOrDefault();
+        if (ipAddressArgumentSyntax is null)
+        {
+            return;
+        }
 
         // explicit usage like `options.Listen(IPAddress.Any, ...)`
         if (ipAddressArgumentSyntax is ArgumentSyntax
@@ -63,6 +67,32 @@ public class ListenOnIPv6AnyAnalyzer : DiagnosticAnalyzer
         })
         {
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny, ipAddressArgumentSyntax.GetLocation()));
+        }
+
+        // usage via local variable like
+        // ```
+        // var myIp = IPAddress.Any;
+        // options.Listen(myIp, ...);
+        // ```
+        if (addressArgument!.Value is ILocalReferenceOperation localReferenceOperation)
+        {
+            var localVariableDeclaration = localReferenceOperation.Local.DeclaringSyntaxReferences.FirstOrDefault();
+            if (localVariableDeclaration is null)
+            {
+                return;
+            }
+
+            var localVarSyntax = localVariableDeclaration.GetSyntax(context.CancellationToken);
+            if (localVarSyntax is VariableDeclaratorSyntax
+            {
+                Initializer.Value: MemberAccessExpressionSyntax
+                {
+                    Name.Identifier.ValueText: "Any"
+                }
+            })
+            {
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny, ipAddressArgumentSyntax.GetLocation()));
+            }
         }
     }
 

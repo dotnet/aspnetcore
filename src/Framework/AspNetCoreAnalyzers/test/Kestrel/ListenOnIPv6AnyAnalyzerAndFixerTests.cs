@@ -13,10 +13,17 @@ namespace Microsoft.AspNetCore.Analyzers.Kestrel;
 
 public class ListenOnIPv6AnyAnalyzerAndFixerTests
 {
-    [Fact] // do we need any other scenarios except the direct usage one?
+    [Fact]
+    public async Task ReportsDiagnostic_IPAddressAsLocalVariable_OuterScope()
+    {
+        var source = GetKestrelSetupSource("myIp", extraOuterCode: "var myIp = IPAddress.Any;");
+        await VerifyCS.VerifyAnalyzerAsync(source, codeSampleDiagnosticResult);
+    }
+
+    [Fact]
     public async Task ReportsDiagnostic_IPAddressAsLocalVariable()
     {
-        var source = GetKestrelSetupSource("myIp", "var myIp = IPAddress.Any;");
+        var source = GetKestrelSetupSource("myIp", extraInlineCode: "var myIp = IPAddress.Any;");
         await VerifyCS.VerifyAnalyzerAsync(source, codeSampleDiagnosticResult);
     }
 
@@ -31,18 +38,34 @@ public class ListenOnIPv6AnyAnalyzerAndFixerTests
     public async Task CodeFix_ExplicitUsage()
     {
         var source = GetKestrelSetupSource("IPAddress.Any");
-        var fixedSource = GetKestrelSetupSource("IPAddress.IPv6Any");
+        var fixedSource = GetCorrectedKestrelSetup();
+        await VerifyCS.VerifyCodeFixAsync(source, codeSampleDiagnosticResult, fixedSource);
+    }
+
+    [Fact]
+    public async Task CodeFix_IPAddressAsLocalVariable()
+    {
+        var source = GetKestrelSetupSource("IPAddress.Any", extraInlineCode: "var myIp = IPAddress.Any;");
+        var fixedSource = GetCorrectedKestrelSetup(extraInlineCode: "var myIp = IPAddress.Any;");
         await VerifyCS.VerifyCodeFixAsync(source, codeSampleDiagnosticResult, fixedSource);
     }
 
     private static DiagnosticResult codeSampleDiagnosticResult
         = new DiagnosticResult(DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny).WithLocation(0);
 
-    static string GetKestrelSetupSource(string ipAddressArgument, string extraInlineCode = null) => $$"""
+    static string GetKestrelSetupSource(string ipAddressArgument, string extraInlineCode = null, string extraOuterCode = null)
+        => GetCodeSample($$"""Listen({|#0:{{ipAddressArgument}}|}, """, extraInlineCode, extraOuterCode);
+
+    static string GetCorrectedKestrelSetup(string extraInlineCode = null, string extraOuterCode = null)
+        => GetCodeSample("ListenAnyIP(", extraInlineCode, extraOuterCode);
+
+    static string GetCodeSample(string invocation, string extraInlineCode = null, string extraOuterCode = null) => $$"""
         using Microsoft.Extensions.Hosting;
         using Microsoft.AspNetCore.Hosting;
         using Microsoft.AspNetCore.Server.Kestrel.Core;
         using System.Net;
+    
+        {{extraOuterCode}}
     
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHost =>
@@ -53,7 +76,7 @@ public class ListenOnIPv6AnyAnalyzerAndFixerTests
                     
                     options.ListenLocalhost(5000);
                     options.ListenAnyIP(5000);
-                    options.Listen({|#0:{{ipAddressArgument}}|}, 5000, listenOptions =>
+                    options.{{invocation}}5000, listenOptions =>
                     {
                         listenOptions.UseHttps();
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;

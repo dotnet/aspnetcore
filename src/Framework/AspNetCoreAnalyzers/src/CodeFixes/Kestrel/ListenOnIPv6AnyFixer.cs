@@ -43,7 +43,31 @@ public class ListenOnIPv6AnyFixer : CodeFixProvider
                             return context.Document;
                         }
 
-                        editor.ReplaceNode(argumentSyntax, argumentSyntax.WithExpression(SyntaxFactory.ParseExpression("IPAddress.IPv6Any")));
+                        // get to the `Listen(IPAddress.Any, ...)` invocation
+                        if (argumentSyntax.Parent?.Parent is not InvocationExpressionSyntax { ArgumentList.Arguments.Count: > 1 } invocationExpressionSyntax)
+                        {
+                            return context.Document;
+                        }
+                        if (invocationExpressionSyntax.Expression is not MemberAccessExpressionSyntax memberAccessExpressionSyntax)
+                        {
+                            return context.Document;
+                        }
+
+                        var instanceVariableInvoked = memberAccessExpressionSyntax.Expression;
+                        var adjustedArgumentList = invocationExpressionSyntax.ArgumentList.RemoveNode(invocationExpressionSyntax.ArgumentList.Arguments.First(), SyntaxRemoveOptions.KeepLeadingTrivia);
+                        if (adjustedArgumentList is null || adjustedArgumentList.Arguments.Count == 0)
+                        {
+                            return context.Document;
+                        }
+
+                        // changing invocation from `<variable>.Listen(IPAddress.Any, ...)` to `<variable>.ListenAnyIP(...)`
+                        editor.ReplaceNode(
+                            invocationExpressionSyntax,
+                            invocationExpressionSyntax
+                                .WithExpression(SyntaxFactory.ParseExpression($"{instanceVariableInvoked.ToString()}.ListenAnyIP"))
+                                .WithArgumentList(adjustedArgumentList!)
+                                .WithLeadingTrivia(invocationExpressionSyntax.GetLeadingTrivia())
+                        );
                         return editor.GetChangedDocument();
                     },
                     equivalenceKey: DiagnosticDescriptors.KestrelShouldListenOnIPv6AnyInsteadOfIpAny.Id),
