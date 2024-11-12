@@ -11,6 +11,8 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <TaskDirNet46>$(MSBuildProjectDirectory)\$(OutputPath)tasks\net46\</TaskDirNet46>
+    <TaskDirNetStandard>$(MSBuildProjectDirectory)\$(OutputPath)tasks\netstandard2.0\</TaskDirNetStandard>
   </PropertyGroup>
 
   <!-- 
@@ -43,6 +45,7 @@
     <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll"  />
     <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll"  />
     <SignedPackageFile Include="rzc.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
   </ItemGroup>
 
   <Target Name="_BuildDependencyProjects">
@@ -73,10 +76,16 @@
       <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNetStandard" />
     </MSBuild>
 
-    <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(OutputPath)\tasks\net46\">
+    <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(TaskDirNet46)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
-    <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(OutputPath)\tasks\netstandard2.0\">
+    <Copy SourceFiles="@(TaskSymbolNet46)" DestinationFolder="$(TaskDirNet46)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+    <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(TaskDirNetStandard)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+    <Copy SourceFiles="@(TaskSymbolNetStandard)" DestinationFolder="$(TaskDirNetStandard)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
@@ -118,10 +127,8 @@
         copyright=$(Copyright);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskAssemblyNet46=@(TaskAssemblyNet46);
-        TaskSymbolNet46=@(TaskSymbolNet46);
-        TaskAssemblyNetStandard=@(TaskAssemblyNetStandard);
-        TaskSymbolNetStandard=@(TaskSymbolNetStandard);
+        TaskDirNet46=$(TaskDirNet46)**\*;
+        TaskDirNetStandard=$(TaskDirNetStandard)**\*;
 
         <!-- Include the assembly and symbols from the tools project -->
         ToolAssembly=$(OutputPath)tools\**\*;

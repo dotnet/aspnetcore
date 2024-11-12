@@ -22,10 +22,8 @@
     <file src="build\**\*.targets" target="build\" />
     <file src="buildMultiTargeting\**\*.props" target="buildMultiTargeting\" />
     <file src="buildMultiTargeting\**\*.targets" target="buildMultiTargeting\" />
-    <file src="$TaskAssemblyNet46$" target="tasks\net46\" />
-    <file src="$TaskSymbolNet46$" target="tasks\net46\" />
-    <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\" />
-    <file src="$TaskSymbolNetStandard$" target="tasks\netstandard2.0\" />
+    <file src="$TaskDirNetStandard$" target="tasks\net46\" />
+    <file src="$TaskDirNetStandard$" target="tasks\netstandard2.0\" />
     <file src="$ToolAssembly$" target="tools\" exclude="**\*.xml" />
   </files>
 </package>
