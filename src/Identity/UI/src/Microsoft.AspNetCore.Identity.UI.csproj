@@ -156,10 +156,10 @@
       StaticWebAssetEndpoints="@(V5AssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets" />
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
