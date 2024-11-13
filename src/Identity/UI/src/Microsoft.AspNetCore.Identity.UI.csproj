@@ -91,10 +91,26 @@
       </V5AssetsCandidates>
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates->Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets
+      Condition="'@(V4AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V4"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V4Assets" />
     </DefineStaticWebAssets>
-    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates->Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+
+    <DefineStaticWebAssets
+      Condition="'@(V5AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V5AssetsCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V5"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V5Assets" />
     </DefineStaticWebAssets>
 
@@ -116,8 +132,17 @@
       <Output TaskParameter="Endpoints" ItemName="V5AssetEndpoints" />
     </DefineStaticWebAssetEndpoints>
 
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+    <ItemGroup>
+      <FinalV4Assets Include="@(V4Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV4Assets>
+      <FinalV5Assets Include="@(V5Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV5Assets>
+    </ItemGroup>
+
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V4Assets)"
