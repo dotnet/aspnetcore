@@ -429,8 +429,8 @@ public class OwinEnvironment : IDictionary<string, object>
 
             { OwinConstants.CommonKeys.ConnectionId, new FeatureMap<IHttpConnectionFeature>(feature => feature.ConnectionId, (feature, value) => feature.ConnectionId = Convert.ToString(value, CultureInfo.InvariantCulture)) },
 
-            { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalPort.ToString(CultureInfo.InvariantCulture), (feature, value) => feature.LocalPort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemotePort.ToString(CultureInfo.InvariantCulture), (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+            { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.LocalPort), (feature, value) => feature.LocalPort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+            { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.RemotePort), (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
 
             { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalIpAddress.ToString(), (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
             { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(), (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
@@ -471,6 +471,18 @@ public class OwinEnvironment : IDictionary<string, object>
                 { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseBodyFeature>(feature => feature.Stream, () => Stream.Null, (feature, value) => context.Response.Body = (Stream)value) }, // DefaultHttpResponse.Body.Set has built in logic to handle replacing the feature.
             };
         }
+
+        static readonly string[] PortStrings = CreatePortStrings();
+        static string[] CreatePortStrings()
+        {
+            var ports = new string[65535]; // limit of ephemeral ports https://en.wikipedia.org/wiki/Ephemeral_port
+            for (var i = 0; i < ports.Length; i++)
+            {
+                ports[i] = (i + 1).ToString(CultureInfo.InvariantCulture);
+            }
+            return ports;
+        }
+        static string PortToString(int port) => PortStrings[port - 1];
 
         public int Count
         {
