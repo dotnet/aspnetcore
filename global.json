@@ -13,7 +13,6 @@
       ]
     },
     "Git": "2.22.0",
-    "jdk": "11.0.24",
     "vs": {
       "version": "17.2",
       "components": [
@@ -24,6 +23,9 @@
       ]
     },
     "xcopy-msbuild": "17.1.0"
+  },
+  "native-tools": {
+    "jdk": "11.0.24"
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.22.19",
