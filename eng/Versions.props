@@ -274,12 +274,12 @@
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
     <!-- Packages from downlevel branches used for site extension build. -->
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>6.0.25-servicing-23523-15</MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>8.0.0-rtm-23531-12</MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>9.0.0-rtm-24529-3</MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>
     <!-- 3rd party dependencies -->
     <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
