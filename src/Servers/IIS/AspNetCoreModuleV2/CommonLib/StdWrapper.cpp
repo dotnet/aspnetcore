@@ -32,7 +32,7 @@ StdWrapper::~StdWrapper() = default;
 HRESULT
 StdWrapper::StartRedirection()
 {
-    HANDLE stdHandle;
+    HANDLE stdHandle = nullptr;
 
     // In IIS, stdout and stderr are set to null as w3wp is created with DETACHED_PROCESS,
     // so fileno(m_stdStream) returns -2.

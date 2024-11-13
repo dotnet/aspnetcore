@@ -351,7 +351,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(APP_CONTEXT_BASE_DIRECTORY, Environment::GetCurrentDirectoryValue().c_str()));
         }
 
-        bool clrThreadExited;
+        bool clrThreadExited = false;
         {
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);

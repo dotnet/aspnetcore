@@ -92,7 +92,7 @@
     <Rule Id="C26491" Action="Error" />
     <Rule Id="C26492" Action="None" /> <!-- Don't use const_cast to cast away const. -->
     <Rule Id="C26493" Action="None" /> <!-- Don't use C-style casts. -->
-    <Rule Id="C26494" Action="None" /> <!-- Variable 'variable' is uninitialized. Always initialize an object. -->
+    <Rule Id="C26494" Action="Error" /> <!-- Variable 'variable' is uninitialized. Always initialize an object. -->
     <Rule Id="C26495" Action="None" /> <!-- Variable 'variable' is uninitialized. Always initialize a member variable -->
     <Rule Id="C26496" Action="None" /> <!-- The variable 'variable' is assigned only once, mark it as const. -->
     <Rule Id="C26497" Action="Error" />

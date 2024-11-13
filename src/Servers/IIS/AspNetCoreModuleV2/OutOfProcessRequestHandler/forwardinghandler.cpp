@@ -744,17 +744,17 @@ FORWARDING_HANDLER::GetHeaders(
     _Inout_ DWORD *                 pcchHeaders
 )
 {
-    PCSTR pszCurrentHeader;
-    PCSTR ppHeadersToBeRemoved;
-    PCSTR pszFinalHeader;
-    USHORT cchCurrentHeader;
-    DWORD cchFinalHeader;
+    PCSTR pszCurrentHeader = nullptr;
+    PCSTR ppHeadersToBeRemoved = nullptr;
+    PCSTR pszFinalHeader = nullptr;
+    USHORT cchCurrentHeader = 0;
+    DWORD cchFinalHeader = 0;
     BOOL  fSecure = FALSE;  // dummy. Used in SplitUrl. Value will not be used
                             // as ANCM always use http protocol to communicate with backend
     STRU  struDestination;
     STRU  struUrl;
     STACK_STRA(strTemp, 64);
-    HTTP_REQUEST_HEADERS *pHeaders;
+    HTTP_REQUEST_HEADERS *pHeaders = nullptr;
     IHttpRequest *pRequest = m_pW3Context->GetRequest();
     MULTISZA mszMsAspNetCoreHeaders;
 
@@ -964,7 +964,7 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
 {
     HRESULT         hr = S_OK;
     PCWSTR          pszVersion = nullptr;
-    PCSTR           pszVerb;
+    PCSTR           pszVerb = nullptr;
     DWORD           dwTimeout = INFINITE;
     STACK_STRU(strVerb, 32);
 
@@ -1861,7 +1861,7 @@ FORWARDING_HANDLER::OnSendingRequest(
     }
     else if (SUCCEEDED(hrCompletionStatus))
     {
-        DWORD cbOffset;
+        DWORD cbOffset = 0;
 
         if (m_BytesToReceive != INFINITE)
         {
@@ -2038,8 +2038,8 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
     STACK_STRA(strHeaderName, 128);
     STACK_STRA(strHeaderValue, 2048);
     DWORD           index = 0;
-    PSTR            pchNewline;
-    PCSTR           pchEndofHeaderValue;
+    PSTR            pchNewline = nullptr;
+    PCSTR           pchEndofHeaderValue = nullptr;
     BOOL            fServerHeaderPresent = FALSE;
 
     _ASSERT(pszHeaders != nullptr);
@@ -2281,10 +2281,10 @@ FORWARDING_HANDLER::DoReverseRewrite(
     DBG_ASSERT(pResponse == m_pW3Context->GetResponse());
     BOOL fSecure = (m_pW3Context->GetRequest()->GetRawHttpRequest()->pSslInfo != nullptr);
     STRA strTemp;
-    PCSTR pszHeader;
-    PCSTR pszStartHost;
-    PCSTR pszEndHost;
-    HTTP_RESPONSE_HEADERS *pHeaders;
+    PCSTR pszHeader = nullptr;
+    PCSTR pszStartHost = nullptr;
+    PCSTR pszEndHost = nullptr;
+    HTTP_RESPONSE_HEADERS *pHeaders = nullptr;
 
     //
     // Content-Location and Location are easy, one known header in
