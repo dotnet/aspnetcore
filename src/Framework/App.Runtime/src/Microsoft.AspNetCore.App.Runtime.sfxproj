@@ -97,10 +97,4 @@
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />
-
-  <Target Name="AddLinuxPackageInformation" BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties">
-    <ItemGroup>
-      <RpmOwnedDirectory Include="$(LinuxInstallRoot)/shared/Microsoft.AspNetCore.App;$(LinuxInstallRoot)/shared/Microsoft.AspNetCore.App/$(Version)" />
-    </ItemGroup>
-  </Target>
 </Project>
