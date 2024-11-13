@@ -46,6 +46,11 @@ public class IISTestSiteFixture : IDisposable
             ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
             ServerType = DeployerSelector.ServerType
         };
+
+        // Uncomment to add IIS debug logs to test output.
+        //DeploymentParameters.EnvironmentVariables.Add("ASPNETCORE_MODULE_DEBUG", "console");
+
+        DeploymentParameters.EnableModule("WebSocketModule", "%IIS_BIN%/iiswsock.dll");
     }
 
     public HttpClient Client => DeploymentResult.HttpClient;
