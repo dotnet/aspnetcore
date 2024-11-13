@@ -23,12 +23,12 @@
     },
     "xcopy-msbuild": "17.1.0"
   },
-  "native-tools": {
-    "jdk": "11.0.24"
-  },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.22.19",
     "Microsoft.DotNet.Arcade.Sdk": "8.0.0-beta.24516.1",
     "Microsoft.DotNet.Helix.Sdk": "8.0.0-beta.24516.1"
+  },
+  "native-tools": {
+    "jdk": "11.0.24"
   }
 }
