@@ -77,10 +77,6 @@ internal partial class EndpointHtmlRenderer
         }
         catch (Exception ex)
         {
-            // Rethrowing also informs the debugger that this exception should be considered user-unhandled unlike NavigationExceptions,
-            // but calling BreakForUserUnhandledException here allows the debugger to break before we modify the HttpContext.
-            Debugger.BreakForUserUnhandledException(ex);
-
             // Theoretically it might be possible to let the error middleware run, capture the output,
             // then emit it in a special format so the JS code can display the error page. However
             // for now we're not going to support that and will simply emit a message.
