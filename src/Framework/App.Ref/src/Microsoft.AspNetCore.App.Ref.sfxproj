@@ -14,6 +14,8 @@
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
 
+    <IsPackable Condition="'$(OnlyPackPlatformSpecificPackages)' == 'true'">false</IsPackable>
+
     <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
