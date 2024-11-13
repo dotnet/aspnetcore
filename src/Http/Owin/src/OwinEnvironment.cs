@@ -400,7 +400,7 @@ public class OwinEnvironment : IDictionary<string, object>
         }
     }
 
-    private class OwinEntries : IEnumerable<KeyValuePair<string, FeatureMap>>
+    private sealed class OwinEntries : IEnumerable<KeyValuePair<string, FeatureMap>>
     {
         private static readonly IDictionary<string, FeatureMap> _entries = new Dictionary<string, FeatureMap>
         {
