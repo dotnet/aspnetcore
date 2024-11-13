@@ -31,6 +31,7 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Http\\test\\Microsoft.AspNetCore.Http.Tests.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
+      "src\\Http\\Owin\\benchmarks\\Microsoft.AspNetCore.Owin.Microbenchmarks\\Microsoft.AspNetCore.Owin.Microbenchmarks.csproj",
       "src\\Http\\Owin\\src\\Microsoft.AspNetCore.Owin.csproj",
       "src\\Http\\Owin\\test\\Microsoft.AspNetCore.Owin.Tests.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
