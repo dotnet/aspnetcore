@@ -12,7 +12,6 @@
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ]
     },
-    "Git": "2.22.0",
     "vs": {
       "version": "17.2",
       "components": [
