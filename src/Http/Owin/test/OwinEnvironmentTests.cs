@@ -207,6 +207,16 @@ public class OwinEnvironmentTests
         Assert.True(owinEnvironment2.Count != 0);
     }
 
+    [Fact]
+    public void OwinEnvironmentAccessContextDependentFeatureBehavesCorrectly()
+    {
+        var httpContext = CreateContext();
+        IDictionary<string, object> owinEnvironment = new OwinEnvironment(httpContext);
+
+        Assert.True(owinEnvironment.TryGetValue("owin.ResponseBody", out var responseBody));
+        responseBody.Equals(httpContext.Response.Body);
+    }
+
     private HttpContext CreateContext()
     {
         var context = new DefaultHttpContext();
