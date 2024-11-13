@@ -49,8 +49,16 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     using var writer = Utf8BufferTextWriter.Get(output);
                     try
                     {
-                        document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                        context.Response.ContentType = "application/json;charset=utf-8";
+                        if (UseYaml(pattern))
+                        {
+                            document.Serialize(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
+                            context.Response.ContentType = "text/plain+yaml;charset=utf-8";
+                        }
+                        else
+                        {
+                            document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
+                            context.Response.ContentType = "application/json;charset=utf-8";
+                        }
                         await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
                         await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                     }
@@ -63,4 +71,8 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 }
             }).ExcludeFromDescription();
     }
+
+    private static bool UseYaml(string pattern) =>
+        pattern.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase) ||
+        pattern.EndsWith(".yml", StringComparison.OrdinalIgnoreCase);
 }

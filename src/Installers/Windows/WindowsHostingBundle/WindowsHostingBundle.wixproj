@@ -104,17 +104,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
       <TargetPlatform>arm64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
