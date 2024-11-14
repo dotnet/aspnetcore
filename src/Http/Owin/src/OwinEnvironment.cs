@@ -442,7 +442,17 @@ public class OwinEnvironment : IDictionary<string, object>
 
             { OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<ITlsConnectionFeature>(feature => feature.ClientCertificate, (feature, value) => feature.ClientCertificate = (X509Certificate2)value) },
             { OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<ITlsConnectionFeature>(feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))) },
-            { OwinConstants.WebSocket.AcceptAlt, new FeatureMap<IHttpWebSocketFeature>(feature => new WebSocketAcceptAlt(feature.AcceptAsync)) }
+            { OwinConstants.WebSocket.AcceptAlt, new FeatureMap<IHttpWebSocketFeature>(
+                feature =>
+                {
+                    if (feature.IsWebSocketRequest)
+                    {
+                        return new WebSocketAcceptAlt(feature.AcceptAsync);
+                    }
+
+                    return null;
+                })
+            }
         };
 
         /// <remarks>
@@ -476,8 +486,6 @@ public class OwinEnvironment : IDictionary<string, object>
         {
             80 => "80",
             443 => "443",
-            8080 => "8080",
-            8081 => "8081",
             _ => port.ToString(CultureInfo.InvariantCulture),
         };
 
