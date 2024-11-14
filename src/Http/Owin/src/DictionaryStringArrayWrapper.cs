@@ -108,7 +108,7 @@ internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[
 
         public KeyValuePair<string, string[]> Current => _current;
 
-        object? IEnumerator.Current => Current;
+        object IEnumerator.Current => Current;
 
         void IEnumerator.Reset() => throw new NotImplementedException();
     }

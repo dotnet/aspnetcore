@@ -153,7 +153,7 @@ internal sealed class DictionaryStringValuesWrapper : IHeaderDictionary
 
         public KeyValuePair<string, StringValues> Current => _current;
 
-        object? IEnumerator.Current => Current;
+        object IEnumerator.Current => Current;
 
         void IEnumerator.Reset() => throw new NotImplementedException();
     }
