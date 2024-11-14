@@ -180,6 +180,10 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         if (cchHeader == 9 && _stricmp(pszWebSocketHeader, "websocket") == 0)
         {
             m_fWebSocketEnabled = TRUE;
+
+            // WinHttp does not support any extensions being returned by the server, so we remove the request header to avoid the server
+            // responding with any accepted extensions.
+            pRequest->DeleteHeader("Sec-WebSocket-Extensions");
         }
     }
 
