@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.MetricsDisabled.get -> bool
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.MetricsDisabled.set -> void
-Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveTimeout.get -> System.TimeSpan?
-Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveTimeout.set -> void
