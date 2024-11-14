@@ -321,6 +321,10 @@ if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
 
+# We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
+# So we are setting git hooks default directory to .githooks, so that we can track and version the git hooks.
+git config core.hooksPath .githooks
+
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
 

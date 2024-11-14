@@ -322,6 +322,10 @@ $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
 
+# We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
+# So we are setting git hooks default directory to .githooks, so that we can track and version the git hooks.
+& git config core.hooksPath .githooks
+
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
