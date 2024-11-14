@@ -472,17 +472,14 @@ public class OwinEnvironment : IDictionary<string, object>
             };
         }
 
-        static readonly string[] PortStrings = CreatePortStrings();
-        static string[] CreatePortStrings()
+        static string PortToString(int port) => port switch
         {
-            var ports = new string[65535]; // limit of ephemeral ports https://en.wikipedia.org/wiki/Ephemeral_port
-            for (var i = 0; i < ports.Length; i++)
-            {
-                ports[i] = (i + 1).ToString(CultureInfo.InvariantCulture);
-            }
-            return ports;
-        }
-        static string PortToString(int port) => PortStrings[port - 1];
+            80 => "80",
+            443 => "443",
+            8080 => "8080",
+            8081 => "8081",
+            _ => port.ToString(CultureInfo.InvariantCulture),
+        };
 
         public int Count
         {
