@@ -6,7 +6,7 @@ registries:
     url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/
 
 updates:
-  - package-ecosystem: NuGet
+  - package-ecosystem: nuget
     directory: "/"
     # Perform only security updates of our npm dependencies.
     open-pull-requests-limit: 0
