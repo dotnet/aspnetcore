@@ -34,9 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildMultiTargeting\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="build\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="buildMultiTargeting\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
   <ItemGroup>
