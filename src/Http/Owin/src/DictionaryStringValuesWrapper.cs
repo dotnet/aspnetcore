@@ -155,6 +155,6 @@ internal sealed class DictionaryStringValuesWrapper : IHeaderDictionary
 
         object IEnumerator.Current => Current;
 
-        void IEnumerator.Reset() => throw new NotImplementedException();
+        void IEnumerator.Reset() => throw new NotSupportedException();
     }
 }

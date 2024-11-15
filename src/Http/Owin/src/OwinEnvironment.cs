@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -402,58 +403,59 @@ public class OwinEnvironment : IDictionary<string, object>
 
     private sealed class OwinEntries : IEnumerable<KeyValuePair<string, FeatureMap>>
     {
-        private static readonly IDictionary<string, FeatureMap> _entries = new Dictionary<string, FeatureMap>
-        {
-            { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, () => string.Empty, (feature, value) => feature.Protocol = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, () => string.Empty, (feature, value) => feature.Scheme = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, () => string.Empty, (feature, value) => feature.Method = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, () => string.Empty, (feature, value) => feature.PathBase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, () => string.Empty, (feature, value) => feature.Path = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString), () => string.Empty, (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value, CultureInfo.InvariantCulture))) },
-            { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
-            { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
-            { OwinConstants.RequestUser, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, () => null, (feature, value) => feature.User = (ClaimsPrincipal)value) },
+        private static readonly IReadOnlyDictionary<string, FeatureMap> _entries = ImmutableDictionary.CreateRange(
+            new Dictionary<string, FeatureMap>
+            {
+                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, () => string.Empty, (feature, value) => feature.Protocol = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, () => string.Empty, (feature, value) => feature.Scheme = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, () => string.Empty, (feature, value) => feature.Method = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, () => string.Empty, (feature, value) => feature.PathBase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, () => string.Empty, (feature, value) => feature.Path = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString), () => string.Empty, (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value, CultureInfo.InvariantCulture))) },
+                { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
+                { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.RequestUser, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, () => null, (feature, value) => feature.User = (ClaimsPrincipal)value) },
 
-            { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
-            { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(
-                feature => new Action<Action<object>, object>((cb, state) => {
-                    feature.OnStarting(s =>
+                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
+                { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(
+                    feature => new Action<Action<object>, object>((cb, state) => {
+                        feature.OnStarting(s =>
+                        {
+                            cb(s);
+                            return Task.CompletedTask;
+                        }, state);
+                    }))
+                },
+
+                { OwinConstants.CommonKeys.ConnectionId, new FeatureMap<IHttpConnectionFeature>(feature => feature.ConnectionId, (feature, value) => feature.ConnectionId = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+
+                { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.LocalPort), (feature, value) => feature.LocalPort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.RemotePort), (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+
+                { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalIpAddress.ToString(), (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
+                { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(), (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
+
+                { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpResponseBodyFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
+                { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value), () => new HttpAuthenticationFeature()) },
+                { OwinConstants.RequestId, new FeatureMap<IHttpRequestIdentifierFeature>(feature => feature.TraceIdentifier, ()=> null, (feature, value) => feature.TraceIdentifier = (string)value, () => new HttpRequestIdentifierFeature()) },
+                { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted) },
+
+                { OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<ITlsConnectionFeature>(feature => feature.ClientCertificate, (feature, value) => feature.ClientCertificate = (X509Certificate2)value) },
+                { OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<ITlsConnectionFeature>(feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))) },
+                { OwinConstants.WebSocket.AcceptAlt, new FeatureMap<IHttpWebSocketFeature>(
+                    feature =>
                     {
-                        cb(s);
-                        return Task.CompletedTask;
-                    }, state);
-                }))
-            },
+                        if (feature.IsWebSocketRequest)
+                        {
+                            return new WebSocketAcceptAlt(feature.AcceptAsync);
+                        }
 
-            { OwinConstants.CommonKeys.ConnectionId, new FeatureMap<IHttpConnectionFeature>(feature => feature.ConnectionId, (feature, value) => feature.ConnectionId = Convert.ToString(value, CultureInfo.InvariantCulture)) },
-
-            { OwinConstants.CommonKeys.LocalPort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.LocalPort), (feature, value) => feature.LocalPort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
-            { OwinConstants.CommonKeys.RemotePort, new FeatureMap<IHttpConnectionFeature>(feature => PortToString(feature.RemotePort), (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
-
-            { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalIpAddress.ToString(), (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
-            { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(), (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
-
-            { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpResponseBodyFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
-            { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value), () => new HttpAuthenticationFeature()) },
-            { OwinConstants.RequestId, new FeatureMap<IHttpRequestIdentifierFeature>(feature => feature.TraceIdentifier, ()=> null, (feature, value) => feature.TraceIdentifier = (string)value, () => new HttpRequestIdentifierFeature()) },
-            { OwinConstants.CallCancelled, new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted) },
-
-            { OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<ITlsConnectionFeature>(feature => feature.ClientCertificate, (feature, value) => feature.ClientCertificate = (X509Certificate2)value) },
-            { OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<ITlsConnectionFeature>(feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))) },
-            { OwinConstants.WebSocket.AcceptAlt, new FeatureMap<IHttpWebSocketFeature>(
-                feature =>
-                {
-                    if (feature.IsWebSocketRequest)
-                    {
-                        return new WebSocketAcceptAlt(feature.AcceptAsync);
-                    }
-
-                    return null;
-                })
-            }
-        };
+                        return null;
+                    })
+                }
+            });
 
         /// <remarks>
         /// Will be used, only if <see cref="FeatureMaps"/> or <see cref="Clear"/> is called from user-code.
@@ -571,7 +573,17 @@ public class OwinEnvironment : IDictionary<string, object>
             }
             else
             {
-                foreach (var entry in _entries.Union(_contextDependentEntries))
+                foreach (var entry in _entries)
+                {
+                    if (_deletedKeys?.Contains(entry.Key) == true)
+                    {
+                        continue;
+                    }
+
+                    yield return entry;
+                }
+
+                foreach (var entry in _contextDependentEntries)
                 {
                     if (_deletedKeys?.Contains(entry.Key) == true)
                     {

@@ -110,6 +110,6 @@ internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[
 
         object IEnumerator.Current => Current;
 
-        void IEnumerator.Reset() => throw new NotImplementedException();
+        void IEnumerator.Reset() => throw new NotSupportedException();
     }
 }
