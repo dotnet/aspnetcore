@@ -50,7 +50,11 @@ public class IISTestSiteFixture : IDisposable
         // Uncomment to add IIS debug logs to test output.
         //DeploymentParameters.EnvironmentVariables.Add("ASPNETCORE_MODULE_DEBUG", "console");
 
-        DeploymentParameters.EnableModule("WebSocketModule", "%IIS_BIN%/iiswsock.dll");
+        // This queue does not have websockets enabled currently, adding the module will break all tests using this fixture.
+        if (HelixHelper.GetTargetHelixQueue().ToLowerInvariant().Contains("windows.amd64.server2022"))
+        {
+            DeploymentParameters.EnableModule("WebSocketModule", "%IIS_BIN%/iiswsock.dll");
+        }
     }
 
     public HttpClient Client => DeploymentResult.HttpClient;
