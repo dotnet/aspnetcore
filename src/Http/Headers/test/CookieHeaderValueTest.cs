@@ -172,8 +172,8 @@ public class CookieHeaderValueTest
     public void CookieHeaderValue_Ctor1_InitializesCorrectly()
     {
         var header = new CookieHeaderValue("cookie");
-        Assert.Equal("cookie", header.Name);
-        Assert.Equal(string.Empty, header.Value);
+        Assert.Equal("cookie", header.Name.AsSpan());
+        Assert.Equal(string.Empty, header.Value.AsSpan());
     }
 
     [Theory]
@@ -183,18 +183,18 @@ public class CookieHeaderValueTest
     public void CookieHeaderValue_Ctor2InitializesCorrectly(string name, string value)
     {
         var header = new CookieHeaderValue(name, value);
-        Assert.Equal(name, header.Name);
-        Assert.Equal(value, header.Value);
+        Assert.Equal(name, header.Name.AsSpan());
+        Assert.Equal(value, header.Value.AsSpan());
     }
 
     [Fact]
     public void CookieHeaderValue_Value()
     {
         var cookie = new CookieHeaderValue("name");
-        Assert.Equal(string.Empty, cookie.Value);
+        Assert.Equal(string.Empty, cookie.Value.AsSpan());
 
         cookie.Value = "value1";
-        Assert.Equal("value1", cookie.Value);
+        Assert.Equal("value1", cookie.Value.AsSpan());
     }
 
     [Theory]

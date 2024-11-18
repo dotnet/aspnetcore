@@ -50,7 +50,7 @@
 
   <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
   <Usages>
-    <Usage Id="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24405.7"/>
+    <Usage Id="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.2.24473.5"/>
     <Usage Id="Newtonsoft.Json" Version="13.0.1" />
     <Usage Id="System.Security.Cryptography.Xml" Version="6.0.0" />
   </Usages>

@@ -322,7 +322,7 @@
     <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
     <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
-    <XunitVersion>2.9.0</XunitVersion>
+    <XunitVersion>2.9.2</XunitVersion>
     <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
