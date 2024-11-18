@@ -6,6 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
   </PropertyGroup>
 
   <ItemGroup>
