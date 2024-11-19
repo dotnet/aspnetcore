@@ -33,19 +33,36 @@
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.webassembly.js.map" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <_FrameworkAssetsPath>$(IntermediateOutputPath)frameworkassets</_FrameworkAssetsPath>
+    </PropertyGroup>
+
+    <MakeDir
+      Directories="$(_FrameworkAssetsPath)"
+      Condition="!Exists('$(_FrameworkAssetsPath)')" />
+
+    <Copy
+      SourceFiles="@(_FrameworkStaticWebAssetCandidate)"
+      DestinationFolder="$(_FrameworkAssetsPath)"
+      SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_CopiedFrameworkStaticWebAssetCandidate" />
+    </Copy>
+
     <ItemGroup>
-      <_FrameworkStaticWebAssetCandidate>
+      <_CopiedFrameworkStaticWebAssetCandidate>
         <RelativePath>_framework\%(FileName)%(Extension)</RelativePath>
-        <ContentRoot>$([System.IO.Path]::GetFullPath($([System.IO.Path]::GetDirectoryName('%(Identity)'))))</ContentRoot>
-      </_FrameworkStaticWebAssetCandidate>
+        <ContentRoot>$(_FrameworkAssetsPath)</ContentRoot>
+      </_CopiedFrameworkStaticWebAssetCandidate>
     </ItemGroup>
 
     <DefineStaticWebAssets
-      Condition="'@(_FrameworkStaticWebAssetCandidate->Count())' != '0'"
-      CandidateAssets="@(_FrameworkStaticWebAssetCandidate)"
-      SourceId="Microsoft.AspNetCore.App.Internal.Assets"
+      Condition="'@(_CopiedFrameworkStaticWebAssetCandidate->Count())' != '0'"
+      CandidateAssets="@(_CopiedFrameworkStaticWebAssetCandidate)"
+      SourceId="$(PackageId)"
       SourceType="Discovered"
       AssetKind="All"
+      AssetMode="All"
+      AssetRole="Primary"
       FingerprintCandidates="true"
       BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="_FrameworkStaticWebAsset" />
