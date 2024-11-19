@@ -51,7 +51,7 @@ public class IISTestSiteFixture : IDisposable
         //DeploymentParameters.EnvironmentVariables.Add("ASPNETCORE_MODULE_DEBUG", "console");
 
         // This queue does not have websockets enabled currently, adding the module will break all tests using this fixture.
-        if (HelixHelper.GetTargetHelixQueue().ToLowerInvariant().Contains("windows.amd64.server2022"))
+        if (!HelixHelper.GetTargetHelixQueue().ToLowerInvariant().Contains("windows.amd64.server2022"))
         {
             DeploymentParameters.EnableModule("WebSocketModule", "%IIS_BIN%/iiswsock.dll");
         }
