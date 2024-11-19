@@ -681,7 +681,7 @@ STRA::ConvertUnicodeToCodePage(
     _ASSERTE(nullptr != pszSrcUnicodeString);
     _ASSERTE(nullptr != pbufDstAnsiString);
 
-    DWORD dwFlags;
+    DWORD dwFlags{0};
 
     if (uCodePage == CP_ACP)
     {
