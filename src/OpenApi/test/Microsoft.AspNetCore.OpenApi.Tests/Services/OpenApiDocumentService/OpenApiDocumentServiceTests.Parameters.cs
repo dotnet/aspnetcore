@@ -202,7 +202,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var operation = document.Paths["/custom-binding"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal("model", parameter.Name);
-            Assert.Null(parameter.In);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
         });
     }
 
