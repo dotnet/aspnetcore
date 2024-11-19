@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.Extensions.HotReload;
+using Microsoft.DotNet.HotReload;
 using Microsoft.JSInterop;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -26,8 +26,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
     Justification = "Hot Reload does not support trimming")]
 public static partial class WebAssemblyHotReload
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-
     /// <summary>
     /// For framework use only.
     /// </summary>
@@ -58,15 +56,25 @@ public static partial class WebAssemblyHotReload
         public int[] UpdatedTypes { get; init; }
     }
 
-    private static HotReloadAgent? _hotReloadAgent;
+    private static readonly AgentReporter s_reporter = new();
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static bool s_initialized;
+    private static HotReloadAgent? s_hotReloadAgent;
 
     internal static async Task InitializeAsync()
     {
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
         {
-            var agent = new HotReloadAgent();
-            var existingAgent = Interlocked.CompareExchange(ref _hotReloadAgent, agent, null);
+            s_initialized = true;
+
+            if (!HotReloadAgent.TryCreate(s_reporter, out var agent))
+            {
+                return;
+            }
+
+            var existingAgent = Interlocked.CompareExchange(ref s_hotReloadAgent, agent, null);
             if (existingAgent != null)
             {
                 throw new InvalidOperationException("Hot Reload agent already initialized");
@@ -94,14 +102,14 @@ public static partial class WebAssemblyHotReload
                 var updates = deltasJson != "" ? JsonSerializer.Deserialize<Update[]>(deltasJson, s_jsonSerializerOptions) : null;
                 if (updates == null)
                 {
-                    agent.Reporter.Report($"No previous updates to apply.", AgentMessageSeverity.Verbose);
+                    s_reporter.Report($"No previous updates to apply.", AgentMessageSeverity.Verbose);
                     return;
                 }
 
                 var i = 1;
                 foreach (var update in updates)
                 {
-                    agent.Reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
+                    s_reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
 
                     agent.ApplyDeltas(
                         update.Deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
@@ -119,11 +127,11 @@ public static partial class WebAssemblyHotReload
             errorMessage = e.ToString();
         }
 
-        agent.Reporter.Report($"Failed to retrieve and apply previous deltas from the server: ${errorMessage}", AgentMessageSeverity.Error);
+        s_reporter.Report($"Failed to retrieve and apply previous deltas from the server: ${errorMessage}", AgentMessageSeverity.Error);
     }
 
-    private static HotReloadAgent GetAgent()
-        => _hotReloadAgent ?? throw new InvalidOperationException("Hot Reload agent not initialized");
+    private static HotReloadAgent? GetAgent()
+        => s_hotReloadAgent ?? (s_initialized ? throw new InvalidOperationException("Hot Reload agent not initialized") : null);
 
     /// <summary>
     /// For framework use only.
@@ -132,7 +140,7 @@ public static partial class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes, int[]? updatedTypes)
     {
-        GetAgent().ApplyDeltas(
+        GetAgent()?.ApplyDeltas(
             [new UpdateDelta(Guid.Parse(moduleIdString, CultureInfo.InvariantCulture), metadataDelta, ilDelta, pdbBytes, updatedTypes ?? [])]);
     }
 
@@ -144,10 +152,10 @@ public static partial class WebAssemblyHotReload
     {
         var agent = GetAgent();
 
-        agent.ApplyDeltas(
+        agent?.ApplyDeltas(
             deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
-        return agent.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
+        return s_reporter.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
             .Select(log => new LogEntry() { Message = log.message, Severity = (int)log.severity }).ToArray();
     }
 
@@ -156,5 +164,5 @@ public static partial class WebAssemblyHotReload
     /// </summary>
     [JSInvokable(nameof(GetApplyUpdateCapabilities))]
     public static string GetApplyUpdateCapabilities()
-        => GetAgent().Capabilities;
+        => GetAgent()?.Capabilities ?? "";
 }

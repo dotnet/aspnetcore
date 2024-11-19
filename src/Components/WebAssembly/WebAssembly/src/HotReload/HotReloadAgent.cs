@@ -1,17 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/aad0424c0bfaa60c8bd136a92fd131e53d14561a/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
-
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 
-namespace Microsoft.Extensions.HotReload;
+namespace Microsoft.DotNet.HotReload;
 
-[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
+#if NET
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
+#endif
 internal sealed class HotReloadAgent : IDisposable
 {
     private const string MetadataUpdaterTypeName = "System.Reflection.Metadata.MetadataUpdater";
@@ -20,21 +22,35 @@ internal sealed class HotReloadAgent : IDisposable
 
     private delegate void ApplyUpdateDelegate(Assembly assembly, ReadOnlySpan<byte> metadataDelta, ReadOnlySpan<byte> ilDelta, ReadOnlySpan<byte> pdbDelta);
 
-    public AgentReporter Reporter { get; } = new();
-
     private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
     private readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
-    private readonly ApplyUpdateDelegate? _applyUpdate;
-    private readonly string? _capabilities;
+    private readonly ApplyUpdateDelegate _applyUpdate;
     private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
-    public HotReloadAgent()
-    {
-        _metadataUpdateHandlerInvoker = new(Reporter);
+    public AgentReporter Reporter { get; }
+    public string Capabilities { get; }
 
-        GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
+    private HotReloadAgent(AgentReporter reporter, ApplyUpdateDelegate applyUpdate, string capabilities)
+    {
+        Reporter = reporter;
+        _metadataUpdateHandlerInvoker = new(reporter);
+        _applyUpdate = applyUpdate;
+        Capabilities = capabilities;
 
         AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
+    }
+
+    public static bool TryCreate(AgentReporter reporter, [NotNullWhen(true)] out HotReloadAgent? agent)
+    {
+        GetUpdaterMethodsAndCapabilities(reporter, out var applyUpdate, out var capabilities);
+        if (applyUpdate != null && !string.IsNullOrEmpty(capabilities))
+        {
+            agent = new HotReloadAgent(reporter, applyUpdate, capabilities);
+            return true;
+        }
+
+        agent = null;
+        return false;
     }
 
     public void Dispose()
@@ -42,7 +58,7 @@ internal sealed class HotReloadAgent : IDisposable
         AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
     }
 
-    private void GetUpdaterMethodsAndCapabilities(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
+    private static void GetUpdaterMethodsAndCapabilities(AgentReporter reporter, out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
     {
         applyUpdate = null;
         capabilities = null;
@@ -50,14 +66,14 @@ internal sealed class HotReloadAgent : IDisposable
         var metadataUpdater = Type.GetType(MetadataUpdaterTypeName + ", System.Runtime.Loader", throwOnError: false);
         if (metadataUpdater == null)
         {
-            Reporter.Report($"Type not found: {MetadataUpdaterTypeName}", AgentMessageSeverity.Error);
+            reporter.Report($"Type not found: {MetadataUpdaterTypeName}", AgentMessageSeverity.Error);
             return;
         }
 
         var applyUpdateMethod = metadataUpdater.GetMethod(ApplyUpdateMethodName, BindingFlags.Public | BindingFlags.Static, binder: null, [typeof(Assembly), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>)], modifiers: null);
         if (applyUpdateMethod == null)
         {
-            Reporter.Report($"{MetadataUpdaterTypeName}.{ApplyUpdateMethodName} not found.", AgentMessageSeverity.Error);
+            reporter.Report($"{MetadataUpdaterTypeName}.{ApplyUpdateMethodName} not found.", AgentMessageSeverity.Error);
             return;
         }
 
@@ -66,7 +82,7 @@ internal sealed class HotReloadAgent : IDisposable
         var getCapabilities = metadataUpdater.GetMethod(GetCapabilitiesMethodName, BindingFlags.NonPublic | BindingFlags.Static, binder: null, Type.EmptyTypes, modifiers: null);
         if (getCapabilities == null)
         {
-            Reporter.Report($"{MetadataUpdaterTypeName}.{GetCapabilitiesMethodName} not found.", AgentMessageSeverity.Error);
+            reporter.Report($"{MetadataUpdaterTypeName}.{GetCapabilitiesMethodName} not found.", AgentMessageSeverity.Error);
             return;
         }
 
@@ -76,11 +92,9 @@ internal sealed class HotReloadAgent : IDisposable
         }
         catch (Exception e)
         {
-            Reporter.Report($"Error retrieving capabilities: {e.Message}", AgentMessageSeverity.Error);
+            reporter.Report($"Error retrieving capabilities: {e.Message}", AgentMessageSeverity.Error);
         }
     }
-
-    public string Capabilities => _capabilities ?? string.Empty;
 
     private void OnAssemblyLoad(object? _, AssemblyLoadEventArgs eventArgs)
     {
@@ -100,14 +114,8 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
-    public IReadOnlyCollection<(string message, AgentMessageSeverity severity)> GetAndClearLogEntries(ResponseLoggingLevel loggingLevel)
-        => Reporter.GetAndClearLogEntries(loggingLevel);
-
     public void ApplyDeltas(IEnumerable<UpdateDelta> deltas)
     {
-        Debug.Assert(Capabilities.Length > 0);
-        Debug.Assert(_applyUpdate != null);
-
         foreach (var delta in deltas)
         {
             Reporter.Report($"Applying delta to module {delta.ModuleId}.", AgentMessageSeverity.Verbose);
@@ -143,7 +151,7 @@ internal sealed class HotReloadAgent : IDisposable
             foreach (var updatedType in delta.UpdatedTypes)
             {
                 // Must be a TypeDef.
-                Debug.Assert(updatedType >> 24 == 0x02);
+                Debug.Assert(MetadataTokens.EntityHandle(updatedType) is { Kind: HandleKind.TypeDefinition, IsNil: false });
 
                 // The type has to be in the manifest module since Hot Reload does not support multi-module assemblies:
                 try
@@ -164,8 +172,6 @@ internal sealed class HotReloadAgent : IDisposable
 
     private void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
     {
-        Debug.Assert(_applyUpdate != null);
-
         try
         {
             foreach (var item in deltas)

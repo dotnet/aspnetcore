@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.Extensions.HotReload;
+namespace Microsoft.DotNet.HotReload;
 
 internal sealed class AgentReporter
 {

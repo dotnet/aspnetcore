@@ -4,13 +4,15 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Microsoft.Extensions.HotReload;
+namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// Finds and invokes metadata update handlers.
 /// </summary>
+#if NET
 [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
 [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Hot reload is only expected to work when trimming is disabled.")]
+#endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
     internal sealed class RegisteredActions(IReadOnlyList<Action<Type[]?>> clearCache, IReadOnlyList<Action<Type[]?>> updateApplication)
