@@ -27,11 +27,7 @@ public class RazorComponentEndpointDataSourceTest
 
         var endpoints = endpointDataSource.Endpoints;
 
-#if DEBUG
-        Assert.Equal(5, endpoints.Count);
-#else
-        Assert.Equal(4, endpoints.Count);
-#endif
+        Assert.Equal(3, endpoints.Count);
     }
 
     [Fact]
@@ -44,11 +40,7 @@ public class RazorComponentEndpointDataSourceTest
 
         var endpoints = endpointDataSource.Endpoints;
 
-#if DEBUG
-        Assert.Equal(3, endpoints.Count);
-#else
-        Assert.Equal(2, endpoints.Count);
-#endif
+        Assert.Single(endpoints);
     }
 
     // renderModes, providers, components, expectedEndpoints

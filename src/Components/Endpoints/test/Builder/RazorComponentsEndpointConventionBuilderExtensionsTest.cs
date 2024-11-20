@@ -217,7 +217,6 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Theory]
-    [InlineData("/_framework/blazor.web.js")]
     [InlineData("/_framework/opaque-redirect")]
     public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints(string frameworkEndpoint)
     {
