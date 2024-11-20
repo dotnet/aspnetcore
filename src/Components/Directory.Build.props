@@ -20,6 +20,7 @@
 
   <!-- Workaround to add Blazor framework static assets without requiring a package reference -->
   <PropertyGroup>
+    <UseBlazorFrameworkDebugAssets>true</UseBlazorFrameworkDebugAssets>
     <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</BlazorFrameworkStaticWebAssetRoot>
     <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</BlazorFrameworkStaticWebAssetRoot>
   </PropertyGroup>
