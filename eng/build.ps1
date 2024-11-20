@@ -266,6 +266,8 @@ $MSBuildArguments += "/p:Build=$RunBuild"
 if (-not $RunBuild) { $MSBuildArguments += "/p:NoBuild=true" }
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
+$MSBuildArguments += "/p:Sign=$Sign"
+$MSBuildArguments += "/p:Publish=$Publish"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
@@ -287,11 +289,6 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = $MSBuildArguments
-
-# Don't pass Sign and Publish to desktop msbuild as that would result in double signing and publishing
-$dotnetBuildArguments += "/p:Sign=$Sign"
-$dotnetBuildArguments += "/p:Publish=$Publish"
-
 if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true' }
 if ($Projects) {
     if ($BuildNative) {
