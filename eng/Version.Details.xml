@@ -376,26 +376,26 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>abda8e3bfa78319363526b5a5f86863ec979940e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24516.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24562.12">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7fb1fec01b91be69e4dcc5290a0bff3f28e214f</Sha>
+      <Sha>42652ca52cd5f9f637fef2b3ab6148805e3c5168</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.24516.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.24562.12">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7fb1fec01b91be69e4dcc5290a0bff3f28e214f</Sha>
+      <Sha>42652ca52cd5f9f637fef2b3ab6148805e3c5168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.24516.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.24562.12">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7fb1fec01b91be69e4dcc5290a0bff3f28e214f</Sha>
+      <Sha>42652ca52cd5f9f637fef2b3ab6148805e3c5168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24516.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24562.12">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7fb1fec01b91be69e4dcc5290a0bff3f28e214f</Sha>
+      <Sha>42652ca52cd5f9f637fef2b3ab6148805e3c5168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.24516.1">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.24562.12">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7fb1fec01b91be69e4dcc5290a0bff3f28e214f</Sha>
+      <Sha>42652ca52cd5f9f637fef2b3ab6148805e3c5168</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.1.0-preview.23604.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
