@@ -39,6 +39,7 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Diagnostics" />
+    <Reference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.IO.Pipelines;
+using System.Net.ServerSentEvents;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
@@ -46,6 +48,12 @@ internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
             // until it receives some data
             await context.Response.WriteAsync(":\r\n", cancellationToken);
             await context.Response.Body.FlushAsync(cancellationToken);
+
+            static async IAsyncEnumerable<SseItem<ReadOnlySequence<byte>>> Item(ReadOnlySequence<byte> item)
+            {
+                await Task.CompletedTask;
+                yield return new SseItem<ReadOnlySequence<byte>>(item);
+            }
             while (true)
             {
                 var result = await _application.ReadAsync(cancellationToken);
@@ -63,7 +71,14 @@ internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
                         Log.SSEWritingMessage(_logger, buffer.Length);
 
                         _connection?.StartSendCancellation();
-                        await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body, _connection?.SendingToken ?? default);
+                        await SseFormatter.WriteAsync(Item(buffer), context.Response.Body, (item, writer) =>
+                        {
+                            foreach (var buffer in item.Data)
+                            {
+                                writer.Write(buffer.Span);
+                            }
+                        }, _connection?.SendingToken ?? default);
+                        //await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body, _connection?.SendingToken ?? default);
                     }
                     else if (result.IsCompleted)
                     {
@@ -76,6 +91,36 @@ internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
                     _application.AdvanceTo(buffer.End);
                 }
             }
+            //while (true)
+            //{
+            //    var result = await _application.ReadAsync(cancellationToken);
+            //    var buffer = result.Buffer;
+
+            //    try
+            //    {
+            //        if (result.IsCanceled)
+            //        {
+            //            break;
+            //        }
+
+            //        if (!buffer.IsEmpty)
+            //        {
+            //            Log.SSEWritingMessage(_logger, buffer.Length);
+
+            //            _connection?.StartSendCancellation();
+            //            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body, _connection?.SendingToken ?? default);
+            //        }
+            //        else if (result.IsCompleted)
+            //        {
+            //            break;
+            //        }
+            //    }
+            //    finally
+            //    {
+            //        _connection?.StopSendCancellation();
+            //        _application.AdvanceTo(buffer.End);
+            //    }
+            //}
         }
         catch (OperationCanceledException)
         {
