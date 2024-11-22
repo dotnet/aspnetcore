@@ -3,10 +3,12 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -338,6 +340,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
         [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
         [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
         [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
         [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
         [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); }],
@@ -349,6 +352,63 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [Theory]
     [MemberData(nameof(RouteParametersWithValidationAttributes))]
     public async Task GetOpenApiParameters_HandlesRouteParameterWithValidationAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            verifySchema(parameter.Schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes =>
+    [
+        [([Range(4, 8)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(int.MinValue, int.MaxValue)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(int.MinValue, schema.Minimum); Assert.Equal(int.MaxValue, schema.Maximum); }],
+        [([Range(0, double.MaxValue)] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(double), "0", "1.79769313486232E+308")] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(long), "-9223372036854775808", "9223372036854775807")] long id) => {}, (OpenApiSchema schema) => { Assert.Equal(long.MinValue, schema.Minimum); Assert.Equal(long.MaxValue, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes))]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            verifySchema(parameter.Schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes_CultureInfo =>
+    [
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99")] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(1.99m, schema.Minimum); Assert.Equal(3.99m, schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99", ParseLimitsInInvariantCulture = true)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(199, schema.Minimum); Assert.Equal(399, schema.Maximum); }],
+        [([Range(1000, 2000)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(1000, schema.Minimum); Assert.Equal(2000, schema.Maximum); }]
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes_CultureInfo))]
+    [UseCulture("fr-FR")]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes_CultureInfo(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
     {
         // Arrange
         var builder = CreateBuilder();
