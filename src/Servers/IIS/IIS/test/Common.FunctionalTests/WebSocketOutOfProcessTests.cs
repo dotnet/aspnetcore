@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(IISTestSiteCollectionOutOfProc.Name)]
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;Windows.Amd64.Server2022.Open")]
 public class WebSocketsOutOfProcessTests : WebSocketsTests
 {
     public WebSocketsOutOfProcessTests(IISTestSiteFixture fixture, ITestOutputHelper testOutput) : base(fixture, testOutput)
