@@ -1,2 +1,4 @@
 ﻿node_modules/
-dist/
+dist/Debug/
+dist/Release/*
+!dist/Release/blazor.webview.js
