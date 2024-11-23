@@ -100,11 +100,11 @@ internal sealed class DictionaryStringValuesWrapper : IHeaderDictionary
         }
     }
 
-    public Enumerator GetEnumerator() => new Enumerator(Inner);
+    public ConvertingEnumerator GetEnumerator() => new ConvertingEnumerator(Inner);
 
-    IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator() => new Enumerator(Inner);
+    IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator() => new ConvertingEnumerator(Inner);
 
-    IEnumerator IEnumerable.GetEnumerator() => new Enumerator(Inner);
+    IEnumerator IEnumerable.GetEnumerator() => new ConvertingEnumerator(Inner);
 
     bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item) => Inner.Remove(Convert(item));
 
@@ -122,12 +122,12 @@ internal sealed class DictionaryStringValuesWrapper : IHeaderDictionary
         return false;
     }
 
-    public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>, IEnumerator
+    public struct ConvertingEnumerator : IEnumerator<KeyValuePair<string, StringValues>>, IEnumerator
     {
         private IEnumerator<KeyValuePair<string, string[]>> _inner;
         private KeyValuePair<string, StringValues> _current;
 
-        internal Enumerator(IDictionary<string, string[]> inner)
+        internal ConvertingEnumerator(IDictionary<string, string[]> inner)
         {
             _inner = inner.GetEnumerator();
             _current = default;

@@ -555,7 +555,7 @@ public class OwinEnvironment : IDictionary<string, object>
 
             if (_entries.ContainsKey(key) || _contextDependentEntries.ContainsKey(key))
             {
-                _deletedKeys ??= new HashSet<string>();
+                _deletedKeys ??= new HashSet<string>(StringComparer.Ordinal);
                 return _deletedKeys.Add(key);
             }
 
@@ -606,11 +606,11 @@ public class OwinEnvironment : IDictionary<string, object>
         {
             if (emptyCollection)
             {
-                _contextEntries = new Dictionary<string, FeatureMap>();
+                _contextEntries = new Dictionary<string, FeatureMap>(StringComparer.Ordinal);
                 return;
             }
 
-            _contextEntries = new Dictionary<string, FeatureMap>(_entries);
+            _contextEntries = new Dictionary<string, FeatureMap>(_entries, StringComparer.Ordinal);
             foreach (var entry in _contextDependentEntries)
             {
                 _contextEntries[entry.Key] = entry.Value;
