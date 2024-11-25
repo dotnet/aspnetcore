@@ -79,7 +79,7 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" BuildStep="1" />
+        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" BuildStep="native" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
       </ItemGroup>
 
@@ -95,7 +95,7 @@
 
         <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
 
-        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" BuildStep="2" />
+        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" BuildStep="node" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
       </ItemGroup>
 
@@ -104,7 +104,7 @@
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 
-        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="3" />
+        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
       </ItemGroup>
 
@@ -211,7 +211,7 @@
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
 
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="3" />
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
       </ItemGroup>
 
@@ -286,7 +286,7 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" Exclude="@(ProjectToExclude)" BuildStep="4" />
+        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" Exclude="@(ProjectToExclude)" BuildStep="installer" />
       </ItemGroup>
     </Otherwise>
   </Choose>
