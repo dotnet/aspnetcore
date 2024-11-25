@@ -274,7 +274,7 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
       </ItemGroup>
 
-      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
+      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
