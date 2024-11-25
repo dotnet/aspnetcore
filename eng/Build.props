@@ -222,6 +222,7 @@
         <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x64' ">x64</_WixTargetPlatform>
         <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64' ">ARM64</_WixTargetPlatform>
       </PropertyGroup>
+
       <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
         <!-- Build the ANCM custom action -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
@@ -286,7 +287,6 @@
 
       <ItemGroup>
         <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" Exclude="@(ProjectToExclude)" BuildStep="4" />
-        <ProjectToExclude Condition=" '$(BuildInstallers)' != 'true'" Include="@(InstallerProject)" />
       </ItemGroup>
     </Otherwise>
   </Choose>
