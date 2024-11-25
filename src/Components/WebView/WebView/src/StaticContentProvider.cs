@@ -12,8 +12,8 @@ internal sealed class StaticContentProvider
     private readonly Uri _appBaseUri;
     private readonly string _hostPageRelativePath;
     private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-    private static readonly ManifestEmbeddedFileProvider _manifestProvider =
-        new ManifestEmbeddedFileProvider(typeof(StaticContentProvider).Assembly);
+    //private static readonly ManifestEmbeddedFileProvider _manifestProvider =
+    //    new ManifestEmbeddedFileProvider(typeof(StaticContentProvider).Assembly);
 
     public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)
     {
@@ -34,8 +34,8 @@ internal sealed class StaticContentProvider
             // If there's no match, fall back on serving embedded framework content
             string contentType;
             var found = TryGetFromFileProvider(relativePath, out content, out contentType)
-                || (allowFallbackOnHostPage && TryGetFromFileProvider(_hostPageRelativePath, out content, out contentType))
-                || TryGetFrameworkFile(relativePath, out content, out contentType);
+                || (allowFallbackOnHostPage && TryGetFromFileProvider(_hostPageRelativePath, out content, out contentType));
+                //|| TryGetFrameworkFile(relativePath, out content, out contentType);
 
             if (found)
             {
@@ -83,22 +83,22 @@ internal sealed class StaticContentProvider
         return false;
     }
 
-    private static bool TryGetFrameworkFile(string relativePath, out Stream content, out string contentType)
-    {
-        // We're not trying to simulate everything a real webserver does. We don't need to
-        // support querystring parameters, for example. It's enough to require an exact match.
-        var file = _manifestProvider.GetFileInfo(relativePath);
-        if (file.Exists)
-        {
-            content = file.CreateReadStream();
-            contentType = GetResponseContentTypeOrDefault(relativePath);
-            return true;
-        }
+    //private static bool TryGetFrameworkFile(string relativePath, out Stream content, out string contentType)
+    //{
+    //    // We're not trying to simulate everything a real webserver does. We don't need to
+    //    // support querystring parameters, for example. It's enough to require an exact match.
+    //    var file = _manifestProvider.GetFileInfo(relativePath);
+    //    if (file.Exists)
+    //    {
+    //        content = file.CreateReadStream();
+    //        contentType = GetResponseContentTypeOrDefault(relativePath);
+    //        return true;
+    //    }
 
-        content = default;
-        contentType = default;
-        return false;
-    }
+    //    content = default;
+    //    contentType = default;
+    //    return false;
+    //}
 
     private static string GetResponseContentTypeOrDefault(string path)
         => ContentTypeProvider.TryGetContentType(path, out var matchedContentType)

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build desktop applications with Blazor and a webview.</Description>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <IsShippingPackage>true</IsShippingPackage>
     <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
@@ -73,9 +72,11 @@
 
   <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
     <ItemGroup>
-      <EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />
-      <EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />
-      <EmbeddedResource Include="$(BlazorWebViewJSFile).map" LogicalName="_framework/$(BlazorWebViewJSFilename).map" Condition="Exists('$(BlazorWebViewJSFile).map')" />
+      <!--<EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />-->
+      <!--<EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />
+      <EmbeddedResource Include="$(BlazorWebViewJSFile).map" LogicalName="_framework/$(BlazorWebViewJSFilename).map" Condition="Exists('$(BlazorWebViewJSFile).map')" />-->
+      <Content Include="$(BlazorWebViewJSFile)" Pack="true" PackagePath="staticwebassets/$(BlazorWebViewJSFilename)" />
+      <Content Include="blazor.modules.json" Pack="true" PackagePath="staticwebassets/blazor.modules.json" />
     </ItemGroup>
   </Target>
 
