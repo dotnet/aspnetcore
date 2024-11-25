@@ -1,5 +1,45 @@
 <Project>
   <PropertyGroup>
-    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>    
+    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>
+    <CompressionEnabled>false</CompressionEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorWebViewAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorWebViewAssets" DependsOnTargets="GenerateJSModuleManifestBuildStaticWebAssets">
+    <PropertyGroup>
+      <_WebViewAssetsBasePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\</_WebViewAssetsBasePath>
+      <_BlazorModulesFilePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\blazor.modules.json</_BlazorModulesFilePath>
+  </PropertyGroup>
+    <ItemGroup>
+      <_WebViewAssetCandidates Include="$(_WebViewAssetsBasePath)blazor.webview.js">
+        <RelativePath>_framework/blazor.webview.js</RelativePath>
+      </_WebViewAssetCandidates>
+      <_WebViewAssetCandidates Include="$(_BlazorModulesFilePath)" Condition="'@(_ExistingBuildJSModules)' == ''">
+        <RelativePath>_framework/blazor.modules.json</RelativePath>
+      </_WebViewAssetCandidates>
+    </ItemGroup>
+    <DefineStaticWebAssets
+      CandidateAssets="@(_WebViewAssetCandidates)"
+      SourceId="$(PackageId)"
+      ContentRoot="$(_WebViewAssetsBasePath)"
+      SourceType="Discovered"
+      AssetKind="All"
+      AssetMode="All"
+      AssetRole="Primary"
+      FingerprintCandidates="true"
+      BasePath="/">
+      <Output TaskParameter="Assets" ItemName="_FrameworkStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_FrameworkStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
+
