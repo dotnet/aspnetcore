@@ -286,7 +286,7 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" Exclude="@(ProjectToExclude)" BuildStep="installer" />
+        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" BuildStep="installer" />
       </ItemGroup>
     </Otherwise>
   </Choose>
