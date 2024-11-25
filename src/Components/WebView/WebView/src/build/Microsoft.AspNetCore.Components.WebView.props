@@ -14,7 +14,7 @@
     <PropertyGroup>
       <_WebViewAssetsBasePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\</_WebViewAssetsBasePath>
       <_BlazorModulesFilePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\blazor.modules.json</_BlazorModulesFilePath>
-  </PropertyGroup>
+    </PropertyGroup>
     <ItemGroup>
       <_WebViewAssetCandidates Include="$(_WebViewAssetsBasePath)blazor.webview.js">
         <RelativePath>_framework/blazor.webview.js</RelativePath>
