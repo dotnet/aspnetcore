@@ -165,8 +165,12 @@
 
   <!-- In inner (per-queue) builds, Publish the test projects and create work items. -->
   <Target Name="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' ">
-    <MSBuild Projects="@(ProjectToBuild)"
-        BuildInParallel="%(ProjectToBuild.BuildInParallel)"
+    <ItemGroup>
+      <ProjectToBuildDistinct Include="@(ProjectToBuild->Distinct())" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(ProjectToBuildDistinct)"
+        BuildInParallel="%(ProjectToBuildDistinct.BuildInParallel)"
         Targets="CreateHelixPayload"
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
