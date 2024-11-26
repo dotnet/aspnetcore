@@ -293,7 +293,13 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
 [string[]]$MSBuildOnlyArguments = ''
 
 if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true' }
-if ($Projects) { $MSBuildArguments += "/p:ProjectToBuild=$Projects" }
+if ($Projects) {
+    if ($BuildNative) {
+        $MSBuildOnlyArguments += "/p:ProjectToBuild=$Projects"
+    } else {
+        $dotnetBuildArguments += "/p:ProjectToBuild=$Projects"
+    }
+}
 
 if ($NoBuildInstallers) { $MSBuildOnlyArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
 if ($BuildInstallers) { $MSBuildOnlyArguments += "/p:BuildInstallers=true" }
