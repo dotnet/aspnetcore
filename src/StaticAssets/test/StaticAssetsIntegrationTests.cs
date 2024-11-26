@@ -1009,8 +1009,11 @@ public class StaticAssetsIntegrationTests
 
         Assert.Equal(HttpStatusCode.PartialContent, res1.StatusCode);
         Assert.Equal("Hello", await res1.Content.ReadAsStringAsync());
+        Assert.Equal(5, res1.Content.Headers.ContentLength);
+
         Assert.Equal(HttpStatusCode.PartialContent, res2.StatusCode);
         Assert.Equal("World", await res2.Content.ReadAsStringAsync());
+        Assert.Equal(5, res2.Content.Headers.ContentLength);
     }
 
     public static IEnumerable<object[]> SupportedMethods => new[]
