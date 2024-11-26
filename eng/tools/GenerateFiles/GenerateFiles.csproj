@@ -12,12 +12,7 @@
   </ItemGroup>
 
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
-  <Target Name="GenerateDirectoryBuildFiles"
-          Inputs="$(MSBuildThisFileDirectory)Directory.Build.props.in;
-                  $(MSBuildThisFileDirectory)Directory.Build.targets.in"
-          Outputs="$(BaseOutputPath)Directory.Build.props;
-                   $(BaseOutputPath)Directory.Build.targets;
-                   $(ConfigDirectory)dotnet-tools.json">
+  <Target Name="GenerateDirectoryBuildFiles">
     <PropertyGroup>
       <_TemplateProperties>
         AspNetCorePatchVersion=$(AspNetCorePatchVersion);
