@@ -46,13 +46,17 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86">
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
+                          SetPlatform="Platform=x86"
+                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'Win32'">
           <Name>SharedFrameworkLib</Name>
           <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
           <Private>True</Private>
           <DoNotHarvest>True</DoNotHarvest>
         </ProjectReference>
-        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64">
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
+                          SetPlatform="Platform=x64"
+                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'x64'">
           <Name>SharedFrameworkLib</Name>
           <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
           <Private>True</Private>
