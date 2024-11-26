@@ -345,26 +345,26 @@
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
-    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.11.0-1.24218.5">
+    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24576.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afa1eb6821f62183651ab017b2f5c3fbeb934904</Sha>
+      <Sha>175121c035a6f057b9388737bb9b8755fb6dba7e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.11.0-1.24218.5">
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.13.0-3.24576.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afa1eb6821f62183651ab017b2f5c3fbeb934904</Sha>
+      <Sha>175121c035a6f057b9388737bb9b8755fb6dba7e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.11.0-1.24218.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.13.0-3.24576.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afa1eb6821f62183651ab017b2f5c3fbeb934904</Sha>
+      <Sha>175121c035a6f057b9388737bb9b8755fb6dba7e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.11.0-1.24218.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0-3.24576.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afa1eb6821f62183651ab017b2f5c3fbeb934904</Sha>
+      <Sha>175121c035a6f057b9388737bb9b8755fb6dba7e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.11.0-1.24218.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.13.0-3.24576.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afa1eb6821f62183651ab017b2f5c3fbeb934904</Sha>
+      <Sha>175121c035a6f057b9388737bb9b8755fb6dba7e</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Composition" Version="10.0.0-alpha.1.24576.1">
