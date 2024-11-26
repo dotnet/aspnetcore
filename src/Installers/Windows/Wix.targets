@@ -121,4 +121,7 @@
     </CreateLightCommandPackageDrop>
   </Target>
 
+  <!-- wixprojs don't do any packaging but the target is called from Arcade's Build.proj. -->
+  <Target Name="Pack" />
+
 </Project>
