@@ -59,7 +59,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.RouteValues.Add("documentName", "v1");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -89,7 +89,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         var responseBodyStream = new MemoryStream();
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -121,7 +121,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.RouteValues.Add("documentName", "v2");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -150,7 +150,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.QueryString = new QueryString($"?documentName={documentName}");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
