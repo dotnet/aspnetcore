@@ -174,7 +174,7 @@ public class AspNetProcess : IDisposable
 
                 if (string.Equals(anchor.Protocol, "https:"))
                 {
-                    Assert.Fail("Found an absolute URL in the page. TODO: accept these and skip over the HttpClient call.");
+                    Assert.Fail($"Found an absolute URL in the page: (actual:{anchor.Href}; expected:{expectedLink}). TODO: accept these and skip over the HttpClient call.");
                 }
 
                 var result = await RetryHelper.RetryRequest(async () =>
