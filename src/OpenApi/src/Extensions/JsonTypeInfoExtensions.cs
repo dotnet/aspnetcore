@@ -104,9 +104,13 @@ internal static class JsonTypeInfoExtensions
         // Generic types become a concatenation of the generic type name and the type arguments
         if (type.IsGenericType)
         {
-            // We need to handle the case where the generic type is a nested type, so we check if the name contains a backtick already.
-            // Example: https://github.com/dotnet/aspnetcore/issues/59092
-            var genericTypeName = type.Name.Contains('`') ? type.Name[..type.Name.LastIndexOf('`')] : type.Name;
+            // We need to handle the case where the generic type is a nested type,
+            // so we check if the name contains a backtick already.
+            // For more information: https://github.com/dotnet/aspnetcore/issues/59092
+            var backtickIndex = type.Name.LastIndexOf('`');
+            var isNestedGenericType = backtickIndex == -1;
+
+            var genericTypeName = isNestedGenericType ? type.Name : type.Name[..backtickIndex];
             var genericArguments = type.GetGenericArguments();
             var argumentNames = string.Join("And", genericArguments.Select(arg => arg.GetSchemaReferenceId(options)));
             return $"{genericTypeName}Of{argumentNames}";
