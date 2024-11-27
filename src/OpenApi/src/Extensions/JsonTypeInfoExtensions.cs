@@ -67,7 +67,7 @@ internal static class JsonTypeInfoExtensions
         }
 
         // Although arrays are enumerable types they are not encoded correctly
-        // with JsonTypeInfoKind.Enumerable so we handle the Enumerble type
+        // with JsonTypeInfoKind.Enumerable so we handle the Enumerable type
         // case here.
         if (jsonTypeInfo is JsonTypeInfo { Kind: JsonTypeInfoKind.Enumerable } || type.IsArray)
         {
