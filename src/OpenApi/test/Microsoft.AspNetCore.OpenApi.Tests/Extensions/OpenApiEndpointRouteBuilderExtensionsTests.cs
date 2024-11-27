@@ -133,6 +133,30 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
     }
 
     [Theory]
+    [InlineData("CaseSensitive", "casesensitive")]
+    [InlineData("casesensitive", "CaseSensitive")]
+    public async Task MapOpenApi_ReturnsDocumentWhenPathIsCaseSensitive(string registeredDocumentName, string requestedDocumentName)
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider(registeredDocumentName);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapOpenApi("/openapi/{documentName}.json");
+        var context = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        context.Response.Body = responseBodyStream;
+        context.RequestServices = serviceProvider;
+        context.Request.RouteValues.Add("documentName", requestedDocumentName);
+        var endpoint = builder.DataSources.First().Endpoints[0];
+
+        // Act
+        var requestDelegate = endpoint.RequestDelegate;
+        await requestDelegate(context);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+    }
+
+    [Theory]
     [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
     [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
     [InlineData("/openapi.yml", "text/plain+yaml;charset=utf-8", true)]
