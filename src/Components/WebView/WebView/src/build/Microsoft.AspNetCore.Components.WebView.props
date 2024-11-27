@@ -22,7 +22,15 @@
       <_WebViewAssetCandidates Include="$(_BlazorModulesFilePath)" Condition="'@(_ExistingBuildJSModules)' == ''">
         <RelativePath>_framework/blazor.modules.json</RelativePath>
       </_WebViewAssetCandidates>
+
+      <_MissingWebViewAssetCandidates
+        Include="@(_WebViewAssetCandidates)"
+        Condition="!EXISTS('%(Identity)')" />
+      <_WebViewAssetCandidates Remove="@(_MissingWebViewAssetCandidates)" />
     </ItemGroup>
+
+    <Message Importance="High" Text="WebView asset '%(_MissingWebViewAssetCandidates.Identity)' could not be found and won't be included in the project." />
+
     <DefineStaticWebAssets
       CandidateAssets="@(_WebViewAssetCandidates)"
       SourceId="$(PackageId)"

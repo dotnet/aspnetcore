@@ -62,17 +62,14 @@
     <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
   </PropertyGroup>
 
-  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Fall back if not. -->
+  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
   <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
-    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
-    <PropertyGroup>
-      <BlazorWebViewJSFile>..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-    </PropertyGroup>
+    <Warning Text="'$(BlazorWebViewJSFile)' does not exist and won't be included in the build." />
   </Target>
 
   <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
     <ItemGroup>
-      <Content Include="$(BlazorWebViewJSFile)" Pack="true" PackagePath="staticwebassets/$(BlazorWebViewJSFilename)" />
+      <Content Include="$(BlazorWebViewJSFile)" Condition="EXISTS('$(BlazorWebViewJSFile)')" Pack="true" PackagePath="staticwebassets/$(BlazorWebViewJSFilename)" />
       <Content Include="blazor.modules.json" Pack="true" PackagePath="staticwebassets/blazor.modules.json" />
     </ItemGroup>
   </Target>
