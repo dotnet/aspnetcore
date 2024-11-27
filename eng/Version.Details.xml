@@ -344,22 +344,22 @@
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
-    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.8.0-3.23518.7">
+    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.8.0-7.24574.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      <Sha>4ff64493649bd045ced204661958393dc5575e96</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.8.0-3.23518.7">
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.8.0-7.24574.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      <Sha>4ff64493649bd045ced204661958393dc5575e96</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-3.23518.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-7.24574.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      <Sha>4ff64493649bd045ced204661958393dc5575e96</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0-3.23518.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0-7.24574.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      <Sha>4ff64493649bd045ced204661958393dc5575e96</Sha>
     </Dependency>
     <Dependency Name="System.Composition" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
