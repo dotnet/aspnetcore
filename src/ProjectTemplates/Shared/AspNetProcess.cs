@@ -172,17 +172,18 @@ public class AspNetProcess : IDisposable
             {
                 Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
 
-                if (string.Equals(anchor.Protocol, "https:"))
+                if (!string.Equals(anchor.Protocol, "https:"))
                 {
-                    Assert.Fail($"Found an absolute URL in the page: (actual:{anchor.Href}; expected:{expectedLink}). TODO: accept these and skip over the HttpClient call.");
+                    // This is a relative URI, so verify it goes to a real destination within the app.
+                    // We don't do this for external (absolute) URIs as it would introduce flakiness,
+                    // and the code above already checks that the URI is what we expect.
+                    var result = await RetryHelper.RetryRequest(async () =>
+                    {
+                        return await _httpClient.GetAsync(anchor.Href);
+                    }, logger: NullLogger.Instance);
+
+                    Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
-
-                var result = await RetryHelper.RetryRequest(async () =>
-                {
-                    return await _httpClient.GetAsync(anchor.Href);
-                }, logger: NullLogger.Instance);
-
-                Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
             }
         }
     }
