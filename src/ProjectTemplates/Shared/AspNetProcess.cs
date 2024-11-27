@@ -172,11 +172,11 @@ public class AspNetProcess : IDisposable
             {
                 Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
 
-                if (!string.Equals(anchor.Protocol, "https:"))
+                if (!string.Equals(anchor.Protocol, "https:") || string.Equals(anchor.HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    // This is a relative URI, so verify it goes to a real destination within the app.
-                    // We don't do this for external (absolute) URIs as it would introduce flakiness,
-                    // and the code above already checks that the URI is what we expect.
+                    // This is a relative or same-site URI, so verify it goes to a real destination within the app.
+                    // We don't do this for external (absolute) URIs as it would introduce flakiness, and the code
+                    // above already checks that the URI is what we expect.
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
                         return await _httpClient.GetAsync(anchor.Href);
