@@ -6,6 +6,9 @@
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
     <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
+    <!-- Unfortunately, UpToDateCheckInput and UpToDateCheckBuilt don't seem to have any effect on VS builds of this project. -->
+    <!-- https://github.com/dotnet/project-system/blob/d0a44e00b723283d8520cfbe3b6d7876bd7e128c/docs/up-to-date-check.md -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,6 +17,7 @@
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftDataSqlClientVersion=$(MicrosoftDataSqlClientVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
@@ -24,8 +28,9 @@
       MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftIdentityWebDownstreamApiVersion=$(MicrosoftIdentityWebDownstreamApiVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-      SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
+      SystemDrawingCommonVersion=$(SystemDrawingCommonVersion);
+      SystemTextJsonVersion=$(SystemTextJsonVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -64,6 +69,11 @@
     <GeneratedContent Include="BlazorWeb-CSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWeb-CSharp/BlazorWeb-CSharp.csproj" />
     <GeneratedContent Include="BlazorWeb-CSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWeb-CSharp.Client/BlazorWeb-CSharp.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
+    <!-- This appears to use the right UpToDateCheckBuilt parameters, but DisableFastUpToDateCheck is still necessary for VS to pick up incremental updates. -->
+    <!-- Maybe this is related to the OutputPath being inside of the projects content directory rather than bin or obj. -->
+    <!--<UpToDateCheckBuilt Include="@(GeneratedContent->'%(OutputPath)')" Original="@(GeneratedContent)" />-->
+    <!-- Use "None Include" to make csproj.in files visible in VS Solution Explorer. -->
+    <None Include="@(GeneratedContent)" />
   </ItemGroup>
 
 </Project>
