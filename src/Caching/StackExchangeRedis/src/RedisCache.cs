@@ -224,16 +224,10 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
             var ttl = GetExpirationInSeconds(creationTime, absoluteExpiration, options);
             var fields = GetHashFields(Linearize(value, out var lease), absoluteExpiration, options.SlidingExpiration);
 
-            if (ttl is null)
+            await cache.HashSetAsync(prefixedKey, fields).ConfigureAwait(false);
+            if (ttl is not null)
             {
-                await cache.HashSetAsync(prefixedKey, fields).ConfigureAwait(false);
-            }
-            else
-            {
-                await Task.WhenAll(
-                    cache.HashSetAsync(prefixedKey, fields),
-                    cache.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()))
-                    ).ConfigureAwait(false);
+                await cache.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault())).ConfigureAwait(false);
             }
             Recycle(lease); // we're happy to only recycle on success
         }
