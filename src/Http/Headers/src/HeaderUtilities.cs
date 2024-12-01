@@ -737,7 +737,7 @@ public static class HeaderUtilities
         }
     }
 
-    internal static bool IsEmptyOrAtEnd(StringSegment value, int index, bool supportsMultipleValues)
+    internal static bool IsEmptyOrAtEnd(StringSegment value, int index)
     {
         return StringSegment.IsNullOrEmpty(value) || index == value.Length;
     }

@@ -23,7 +23,7 @@ internal abstract class BaseHeaderParser<T> : HttpHeaderParser<T>
         //  Accept: text/xml; q=1
         //  Accept:
         //  Accept: text/plain; q=0.2
-        if (HeaderUtilities.IsEmptyOrAtEnd(value, index, SupportsMultipleValues))
+        if (HeaderUtilities.IsEmptyOrAtEnd(value, index))
         {
             return SupportsMultipleValues;
         }
