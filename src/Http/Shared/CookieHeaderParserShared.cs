@@ -66,9 +66,10 @@ internal static class CookieHeaderParserShared
         //  Accept: text/xml; q=1
         //  Accept:
         //  Accept: text/plain; q=0.2
-        if (HeaderUtilities.IsEmptyOrAtEnd(value, index, SupportsMultipleValues))
+
+        if (HeaderUtilities.IsEmptyOrAtEnd(value, index, supportsMultipleValues))
         {
-            return SupportsMultipleValues;
+            return supportsMultipleValues;
         }
 
         var current = GetNextNonEmptyOrWhitespaceIndex(value, index, supportsMultipleValues, out var separatorFound);
