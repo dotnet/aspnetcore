@@ -16,7 +16,11 @@ internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature,
     public long Error
     {
         get => _error ?? -1;
-        set => _error = value;
+        set
+        {
+            QuicTransportOptions.ValidateErrorCode(value);
+            _error = value;
+        }
     }
 
     public X509Certificate2? ClientCertificate

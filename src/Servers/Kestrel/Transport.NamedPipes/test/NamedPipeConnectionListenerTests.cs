@@ -3,7 +3,7 @@
 
 using System.IO.Pipes;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -136,7 +136,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Error);
     }
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData(1)]
     [InlineData(4)]
     [InlineData(16)]

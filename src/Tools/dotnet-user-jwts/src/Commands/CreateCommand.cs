@@ -109,7 +109,7 @@ internal sealed class CreateCommand
         CommandOption claimsOption)
     {
         var isValid = true;
-        var finder = new MsBuildProjectFinder(projectOption.Value() ?? Directory.GetCurrentDirectory());
+        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
         var project = finder.FindMsBuildProject(projectOption.Value());
 
         if (project == null)
@@ -254,7 +254,7 @@ internal sealed class CreateCommand
                 reporter.Output(jwt.Token);
                 break;
             case "json":
-                reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
                 break;
             default:
                 reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));

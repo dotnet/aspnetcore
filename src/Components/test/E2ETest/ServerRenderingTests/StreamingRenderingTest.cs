@@ -3,13 +3,13 @@
 
 using System.Globalization;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Net.Http.Headers;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -30,13 +30,29 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
-    public void CanRenderNonstreamingPageWithoutInjectingStreamingMarkers()
+    public async Task CanRenderNonstreamingPageWithoutInjectingStreamingMarkersOrHeaders()
     {
         Navigate(ServerPathBase);
 
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
         Assert.DoesNotContain("<blazor-ssr", Browser.PageSource);
+
+        using var httpClient = new HttpClient();
+        using var response = await httpClient.GetAsync(new Uri(_serverFixture.RootUri, ServerPathBase));
+        response.EnsureSuccessStatusCode();
+
+        Assert.False(response.Content.Headers.Contains(HeaderNames.ContentEncoding));
+    }
+
+    [Fact]
+    public async Task DoesRenderStreamingPageWithStreamingHeadersToDisableBuffering()
+    {
+        using var httpClient = new HttpClient();
+        using var response = await httpClient.GetAsync(new Uri(_serverFixture.RootUri, $"{ServerPathBase}/streaming"), HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+
+        Assert.Equal("identity", response.Content.Headers.ContentEncoding.Single());
     }
 
     [Theory]
@@ -229,7 +245,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async void StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
+    public async Task StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
     {
         IWebElement originalH1Elem;
 
@@ -314,6 +330,39 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
             var response = await httpClient.SendAsync(req);
             var html = await response.Content.ReadAsStringAsync();
             Assert.Matches(new Regex(@"</html><!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
+        }
+    }
+
+    // https://github.com/dotnet/aspnetcore/issues/52126
+    [Fact]
+    public void CanPerformEnhancedNavigation_AfterStreamingUpdate_WithInteractiveComponentInLayout()
+    {
+        Navigate($"{ServerPathBase}/interactive-in-layout/streaming");
+
+        Browser.Exists(By.Id("done-streaming"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-counter")).Text);
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        Browser.Click(By.LinkText("Non-streaming"));
+        Browser.Exists(By.Id("non-streamed-content"));
+
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("2", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        AssertLogDoesNotContainCriticalMessages("DOMException");
+    }
+
+    private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+    {
+        var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+        foreach (var message in messages)
+        {
+            Assert.DoesNotContain(log, entry =>
+            {
+                return entry.Level == LogLevel.Severe
+                && entry.Message.Contains(message);
+            });
         }
     }
 }

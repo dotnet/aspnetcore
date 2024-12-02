@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 internal static class Constants
@@ -11,6 +9,7 @@ internal static class Constants
     internal const string HttpsScheme = "https";
     internal const string Chunked = "chunked";
     internal const string Close = "close";
+    internal const string KeepAlive = "keep-alive";
     internal const string Zero = "0";
     internal const string SchemeDelimiter = "://";
     internal const string DefaultServerAddress = "http://localhost:5000";

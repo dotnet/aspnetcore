@@ -1,0 +1,80 @@
+parameters:
+# Sbom related params
+  enableSbom: true
+  runAsPublic: false
+  PackageVersion: 9.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+
+jobs:
+- template: /eng/common/core-templates/job/job.yml
+  parameters:
+    is1ESPipeline: true
+
+    componentGovernanceSteps:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+      - template: /eng/common/templates/steps/generate-sbom.yml
+        parameters:
+          PackageVersion: ${{ parameters.packageVersion }}
+          BuildDropPath: ${{ parameters.buildDropPath }}
+          publishArtifacts: false
+
+    # publish artifacts
+    # for 1ES managed templates, use the templateContext.output to handle multiple outputs.
+    templateContext:
+      outputParentDirectory: $(Build.ArtifactStagingDirectory)
+      outputs:
+      - ${{ if ne(parameters.artifacts.publish, '') }}:
+        - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+          - output: buildArtifacts
+            displayName: Publish pipeline artifacts
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)/artifacts'
+            ArtifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
+            condition: always()
+            continueOnError: true
+        - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
+          - output: pipelineArtifact
+            targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+            artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)_Attempt$(System.JobAttempt)') }}
+            displayName: 'Publish logs'
+            continueOnError: true
+            condition: always()
+            sbomEnabled: false  # we don't need SBOM for logs
+
+      - ${{ if eq(parameters.enablePublishBuildArtifacts, true) }}:
+        - output: buildArtifacts
+          displayName: Publish Logs
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+          publishLocation: Container
+          ArtifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
+          continueOnError: true
+          condition: always()
+          sbomEnabled: false  # we don't need SBOM for logs
+
+      - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+        - output: pipelineArtifact
+          targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/eng/common/BuildConfiguration'
+          artifactName: 'BuildConfiguration'
+          displayName: 'Publish build retry configuration'
+          continueOnError: true
+          sbomEnabled: false  # we don't need SBOM for BuildConfiguration
+
+      - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+        - output: pipelineArtifact
+          displayName: Publish SBOM manifest
+          continueOnError: true
+          targetPath: $(Build.ArtifactStagingDirectory)/sbom
+          artifactName: $(ARTIFACT_NAME)
+
+      # add any outputs provided via root yaml
+      - ${{ if ne(parameters.templateContext.outputs, '') }}:
+        - ${{ each output in parameters.templateContext.outputs }}:
+          - ${{ output }}
+      
+      # add any remaining templateContext properties
+      ${{ each context in parameters.templateContext }}:
+        ${{ if and(ne(context.key, 'outputParentDirectory'), ne(context.key, 'outputs')) }}:
+          ${{ context.key }}: ${{ context.value }}
+
+    ${{ each parameter in parameters }}:
+      ${{ if and(ne(parameter.key, 'templateContext'), ne(parameter.key, 'is1ESPipeline')) }}:
+        ${{ parameter.key }}: ${{ parameter.value }}

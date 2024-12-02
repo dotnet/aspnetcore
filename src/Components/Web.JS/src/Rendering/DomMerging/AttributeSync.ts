@@ -7,6 +7,13 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
   // Skip most of the work in the common case where all attributes are unchanged and are even still in the same order
   if (!attributeSetsAreIdentical(destAttrs, sourceAttrs)) {
+    // Certain element types may have special rules about how to update their attributes,
+    // or might require us to synchronize DOM properties as well as attributes
+    if (destination instanceof HTMLLinkElement || destination instanceof HTMLScriptElement) {
+      destination.integrity = (source as HTMLLinkElement | HTMLScriptElement).integrity;
+    }
+
+    // Now do generic unordered attribute synchronization
     const remainingDestAttrs = new Map<string, Attr>();
     for (const destAttr of destination.attributes as any) {
       remainingDestAttrs.set(destAttr.name, destAttr);

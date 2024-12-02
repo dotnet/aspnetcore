@@ -57,7 +57,7 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
     {
@@ -94,7 +94,7 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="policyName">The name of the policy to check against a specific context.</param>
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
     {

@@ -94,6 +94,7 @@ body .titleerror {
 /* Exception location */
 body .location {
     margin: 3px 0 10px 30px;
+    font-size: 1.1em;
 }
 
 /* Tab navigation */
@@ -130,6 +131,7 @@ body .location {
 #stackpage .frame {
     padding: 0;
     margin: 0 0 0 30px;
+    word-break: break-word;
 }
 #stackpage .frame h3 {
     padding: 2px;
@@ -142,7 +144,7 @@ body .location {
 }
 #stackpage .source ol li {
     font-family: Consolas, "Courier New", courier, monospace;
-    white-space: pre;
+    white-space: pre-wrap;
     background-color: var(--color-code-background);
 }
 
@@ -181,6 +183,7 @@ body .location {
 .page table {
     border-collapse: collapse;
     margin: 0 0 20px;
+    font-size: 1.1em;
 }
 .page th {
     padding: 10px 10px 5px 10px;
@@ -195,6 +198,16 @@ body .location {
 }
 .page tr > :not(:last-child) {
     border-right: 1px solid var(--color-border);
+}
+.page tr > :first-child {
+    min-width: 150px;
+}
+.page tr > :last-child {
+    word-break: break-word;
+}
+
+.page p {
+    font-size: 1.1em;
 }
 
 /* Raw exception details */

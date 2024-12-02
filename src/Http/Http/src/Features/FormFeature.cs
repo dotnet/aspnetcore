@@ -16,11 +16,12 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// </summary>
 public class FormFeature : IFormFeature
 {
-    private readonly HttpRequest _request;
+    private readonly HttpRequest? _request;
     private readonly Endpoint? _endpoint;
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
+	private MediaTypeHeaderValue? _formContentType; // null iff _form is null
 
     /// <summary>
     /// Initializes a new instance of <see cref="FormFeature"/>.
@@ -31,7 +32,7 @@ public class FormFeature : IFormFeature
         ArgumentNullException.ThrowIfNull(form);
 
         Form = form;
-        _request = default!;
+		_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
         _options = FormOptions.Default;
     }
 
@@ -71,7 +72,18 @@ public class FormFeature : IFormFeature
     {
         get
         {
-            _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
+            MediaTypeHeaderValue? mt = null;
+
+            if (_request is not null)
+            {
+                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+            }
+
+            if (_form is not null && mt is null)
+            {
+                mt = _formContentType;
+            }
+
             return mt;
         }
     }
@@ -85,6 +97,11 @@ public class FormFeature : IFormFeature
             if (Form != null)
             {
                 return true;
+            }
+
+            if (_request is null)
+            {
+                return false;
             }
 
             var contentType = ContentType;
@@ -106,6 +123,14 @@ public class FormFeature : IFormFeature
         {
             _parsedFormTask = null;
             _form = value;
+            if (_form is null)
+            {
+                _formContentType = null;
+            }
+            else
+            {
+                _formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            }
         }
     }
 
@@ -151,6 +176,11 @@ public class FormFeature : IFormFeature
 
     private async Task<IFormCollection> InnerReadFormAsync(CancellationToken cancellationToken)
     {
+        if (_request is null)
+        {
+            throw new InvalidOperationException("Cannot read form from this request. Request is 'null'.");
+        }
+
         HandleUncheckedAntiforgeryValidationFeature();
         _options = _endpoint is null ? _options : GetFormOptionsFromMetadata(_options, _endpoint);
 
@@ -304,7 +334,7 @@ public class FormFeature : IFormFeature
     private static Encoding FilterEncoding(Encoding? encoding)
     {
         // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
-        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (encoding == null || encoding.CodePage == 65000)
         {
             return Encoding.UTF8;
@@ -326,6 +356,10 @@ public class FormFeature : IFormFeature
 
     private bool ResolveHasInvalidAntiforgeryValidationFeature()
     {
+        if (_request is null)
+        {
+            return false;
+        }
         var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked");
         var hasInvalidToken = _request.HttpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false };
         return hasInvokedMiddleware && hasInvalidToken;

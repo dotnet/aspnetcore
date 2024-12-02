@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderHttpExtensions.WithStatefulReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!

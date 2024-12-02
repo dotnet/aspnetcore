@@ -53,8 +53,8 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     {
         builder.OpenElement(0, "input");
         builder.AddAttribute(1, "step", _stepAttributeValue);
-        builder.AddMultipleAttributes(2, AdditionalAttributes);
-        builder.AddAttribute(3, "type", "number");
+        builder.AddAttribute(2, "type", "number");
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
         builder.AddAttributeIfNotNullOrEmpty(4, "name", NameAttributeValue);
         builder.AddAttributeIfNotNullOrEmpty(5, "class", CssClass);
         builder.AddAttribute(6, "value", CurrentValueAsString);

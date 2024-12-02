@@ -24,11 +24,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 // dispatching events to them, and notifying when the user interface is being updated.
 public abstract partial class Renderer : IDisposable, IAsyncDisposable
 {
+    private readonly object _lockObject = new();
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
     private readonly Dictionary<IComponent, ComponentState> _componentStateByComponent = new Dictionary<IComponent, ComponentState>();
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
-    private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
+    private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
@@ -101,7 +102,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
         return serviceProvider.GetService<IComponentActivator>()
-            ?? DefaultComponentActivator.Instance;
+            ?? new DefaultComponentActivator(serviceProvider);
     }
 
     /// <summary>
@@ -141,6 +142,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected internal virtual IComponentRenderMode? GetComponentRenderMode(IComponent component)
         => null;
 
+    internal IComponentRenderMode? GetComponentRenderMode(int componentId)
+        => GetComponentRenderMode(GetRequiredComponentState(componentId).Component);
+
     /// <summary>
     /// Resolves the component state for a given <see cref="IComponent"/> instance.
     /// </summary>
@@ -149,11 +153,22 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected internal ComponentState GetComponentState(IComponent component)
         => _componentStateByComponent.GetValueOrDefault(component);
 
+    /// <summary>
+    /// Gets the <see cref="RendererInfo"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual RendererInfo RendererInfo { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual ResourceAssetCollection Assets { get; } = ResourceAssetCollection.Empty;
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
         ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
+        DefaultComponentActivator.ClearCache();
 
         await Dispatcher.InvokeAsync(() =>
         {
@@ -416,7 +431,22 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _pendingTasks ??= new();
         }
 
-        var callback = GetRequiredEventCallback(eventHandlerId);
+        var (renderedByComponentId, callback) = GetRequiredEventBindingEntry(eventHandlerId);
+
+        // If this event attribute was rendered by a component that's since been disposed, don't dispatch the event at all.
+        // This can occur because event handler disposal is deferred, so event handler IDs can outlive their components.
+        // The reason the following check is based on "which component rendered this frame" and not on "which component
+        // receives the callback" (i.e., callback.Receiver) is that if parent A passes a RenderFragment with events to child B,
+        // and then child B is disposed, we don't want to dispatch the events (because the developer considers them removed
+        // from the UI) even though the receiver A is still alive.
+        if (!_componentStateById.ContainsKey(renderedByComponentId))
+        {
+            // This is not an error since it can happen legitimately (in Blazor Server, the user might click a button at the same
+            // moment that the component is disposed remotely, and then the click event will arrive after disposal).
+            Log.SkippingEventOnDisposedComponent(_logger, renderedByComponentId, eventHandlerId, eventArgs);
+            return Task.CompletedTask;
+        }
+
         Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
 
         // Try to match it up with a receiver so that, if the event handler later throws, we can route the error to the
@@ -480,7 +510,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <returns>The parameter type expected by the event handler. Normally this is a subclass of <see cref="EventArgs"/>.</returns>
     public Type GetEventArgsType(ulong eventHandlerId)
     {
-        var methodInfo = GetRequiredEventCallback(eventHandlerId).Delegate?.Method;
+        var methodInfo = GetRequiredEventBindingEntry(eventHandlerId).Callback.Delegate?.Method;
 
         // The DispatchEventAsync code paths allow for the case where Delegate or its method
         // is null, and in this case the event receiver just receives null. This won't happen
@@ -578,10 +608,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         // The pendingTasks collection is only used during prerendering to track quiescence,
         // so will be null at other times.
-        _pendingTasks?.Add(task);
+        if (_pendingTasks is { } tasks)
+        {
+            Dispatcher.AssertAccess();
+            tasks.Add(task);
+        }
     }
 
-    internal void AssignEventHandlerId(ref RenderTreeFrame frame)
+    internal void AssignEventHandlerId(int renderedByComponentId, ref RenderTreeFrame frame)
     {
         var id = ++_lastEventHandlerId;
 
@@ -593,7 +627,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             //
             // When that happens we intentionally box the EventCallback because we need to hold on to
             // the receiver.
-            _eventBindings.Add(id, callback);
+            _eventBindings.Add(id, (renderedByComponentId, callback));
         }
         else if (frame.AttributeValueField is MulticastDelegate @delegate)
         {
@@ -601,7 +635,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // is the same as delegate.Target. In this case since the receiver is implicit we can
             // avoid boxing the EventCallback object and just re-hydrate it on the other side of the
             // render tree.
-            _eventBindings.Add(id, new EventCallback(@delegate.Target as IHandleEvent, @delegate));
+            _eventBindings.Add(id, (renderedByComponentId, new EventCallback(@delegate.Target as IHandleEvent, @delegate)));
         }
 
         // NOTE: we do not to handle EventCallback<T> here. EventCallback<T> is only used when passing
@@ -645,14 +679,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
     }
 
-    private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
+    private (int RenderedByComponentId, EventCallback Callback) GetRequiredEventBindingEntry(ulong eventHandlerId)
     {
-        if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
+        if (!_eventBindings.TryGetValue(eventHandlerId, out var entry))
         {
             throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
         }
 
-        return callback;
+        return entry;
     }
 
     private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)
@@ -1046,6 +1080,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // already on the sync context (and if not, we have a bug we want to know about).
         Dispatcher.AssertAccess();
 
+        // We don't allow NavigationException instances to be caught by error boundaries.
+        // These are special exceptions whose purpose is to be as invisible as possible to
+        // user code and bubble all the way up to get handled by the framework as a redirect.
+        if (error is NavigationException)
+        {
+            HandleException(error);
+            return;
+        }
+
         // Find the closest error boundary, if any
         var candidate = errorSourceOrNull;
         while (candidate is not null)
@@ -1083,17 +1126,42 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
+        // Unlike other Renderer APIs, we need Dispose to be thread-safe 
+        // (and not require being called only from the sync context) 
+        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync) 
+        // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
+        lock (_lockObject)
+        {
+            if (_rendererIsDisposed)
+            {
+                // quitting synchronously as soon as possible is avoiding
+                // possible async dispatch to another thread and
+                // possible deadlock on synchronous `done.Wait()` below.
+                return;
+            }
+        }
+
         if (!Dispatcher.CheckAccess())
         {
             // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
             // on the sync context, like other lifecycle methods. In almost all cases we'd already be
             // on the sync context here since DisposeAsync dispatches, but just in case someone is using
             // Dispose directly, we'll dispatch and block.
-            Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
+            var done = Dispatcher.InvokeAsync(() => Dispose(disposing));
+
+            // only block caller when this is not finalizer
+            if (disposing)
+            {
+                done.Wait();
+            }
+
             return;
         }
 
-        _rendererIsDisposed = true;
+        lock (_lockObject)
+        {
+            _rendererIsDisposed = true;
+        }
 
         if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported)
         {
@@ -1176,7 +1244,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
     /// This is only called when a render mode is specified either at the call site or on the component type.
-    /// 
+    ///
     /// Subclasses may override this method to return a component of a different type, or throw, depending on whether the renderer
     /// supports the render mode and how it implements that support.
     /// </summary>
@@ -1206,9 +1274,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_rendererIsDisposed)
+        lock (_lockObject)
         {
-            return;
+            if (_rendererIsDisposed)
+            {
+                return;
+            }
         }
 
         if (_disposeTask != null)

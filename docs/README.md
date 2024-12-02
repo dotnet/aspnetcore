@@ -17,7 +17,7 @@ The table below outlines the different docs in this folder and what they are hel
 | [Working with EventSources and EventCounters](EventSourceAndCounters.md) | Guidance on adding event tracing to a library | Anyone needing to add event tracing for diagnostics purposes      |
 | [List of Diagnostics](list-of-diagnostics.md) | List of diagnostic codes used in repo | Anyone needing to add new codes for diagnostics purposes |
 | [Tests on Helix](Helix.md)        | An overview of the Helix test environment     | Anyone debugging tests in Helix or looking to understand the output from Helix builds       |
-| [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issue, issues that need author feedback, etc |    |
+| [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issues, issues that need author feedback, etc |
 | [Preparing a patch update](PreparingPatchUpdates.md)        | Documentation on how to setup for a patch release of ASP.NET Core       | Anyone looking to publish servicing updates         |
 | [Project properties](ProjectProperties.md)     | Overview of configurable MSBuild properties on the repo    | Anyone looking to modify how a project is packaged   |
 | [How references are resolved](ReferenceResolution.md)       | Overview of dependency reference setup in the repo         | Anyone looking to understand how package references are configured in the repo |
@@ -27,6 +27,6 @@ The table below outlines the different docs in this folder and what they are hel
 | [Triage process](TriageProcess.md)| Overview of the issue triage process used in the repo     | Anyone looking to understand the triage process on the repo  |
 | [Updating Major Version & TFM](UpdatingMajorVersionAndTFM.md)| Instructions for updating the repo branding & TFM in preparation for a new major release     | Repo developers who want to know more about our branding & release process  |
 | [Assembly trimming guide](Trimming.md)| Guidance on adding trimming support to an ASP.NET Core assembly     | Repo developers who want to help add support for trimming to ASP.NET Core  |
-| [Adding new Projects to the Repo](AddingNewProjects.md) | Outlines the process of adding new projects (i.e. `.csproj` files) to the repo | Anyone who finds themselves trying to add a new project and including it in the build.
+| [Adding new Projects to the Repo](AddingNewProjects.md) | Outlines the process of adding new projects (i.e. `.csproj` files) to the repo | Anyone who finds themselves trying to add a new project and including it in the build.  |
 | [Using WebTransport in Kestrel](WebTransport.md) | Outlines how to setup Kestrel to use WebTransport | Anyone looking to support WebTransport |
 | [Benchmarking](Benchmarks.md) | Instructions on how to benchmark PRs and local changes | .NET team |

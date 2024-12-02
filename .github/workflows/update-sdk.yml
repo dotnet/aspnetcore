@@ -1,0 +1,26 @@
+name: update-dotnet-sdk
+
+on:
+
+  # Scheduled trigger to check for .NET SDK updates at 12 UTC every Monday
+  schedule:
+    - cron:  '00 12 * * MON'
+
+  # Manual trigger to update the .NET SDK on-demand.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  update-dotnet-sdk:
+    name: Update .NET SDK
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: martincostello/update-dotnet-sdk@67d6e2b14939c06978a7f80444157296c3defe14 # v3.2.3
+      with:
+        quality: 'daily'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

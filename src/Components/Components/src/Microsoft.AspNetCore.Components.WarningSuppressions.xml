@@ -1,36 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <linker>
-  <assembly fullname="Microsoft.AspNetCore.Components, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.BindConverter.FormatterDelegateCache.MakeTypeConverterFormatter``1</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.BindConverter.ParserDelegateCache.MakeTypeConverterConverter``1</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.RouteTableFactory.&lt;GetRouteableComponents&gt;g__GetRouteableComponents|4_0(System.Collections.Generic.List{System.Type},System.Reflection.Assembly)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2062</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.RouteTableFactory.Create(System.Collections.Generic.Dictionary{System.Type,System.String[]})</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2067</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.CascadingParameterState.CreateReflectedCascadingParameterInfos(System.Type)</property>
-    </attribute>
+  <assembly fullname="Microsoft.AspNetCore.Components, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2072</argument>
@@ -47,41 +17,11 @@
       <argument>ILLink</argument>
       <argument>IL2072</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.DynamicComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.ComponentProperties.SetProperties(Microsoft.AspNetCore.Components.ParameterView@,System.Object)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
-      <argument>IL2077</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.ComponentFactory.CreateInitializer(System.Type)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2077</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.LayoutView.&lt;&gt;c__DisplayClass13_0.&lt;WrapInLayout&gt;g__Render|0(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2080</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.MemberAssignment.&lt;GetPropertiesIncludingInherited&gt;d__0.MoveNext</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
       <argument>IL2110</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2111</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
     </attribute>

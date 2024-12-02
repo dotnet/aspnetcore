@@ -57,6 +57,8 @@ Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider
 Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.Cache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache!
 Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.TagHelperMemoryCacheProvider() -> void
 Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute
+Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.get -> object?
+Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.init -> void
 Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.RazorInjectAttribute() -> void
 Microsoft.AspNetCore.Mvc.Razor.IRazorPage
 Microsoft.AspNetCore.Mvc.Razor.IRazorPage.BodyContent.get -> Microsoft.AspNetCore.Html.IHtmlContent?

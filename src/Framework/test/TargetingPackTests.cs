@@ -7,7 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -183,7 +183,7 @@ public class TargetingPackTests
             }
             else
             {
-                Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
+                Assert.Fail($"{packageName} is not a recognized aspNetCore or runtime dependency");
             }
         });
     }

@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting.FunctionalTests;
@@ -27,7 +27,6 @@ public class ShutdownTests : LoggedTest
         await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27371")]
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)]
     [OSSkipCondition(OperatingSystems.MacOSX)]

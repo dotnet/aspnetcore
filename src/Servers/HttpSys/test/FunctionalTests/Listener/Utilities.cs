@@ -56,9 +56,9 @@ internal static class Utilities
                 catch (HttpSysException ex)
                 {
                     listener.Dispose();
-                    if (ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
+                    if (ex.ErrorCode != ErrorCodes.ERROR_ALREADY_EXISTS
+                        && ex.ErrorCode != ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != ErrorCodes.ERROR_ACCESS_DENIED)
                     {
                         throw;
                     }
@@ -107,7 +107,7 @@ internal static class Utilities
     internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
     {
         var factory = new TestRequestContextFactory(server);
-        using var acceptContext = new AsyncAcceptContext(server, factory);
+        using var acceptContext = new AsyncAcceptContext(server, factory, server.Logger);
 
         async Task<RequestContext> AcceptAsync()
         {

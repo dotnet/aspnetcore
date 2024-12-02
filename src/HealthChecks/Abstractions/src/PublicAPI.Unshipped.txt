@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.get -> System.TimeSpan?
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.get -> System.TimeSpan?
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.set -> void

@@ -53,19 +53,24 @@ class BlazorStreamingUpdate extends HTMLElement {
               const isFormPost = node.getAttribute('from') === 'form-post';
               const isEnhancedNav = node.getAttribute('enhanced') === 'true';
               if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
+                // At this point the destinationUrl might be an opaque URL so we don't know whether it's internal/external or
+                // whether it's even going to the same URL we're currently on. So we don't know how to update the history.
+                // Defer that until the redirection is resolved by performEnhancedPageLoad.
+                const treatAsRedirectionFromMethod = isFormPost ? 'post' : 'get';
+                const fetchOptions = undefined;
+                performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false, fetchOptions, treatAsRedirectionFromMethod);
+              } else {
                 if (isFormPost) {
                   // The URL is not yet updated. Push a whole new entry so that 'back' goes back to the pre-redirection location.
-                  history.pushState(null, '', destinationUrl);
+                  // WARNING: The following check to avoid duplicating history entries won't work if the redirection is to an opaque URL.
+                  // We could change the server-side logic to return URLs in plaintext if they match the current request URL already,
+                  // but it's arguably easier to understand that history non-duplication only works for enhanced nav, which is also the
+                  // case for non-streaming responses.
+                  if (destinationUrl !== location.href) {
+                    location.assign(destinationUrl);
+                  }
                 } else {
                   // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
-                  history.replaceState(null, '', destinationUrl);
-                }
-                performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false);
-              } else {
-                // Same reason for varying as above
-                if (isFormPost) {
-                  location.assign(destinationUrl);
-                } else {
                   location.replace(destinationUrl);
                 }
               }

@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
@@ -26,7 +26,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var other = Browser.Exists(By.Id("other"));
+        var other = Browser.Exists(By.Id("mouseover_label"));
 
         // Mouse over the button and then back off
         var actions = new Actions(Browser)
@@ -153,8 +153,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
-
-        var other = Browser.Exists(By.Id("other"));
 
         // Mousedown
         var actions = new Actions(Browser).ClickAndHold(input);

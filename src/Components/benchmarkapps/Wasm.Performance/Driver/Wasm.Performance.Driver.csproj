@@ -8,8 +8,6 @@
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <RuntimeIdentifier Condition=" '$(DotNetBuildFromSource)' != 'true' ">linux-x64</RuntimeIdentifier>
-    <SelfContained Condition=" '$(DotNetBuildFromSource)' != 'true' ">true</SelfContained>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -17,23 +15,9 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
-    <Reference Include="Selenium.Support" />
-    <Reference Include="Selenium.WebDriver" />
+    <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
     <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
-  </ItemGroup>
-
-  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile">
-    <ItemGroup>
-      <AssemblyAttribute
-        Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>TestAppLocatiion</_Parameter1>
-        <_Parameter2>$(MSBuildThisFileDirectory)..\TestApp\</_Parameter2>
-      </AssemblyAttribute>
-  </ItemGroup>
-  </Target>
 
 </Project>

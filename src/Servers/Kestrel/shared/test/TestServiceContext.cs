@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal class TestServiceContext : ServiceContext
 {
@@ -64,7 +64,10 @@ internal class TestServiceContext : ServiceContext
 
         DateHeaderValueManager.OnHeartbeat();
         Metrics = metrics;
+        ShutdownTimeout = TestConstants.DefaultTimeout;
     }
+
+    public TimeSpan ShutdownTimeout { get; set; }
 
     public ILoggerFactory LoggerFactory { get; set; }
 

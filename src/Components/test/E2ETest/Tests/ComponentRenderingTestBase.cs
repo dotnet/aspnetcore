@@ -9,7 +9,7 @@ using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -27,7 +27,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -428,10 +428,9 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
-        Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+        Browser.Manage().Window.Size = new System.Drawing.Size(600, 600);
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 
         var buttonElement = Browser.Exists(By.Id("focus-button-prevented"));
@@ -451,7 +450,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var pageYOffsetAfter = getPageYOffset();
 
         //  Verify that not scrolled
-        Assert.Equal(pageYOffsetAfter, pageYOffsetBefore);
+        Assert.Equal(pageYOffsetBefore, pageYOffsetAfter);
 
         // A local helper that gets the ID of the focused element.
         string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");

@@ -45,11 +45,6 @@ internal static class HttpContextDatabaseContextDetailsExtensions
 
         var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
 
-        if (snapshotModel is IMutableModel mutableModel)
-        {
-            snapshotModel = mutableModel.FinalizeModel();
-        }
-
         if (snapshotModel != null)
         {
             snapshotModel = context.GetService<IModelRuntimeInitializer>().Initialize(snapshotModel);

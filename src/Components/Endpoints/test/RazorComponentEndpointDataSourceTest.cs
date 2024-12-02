@@ -7,10 +7,14 @@ using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Endpoints.Tests;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -22,7 +26,8 @@ public class RazorComponentEndpointDataSourceTest
         var endpointDataSource = CreateDataSource<App>();
 
         var endpoints = endpointDataSource.Endpoints;
-        Assert.Equal(2, endpoints.Count);
+
+        Assert.Equal(3, endpoints.Count);
     }
 
     [Fact]
@@ -34,7 +39,8 @@ public class RazorComponentEndpointDataSourceTest
         var endpointDataSource = CreateDataSource<App>(builder, services);
 
         var endpoints = endpointDataSource.Endpoints;
-        Assert.Empty(endpoints);
+
+        Assert.Single(endpoints);
     }
 
     // renderModes, providers, components, expectedEndpoints
@@ -217,6 +223,9 @@ public class RazorComponentEndpointDataSourceTest
             services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(RenderModeEndpointProvider), type));
         }
 
+        services.AddSingleton<IWebHostEnvironment, TestWebHostEnvironment>();
+        services.AddLogging();
+
         return services.BuildServiceProvider();
     }
 
@@ -228,7 +237,7 @@ public class RazorComponentEndpointDataSourceTest
         var result = new RazorComponentEndpointDataSource<TComponent>(
             builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
-            new ApplicationBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
+            new TestEndpointRouteBuilder(services ?? CreateServices()),
             new RazorComponentEndpointFactory(),
             new HotReloadService() { MetadataUpdateSupported = true });
 
@@ -276,6 +285,37 @@ public class RazorComponentEndpointDataSourceTest
         }
 
         public override bool Supports(IComponentRenderMode renderMode) => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
+    }
+
+    private class TestWebHostEnvironment : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "TestApplication";
+        public string EnvironmentName { get; set; } = "TestEnvironment";
+        public string WebRootPath { get; set; } = "";
+        public IFileProvider WebRootFileProvider { get => ContentRootFileProvider; set { } }
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = CreateTestFileProvider();
+
+        private static TestFileProvider CreateTestFileProvider()
+        {
+            var provider = new TestFileProvider();
+            provider.AddFile("site.css", "body { color: red; }");
+            return provider;
+        }
+    }
+
+    private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+    {
+        private IServiceProvider _serviceProvider;
+        private List<EndpointDataSource> _dataSources = new();
+
+        public TestEndpointRouteBuilder(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
+
+        public IServiceProvider ServiceProvider => _serviceProvider;
+
+        public ICollection<EndpointDataSource> DataSources => _dataSources;
+
+        public IApplicationBuilder CreateApplicationBuilder() => new ApplicationBuilder(_serviceProvider);
     }
 }
 

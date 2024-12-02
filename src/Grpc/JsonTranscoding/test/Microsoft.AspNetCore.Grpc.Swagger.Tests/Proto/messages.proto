@@ -107,3 +107,11 @@ message MapMessage {
 message FieldMaskMessage {
   google.protobuf.FieldMask field_mask_value = 1;
 }
+
+enum EnumWithoutMessage {
+  ENUM_WITHOUT_MESSAGE_UNSPECIFIED = 0;
+  ENUM_WITHOUT_MESSAGE_FOO = 1;
+  ENUM_WITHOUT_MESSAGE_BAR = 2;
+  ENUM_WITHOUT_MESSAGE_BAZ = 3;
+  ENUM_WITHOUT_MESSAGE_NEG = -1;  // Intentionally negative.
+}

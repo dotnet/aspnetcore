@@ -1,0 +1,94 @@
+<Project>
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorFrameworkStaticWebAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(BlazorFrameworkStaticWebAssetRoot)' == ''">$(MSBuildThisFileDirectory)..\_framework</BlazorFrameworkStaticWebAssetRoot>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(OutputType)' == 'Exe'">
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js" />
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.server.js" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(UseBlazorFrameworkDebugAssets)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js.map" />
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.server.js.map" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_IncludeAssetsInBlazorWebAssemblyProject Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND '$(StaticWebAssetProjectMode)' != 'Default'">true</_IncludeAssetsInBlazorWebAssemblyProject>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_IncludeAssetsInBlazorWebAssemblyProject)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.webassembly.js" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_IncludeAssetsInBlazorWebAssemblyProject)' == 'true' AND '$(UseBlazorFrameworkDebugAssets)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.webassembly.js.map" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_MissingFrameworkStaticWebAssetCandidate
+        Include="@(_FrameworkStaticWebAssetCandidate)"
+        Condition="!EXISTS('%(Identity)')" />
+      <_FrameworkStaticWebAssetCandidate Remove="@(_MissingFrameworkStaticWebAssetCandidate)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Framework asset '%(_MissingFrameworkStaticWebAssetCandidate.Identity)' could not be found and won't be included in the project." />
+
+    <PropertyGroup>
+      <_FrameworkAssetsPath>$(IntermediateOutputPath)frameworkassets</_FrameworkAssetsPath>
+    </PropertyGroup>
+
+    <MakeDir
+      Directories="$(_FrameworkAssetsPath)"
+      Condition="!EXISTS('$(_FrameworkAssetsPath)')" />
+
+    <Copy
+      SourceFiles="@(_FrameworkStaticWebAssetCandidate)"
+      DestinationFolder="$(_FrameworkAssetsPath)"
+      SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_CopiedFrameworkStaticWebAssetCandidate" />
+    </Copy>
+
+    <ItemGroup>
+      <_CopiedFrameworkStaticWebAssetCandidate>
+        <RelativePath>_framework\%(FileName)%(Extension)</RelativePath>
+        <ContentRoot>$(_FrameworkAssetsPath)</ContentRoot>
+      </_CopiedFrameworkStaticWebAssetCandidate>
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_CopiedFrameworkStaticWebAssetCandidate->Count())' != '0'"
+      CandidateAssets="@(_CopiedFrameworkStaticWebAssetCandidate)"
+      SourceId="$(PackageId)"
+      SourceType="Discovered"
+      AssetKind="All"
+      AssetMode="All"
+      AssetRole="Primary"
+      FingerprintCandidates="true"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_FrameworkStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_FrameworkStaticWebAsset)' != ''"
+      CandidateAssets="@(_FrameworkStaticWebAsset)"
+      ExistingEndpoints=""
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_FrameworkStaticAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_FrameworkStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_FrameworkStaticAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

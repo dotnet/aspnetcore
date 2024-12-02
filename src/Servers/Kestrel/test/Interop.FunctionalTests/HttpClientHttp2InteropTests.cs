@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -68,7 +68,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37943")]
     [MemberData(nameof(SupportedSchemes))]
     public async Task Echo(string scheme)
     {
@@ -99,7 +98,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
     // Concurrency testing
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37943")]
     [MemberData(nameof(SupportedSchemes))]
     public async Task MultiplexGet(string scheme)
     {
@@ -147,7 +145,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
     }
 
     // Concurrency testing
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38087")]
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
     public async Task MultiplexEcho(string scheme)
@@ -692,6 +689,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46717")]
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
     public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
@@ -1311,7 +1309,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41363")]
     public async Task Settings_MaxFrameSize_Larger_Server(string scheme)
     {
         var hostBuilder = new HostBuilder()

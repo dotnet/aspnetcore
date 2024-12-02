@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -95,8 +94,8 @@ internal sealed partial class DisconnectListener
             Log.CreateDisconnectTokenError(_logger, exception);
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
-            statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_IO_PENDING &&
+            statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             // We got an unknown result, assume the connection has been closed.
             boundHandle.FreeNativeOverlapped(nativeOverlapped);
@@ -105,7 +104,7 @@ internal sealed partial class DisconnectListener
             cts.Cancel();
         }
 
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
+        if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion
             boundHandle.FreeNativeOverlapped(nativeOverlapped);

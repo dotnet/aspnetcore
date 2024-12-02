@@ -27,29 +27,6 @@ public class KeyManagementOptions
     {
     }
 
-    // copy ctor
-    internal KeyManagementOptions(KeyManagementOptions other)
-    {
-        if (other != null)
-        {
-            AutoGenerateKeys = other.AutoGenerateKeys;
-            _newKeyLifetime = other._newKeyLifetime;
-            XmlEncryptor = other.XmlEncryptor;
-            XmlRepository = other.XmlRepository;
-            AuthenticatedEncryptorConfiguration = other.AuthenticatedEncryptorConfiguration;
-
-            foreach (var keyEscrowSink in other.KeyEscrowSinks)
-            {
-                KeyEscrowSinks.Add(keyEscrowSink);
-            }
-
-            foreach (var encryptorFactory in other.AuthenticatedEncryptorFactories)
-            {
-                AuthenticatedEncryptorFactories.Add(encryptorFactory);
-            }
-        }
-    }
-
     /// <summary>
     /// Specifies whether the data protection system should auto-generate keys.
     /// </summary>
@@ -116,6 +93,25 @@ public class KeyManagementOptions
             return _maxServerClockSkew;
         }
     }
+
+    /// <summary>
+    /// During each default key resolution, if a key decryption attempt fails,
+    /// it can be retried, as long as the total number of retries across all keys
+    /// does not exceed this value.
+    /// </summary>
+    /// <remarks>
+    /// Settable for testing.
+    /// </remarks>
+    internal int MaximumTotalDefaultKeyResolverRetries { get; set; } = 10;
+
+    /// <summary>
+    /// Wait this long before each default key resolution decryption retry.
+    /// <seealso cref="MaximumTotalDefaultKeyResolverRetries"/>
+    /// </summary>
+    /// <remarks>
+    /// Settable for testing.
+    /// </remarks>
+    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200);
 
     /// <summary>
     /// Controls the lifetime (number of days before expiration)

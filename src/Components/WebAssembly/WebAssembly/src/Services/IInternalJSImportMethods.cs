@@ -9,6 +9,10 @@ internal interface IInternalJSImportMethods
 
     string GetApplicationEnvironment();
 
+    void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId);
+
+    void EndUpdateRootComponents(long batchId);
+
     void NavigationManager_EnableNavigationInterception(int rendererId);
 
     void NavigationManager_ScrollToElement(string id);

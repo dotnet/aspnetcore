@@ -14,9 +14,11 @@
 ~static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedForHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedHostHeaderName.get -> string
+~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedProtoHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalForHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalHostHeaderName.get -> string
+~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPrefixHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalProtoHeaderName.get -> string
 ~static Microsoft.Extensions.DependencyInjection.CertificateForwardingServiceExtensions.AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 Microsoft.AspNetCore.Builder.CertificateForwardingBuilderExtensions
@@ -31,6 +33,8 @@ Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHeaders.set -> voi
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHeadersOptions() -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHostHeaderName.get -> string!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHostHeaderName.set -> void
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedPrefixHeaderName.get -> string!
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedPrefixHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.get -> string!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.get -> int?
@@ -41,6 +45,8 @@ Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalForHeaderName.get -
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalForHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalHostHeaderName.get -> string!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalHostHeaderName.set -> void
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalPrefixHeaderName.get -> string!
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalPrefixHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalProtoHeaderName.get -> string!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalProtoHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.RequireHeaderSymmetry.get -> bool
@@ -59,10 +65,11 @@ Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeade
 Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeader.set -> void
 Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.HeaderConverter -> System.Func<string!, System.Security.Cryptography.X509Certificates.X509Certificate2!>!
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
+Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPrefix -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.None = 0 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor = 1 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost = 2 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
+Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPrefix = 8 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto = 4 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware
@@ -85,8 +92,12 @@ static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOv
 static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedForHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedHostHeaderName.get -> string!
+static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedProtoHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalForHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalHostHeaderName.get -> string!
+static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPrefixHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalProtoHeaderName.get -> string!
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse(System.ReadOnlySpan<char> networkSpan) -> Microsoft.AspNetCore.HttpOverrides.IPNetwork!
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork.TryParse(System.ReadOnlySpan<char> networkSpan, out Microsoft.AspNetCore.HttpOverrides.IPNetwork? network) -> bool
 static Microsoft.Extensions.DependencyInjection.CertificateForwardingServiceExtensions.AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

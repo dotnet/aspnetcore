@@ -14,8 +14,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Options;
+using Windows.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -25,8 +26,7 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_200OK_Success()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 return Task.FromResult(0);
             }, LoggerFactory))
@@ -41,22 +41,20 @@ public class ServerTests : LoggedTest
     [InlineData(RequestQueueMode.CreateOrAttach)]
     public async Task Server_ConnectExistingQueueName_Success(RequestQueueMode queueMode)
     {
-        string address;
         var queueName = Guid.NewGuid().ToString();
 
         // First create the queue.
-        HttpRequestQueueV2Handle requestQueueHandle = null;
-        var statusCode = HttpApi.HttpCreateRequestQueue(
+        var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 queueName,
-                IntPtr.Zero,
+                default,
                 0,
-                out requestQueueHandle);
+                out var requestQueueHandle);
 
-        Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+        Assert.True(statusCode == ErrorCodes.ERROR_SUCCESS);
 
         // Now attach to the existing one
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             return Task.FromResult(0);
         }, options =>
@@ -93,9 +91,8 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_SetQueueName_Success()
     {
-        string address;
         var queueName = Guid.NewGuid().ToString();
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             return Task.FromResult(0);
         }, options =>
@@ -117,8 +114,7 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_SendHelloWorld_Success()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 httpContext.Response.ContentLength = 11;
                 return httpContext.Response.WriteAsync("Hello World");
@@ -132,8 +128,7 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_EchoHelloWorld_Success()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 var input = await new StreamReader(httpContext.Request.Body).ReadToEndAsync();
                 Assert.Equal("Hello World", input);
@@ -212,8 +207,7 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_AppException_ClientReset()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             throw new InvalidOperationException();
         }, LoggerFactory))
@@ -232,8 +226,7 @@ public class ServerTests : LoggedTest
     [ConditionalFact]
     public async Task Server_BadHttpRequestException_SetStatusCode()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, httpContext =>
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             throw new BadHttpRequestException("Something happened", StatusCodes.Status418ImATeapot);
         }, LoggerFactory))
@@ -256,8 +249,7 @@ public class ServerTests : LoggedTest
         int requestCount = 0;
         TaskCompletionSource tcs = new TaskCompletionSource();
 
-        string address;
-        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             if (Interlocked.Increment(ref requestCount) == requestLimit)
             {

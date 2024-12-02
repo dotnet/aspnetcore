@@ -7,6 +7,7 @@ using Example.Hello;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
@@ -70,6 +71,42 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void ReadNullStringProperty()
+    {
+        var json = @"{
+  ""name"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void ReadNullIntProperty()
+    {
+        var json = @"{
+  ""age"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void ReadNullProperties()
+    {
+        var json = @"{
+  ""age"": null,
+  ""nullValue"": null,
+  ""json_customized_name"": null,
+  ""field_name"": null,
+  ""oneof_name1"": null,
+  ""sub"": null,
+  ""timestamp_value"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
     public void RepeatedStrings()
     {
         var json = @"{
@@ -82,6 +119,46 @@ public class JsonConverterReadTests
 }";
 
         AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void Struct_NullProperty()
+    {
+        var json = @"{ ""prop"": null }";
+
+        AssertReadJson<Struct>(json);
+    }
+
+    [Fact]
+    public void Value_Null()
+    {
+        var json = "null";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_Integer()
+    {
+        var json = "1";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_String()
+    {
+        var json = @"""string!""";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_Boolean()
+    {
+        var json = "true";
+
+        AssertReadJson<Value>(json);
     }
 
     [Fact]
@@ -112,6 +189,34 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
     }
 
+    [Fact]
+    public void DataTypes_NullValues()
+    {
+        var json = @"{
+  ""singleInt32"": null,
+  ""singleInt64"": null,
+  ""singleUint32"": null,
+  ""singleUint64"": null,
+  ""singleSint32"": null,
+  ""singleSint64"": null,
+  ""singleFixed32"": null,
+  ""singleFixed64"": null,
+  ""singleSfixed32"": null,
+  ""singleSfixed64"": null,
+  ""singleFloat"": null,
+  ""singleDouble"": null,
+  ""singleBool"": null,
+  ""singleString"": null,
+  ""singleBytes"": null,
+  ""singleEnum"": null
+}";
+
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(-1)]
@@ -121,6 +226,31 @@ public class JsonConverterReadTests
         var json = @"{ ""singleEnum"": " + value + " }";
 
         AssertReadJson<HelloRequest.Types.DataTypes>(json);
+    }
+
+    [Theory]
+    [InlineData("FOO")]
+    [InlineData("BAR")]
+    [InlineData("NEG")]
+    public void Enum_ReadString(string value)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+    }
+
+    [Fact]
+    public void Enum_ReadString_NotAllowedValue()
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @"{ ""singleEnum"": ""INVALID"" }";
+
+        AssertReadJsonError<HelloRequest.Types.DataTypes>(json, ex => Assert.Equal(@"Error converting value ""INVALID"" to enum type Transcoding.HelloRequest+Types+DataTypes+Types+NestedEnum.", ex.Message), descriptorRegistry: serviceDescriptorRegistry, deserializeOld: false);
     }
 
     [Fact]
@@ -539,7 +669,7 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool deserializeOld = true) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -552,12 +682,15 @@ public class JsonConverterReadTests
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));
         assertException(ex);
 
-        var formatter = new JsonParser(new JsonParser.Settings(
-            recursionLimit: int.MaxValue,
-            typeRegistery));
+        if (deserializeOld)
+        {
+            var formatter = new JsonParser(new JsonParser.Settings(
+                recursionLimit: int.MaxValue,
+                typeRegistery));
 
-        ex = Assert.ThrowsAny<Exception>(() => formatter.Parse<TValue>(value));
-        assertException(ex);
+            ex = Assert.ThrowsAny<Exception>(() => formatter.Parse<TValue>(value));
+            assertException(ex);
+        }
     }
 
     internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry descriptorRegistry)

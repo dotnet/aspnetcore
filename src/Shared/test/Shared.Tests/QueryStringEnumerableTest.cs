@@ -69,7 +69,7 @@ public class QueryStringEnumerableTest
     [InlineData("")]
     [InlineData(null)]
     [InlineData("?&&")]
-    public void ParseEmptyOrNullQueryWorks(string queryString)
+    public void ParseEmptyOrNullQueryWorks(string? queryString)
     {
         Assert.Empty(Parse(queryString));
     }

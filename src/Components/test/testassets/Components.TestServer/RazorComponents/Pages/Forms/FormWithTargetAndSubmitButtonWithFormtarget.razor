@@ -1,0 +1,13 @@
+﻿@page "/forms/form-with-target-and-submit-button-with-formtarget/{target}/{formtarget?}"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Form with target and Submit Button with formtarget</h1>
+
+<form id="form" data-enhance target="@Target">
+    <input id="submit-button" type="submit" formtarget="@Formtarget" />
+</form>
+
+@code {
+    [Parameter] public string Target { get; set; }
+    [Parameter] public string? Formtarget { get; set; }
+}

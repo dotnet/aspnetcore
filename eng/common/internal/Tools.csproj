@@ -1,9 +1,10 @@
 <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
     <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
+    <BuildWithNetFrameworkHostedCompiler>false</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
   <ItemGroup>
     <!-- Clear references, the SDK may add some depending on UsuingToolXxx settings, but we only want to restore the following -->
@@ -27,4 +28,5 @@
 
   <!-- Repository extensibility point -->
   <Import Project="$(RepositoryEngineeringDir)InternalTools.props" Condition="Exists('$(RepositoryEngineeringDir)InternalTools.props')" />
+
 </Project>

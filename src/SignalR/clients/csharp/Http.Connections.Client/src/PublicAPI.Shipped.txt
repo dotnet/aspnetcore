@@ -41,6 +41,8 @@ Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> Sy
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseDefaultCredentials.get -> bool?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseDefaultCredentials.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.get -> bool
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.get -> System.Action<System.Net.WebSockets.ClientWebSocketOptions!>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.get -> System.Func<Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Net.WebSockets.WebSocket!>>?

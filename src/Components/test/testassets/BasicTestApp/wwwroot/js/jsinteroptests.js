@@ -346,11 +346,6 @@ function returnJSObjectReference() {
     dispose: function () {
       DotNet.disposeJSObjectReference(this);
     },
-    unmarshalledFunction: function (fields) {
-      const message = Blazor.platform.readStringField(fields, 0);
-      const numberField = Blazor.platform.readInt32Field(fields, 8);
-      return message === "Sent from .NET" && numberField === 42;
-    }
   };
 }
 

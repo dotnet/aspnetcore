@@ -31,8 +31,7 @@ public abstract class EndpointFilterInvocationContext
     public abstract T GetArgument<T>(int index);
 
     /// <summary>
-    /// Creates a strongly-typed implementation of a <see cref="EndpointFilterInvocationContext"/>
-    /// given the provided type parameters.
+    /// Creates the default implementation of a <see cref="EndpointFilterInvocationContext"/>.    
     /// </summary>
     public static EndpointFilterInvocationContext Create(HttpContext httpContext) =>
         new DefaultEndpointFilterInvocationContext(httpContext);

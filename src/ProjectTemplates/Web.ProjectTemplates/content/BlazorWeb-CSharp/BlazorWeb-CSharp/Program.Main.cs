@@ -1,7 +1,6 @@
 #if (IndividualLocalAuth)
+#if (UseServer)
 using Microsoft.AspNetCore.Components.Authorization;
-#if (!UseServer && !UseWebAssembly)
-using Microsoft.AspNetCore.Components.Server;
 #endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,12 +27,19 @@ public class Program
         builder.Services.AddRazorComponents();
         #else
         builder.Services.AddRazorComponents()
-          #if (UseServer && UseWebAssembly)
+          #if (UseServer && UseWebAssembly && IndividualLocalAuth)
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents()
+            .AddAuthenticationStateSerialization();
+          #elif (UseServer && UseWebAssembly)
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
-          #elif(UseServer)
+          #elif (UseServer)
             .AddInteractiveServerComponents();
-          #elif(UseWebAssembly)
+          #elif (UseWebAssembly && IndividualLocalAuth)
+            .AddInteractiveWebAssemblyComponents()
+            .AddAuthenticationStateSerialization();
+          #elif (UseWebAssembly)
             .AddInteractiveWebAssemblyComponents();
           #endif
         #endif
@@ -42,25 +48,19 @@ public class Program
         builder.Services.AddCascadingAuthenticationState();
         builder.Services.AddScoped<IdentityUserAccessor>();
         builder.Services.AddScoped<IdentityRedirectManager>();
-        #if (UseServer && UseWebAssembly)
-        builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
-        #elif (UseServer)
+        #if (UseServer)
         builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-        #elif (UseWebAssembly)
-        builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
-        #else
-        builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         #endif
 
-        #if (!UseServer)
-        builder.Services.AddAuthorization();
-        #endif
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
             .AddIdentityCookies();
+        #if (!UseServer)
+        builder.Services.AddAuthorization();
+        #endif
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -108,9 +108,9 @@ public class Program
         app.UseHttpsRedirection();
 
         #endif
-        app.UseStaticFiles();
         app.UseAntiforgery();
 
+        app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
@@ -124,9 +124,7 @@ public class Program
         #else
         app.MapRazorComponents<App>();
         #endif
-        #if (UseWebAssembly && SampleContent)
-            .AddAdditionalAssemblies(typeof(Counter).Assembly);
-        #elif (UseWebAssembly)
+        #if (UseWebAssembly)
             .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
         #endif
 

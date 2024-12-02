@@ -3,7 +3,7 @@
 
 using System.Text.Json;
 using Google.Protobuf.Reflection;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding;

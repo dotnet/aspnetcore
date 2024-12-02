@@ -22,7 +22,7 @@ public class HttpRequestHeadersTests
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
 
-        Assert.Equal(0, headers.Count);
+        Assert.Empty(headers);
         Assert.False(headers.IsReadOnly);
     }
 
@@ -320,7 +320,7 @@ public class HttpRequestHeadersTests
 
         headers.Clear();
 
-        Assert.Equal(0, headers.Count);
+        Assert.Empty(headers);
         Assert.False(headers.TryGetValue("host", out value));
         Assert.False(headers.TryGetValue("custom", out value));
         Assert.False(headers.TryGetValue("Content-Length", out value));
@@ -350,7 +350,7 @@ public class HttpRequestHeadersTests
         Assert.True(headers.Remove("custom"));
         Assert.False(headers.Remove("custom"));
 
-        Assert.Equal(1, headers.Count);
+        Assert.Single(headers);
         Assert.False(headers.TryGetValue("host", out value));
         Assert.False(headers.TryGetValue("custom", out value));
         Assert.True(headers.TryGetValue("Content-Length", out value));
@@ -358,7 +358,7 @@ public class HttpRequestHeadersTests
         Assert.True(headers.Remove("Content-Length"));
         Assert.False(headers.Remove("Content-Length"));
 
-        Assert.Equal(0, headers.Count);
+        Assert.Empty(headers);
         Assert.False(headers.TryGetValue("host", out value));
         Assert.False(headers.TryGetValue("custom", out value));
         Assert.False(headers.TryGetValue("Content-Length", out value));
@@ -379,13 +379,13 @@ public class HttpRequestHeadersTests
         Assert.Equal(new StringValues(), entries[0].Value);
 
         Assert.Equal("Host", entries[1].Key);
-        Assert.Equal(new[] { "localhost" }, entries[1].Value);
+        Assert.Equal(new[] { "localhost" }, entries[1].Value.ToArray());
 
         Assert.Equal("Content-Length", entries[2].Key);
-        Assert.Equal(new[] { "0" }, entries[2].Value);
+        Assert.Equal(new[] { "0" }, entries[2].Value.ToArray());
 
         Assert.Equal("custom", entries[3].Key);
-        Assert.Equal(new[] { "value" }, entries[3].Value);
+        Assert.Equal(new[] { "value" }, entries[3].Value.ToArray());
 
         Assert.Null(entries[4].Key);
         Assert.Equal(new StringValues(), entries[4].Value);
@@ -831,6 +831,18 @@ public class HttpRequestHeadersTests
         Assert.Equal(0, count);
     }
 
+    [Fact]
+    public void ContentLengthEnumerableWithoutOtherKnownHeader()
+    {
+        IHeaderDictionary headers = new HttpRequestHeaders();
+        headers["content-length"] = "1024";
+        Assert.Single(headers);
+        headers["unknown"] = "value";
+        Assert.Equal(2, headers.Count()); // NB: enumerable count, not property
+        headers["host"] = "myhost";
+        Assert.Equal(3, headers.Count()); // NB: enumerable count, not property
+    }
+
     private static (string PrevHeaderValue, string NextHeaderValue) GetHeaderValues(HttpRequestHeaders headers, string prevName, string nextName, string prevValue, string nextValue)
     {
         headers.Reset();
@@ -870,7 +882,7 @@ public class HttpRequestHeadersTests
         }
 
         // Never reached
-        Assert.False(true);
+        Assert.Fail();
         return name;
     }
 

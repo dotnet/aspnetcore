@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <!-- Forcing the device width here so that our automated tests work consistently on mobile browsers. -->
+    <meta name="viewport" content="width=1024">
+    <title>Blazor standalone</title>
+    <base href="/" />
+    <link href="bootstrap.min.css" rel="stylesheet" />
+    <link href="app.css" rel="stylesheet" />
+</head>
+<body>
+    <app>Loading...</app>
+
+    <div id="blazor-error-ui">
+        An unhandled exception has occurred. See browser dev tools for details.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        (function(){
+            Blazor.start().then(function () {
+                window['__aspnetcore__testing__blazor_wasm__started__'] = true;
+            });
+        })();
+    </script>
+</body>
+</html>

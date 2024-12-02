@@ -69,31 +69,38 @@ public class OpenApiRouteHandlerBuilderExtensionsTest
     }
 
     [Fact]
-    public void ProdcesProblem_AddsProducesResponseTypeMetadataWithProblemDetailsType()
+    public void ProducesProblem_AddsProducesResponseTypeMetadataWithProblemDetailsType()
     {
-        var testBuilder = new TestEndointConventionBuilder();
-        var builder = new RouteHandlerBuilder(new[] { testBuilder });
+        static void GenericProducesProblem(IEndpointConventionBuilder builder) => builder.ProducesProblem(StatusCodes.Status400BadRequest);
+        static void SpecificProducesProblem(RouteHandlerBuilder builder) => builder.ProducesProblem(StatusCodes.Status400BadRequest);
 
-        builder.ProducesProblem(StatusCodes.Status400BadRequest);
+        static void AssertMetadata(EndpointBuilder builder)
+        {
+            var metadata = Assert.IsType<ProducesResponseTypeMetadata>(Assert.Single(builder.Metadata));
+            Assert.Equal(typeof(ProblemDetails), metadata.Type);
+            Assert.Equal(StatusCodes.Status400BadRequest, metadata.StatusCode);
+            Assert.Equal("application/problem+json", Assert.Single(metadata.ContentTypes));
+        }
 
-        var metadata = Assert.IsType<ProducesResponseTypeMetadata>(Assert.Single(testBuilder.Metadata));
-        Assert.Equal(typeof(ProblemDetails), metadata.Type);
-        Assert.Equal(StatusCodes.Status400BadRequest, metadata.StatusCode);
-        Assert.Equal("application/problem+json", Assert.Single(metadata.ContentTypes));
+        RunWithBothBuilders(GenericProducesProblem, SpecificProducesProblem, AssertMetadata);
+
     }
 
     [Fact]
-    public void ProdcesValidiationProblem_AddsProducesResponseTypeMetadataWithHttpValidationProblemDetailsType()
+    public void ProducesValidationProblem_AddsProducesResponseTypeMetadataWithHttpValidationProblemDetailsType()
     {
-        var testBuilder = new TestEndointConventionBuilder();
-        var builder = new RouteHandlerBuilder(new[] { testBuilder });
+        static void GenericProducesProblem(IEndpointConventionBuilder builder) => builder.ProducesValidationProblem();
+        static void SpecificProducesProblem(RouteHandlerBuilder builder) => builder.ProducesValidationProblem();
 
-        builder.ProducesValidationProblem();
+        static void AssertMetadata(EndpointBuilder builder)
+        {
+            var metadata = Assert.IsType<ProducesResponseTypeMetadata>(Assert.Single(builder.Metadata));
+            Assert.Equal(typeof(HttpValidationProblemDetails), metadata.Type);
+            Assert.Equal(StatusCodes.Status400BadRequest, metadata.StatusCode);
+            Assert.Equal("application/problem+json", Assert.Single(metadata.ContentTypes));
+        }
 
-        var metadata = Assert.IsType<ProducesResponseTypeMetadata>(Assert.Single(testBuilder.Metadata));
-        Assert.Equal(typeof(HttpValidationProblemDetails), metadata.Type);
-        Assert.Equal(StatusCodes.Status400BadRequest, metadata.StatusCode);
-        Assert.Equal("application/problem+json", Assert.Single(metadata.ContentTypes));
+        RunWithBothBuilders(GenericProducesProblem, SpecificProducesProblem, AssertMetadata);
     }
 
     [Fact]

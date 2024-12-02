@@ -96,7 +96,7 @@ public class MultipartReader
             return null;
         }
         var headers = await ReadHeadersAsync(cancellationToken);
-        _boundary.ExpectLeadingCrlf = true;
+        _boundary.ExpectLeadingCrlf();
         _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
         long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
         return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
@@ -106,7 +106,7 @@ public class MultipartReader
     {
         int totalSize = 0;
         var accumulator = new KeyValueAccumulator();
-        var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
+        var line = await _stream.ReadLineAsync(HeadersLengthLimit, cancellationToken);
         while (!string.IsNullOrEmpty(line))
         {
             if (HeadersLengthLimit - totalSize < line.Length)

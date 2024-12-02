@@ -26,10 +26,10 @@ internal sealed class RefreshCommand : BaseCommand
 
     protected override async Task<int> ExecuteCoreAsync()
     {
+        ArgumentException.ThrowIfNullOrEmpty(_sourceFileArg.Value);
+
         var projectFile = ResolveProjectFile(ProjectFileOption);
-
-        var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
-
+        var sourceFile = _sourceFileArg.Value;
         var destination = FindReferenceFromUrl(projectFile, sourceFile);
         await DownloadToFileAsync(sourceFile, destination, overwrite: true);
 
@@ -55,8 +55,9 @@ internal sealed class RefreshCommand : BaseCommand
 
     protected override bool ValidateArguments()
     {
-        var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
-        if (!IsUrl(sourceFile))
+        ArgumentException.ThrowIfNullOrEmpty(_sourceFileArg.Value);
+
+        if (!IsUrl(_sourceFileArg.Value))
         {
             throw new ArgumentException("'dotnet openapi refresh' must be given a URL");
         }

@@ -3,6 +3,7 @@
 
 #nullable disable
 using System.Text.Json;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -10,28 +11,28 @@ public class DotNetDispatcherTest
 {
     private static readonly string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
-    [Fact]
-    public void CannotInvokeWithEmptyAssemblyName()
+    [Theory]
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string or composed entirely of whitespace.")]
+    public void CannotInvokeWithInvalidAssemblyName(string assemblyName, string expectedMessage)
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(" ", "SomeMethod", default, default), "[]");
-        });
-
-        Assert.StartsWith("Property 'AssemblyName' cannot be null, empty, or whitespace.", ex.Message);
-        Assert.Equal("assemblyKey", ex.ParamName);
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(assemblyName, "SomeMethod", default, default), "[]"),
+            "assemblyKey.AssemblyName",
+            expectedMessage);
     }
 
-    [Fact]
-    public void CannotInvokeWithEmptyMethodIdentifier()
+    [Theory]
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string or composed entirely of whitespace.")]
+    public void CannotInvokeWithInvalidMethodIdentifier(string methodIdentifier, string expectedMessage)
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo("SomeAssembly", " ", default, default), "[]");
-        });
-
-        Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
-        Assert.Equal("methodIdentifier", ex.ParamName);
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo("SomeAssembly", methodIdentifier, default, default), "[]"),
+            "methodIdentifier",
+            expectedMessage);
     }
 
     [Fact]
@@ -272,7 +273,9 @@ public class DotNetDispatcherTest
 
         // Assert
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var result = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(testDTO.StringVal, result.StringVal);
         Assert.Equal(testDTO.IntVal, result.IntVal);
     }
@@ -406,7 +409,9 @@ public class DotNetDispatcherTest
 
         // Assert
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(7, task.Result.IntVal);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -418,7 +423,9 @@ public class DotNetDispatcherTest
         DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
 
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal(new[] { 1, 2, 3 }, task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -430,7 +437,9 @@ public class DotNetDispatcherTest
         DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
 
         Assert.True(task.IsCompletedSuccessfully);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Null(task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]

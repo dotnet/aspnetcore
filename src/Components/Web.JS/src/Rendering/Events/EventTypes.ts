@@ -260,6 +260,7 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
     altKey: event.altKey,
     metaKey: event.metaKey,
     type: event.type,
+    isComposing: event.isComposing,
   };
 }
 
@@ -411,6 +412,7 @@ interface KeyboardEventArgs {
   altKey: boolean;
   metaKey: boolean;
   type: string;
+  isComposing: boolean;
 }
 
 interface MouseEventArgs {

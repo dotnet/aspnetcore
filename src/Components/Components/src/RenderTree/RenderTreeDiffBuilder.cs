@@ -978,7 +978,7 @@ internal static class RenderTreeDiffBuilder
             newFrame.AttributeNameField.Length >= 3 &&
             newFrame.AttributeNameField.StartsWith("on", StringComparison.Ordinal))
         {
-            diffContext.Renderer.AssignEventHandlerId(ref newFrame);
+            diffContext.Renderer.AssignEventHandlerId(diffContext.ComponentId, ref newFrame);
         }
     }
 

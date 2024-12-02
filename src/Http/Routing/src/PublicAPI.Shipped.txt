@@ -74,6 +74,7 @@ Microsoft.AspNetCore.Builder.RouteHandlerBuilder.RouteHandlerBuilder(System.Coll
 Microsoft.AspNetCore.Builder.RouterMiddleware
 Microsoft.AspNetCore.Builder.RouterMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.RouterMiddleware.RouterMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Routing.IRouter! router) -> void
+Microsoft.AspNetCore.Builder.RouteShortCircuitEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Builder.RoutingBuilderExtensions
 Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Http.EndpointFilterExtensions
@@ -165,6 +166,10 @@ Microsoft.AspNetCore.Routing.Constraints.RequiredRouteConstraint.RequiredRouteCo
 Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint
 Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint.Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route, string! routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
 Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint.StringRouteConstraint(string! value) -> void
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.ContentEncodingMetadata(string! value, double quality) -> void
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Quality.get -> double
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Value.get -> string!
 Microsoft.AspNetCore.Routing.DataTokensMetadata
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
@@ -415,6 +420,7 @@ Microsoft.AspNetCore.Routing.RouteHandlerOptions
 Microsoft.AspNetCore.Routing.RouteHandlerOptions.RouteHandlerOptions() -> void
 Microsoft.AspNetCore.Routing.RouteHandlerOptions.ThrowOnBadRequest.get -> bool
 Microsoft.AspNetCore.Routing.RouteHandlerOptions.ThrowOnBadRequest.set -> void
+Microsoft.AspNetCore.Routing.RouteHandlerServices
 Microsoft.AspNetCore.Routing.RouteNameMetadata
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
@@ -432,6 +438,7 @@ Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, Syst
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SuppressCheckForUnhandledSecurityMetadata.get -> bool
 Microsoft.AspNetCore.Routing.RouteOptions.SuppressCheckForUnhandledSecurityMetadata.set -> void
+Microsoft.AspNetCore.Routing.RouteShortCircuitEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Routing.RouteValueEqualityComparer
 Microsoft.AspNetCore.Routing.RouteValueEqualityComparer.Equals(object? x, object? y) -> bool
 Microsoft.AspNetCore.Routing.RouteValueEqualityComparer.GetHashCode(object! obj) -> int
@@ -539,8 +546,13 @@ Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions
 override Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.Endpoints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!
 override Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken!
 override Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.GetGroupedEndpoints(Microsoft.AspNetCore.Routing.RouteGroupContext! context) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!
+override Microsoft.AspNetCore.Routing.DataTokensMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.DefaultEndpointDataSource.Endpoints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!
 override Microsoft.AspNetCore.Routing.DefaultEndpointDataSource.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken!
+override Microsoft.AspNetCore.Routing.EndpointNameMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Routing.HostAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Routing.HttpMethodMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.Matching.HostMatcherPolicy.Order.get -> int
 override Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy.Order.get -> int
 override Microsoft.AspNetCore.Routing.Patterns.RoutePatternException.GetObjectData(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
@@ -548,7 +560,10 @@ override Microsoft.AspNetCore.Routing.Route.OnRouteMatched(Microsoft.AspNetCore.
 override Microsoft.AspNetCore.Routing.Route.OnVirtualPathGenerated(Microsoft.AspNetCore.Routing.VirtualPathContext! context) -> Microsoft.AspNetCore.Routing.VirtualPathData?
 override Microsoft.AspNetCore.Routing.RouteBase.ToString() -> string!
 override Microsoft.AspNetCore.Routing.RouteEndpointBuilder.Build() -> Microsoft.AspNetCore.Http.Endpoint!
+override Microsoft.AspNetCore.Routing.RouteNameMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.RouteValuesAddress.ToString() -> string?
+override Microsoft.AspNetCore.Routing.SuppressLinkGenerationMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.SuppressMatchingMetadata.ToString() -> string!
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, System.Delegate! handler) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
@@ -577,14 +592,19 @@ static Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions.MapRoute(this
 static Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions.MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder! routeBuilder, string? name, string? template, object? defaults) -> Microsoft.AspNetCore.Routing.IRouteBuilder!
 static Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions.MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder! routeBuilder, string? name, string? template, object? defaults, object? constraints) -> Microsoft.AspNetCore.Routing.IRouteBuilder!
 static Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions.MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder! routeBuilder, string? name, string? template, object? defaults, object? constraints, object? dataTokens) -> Microsoft.AspNetCore.Routing.IRouteBuilder!
+static Microsoft.AspNetCore.Builder.RouteShortCircuitEndpointConventionBuilderExtensions.ShortCircuit(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, int? statusCode = null) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RoutingBuilderExtensions.UseRouter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Routing.IRouter! router) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.RoutingBuilderExtensions.UseRouter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder!>! action) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.DisableAntiforgery<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.RequireHost<TBuilder>(this TBuilder builder, params string![]! hosts) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithDisplayName<TBuilder>(this TBuilder builder, string! displayName) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithDisplayName<TBuilder>(this TBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder!, string!>! func) -> TBuilder
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithFormMappingOptions<TBuilder>(this TBuilder builder, int? maxCollectionSize = null, int? maxRecursionDepth = null, int? maxKeySize = null) -> TBuilder
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithFormOptions<TBuilder>(this TBuilder builder, bool? bufferBody = null, int? memoryBufferThreshold = null, long? bufferBodyLengthLimit = null, int? valueCountLimit = null, int? keyLengthLimit = null, int? valueLengthLimit = null, int? multipartBoundaryLengthLimit = null, int? multipartHeadersCountLimit = null, int? multipartHeadersLengthLimit = null, long? multipartBodyLengthLimit = null) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithGroupName<TBuilder>(this TBuilder builder, string! endpointGroupName) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithMetadata<TBuilder>(this TBuilder builder, params object![]! items) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithName<TBuilder>(this TBuilder builder, string! endpointName) -> TBuilder
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithOrder<TBuilder>(this TBuilder builder, int order) -> TBuilder
 static Microsoft.AspNetCore.Http.EndpointFilterExtensions.AddEndpointFilter<TBuilder, TFilterType>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Http.EndpointFilterExtensions.AddEndpointFilter<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.Http.IEndpointFilter! filter) -> TBuilder
 static Microsoft.AspNetCore.Http.EndpointFilterExtensions.AddEndpointFilter<TBuilder>(this TBuilder builder, System.Func<Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, System.Threading.Tasks.ValueTask<object?>>! routeHandlerFilter) -> TBuilder
@@ -600,7 +620,9 @@ static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ExcludeFro
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.Produces(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, int statusCode, System.Type? responseType = null, string? contentType = null, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.Produces<TResponse>(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, int statusCode = 200, string? contentType = null, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesProblem(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, int statusCode, string? contentType = null) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesProblem<TBuilder>(this TBuilder builder, int statusCode, string? contentType = null) -> TBuilder
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesValidationProblem(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, int statusCode = 400, string? contentType = null) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesValidationProblem<TBuilder>(this TBuilder builder, int statusCode = 400, string? contentType = null) -> TBuilder
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.WithDescription<TBuilder>(this TBuilder builder, string! description) -> TBuilder
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.WithSummary<TBuilder>(this TBuilder builder, string! summary) -> TBuilder
 static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.WithTags(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, params string![]! tags) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
@@ -676,6 +698,9 @@ static Microsoft.AspNetCore.Routing.RequestDelegateRouteBuilderExtensions.MapVer
 static Microsoft.AspNetCore.Routing.RouteBase.GetConstraints(Microsoft.AspNetCore.Routing.IInlineConstraintResolver! inlineConstraintResolver, Microsoft.AspNetCore.Routing.Template.RouteTemplate! parsedTemplate, System.Collections.Generic.IDictionary<string!, object!>? constraints) -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.Routing.IRouteConstraint!>!
 static Microsoft.AspNetCore.Routing.RouteBase.GetDefaults(Microsoft.AspNetCore.Routing.Template.RouteTemplate! parsedTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary? defaults) -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 static Microsoft.AspNetCore.Routing.RouteConstraintMatcher.Match(System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.Routing.IRouteConstraint!>! constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues, Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.IRouter! route, Microsoft.AspNetCore.Routing.RouteDirection routeDirection, Microsoft.Extensions.Logging.ILogger! logger) -> bool
+static Microsoft.AspNetCore.Routing.RouteHandlerServices.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler, System.Collections.Generic.IEnumerable<string!>? httpMethods, System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult!>! populateMetadata, System.Func<System.Delegate!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions!, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult!>! createRequestDelegate) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Routing.RouteHandlerServices.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler, System.Collections.Generic.IEnumerable<string!>? httpMethods, System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult!>! populateMetadata, System.Func<System.Delegate!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions!, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult!>! createRequestDelegate, System.Reflection.MethodInfo! methodInfo) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Routing.RouteShortCircuitEndpointRouteBuilderExtensions.MapShortCircuit(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! builder, int statusCode, params string![]! routePrefixes) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Routing.Template.RoutePrecedence.ComputeInbound(Microsoft.AspNetCore.Routing.Template.RouteTemplate! template) -> decimal
 static Microsoft.AspNetCore.Routing.Template.RoutePrecedence.ComputeOutbound(Microsoft.AspNetCore.Routing.Template.RouteTemplate! template) -> decimal
 static Microsoft.AspNetCore.Routing.Template.TemplateBinder.RoutePartsEqual(object? a, object? b) -> bool
@@ -684,6 +709,7 @@ static Microsoft.AspNetCore.Routing.Template.TemplatePart.CreateLiteral(string! 
 static Microsoft.AspNetCore.Routing.Template.TemplatePart.CreateParameter(string! name, bool isCatchAll, bool isOptional, object? defaultValue, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Template.InlineConstraint!>? inlineConstraints) -> Microsoft.AspNetCore.Routing.Template.TemplatePart!
 static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRouting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRouting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Routing.RouteOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRoutingCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static readonly Microsoft.AspNetCore.Builder.FallbackEndpointRouteBuilderExtensions.DefaultPattern -> string!
 static readonly Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>.Default -> Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata!>!
 static readonly Microsoft.AspNetCore.Routing.Patterns.RoutePattern.RequiredValueAny -> object!

@@ -194,7 +194,7 @@ public class ChecksumValidatorTest
         {
                 new RazorSourceChecksumAttribute("SHA256", GetChecksumSHA256("some other import"), "/Views/_ViewImports.cstml"),
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some import"), "/Views/Home/_ViewImports.cstml"),
-                new RazorSourceChecksumAttribute("SHA256", GetChecksumSHA256("some content"), "/Views/Home/Index.cstml"),
+                new RazorSourceChecksumAttribute("Sha256", GetChecksumSHA256("some content"), "/Views/Home/Index.cstml"),
         });
 
         ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));

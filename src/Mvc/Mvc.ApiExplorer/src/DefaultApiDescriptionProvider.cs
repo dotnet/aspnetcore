@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 /// Implements a provider of <see cref="ApiDescription"/> for actions represented
 /// by <see cref="ControllerActionDescriptor"/>.
 /// </summary>
+[RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+[RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
 public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 {
     private readonly MvcOptions _mvcOptions;
@@ -268,7 +271,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         !defaultModelMetadata.Attributes.Attributes.OfType<IFromRouteMetadata>().Any())
                     {
                         // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
-                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
+                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)
                         // probably because another route to this action contains it as route parameter and
                         // will be removed from the API description
                         // https://github.com/dotnet/aspnetcore/issues/26234
@@ -532,6 +535,8 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
+    [RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+    [RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)

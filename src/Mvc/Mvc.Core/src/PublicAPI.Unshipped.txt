@@ -1,32 +1,8 @@
 #nullable enable
-*REMOVED*static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values, string? scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
-Microsoft.AspNetCore.Mvc.MiddlewareFilterAttribute<T>
-Microsoft.AspNetCore.Mvc.MiddlewareFilterAttribute<T>.MiddlewareFilterAttribute() -> void
-Microsoft.AspNetCore.Mvc.ModelBinderAttribute<TBinder>
-Microsoft.AspNetCore.Mvc.ModelBinderAttribute<TBinder>.ModelBinderAttribute() -> void
-Microsoft.AspNetCore.Mvc.ModelMetadataTypeAttribute<T>
-Microsoft.AspNetCore.Mvc.ModelMetadataTypeAttribute<T>.ModelMetadataTypeAttribute() -> void
-Microsoft.AspNetCore.Mvc.ProducesAttribute<T>
-Microsoft.AspNetCore.Mvc.ProducesAttribute<T>.ProducesAttribute() -> void
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute<T>
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute<T>.ProducesResponseTypeAttribute(int statusCode) -> void
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute<T>.ProducesResponseTypeAttribute(int statusCode, string! contentType, params string![]! additionalContentTypes) -> void
-Microsoft.AspNetCore.Mvc.ServiceFilterAttribute<TFilter>
-Microsoft.AspNetCore.Mvc.ServiceFilterAttribute<TFilter>.ServiceFilterAttribute() -> void
-Microsoft.AspNetCore.Mvc.TypeFilterAttribute<TFilter>
-Microsoft.AspNetCore.Mvc.TypeFilterAttribute<TFilter>.TypeFilterAttribute() -> void
-Microsoft.AspNetCore.Mvc.ValidationProblemDetails.Errors.set -> void
-static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values, string! scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult() -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string! location, object? value) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri! location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string? location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri? location, object? value) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string!
-Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string?
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created() -> Microsoft.AspNetCore.Mvc.CreatedResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.set -> void
+Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.set -> void
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.set -> void

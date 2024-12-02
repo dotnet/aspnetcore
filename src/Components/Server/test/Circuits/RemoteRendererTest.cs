@@ -183,7 +183,9 @@ public class RemoteRendererTest
 
         // Assert
         Assert.Equal(new long[] { 2, 3, 4 }, renderIds);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(task.Wait(3000), "One or more render batches weren't acknowledged");
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         await task;
     }
@@ -738,7 +740,7 @@ public class RemoteRendererTest
         {
         }
 
-        public TestComponent(RenderFragment renderFragment)
+        internal TestComponent(RenderFragment renderFragment)
         {
             _renderFragment = renderFragment;
         }

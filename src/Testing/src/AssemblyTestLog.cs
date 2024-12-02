@@ -18,7 +18,7 @@ using Serilog.Extensions.Logging;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 {
@@ -225,7 +225,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
             {
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains(
-                    "Microsoft.AspNetCore.Testing"
+                    "Microsoft.AspNetCore.InternalTesting"
 #if NETCOREAPP
                     , StringComparison.Ordinal
 #endif

@@ -53,4 +53,9 @@ internal static class RequestDelegateCreationLogging
     public const string FormDataMappingFailedEventName = "FormDataMappingFailed";
     public const string FormDataMappingFailedLogMessage = @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
     public const string FormDataMappingFailedExceptionMessage = @"Failed to bind parameter ""{0} {1}"" from the request body as form.";
+
+    public const int UnexpectedRequestWithoutBodyEventId = 11;
+    public const string UnexpectedRequestWithoutBodyEventName = "UnexpectedRequestWithoutBody";
+    public const string UnexpectedRequestWithoutBodyLogMessage = @"Unexpected request without body, failed to bind parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
+    public const string UnexpectedRequestWithoutBodyExceptionMessage = @"Unexpected request without body, failed to bind parameter ""{0} {1}"" from the request body as form.";
 }

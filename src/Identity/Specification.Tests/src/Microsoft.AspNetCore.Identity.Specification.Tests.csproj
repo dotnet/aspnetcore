@@ -13,7 +13,7 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
     <Reference Include="xunit.analyzers" PrivateAssets="All" />

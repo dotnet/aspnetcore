@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -22,8 +22,23 @@ public class ResponseCachingTests : LoggedTest
 
     public ResponseCachingTests()
     {
-        _absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Microsoft.AspNetCore.Server.HttpSys.dll");
-        _fileLength = new FileInfo(_absoluteFilePath).Length;
+        _absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+        using var file = File.Create(_absoluteFilePath);
+        // HttpSys will cache responses up to ~260k, keep this value below that
+        // 30k is an arbitrary choice
+        file.Write(new byte[30000]);
+        _fileLength = 30000;
+    }
+
+    public override void Dispose()
+    {
+        try
+        {
+            File.Delete(_absoluteFilePath);
+        }
+        catch { }
+
+        base.Dispose();
     }
 
     [ConditionalFact]

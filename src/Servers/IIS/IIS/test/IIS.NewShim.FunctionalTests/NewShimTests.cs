@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;

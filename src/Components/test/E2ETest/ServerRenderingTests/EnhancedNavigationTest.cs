@@ -35,7 +35,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
-        
+
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
 
         // Important: we're checking the *same* <h1> element as earlier, showing that we got to the
@@ -170,6 +170,20 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var asyncContentHeader = Browser.Exists(By.Id("some-content"));
         Browser.Equal("Some content", () => asyncContentHeader.Text);
         Browser.True(() => Browser.GetScrollY() > 500);
+    }
+
+    [Fact]
+    public void CanScrollToHashWithoutPerformingFullNavigation()
+    {
+        Navigate($"{ServerPathBase}/nav/scroll-to-hash");
+        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id("scroll-anchor")).Click();
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Browser.True(() => Browser
+            .Exists(By.Id("uri-on-page-load"))
+            .GetAttribute("data-value")
+            .EndsWith("scroll-to-hash", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -327,7 +341,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
-        
+
         // Normally, you shouldn't store references to elements because they could become stale references
         // after the page re-renders. However, we want to explicitly test that the element becomes stale
         // across renders to ensure that a full page reload occurs.
@@ -595,6 +609,57 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var anotherRuntime = runtimeThatInvokedNavigation == "server" ? "wasm" : "server";
         Browser.Equal("1", () => Browser.Exists(By.Id($"location-changing-count-{runtimeThatInvokedNavigation}")).Text);
         Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{anotherRuntime}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void CanReceiveNullParameterValueOnEnhancedNavigation(string renderMode)
+    {
+        // See: https://github.com/dotnet/aspnetcore/issues/52434
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Null component parameter ({renderMode})")).Click();
+        Browser.Equal("Page rendering component with null parameter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("current-count")).Text);
+
+        Browser.Exists(By.Id("button-increment")).Click();
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // This refresh causes the interactive component to receive a 'null' parameter value
+        Browser.Exists(By.Id("button-refresh")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // Increment the count again to ensure that interactivity still works
+        Browser.Exists(By.Id("button-increment")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // Even if the interactive runtime continues to function (as the WebAssembly runtime might),
+        // fail the test if any errors were logged to the browser console
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
+    }
+
+    [Fact]
+    public void CanUpdateHrefOnLinkTagWithIntegrity()
+    {
+        // Represents issue https://github.com/dotnet/aspnetcore/issues/54250
+        // Previously, if the "integrity" attribute appeared after "href", then we'd be unable
+        // to update "href" because the new content wouldn't match the existing "integrity".
+        // This is fixed by ensuring we update "integrity" first in all cases.
+
+        Navigate($"{ServerPathBase}/nav/page-with-link-tag/1");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("PageWithLinkTag 1", () => originalH1Elem.Text);
+        Browser.Equal("rgba(255, 0, 0, 1)", () => originalH1Elem.GetCssValue("color"));
+
+        Browser.Exists(By.LinkText("Go to page with link tag 2")).Click();
+        Browser.Equal("PageWithLinkTag 2", () => originalH1Elem.Text);
+        Browser.Equal("rgba(0, 0, 255, 1)", () => originalH1Elem.GetCssValue("color"));
     }
 
     private void AssertEnhancedUpdateCountEquals(long count)

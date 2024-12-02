@@ -18,6 +18,7 @@ internal sealed class HotReloadService : IDisposable
 
     private CancellationTokenSource _tokenSource = new();
     private static event Action<Type[]?>? UpdateApplicationEvent;
+    internal static event Action<Type[]?>? ClearCacheEvent;
 
     public bool MetadataUpdateSupported { get; internal set; }
 
@@ -27,11 +28,17 @@ internal sealed class HotReloadService : IDisposable
     {
         UpdateApplicationEvent?.Invoke(changedTypes);
     }
+    
+    public static void ClearCache(Type[]? types) 
+    { 
+        ClearCacheEvent?.Invoke(types);
+    }
 
     private void NotifyUpdateApplication(Type[]? changedTypes)
     {
         var current = Interlocked.Exchange(ref _tokenSource, new CancellationTokenSource());
         current.Cancel();
+        current.Dispose();
     }
 
     public void Dispose()

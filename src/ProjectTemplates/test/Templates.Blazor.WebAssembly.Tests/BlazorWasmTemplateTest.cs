@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
 using Xunit;
@@ -16,6 +16,8 @@ using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Templates.Blazor.Test;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 public class BlazorWasmTemplateTest : BlazorTemplateTest
 {

@@ -614,8 +614,10 @@ export class HubConnection {
 
                 switch (message.type) {
                     case MessageType.Invocation:
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        this._invokeClientMethod(message);
+                        this._invokeClientMethod(message)
+                            .catch((e) => {
+                                this._logger.log(LogLevel.Error, `Invoke client method threw error: ${getErrorString(e)}`)
+                            });
                         break;
                     case MessageType.StreamItem:
                     case MessageType.Completion: {
@@ -994,15 +996,15 @@ export class HubConnection {
         if (nonblocking) {
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
-                    arguments: args,
                     target: methodName,
+                    arguments: args,
                     type: MessageType.Invocation,
                 };
             }
@@ -1012,17 +1014,17 @@ export class HubConnection {
 
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             }
@@ -1096,17 +1098,17 @@ export class HubConnection {
 
         if (streamIds.length !== 0) {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
                 streamIds,
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         } else {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         }

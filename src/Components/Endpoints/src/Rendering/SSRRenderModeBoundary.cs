@@ -5,8 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -192,7 +190,7 @@ internal class SSRRenderModeBoundary : IComponent
 
     private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
     {
-        var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, ComputeComponentTypeNameHash);
+        var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, TypeNameHash.Compute);
         var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
 
         var locationHash = $"{componentTypeNameHash}:{sequenceString}";
@@ -203,25 +201,5 @@ internal class SSRRenderModeBoundary : IComponent
             LocationHash = locationHash,
             FormattedComponentKey = formattedComponentKey,
         };
-    }
-
-    private static string ComputeComponentTypeNameHash(Type componentType)
-    {
-        if (componentType.FullName is not { } typeName)
-        {
-            throw new InvalidOperationException($"An invalid component type was used in {nameof(SSRRenderModeBoundary)}.");
-        }
-
-        var typeNameLength = typeName.Length;
-        var typeNameBytes = typeNameLength < 1024
-            ? stackalloc byte[typeNameLength]
-            : new byte[typeNameLength];
-
-        Encoding.UTF8.GetBytes(typeName, typeNameBytes);
-
-        Span<byte> typeNameHashBytes = stackalloc byte[SHA1.HashSizeInBytes];
-        SHA1.HashData(typeNameBytes, typeNameHashBytes);
-
-        return Convert.ToHexString(typeNameHashBytes);
     }
 }

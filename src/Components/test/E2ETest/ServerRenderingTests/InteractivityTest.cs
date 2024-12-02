@@ -4,8 +4,8 @@
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -66,6 +66,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id("increment-wasm-shared"));
 
         Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm-shared")).Text);
+    }
+
+    [Fact]
+    public void CanRenderInteractiveWebAssemblyComponentFromRazorClassLibraryThatIsNotExplicitlyReferenced()
+    {
+        Navigate($"{ServerPathBase}/not-explicitly-referenced-in-wasm-code");
+
+        // The element with id success is only rendered when webassembly has successfully loaded the component.
+        Browser.Exists(By.Id("success"));
     }
 
     [Fact]
@@ -590,22 +599,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void AutoRenderMode_UsesBlazorServer_IfWebAssemblyResourcesTakeTooLongToLoad()
-    {
-        Navigate(ServerPathBase);
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-        ForceWebAssemblyResourceCacheMiss();
-        BlockWebAssemblyResourceLoad();
-
-        Navigate($"{ServerPathBase}/streaming-interactivity");
-        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
-
-        Browser.Click(By.Id(AddAutoPrerenderedId));
-        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
-        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
-    }
-
-    [Fact]
     public void AutoRenderMode_UsesBlazorWebAssembly_AfterAddingWebAssemblyRootComponent()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -646,14 +639,11 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49961")]
     public void AutoRenderMode_UsesBlazorServerOnFirstLoad_ThenWebAssemblyOnSuccessiveLoads()
     {
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -690,8 +680,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -708,14 +696,11 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id($"remove-counter-link-1"));
         Browser.DoesNotExist(By.Id("is-interactive-1"));
 
-        UseLongWebAssemblyLoadTimeout();
         Browser.Navigate().Refresh();
 
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
 
-        BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
         ForceWebAssemblyResourceCacheMiss("dummy hash");
         Browser.Navigate().Refresh();
 
@@ -759,8 +744,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -902,6 +885,36 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id(AddAutoPrerenderedId));
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-3")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-3")).Text);
+    }
+
+    [Fact]
+    public void WebAssemblyRenderMode_DownloadsWebAssemblyResourcesInParallel()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity?ClearSiteData=True");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.True(() => GetMaxParallelWebAssemblyResourceDownloadCount() > 1);
+    }
+
+    [Fact]
+    public void AutoRenderMode_DoesNotDownloadWebAssemblyResourcesInParallel()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity?ClearSiteData=True");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Equal(1, GetMaxParallelWebAssemblyResourceDownloadCount);
     }
 
     [Fact]
@@ -1110,8 +1123,83 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("not restored", () => Browser.FindElement(By.Id("wasm")).Text);
     }
 
+    [Fact]
+    public void NavigationManagerCanRefreshSSRPageWhenServerInteractivityEnabled()
+    {
+        Navigate($"{ServerPathBase}/forms/form-that-calls-navigation-manager-refresh");
+
+        var guid = Browser.Exists(By.Id("guid")).Text;
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // Checking that the page was refreshed.
+        // The redirect request method is GET.
+        // Providing a Guid to check that it is not the initial GET request for the page
+        Browser.NotEqual(guid, () => Browser.Exists(By.Id("guid")).Text);
+        Browser.Equal("GET", () => Browser.Exists(By.Id("method")).Text);
+    }
+
+    [Fact]
+    public void InteractiveServerRootComponent_CanAccessCircuitContext()
+    {
+        Navigate($"{ServerPathBase}/interactivity/circuit-context");
+        CircuitContextTest.TestCircuitContextCore(Browser);
+    }
+
+    [Fact]
+    public void InteractiveServerRootComponents_CanBecomeInteractive_WithoutInterferingWithOtherCircuits()
+    {
+        // Start by setting up 2 tabs with interactive server components.
+        SetUpPageWithOneInteractiveServerComponent();
+
+        var firstWindow = Browser.CurrentWindowHandle;
+        Browser.SwitchTo().NewWindow(WindowType.Tab);
+        var secondWindow = Browser.CurrentWindowHandle;
+
+        SetUpPageWithOneInteractiveServerComponent();
+
+        // Start streaming in the second tab.
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        // Add an interactive server component while streaming.
+        // This will update the existing component, but the new component
+        // won't become interactive until streaming ends.
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        // Add an interactive server component in the first tab.
+        // This component will become interactive immediately because the response
+        // that rendered the component will have completed quickly.
+        Browser.SwitchTo().Window(firstWindow);
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        // Stop streaming in the second tab.
+        // This will activate the pending component for interactivity.
+        // This check verifies that a circuit can activate components from its most
+        // recent response, even if that response isn't the most recent between all
+        // circuits.
+        Browser.SwitchTo().Window(secondWindow);
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        void SetUpPageWithOneInteractiveServerComponent()
+        {
+            Navigate($"{ServerPathBase}/streaming-interactivity");
+
+            Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+            Browser.Click(By.Id(AddServerPrerenderedId));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+        }
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
+        // Force a WebAssembly resource cache miss so that we can fall back to using server interactivity
+        ForceWebAssemblyResourceCacheMiss();
+
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
 
         // Clear caches so that we can block the resource load
@@ -1121,11 +1209,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     private void UnblockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockLoadBootResource()");
-    }
-
-    private void UseLongWebAssemblyLoadTimeout()
-    {
-        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('use-long-auto-timeout', 'true')");
     }
 
     private void ForceWebAssemblyResourceCacheMiss(string resourceHash = null)
@@ -1139,6 +1222,11 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             // Clear local storage so that the resource hash is not found
             ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
         }
+    }
+
+    private long GetMaxParallelWebAssemblyResourceDownloadCount()
+    {
+        return (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window['__aspnetcore__testing__max__parallel__resource__download__count'] || 0;");
     }
 
     private string InteractiveCallsiteUrl(bool prerender, int? serverIncrement = default, int? webAssemblyIncrement = default)

@@ -127,6 +127,8 @@ Microsoft.AspNetCore.SignalR.HubOptions.MaximumParallelInvocationsPerClient.get 
 Microsoft.AspNetCore.SignalR.HubOptions.MaximumParallelInvocationsPerClient.set -> void
 Microsoft.AspNetCore.SignalR.HubOptions.MaximumReceiveMessageSize.get -> long?
 Microsoft.AspNetCore.SignalR.HubOptions.MaximumReceiveMessageSize.set -> void
+Microsoft.AspNetCore.SignalR.HubOptions.StatefulReconnectBufferSize.get -> long
+Microsoft.AspNetCore.SignalR.HubOptions.StatefulReconnectBufferSize.set -> void
 Microsoft.AspNetCore.SignalR.HubOptions.StreamBufferCapacity.get -> int?
 Microsoft.AspNetCore.SignalR.HubOptions.StreamBufferCapacity.set -> void
 Microsoft.AspNetCore.SignalR.HubOptions.SupportedProtocols.get -> System.Collections.Generic.IList<string!>?

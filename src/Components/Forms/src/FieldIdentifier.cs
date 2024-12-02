@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 {
-    private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object>> _fieldAccessors = new();
+    private static readonly ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>> _fieldAccessors = new();
 
     static FieldIdentifier()
     {
@@ -125,7 +126,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                         // so, given that it embeds captured values such as "this". We could consider special-casing
                         // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
                         // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-                        var modelLambda = Expression.Lambda(memberExpression.Expression);
+                        var modelLambda = Expression.Lambda(typeof(Func<object?>), memberExpression.Expression);
                         var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
                         var result = modelLambdaCompiled() ??
                             throw new ArgumentException("The provided expression must evaluate to a non-null value.");
@@ -151,7 +152,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     internal static object GetModelFromMemberAccess(
         MemberExpression member,
-        ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object>>? cache = null)
+        ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>>? cache = null)
     {
         cache ??= _fieldAccessors;
         Func<object, object>? accessor = null;
@@ -160,7 +161,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         {
             case ConstantExpression model:
                 value = model.Value ?? throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                accessor = cache.GetOrAdd((value.GetType(), member.Member.Name), CreateAccessor);
+                accessor = cache.GetOrAdd((value.GetType(), member.Member), CreateAccessor);
                 break;
             default:
                 break;
@@ -183,11 +184,12 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
             Justification = "Application code does not get trimmed. We expect the members in the expression to not be trimmed.")]
-        static Func<object, object> CreateAccessor((Type model, string member) arg)
+        static Func<object, object> CreateAccessor((Type model, MemberInfo member) arg)
         {
             var parameter = Expression.Parameter(typeof(object), "value");
             Expression expression = Expression.Convert(parameter, arg.model);
-            expression = Expression.PropertyOrField(expression, arg.member);
+
+            expression = Expression.MakeMemberAccess(expression, arg.member);
             expression = Expression.Convert(expression, typeof(object));
             var lambda = Expression.Lambda<Func<object, object>>(expression, parameter);
 
@@ -199,7 +201,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     private static object GetModelFromIndexer(Expression methodCallExpression)
     {
         object model;
-        var methodCallObjectLambda = Expression.Lambda(methodCallExpression!);
+        var methodCallObjectLambda = Expression.Lambda(typeof(Func<object?>), methodCallExpression!);
         var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
         var result = methodCallObjectLambdaCompiled();
         if (result is null)

@@ -58,7 +58,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -67,7 +67,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -76,7 +76,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {
@@ -97,7 +97,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {
@@ -239,20 +239,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables, methodDescriptor.InputType);
 
         var bodyDescriptor = ServiceDescriptorHelpers.ResolveBodyDescriptor(body, typeof(TService), methodDescriptor);
-
-        FieldDescriptor? responseBodyDescriptor = null;
-        if (!string.IsNullOrEmpty(responseBody))
-        {
-            if (responseBody.Contains('.', StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
-            }
-            responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
-            if (responseBodyDescriptor == null)
-            {
-                throw new InvalidOperationException($"Couldn't find matching field for response body '{responseBody}' on {methodDescriptor.OutputType.Name}.");
-            }
-        }
+        var responseBodyDescriptor = ServiceDescriptorHelpers.ResolveResponseBodyDescriptor(responseBody, methodDescriptor);
 
         var descriptorInfo = new CallHandlerDescriptorInfo(
             responseBodyDescriptor,

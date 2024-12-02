@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Web",
@@ -10,15 +10,15 @@
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor",
-  "precedence": "9900",
+  "precedence": "10000",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
     "53bc9b9d-9d6a-45d4-8429-2a2761773502"
   ],
-  "identity": "Microsoft.Web.Blazor.CSharp.9.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
+  "identity": "Microsoft.Web.Blazor.CSharp.10.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -73,13 +73,15 @@
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Main.cs"
+            "BlazorWeb-CSharp/Program.Main.cs",
+            "BlazorWeb-CSharp.Client/Program.Main.cs"
           ]
         },
         {
           "condition": "(UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.cs"
+            "BlazorWeb-CSharp/Program.cs",
+            "BlazorWeb-CSharp.Client/Program.cs"
           ],
           "rename": {
             "Program.Main.cs": "Program.cs"
@@ -104,7 +106,7 @@
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
-            "BlazorWeb-CSharp/wwwroot/bootstrap/**",
+            "BlazorWeb-CSharp/wwwroot/lib/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
             "BlazorWeb-CSharp.Client/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"
@@ -121,7 +123,6 @@
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/**",
             "BlazorWeb-CSharp/Data/**",
-            "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
             "BlazorWeb-CSharp.Client/Pages/Auth.razor"
           ]
@@ -139,21 +140,9 @@
           ]
         },
         {
-          "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
-          "exclude": [
-            "BlazorWeb-CSharp/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
-          ]
-        },
-        {
-          "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
+          "condition": "(!(IndividualLocalAuth && UseServer))",
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
-          ]
-        },
-        {
-          "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
-          "exclude": [
-            "BlazorWeb-CSharp/Components/Account/PersistingServerAuthenticationStateProvider.cs"
           ]
         },
         {
@@ -208,12 +197,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -355,7 +344,7 @@
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "InteractivePerPage",
-      "displayName": "_Interactivity location",
+      "displayName": "Interactivity _location",
       "description": "Chooses which components will have interactive rendering enabled",
       "isEnabled": "(InteractivityPlatform != \"None\")",
       "choices": [
@@ -383,7 +372,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "true",
-      "displayName": "_Include sample pages",
+      "displayName": "Include _sample pages",
       "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
     },
     "Empty": {

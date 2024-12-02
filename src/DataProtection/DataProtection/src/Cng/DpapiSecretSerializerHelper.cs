@@ -30,7 +30,8 @@ internal static unsafe class DpapiSecretSerializerHelper
         try
         {
             Guid dummy;
-            ProtectWithDpapi(new Secret((byte*)&dummy, sizeof(Guid)), protectToLocalMachine: false);
+            using var secret = new Secret((byte*)&dummy, sizeof(Guid));
+            ProtectWithDpapi(secret, protectToLocalMachine: false);
             return true;
         }
         catch

@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.Extensions.DependencyInjection.CascadingAuthenticationStateServiceCollectionExtensions
-static Microsoft.Extensions.DependencyInjection.CascadingAuthenticationStateServiceCollectionExtensions.AddCascadingAuthenticationState(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

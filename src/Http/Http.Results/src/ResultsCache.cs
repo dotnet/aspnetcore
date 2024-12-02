@@ -14,4 +14,5 @@ internal static partial class ResultsCache
     public static NoContent NoContent { get; } = new();
     public static Ok Ok { get; } = new();
     public static UnprocessableEntity UnprocessableEntity { get; } = new();
+    public static InternalServerError InternalServerError { get; } = new();
 }

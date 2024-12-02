@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -199,10 +199,12 @@ public class ResourceManagerStringLocalizerTest
 #pragma warning restore CA1304 // Specify CultureInfo
         });
 
-        var expectedTries = includeParentCultures ? 3 : 1;
+        var expectedTries = includeParentCultures ? GetCultureInfoDepth(CultureInfo.CurrentUICulture) : 1;
+        string cultureName = CultureInfo.CurrentCulture.ToString();
+        string expectedManifestFileName = cultureName.Length > 0 ? $"testington.{cultureName}.resources" : $"testington.resources";
         var expected = includeParentCultures
             ? "No manifests exist for the current culture."
-            : $"The manifest 'testington.{CultureInfo.CurrentCulture}.resources' was not found.";
+            : $"The manifest '{expectedManifestFileName}' was not found.";
         Assert.Equal(expected, exception.Message);
         Assert.Equal(expectedTries, resourceAssembly.ManifestResourceStreamCallCount);
     }
@@ -226,7 +228,10 @@ public class ResourceManagerStringLocalizerTest
         {
             result++;
 
-            if (currentCulture == currentCulture.Parent)
+            // Under LC_ALL=C on Linux, the current culture is an invariant culture, but its Parent does
+            // not refer to itself (https://github.com/dotnet/runtime/issues/94505).
+            // Avoid counting it as 2 cultures by directly checking for equality against the InvariantCulture.
+            if (CultureInfo.InvariantCulture.Equals(currentCulture))
             {
                 break;
             }

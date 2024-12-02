@@ -1,0 +1,74 @@
+parameters:
+  BARBuildId: ''
+  PromoteToChannelIds: ''
+  is1ESPipeline: ''
+
+steps:
+  - ${{ if eq(parameters.is1ESPipeline, '') }}:
+    - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
+  - ${{ if eq(coalesce(parameters.PromoteToChannelIds, 0), 0) }}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Release Configs
+      inputs:
+        buildType: current
+        artifactName: ReleaseConfigs
+        checkDownloadedFiles: true
+
+  - task: AzureCLI@2
+    name: setReleaseVars
+    displayName: Set Release Configs Vars
+    inputs:
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        try {
+          if (!$Env:PromoteToMaestroChannels -or $Env:PromoteToMaestroChannels.Trim() -eq '') {
+            $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
+
+            $BarId = $Content | Select -Index 0
+            $Channels = $Content | Select -Index 1
+            $IsStableBuild = $Content | Select -Index 2
+
+            $AzureDevOpsProject = $Env:System_TeamProject
+            $AzureDevOpsBuildDefinitionId = $Env:System_DefinitionId
+            $AzureDevOpsBuildId = $Env:Build_BuildId
+          }
+          else {
+            . $(Build.SourcesDirectory)\eng\common\tools.ps1
+            $darc = Get-Darc
+            $buildInfo = & $darc get-build `
+              --id ${{ parameters.BARBuildId }} `
+              --extended `
+              --output-format json `
+              --ci `
+              | convertFrom-Json
+
+            $BarId = ${{ parameters.BARBuildId }}
+            $Channels = $Env:PromoteToMaestroChannels -split ","
+            $Channels = $Channels -join "]["
+            $Channels = "[$Channels]"
+
+            $IsStableBuild = $buildInfo.stable
+            $AzureDevOpsProject = $buildInfo.azureDevOpsProject
+            $AzureDevOpsBuildDefinitionId = $buildInfo.azureDevOpsBuildDefinitionId
+            $AzureDevOpsBuildId = $buildInfo.azureDevOpsBuildId
+          }
+
+          Write-Host "##vso[task.setvariable variable=BARBuildId]$BarId"
+          Write-Host "##vso[task.setvariable variable=TargetChannels]$Channels"
+          Write-Host "##vso[task.setvariable variable=IsStableBuild]$IsStableBuild"
+
+          Write-Host "##vso[task.setvariable variable=AzDOProjectName]$AzureDevOpsProject"
+          Write-Host "##vso[task.setvariable variable=AzDOPipelineId]$AzureDevOpsBuildDefinitionId"
+          Write-Host "##vso[task.setvariable variable=AzDOBuildId]$AzureDevOpsBuildId"
+        }
+        catch {
+          Write-Host $_
+          Write-Host $_.Exception
+          Write-Host $_.ScriptStackTrace
+          exit 1
+        }
+    env:
+      PromoteToMaestroChannels: ${{ parameters.PromoteToChannelIds }}

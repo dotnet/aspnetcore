@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -30,6 +30,7 @@ public class ResponseSendFileTests : LoggedTest
         AbsoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
         RelativeFilePath = Path.GetFileName(AbsoluteFilePath);
         FileLength = new FileInfo(AbsoluteFilePath).Length;
+        Assert.True(FileLength > 0, "FileLength is 0");
     }
 
     [ConditionalFact]

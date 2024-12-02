@@ -12,7 +12,7 @@ namespace Microsoft.JSInterop.WebAssembly;
 /// Provides methods for invoking JavaScript functions for applications running
 /// on the Mono WebAssembly runtime.
 /// </summary>
-public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
+public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
 {
     /// <summary>
     /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
@@ -56,73 +56,4 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     {
         InternalCalls.ReceiveByteArray(id, data);
     }
-
-    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
-    internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
-    {
-        var resultType = JSCallResultTypeHelper.FromGeneric<TResult>();
-
-        var callInfo = new JSCallInfo
-        {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-        };
-
-        string exception;
-
-        switch (resultType)
-        {
-            case JSCallResultType.Default:
-            case JSCallResultType.JSVoidResult:
-                var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
-                return exception != null
-                    ? throw new JSException(exception)
-                    : result;
-            case JSCallResultType.JSObjectReference:
-                var id = InternalCalls.InvokeJS<T0, T1, T2, int>(out exception, ref callInfo, arg0, arg1, arg2);
-                return exception != null
-                    ? throw new JSException(exception)
-                    : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
-            case JSCallResultType.JSStreamReference:
-                var serializedStreamReference = InternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
-                return exception != null
-                    ? throw new JSException(exception)
-                    : (TResult)(object)DeserializeJSStreamReference(serializedStreamReference);
-            default:
-                throw new InvalidOperationException($"Invalid result type '{resultType}'.");
-        }
-    }
-
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "IJSStreamReference is referenced in Microsoft.JSInterop.Infrastructure.JSStreamReferenceJsonConverter")]
-    private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
-    {
-        var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
-        if (jsStreamReference is null)
-        {
-            throw new ArgumentException($"Failed to parse as {nameof(IJSStreamReference)}.", nameof(serializedStreamReference));
-        }
-
-        return jsStreamReference;
-    }
-
-    /// <inheritdoc />
-    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
-    public TResult InvokeUnmarshalled<TResult>(string identifier)
-        => InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, 0);
-
-    /// <inheritdoc />
-    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
-    public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
-        => InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, 0);
-
-    /// <inheritdoc />
-    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
-    public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
-        => InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, 0);
-
-    /// <inheritdoc />
-    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
-    public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
-        => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
 }

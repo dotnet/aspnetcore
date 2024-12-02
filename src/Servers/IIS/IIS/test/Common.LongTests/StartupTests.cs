@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Win32;
 
 #if !IIS_FUNCTIONALS
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -71,7 +71,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
         if (DeployerSelector.HasNewShim)
         {
             Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
@@ -180,7 +180,7 @@ public class StartupTests : IISFunctionalTestBase
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled", Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, "AspNetCore Module is disabled", Logger);
         }
     }
 
@@ -230,7 +230,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadException(deploymentResult, ".*?Application is running inside IIS process but is not configured to use IIS server"));
     }
@@ -248,7 +248,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadException(deploymentResult, ", exception code = '0xe0434352'"));
     }
@@ -265,7 +265,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessFailedToStart(deploymentResult, "CLR worker thread exited prematurely"),
             EventLogHelpers.InProcessThreadExit(deploymentResult, "12"));
     }
@@ -291,7 +291,7 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -354,7 +354,7 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -373,11 +373,12 @@ public class StartupTests : IISFunctionalTestBase
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
         }
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
     }
 
     [ConditionalFact]
     [RequiresNewShim]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52889")]
     public async Task WrongApplicationPath_FailedToRun()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -392,7 +393,7 @@ public class StartupTests : IISFunctionalTestBase
 
         await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31", "Provided application path does not exist, or isn't a .dll or .exe.");
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
     }
 
     [ConditionalFact]
@@ -449,13 +450,13 @@ public class StartupTests : IISFunctionalTestBase
         {
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.33");
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
         }
         else
         {
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
         }
     }
 
@@ -481,7 +482,7 @@ public class StartupTests : IISFunctionalTestBase
             // Startup timeout now recycles process.
             deploymentResult.AssertWorkerProcessStop();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
                 Logger);
 
@@ -513,7 +514,7 @@ public class StartupTests : IISFunctionalTestBase
 
             StopServer(gracefulShutdown: false);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
                 Logger);
 
@@ -539,7 +540,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.ConfigurationLoadError(deploymentResult, "Unknown hosting model 'bogus'. Please specify either hostingModel=\"inprocess\" or hostingModel=\"outofprocess\" in the web.config file.")
             );
     }
@@ -563,7 +564,7 @@ public class StartupTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.ConfigurationLoadError(deploymentResult, expectedError)
         );
     }
@@ -983,6 +984,7 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52734")]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdErrWrites")]
@@ -1004,10 +1006,11 @@ public class StartupTests : IISFunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedLogString));
         var expectedEventLogString = new string('a', 30000);
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58108")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdOutWrites")]
     public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
@@ -1030,7 +1033,7 @@ public class StartupTests : IISFunctionalTestBase
 
         var expectedEventLogString = new string('a', 30000);
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
     }
 
     [ConditionalFact]
@@ -1295,7 +1298,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";

@@ -73,10 +73,9 @@ public sealed class ManagedAuthenticatedEncryptorConfiguration : AlgorithmConfig
     {
         var factory = new ManagedAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
         // Run a sample payload through an encrypt -> decrypt operation to make sure data round-trips properly.
-        using (var encryptor = factory.CreateAuthenticatedEncryptorInstance(Secret.Random(512 / 8), this))
-        {
-            encryptor.PerformSelfTest();
-        }
+        using var secret = Secret.Random(512 / 8);
+        using var encryptor = factory.CreateAuthenticatedEncryptorInstance(secret, this);
+        encryptor.PerformSelfTest();
     }
 
     // Any changes to this method should also be be reflected

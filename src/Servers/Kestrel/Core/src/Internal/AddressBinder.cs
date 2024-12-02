@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class AddressBinder
 {
     // note this doesn't copy the ListenOptions[], only call this with an array that isn't mutated elsewhere
-    public static async Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func<ListenOptions, ListenOptions> useHttps, CancellationToken cancellationToken)
+    public static Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func<ListenOptions, ListenOptions> useHttps, CancellationToken cancellationToken)
     {
         var strategy = CreateStrategy(
             listenOptions,
@@ -29,7 +29,7 @@ internal sealed class AddressBinder
         context.ServerOptions.OptionsInUse.Clear();
         context.Addresses.Clear();
 
-        await strategy.BindAsync(context, cancellationToken).ConfigureAwait(false);
+        return strategy.BindAsync(context, cancellationToken);
     }
 
     private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses, Func<ListenOptions, ListenOptions> useHttps)

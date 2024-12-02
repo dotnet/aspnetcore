@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -10,32 +9,21 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture>
+public class WebAssemblyPrerenderedTest : ServerTestBase<TrimmingServerFixture<Wasm.Prerendered.Server.Startup>>
 {
     public WebAssemblyPrerenderedTest(
         BrowserFixture browserFixture,
-        AspNetSiteServerFixture serverFixture,
+        TrimmingServerFixture<Wasm.Prerendered.Server.Startup> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
-        serverFixture.BuildWebHostMethod = Wasm.Prerendered.Server.Program.BuildWebHost;
         serverFixture.Environment = AspNetEnvironment.Development;
-
-        var testTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
-            .Value == "true";
-
-        if (testTrimmedApps)
-        {
-            serverFixture.GetContentRootMethod = GetPublishedContentRoot;
-        }
     }
 
     [Fact]
     public void CanPrerenderAndAddHeadOutletRootComponent()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
 
         // Verify that the title is updated during prerendering
         Browser.Equal("Current count: 0", () => Browser.Title);
@@ -52,17 +40,5 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture
     {
         var jsExecutor = (IJavaScriptExecutor)Browser;
         Browser.True(() => jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];") is not null);
-    }
-
-    private static string GetPublishedContentRoot(Assembly assembly)
-    {
-        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed", assembly.GetName().Name);
-
-        if (!Directory.Exists(contentRoot))
-        {
-            throw new DirectoryNotFoundException($"Test is configured to use trimmed outputs, but trimmed outputs were not found in {contentRoot}.");
-        }
-
-        return contentRoot;
     }
 }

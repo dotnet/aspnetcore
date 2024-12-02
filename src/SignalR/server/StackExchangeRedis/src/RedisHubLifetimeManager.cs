@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using RedisProtocol = Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.RedisProtocol; // to disambiguate from StackExchange.Redis.RedisProtocol
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 

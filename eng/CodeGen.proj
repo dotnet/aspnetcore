@@ -11,7 +11,7 @@
   <Target Name="GenerateProjectList">
     <Message Importance="High" Text="Analyzing @(ProjectToBuild->Count()) projects" />
 
-    <MSBuild Projects="@(ProjectToBuild)"
+    <MSBuild Projects="@(ProjectToBuild);@(ExplicitRequiresDelay)"
              Targets="GetReferencesProvided"
              BuildInParallel="true"
              SkipNonexistentTargets="true"

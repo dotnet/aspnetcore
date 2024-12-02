@@ -22,7 +22,7 @@ public class HeadModificationTest : ServerTestBase<ToggleExecutionModeServerFixt
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -109,5 +109,18 @@ public class HeadModificationTest : ServerTestBase<ToggleExecutionModeServerFixt
 
         // Assert the title is now the default
         Browser.Equal("Basic test app", () => Browser.Title);
+    }
+
+    [Fact]
+    public void HeadContentGetsAppendedToEndOfHead()
+    {
+        Browser.MountTestComponent<HeadModification>();
+
+        // Assert that the <meta id="meta-description"> element is the last in the <head>
+        Browser.True(() =>
+        {
+            var metaDescriptionElement = Browser.FindElement(By.Id("meta-description"));
+            return (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return document.head.lastChild === arguments[0];", metaDescriptionElement);
+        });
     }
 }

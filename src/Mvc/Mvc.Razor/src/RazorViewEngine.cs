@@ -107,11 +107,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     public RazorPageResult FindPage(ActionContext context, string pageName)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         if (IsApplicationRelativePath(pageName) || IsRelativePath(pageName))
         {
@@ -134,10 +130,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public RazorPageResult GetPage(string executingFilePath, string pagePath)
     {
-        if (string.IsNullOrEmpty(pagePath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pagePath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pagePath);
 
         if (!(IsApplicationRelativePath(pagePath) || IsRelativePath(pagePath)))
         {
@@ -162,10 +155,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (string.IsNullOrEmpty(viewName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(viewName);
 
         if (IsApplicationRelativePath(viewName) || IsRelativePath(viewName))
         {
@@ -180,10 +170,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
     {
-        if (string.IsNullOrEmpty(viewPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(viewPath);
 
         if (!(IsApplicationRelativePath(viewPath) || IsRelativePath(viewPath)))
         {

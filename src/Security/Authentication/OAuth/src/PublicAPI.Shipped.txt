@@ -59,8 +59,10 @@ Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Backchannel.get -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Events.get -> Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Events.set -> void
+Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.OAuthHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.OAuthHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions
+Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.AdditionalAuthorizationParameters.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.AuthorizationEndpoint.get -> string!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.AuthorizationEndpoint.set -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.ClaimActions.get -> Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection!

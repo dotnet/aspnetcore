@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.IServiceProvider! services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.AuthorizationMiddleware!>! logger) -> void

@@ -2,12 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -60,11 +65,47 @@ public static class ServerRazorComponentsBuilderExtensions
                     throw new InvalidOperationException("Invalid render mode. Use AddInteractiveServerRenderMode() to configure the Server render mode.");
                 }
 
-                return Array.Empty<RouteEndpointBuilder>();
+                return [];
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
-            endpointRouteBuilder.MapBlazorHub();
+            var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
+
+            if (renderMode is InternalServerRenderMode { Options.ConfigureWebSocketAcceptContext: var configureConnection, Options.DisableWebSocketCompression: var disableCompression } &&
+                (configureConnection is not null || !disableCompression))
+            {
+                hub.Finally(c =>
+                {
+                    for (var i = 0; i < c.Metadata.Count; i++)
+                    {
+                        var metadata = c.Metadata[i];
+                        if (metadata is NegotiateMetadata)
+                        {
+                            return;
+                        }
+
+                        if (metadata is HubMetadata)
+                        {
+                            var originalDelegate = c.RequestDelegate;
+                            var builder = endpointRouteBuilder.CreateApplicationBuilder();
+                            builder.UseWebSockets();
+                            builder.Use((ctx, nxt) =>
+                            {
+                                if (ctx.WebSockets.IsWebSocketRequest)
+                                {
+                                    var currentFeature = ctx.Features.Get<IHttpWebSocketFeature>();
+
+                                    ctx.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!, ctx, configureConnection, disableCompression));
+                                }
+                                return nxt(ctx);
+                            });
+                            builder.Run(originalDelegate);
+                            c.RequestDelegate = builder.Build();
+                            return;
+                        }
+                    }
+                });
+            }
 
             return endpointRouteBuilder.GetEndpoints();
         }
@@ -114,6 +155,43 @@ public static class ServerRazorComponentsBuilderExtensions
                         yield return builder;
                     }
                 }
+            }
+        }
+
+        private sealed class ServerComponentsSocketFeature(
+            IHttpWebSocketFeature originalFeature,
+            HttpContext httpContext,
+            Func<HttpContext, WebSocketAcceptContext, Task>? configureConnection,
+            bool compressionDisabled)
+            : IHttpWebSocketFeature
+        {
+            public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
+
+            public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+            {
+                context.DangerousEnableCompression = !compressionDisabled;
+                if (configureConnection is null)
+                {
+                    return originalFeature.AcceptAsync(context);
+                }
+                else
+                {
+                    var result = configureConnection.Invoke(httpContext, context);
+                    if (!result.IsCompletedSuccessfully)
+                    {
+                        return ReturnAwaited(result, context);
+                    }
+                    else
+                    {
+                        return originalFeature.AcceptAsync(context);
+                    }
+                }
+            }
+
+            private async Task<WebSocket> ReturnAwaited(Task result, WebSocketAcceptContext context)
+            {
+                await result;
+                return await originalFeature.AcceptAsync(context);
             }
         }
     }

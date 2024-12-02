@@ -10,6 +10,8 @@ internal sealed class UserProxy<THub> : IClientProxy where THub : Hub
 
     public UserProxy(HubLifetimeManager<THub> lifetimeManager, string userId)
     {
+        ArgumentNullException.ThrowIfNull(userId);
+
         _lifetimeManager = lifetimeManager;
         _userId = userId;
     }
@@ -44,6 +46,8 @@ internal sealed class GroupProxy<THub> : IClientProxy where THub : Hub
 
     public GroupProxy(HubLifetimeManager<THub> lifetimeManager, string groupName)
     {
+        ArgumentNullException.ThrowIfNull(groupName);
+
         _lifetimeManager = lifetimeManager;
         _groupName = groupName;
     }
@@ -79,6 +83,8 @@ internal sealed class GroupExceptProxy<THub> : IClientProxy where THub : Hub
 
     public GroupExceptProxy(HubLifetimeManager<THub> lifetimeManager, string groupName, IReadOnlyList<string> excludedConnectionIds)
     {
+        ArgumentNullException.ThrowIfNull(groupName);
+
         _lifetimeManager = lifetimeManager;
         _groupName = groupName;
         _excludedConnectionIds = excludedConnectionIds;
@@ -147,6 +153,7 @@ internal sealed class SingleClientProxy<THub> : ISingleClientProxy where THub : 
     public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, string connectionId)
     {
         _lifetimeManager = lifetimeManager;
+        ArgumentNullException.ThrowIfNull(connectionId);
         _connectionId = connectionId;
     }
 

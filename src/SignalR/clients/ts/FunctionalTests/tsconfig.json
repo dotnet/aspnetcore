@@ -1,10 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./obj/js",
-    "typeRoots": [
-      "./node_modules/@types/"
-    ]
+    "outDir": "./obj/js"
   },
   "include": [
     "./ts/**/*"

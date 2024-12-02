@@ -14,4 +14,7 @@ internal partial class RedisOutputCacheStore
 
     [LoggerMessage(2, LogLevel.Error, "Fatal error occurred executing redis output-cache GC loop.", EventName = "RedisOutputCacheGCFatalError")]
     internal static partial void RedisOutputCacheGCFatalError(ILogger logger, Exception exception);
+
+    [LoggerMessage(3, LogLevel.Debug, "Unable to add library name suffix.", EventName = "UnableToAddLibraryNameSuffix")]
+    internal static partial void UnableToAddLibraryNameSuffix(ILogger logger, Exception exception);
 }

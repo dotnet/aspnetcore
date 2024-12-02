@@ -50,28 +50,20 @@ public class ForwardedHeadersMiddleware
         ArgumentNullException.ThrowIfNull(options);
 
         // Make sure required options is not null or whitespace
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedForHeaderName, nameof(options.Value.ForwardedForHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedHostHeaderName, nameof(options.Value.ForwardedHostHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedProtoHeaderName, nameof(options.Value.ForwardedProtoHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedPrefixHeaderName, nameof(options.Value.ForwardedPrefixHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalForHeaderName, nameof(options.Value.OriginalForHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalHostHeaderName, nameof(options.Value.OriginalHostHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalProtoHeaderName, nameof(options.Value.OriginalProtoHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalPrefixHeaderName, nameof(options.Value.OriginalPrefixHeaderName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedForHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedHostHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedProtoHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedPrefixHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalForHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalHostHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalProtoHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalPrefixHeaderName);
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
         _next = next;
 
         PreProcessHosts();
-
-        static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentException($"options.{propertyName} is required", nameof(options));
-            }
-        }
     }
 
     private void PreProcessHosts()

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
 
@@ -18,7 +18,7 @@ public class WebViewManagerE2ETests
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX,
         SkipReason = "On Helix/Ubuntu the native Photino assemblies can't be found, and on macOS it can't detect when the WebView is ready")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/50802", Queues = "Windows.Amd64.Server2022.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50802")]
     public async Task CanLaunchPhotinoWebViewAndClickButton()
     {
         var photinoTestProgramExePath = typeof(WebViewManagerE2ETests).Assembly.Location;

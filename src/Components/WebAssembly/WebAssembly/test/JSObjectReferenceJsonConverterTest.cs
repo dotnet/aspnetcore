@@ -44,18 +44,4 @@ public class JSObjectReferenceJsonConverterTest
         // Assert
         Assert.Equal(expectedId, deserialized?.Id);
     }
-
-    [Fact]
-    public void Read_ReadsJson_IJSUnmarshalledObjectReference()
-    {
-        // Arrange
-        var expectedId = 3;
-        var json = $"{{\"__jsObjectId\":{expectedId}}}";
-
-        // Act
-        var deserialized = (WebAssemblyJSObjectReference)JsonSerializer.Deserialize<IJSUnmarshalledObjectReference>(json, JsonSerializerOptions)!;
-
-        // Assert
-        Assert.Equal(expectedId, deserialized?.Id);
-    }
 }

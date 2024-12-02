@@ -25,7 +25,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     protected virtual IWebElement MountSimpleValidationComponent()
@@ -844,6 +844,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("False", () => tuesday.GetDomProperty("checked"));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public void InputRadioGroupWorksWithParentImplementingIHandleEvent(int n)
+    {
+        Browser.Url = new UriBuilder(Browser.Url) { Query = ($"?n={n}") }.ToString();
+        var appElement = Browser.MountTestComponent<InputRadioParentImplementsIHandleEvent>();
+        var zero = appElement.FindElement(By.Id("inputradiogroup-parent-ihandle-event-0"));
+        var one = appElement.FindElement(By.Id("inputradiogroup-parent-ihandle-event-1"));
+
+        Browser.Equal(n == 0 ? "True" : "False", () => zero.GetDomProperty("checked"));
+        Browser.Equal("False", () => one.GetDomProperty("checked"));
+
+        // Observe the changes after a click
+        one.Click();
+        Browser.Equal("False", () => zero.GetDomProperty("checked"));
+        Browser.Equal("True", () => one.GetDomProperty("checked"));
+
+        // Ensure other options can be selected
+        zero.Click();
+        Browser.Equal("False", () => one.GetDomProperty("checked"));
+        Browser.Equal("True", () => zero.GetDomProperty("checked"));
+    }
+
     [Fact]
     public void InputSelectWorksWithMutatingSetter()
     {
@@ -988,6 +1012,39 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Func<string[]> logEntries = () => appElement.FindElements(By.ClassName("submission-log-entry")).Select(x => x.Text).ToArray();
         Browser.Collection(logEntries, x => Assert.Equal("OnValidSubmit", x));
+    }
+
+    [Fact]
+    public async Task CannotSubmitEditFormSynchronouslyAfterItWasRemoved()
+    {
+        var appElement = MountSimpleValidationComponent();
+
+        var submitButtonFinder = By.CssSelector("button[type=submit]");
+        Browser.Exists(submitButtonFinder);
+
+        // Remove the form then immediately also submit it, so the server receives both
+        // the 'remove' and 'submit' commands (in that order) before it updates the UI
+        appElement.FindElement(By.Id("remove-form")).Click();
+
+        try
+        {
+            appElement.FindElement(submitButtonFinder).Click();
+        }
+        catch (NoSuchElementException)
+        {
+            // This should happen on WebAssembly because the form will be removed synchronously
+            // That means the test has passed
+            return;
+        }
+
+        // Wait for the removal to complete, which is intentionally delayed to ensure
+        // this test can submit a second instruction before the first is processed.
+        Browser.DoesNotExist(submitButtonFinder);
+
+        // Verify that the form submit event was not processed, even if we wait a while
+        // to be really sure the second instruction was processed.
+        await Task.Delay(1000);
+        Browser.DoesNotExist(By.Id("last-callback"));
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")

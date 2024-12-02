@@ -162,7 +162,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
             HasDiagnosticListener = false;
             MetricsEnabled = false;
             EventLogEnabled = false;
-            MetricsTagsFeature?.TagsList.Clear();
+            MetricsTagsFeature?.Reset();
         }
     }
 }

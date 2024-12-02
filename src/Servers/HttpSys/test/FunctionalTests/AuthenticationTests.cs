@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -393,6 +393,60 @@ public class AuthenticationTests : LoggedTest
             Assert.NotNull(authenticateResult.Principal);
             Assert.NotNull(authenticateResult.Principal.Identity);
             Assert.True(authenticateResult.Principal.Identity.IsAuthenticated);
+        }, LoggerFactory))
+        {
+            var response = await SendRequestAsync(address, useDefaultCredentials: true);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(AuthenticationSchemes.Negotiate)]
+    [InlineData(AuthenticationSchemes.NTLM)]
+    [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM)]
+    public async Task AuthTypes_EnableKerberosCredentialCaching(AuthenticationSchemes authType)
+    {
+        using (var server = Utilities.CreateDynamicHost(out var address, options =>
+        {
+            options.Authentication.Schemes = authType;
+            options.Authentication.AllowAnonymous = DenyAnoymous;
+            options.Authentication.EnableKerberosCredentialCaching = true;
+        },
+        httpContext =>
+        {
+            // There doesn't seem to be a simple way of testing the `EnableKerberosCredentialCaching`
+            // setting, but at least check that the server works.
+            Assert.NotNull(httpContext.User);
+            Assert.NotNull(httpContext.User.Identity);
+            Assert.True(httpContext.User.Identity.IsAuthenticated);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            var response = await SendRequestAsync(address, useDefaultCredentials: true);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(AuthenticationSchemes.Negotiate)]
+    [InlineData(AuthenticationSchemes.NTLM)]
+    [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM)]
+    public async Task AuthTypes_CaptureCredentials(AuthenticationSchemes authType)
+    {
+        using (var server = Utilities.CreateDynamicHost(out var address, options =>
+        {
+            options.Authentication.Schemes = authType;
+            options.Authentication.AllowAnonymous = DenyAnoymous;
+            options.Authentication.CaptureCredentials = true;
+        },
+        httpContext =>
+        {
+            // There doesn't seem to be a simple way of testing the `CaptureCredentials`
+            // setting, but at least check that the server works.
+            Assert.NotNull(httpContext.User);
+            Assert.NotNull(httpContext.User.Identity);
+            Assert.True(httpContext.User.Identity.IsAuthenticated);
+            return Task.FromResult(0);
         }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);

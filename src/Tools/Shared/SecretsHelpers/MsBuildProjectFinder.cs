@@ -11,7 +11,7 @@ internal sealed class MsBuildProjectFinder
 
     public MsBuildProjectFinder(string directory)
     {
-        Ensure.NotNullOrEmpty(directory, nameof(directory));
+        ArgumentException.ThrowIfNullOrEmpty(directory);
 
         _directory = directory;
     }

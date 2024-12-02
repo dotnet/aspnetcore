@@ -31,11 +31,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             .Where(u => u.ResolvedOperation != null && !u.MapOperation.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
             .GroupBy(u => new MapOperationGroupKey(u.MapOperation.Builder, u.ResolvedOperation!, u.MapOperation.RouteUsageModel.RoutePattern, u.MapOperation.RouteUsageModel.UsageContext.HttpMethods));
 
-        foreach (var ambigiousGroup in groupedByParent.Where(g => g.Count() >= 2))
+        foreach (var ambiguousGroup in groupedByParent.Where(g => g.Count() >= 2))
         {
-            foreach (var ambigiousMapOperation in ambigiousGroup)
+            foreach (var ambiguousMapOperation in ambiguousGroup)
             {
-                var model = ambigiousMapOperation.MapOperation.RouteUsageModel;
+                var model = ambiguousMapOperation.MapOperation.RouteUsageModel;
 
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.AmbiguousRouteHandlerRoute,
@@ -67,15 +67,16 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         while (current != null)
         {
-            if (current.Parent is IBlockOperation blockOperation)
+            if (current.Parent is IBlockOperation or ISwitchCaseOperation)
             {
-                return blockOperation;
+                return current.Parent;
             }
             else if (current.Parent is IConditionalOperation or
                 ICoalesceOperation or
                 IAssignmentOperation or
                 IArgumentOperation or
-                IInvocationOperation)
+                IInvocationOperation or
+                ISwitchExpressionArmOperation)
             {
                 return current;
             }
@@ -172,9 +173,42 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 ParentOperation != null &&
                 Equals(ParentOperation, other.ParentOperation) &&
                 Builder != null &&
-                SymbolEqualityComparer.Default.Equals((Builder as ILocalReferenceOperation)?.Local, (other.Builder as ILocalReferenceOperation)?.Local) &&
+                AreBuildersEqual(Builder, other.Builder) &&
                 AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods);
+
+            static bool AreBuildersEqual(IOperation builder, IOperation? other)
+            {
+                if (builder is ILocalReferenceOperation local && other is ILocalReferenceOperation otherLocal)
+                {
+                    // The builders are both local variables.
+                    return SymbolEqualityComparer.Default.Equals(local.Local, otherLocal.Local);
+                }
+
+                if (builder is IParameterReferenceOperation parameter && other is IParameterReferenceOperation otherParameter)
+                {
+                    // The builders are both parameter variables.
+                    return SymbolEqualityComparer.Default.Equals(parameter.Parameter, otherParameter.Parameter);
+                }
+
+                if (builder is IInvocationOperation invocation && other is IInvocationOperation otherInvocation)
+                {
+                    if (invocation.TargetMethod.Name == "MapGroup" &&
+                        invocation.TargetMethod.Parameters.Length == 2 &&
+                        SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, otherInvocation.TargetMethod) &&
+                        invocation.Arguments.Length == 2 &&
+                        otherInvocation.Arguments.Length == 2)
+                    {
+                        // The builders are both method calls. Special case checking known MapGroup method.
+                        // For example, two MapGroup calls with the same route are considered equal:
+                        // builder.MapGroup("/v1").MapGet("account")
+                        // builder.MapGroup("/v1").MapGet("account")
+                        return AreArgumentsEqual(invocation.TargetMethod, invocation.Arguments, otherInvocation.Arguments);
+                    }
+                }
+
+                return false;
+            }
         }
 
         private static bool HasMatchingHttpMethods(ImmutableArray<string> httpMethods1, ImmutableArray<string> httpMethods2)
@@ -196,6 +230,66 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
 
             return false;
+        }
+
+        private static bool AreArgumentsEqual(IMethodSymbol method, ImmutableArray<IArgumentOperation> arguments1, ImmutableArray<IArgumentOperation> arguments2)
+        {
+            for (var i = 0; i < method.Parameters.Length; i++)
+            {
+                var argument1 = GetParameterArgument(method.Parameters[i], arguments1);
+                var argument2 = GetParameterArgument(method.Parameters[i], arguments2);
+
+                if (argument1 is ILocalReferenceOperation local && argument2 is ILocalReferenceOperation otherLocal)
+                {
+                    if (!SymbolEqualityComparer.Default.Equals(local.Local, otherLocal.Local))
+                    {
+                        return false;
+                    }
+                }
+                else if (argument1 is IParameterReferenceOperation parameter && argument2 is IParameterReferenceOperation otherParameter)
+                {
+                    if (!SymbolEqualityComparer.Default.Equals(parameter.Parameter, otherParameter.Parameter))
+                    {
+                        return false;
+                    }
+                }
+                else if (argument1 is ILiteralOperation literal && argument2 is ILiteralOperation otherLiteral)
+                {
+                    if (!Equals(literal.ConstantValue, otherLiteral.ConstantValue))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+
+            static IOperation? GetParameterArgument(IParameterSymbol parameter, ImmutableArray<IArgumentOperation> arguments)
+            {
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(arguments[i].Parameter, parameter))
+                    {
+                        return WalkDownConversion(arguments[i].Value);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        private static IOperation WalkDownConversion(IOperation operation)
+        {
+            while (operation is IConversionOperation conversionOperation)
+            {
+                operation = conversionOperation.Operand;
+            }
+
+            return operation;
         }
 
         public override int GetHashCode()

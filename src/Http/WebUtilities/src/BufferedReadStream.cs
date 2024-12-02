@@ -418,6 +418,6 @@ public class BufferedReadStream : Stream
 
     private void CheckDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

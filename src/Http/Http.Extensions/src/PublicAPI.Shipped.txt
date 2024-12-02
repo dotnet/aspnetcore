@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.DisableHttpMetricsAttribute() -> void
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.Description.get -> string!
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.EndpointDescriptionAttribute(string! description) -> void
@@ -104,8 +107,10 @@ Microsoft.AspNetCore.Http.HttpRequestJsonExtensions
 Microsoft.AspNetCore.Http.HttpResponseJsonExtensions
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.Json.JsonOptions
 Microsoft.AspNetCore.Http.Json.JsonOptions.JsonOptions() -> void
 Microsoft.AspNetCore.Http.Json.JsonOptions.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
@@ -140,6 +145,7 @@ Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNe
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
@@ -151,9 +157,14 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, containe
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
+override Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Http.EndpointSummaryAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string!
+override Microsoft.AspNetCore.Http.TagsAttribute.ToString() -> string!
+static Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions.DisableHttpMetrics<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
 static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
@@ -169,12 +180,14 @@ static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(
 static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse! response) -> Microsoft.AspNetCore.Http.Headers.ResponseHeaders!
 static Microsoft.AspNetCore.Http.HttpContextServerVariableExtensions.GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.HasJsonContentType(this Microsoft.AspNetCore.Http.HttpRequest! request) -> bool
+static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>
+static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Type! type, System.Text.Json.JsonSerializerOptions? options, string? contentType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Type! type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

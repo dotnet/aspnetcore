@@ -107,10 +107,9 @@ internal sealed class RequestTimeoutsMiddleware
                 await _next(context);
             }
             catch (OperationCanceledException operationCanceledException)
+            when (linkedCts.IsCancellationRequested && !originalToken.IsCancellationRequested)
             {
-                if (context.Response.HasStarted ||
-                    !linkedCts.Token.IsCancellationRequested ||
-                    originalToken.IsCancellationRequested)
+                if (context.Response.HasStarted)
                 {
                     // We can't produce a response, or it wasn't our timeout that caused this.
                     throw;

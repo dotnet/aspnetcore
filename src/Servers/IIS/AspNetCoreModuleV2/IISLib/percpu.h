@@ -94,7 +94,7 @@ PER_CPU<T>::Create(
     DWORD           CacheLineSize = 0;
     DWORD           ObjectCacheLineSize = 0;
     DWORD           NumberOfProcessors = 0;
-    PER_CPU<T> *    pInstance = NULL;
+    PER_CPU<T> *    pInstance = nullptr;
 
     hr = GetProcessorInformation(&CacheLineSize,
                                  &NumberOfProcessors);
@@ -124,7 +124,7 @@ PER_CPU<T>::Create(
         SIZE_T Size = CacheLineSize + NumberOfProcessors * ObjectCacheLineSize;
 
         pInstance = (PER_CPU<T>*) _aligned_malloc(Size, CacheLineSize);
-        if (pInstance == NULL)
+        if (pInstance == nullptr)
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
@@ -150,17 +150,17 @@ PER_CPU<T>::Create(
     }
 
     *ppInstance = pInstance;
-    pInstance = NULL;
+    pInstance = nullptr;
 
 Finished:
 
-    if (pInstance != NULL)
+    if (pInstance != nullptr)
     {
         //
         // Free the instance without disposing it.
         //
         pInstance->Dispose();
-        pInstance = NULL;
+        pInstance = nullptr;
     }
 
     return hr;

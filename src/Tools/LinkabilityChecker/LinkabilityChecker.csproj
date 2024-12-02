@@ -15,11 +15,10 @@
   <ItemGroup>
     <!-- Packages required to produce a complete dependency graph for the trimmer -->
     <Reference Include="System.Configuration.ConfigurationManager" />
-    <Reference Include="System.Drawing.Common" />
     <Reference Include="System.Security.Permissions" />
     <Reference Include="System.Threading.AccessControl" />
   </ItemGroup>
-  <Target Name="ILLinkTrimProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(SkipTestBuild)' != 'true'">
+  <Target Name="ILLinkTrimProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(SkipTestBuild)' != 'true'">
     <PropertyGroup>
       <LibrariesTrimmedArtifactsPath>$(TargetDir)linked\</LibrariesTrimmedArtifactsPath>
       <!-- Link all assemblies -->

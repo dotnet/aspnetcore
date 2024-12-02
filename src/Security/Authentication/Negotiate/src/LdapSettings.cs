@@ -82,10 +82,7 @@ public class LdapSettings
     {
         if (EnableLdapClaimResolution)
         {
-            if (string.IsNullOrEmpty(Domain))
-            {
-                throw new ArgumentException($"{nameof(EnableLdapClaimResolution)} is set to true but {nameof(Domain)} is not set.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(Domain);
 
             if (string.IsNullOrEmpty(MachineAccountName) && !string.IsNullOrEmpty(MachineAccountPassword))
             {

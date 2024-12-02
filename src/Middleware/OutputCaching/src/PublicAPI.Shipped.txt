@@ -13,6 +13,9 @@ Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByHost.get -> bool
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByHost.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByValues.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore
+Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, System.ReadOnlyMemory<string!> tags, System.TimeSpan validFor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore.TryGetAsync(string! key, System.IO.Pipelines.PipeWriter! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature.Context.get -> Microsoft.AspNetCore.OutputCaching.OutputCacheContext!
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy
@@ -31,6 +34,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.NoStore.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.OutputCacheAttribute() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.PolicyName.get -> string?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.PolicyName.init -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?

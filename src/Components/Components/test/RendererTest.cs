@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -2620,6 +2620,56 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task DoesNotDispatchEventsAfterOwnerComponentIsDisposed()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var eventCount = 0;
+        Action<EventArgs> origEventHandler = args => { eventCount++; };
+        var component = new ConditionalParentComponent<EventComponent>
+        {
+            IncludeChild = true,
+            ChildParameters = new Dictionary<string, object>
+            {
+                { nameof(EventComponent.OnTest), origEventHandler }
+            }
+        };
+        var rootComponentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+        var batch = renderer.Batches.Single();
+        var rootComponentDiff = batch.DiffsByComponentId[rootComponentId].Single();
+        var rootComponentFrame = batch.ReferenceFrames[0];
+        var childComponentFrame = rootComponentDiff.Edits
+            .Select(e => batch.ReferenceFrames[e.ReferenceFrameIndex])
+            .Where(f => f.FrameType == RenderTreeFrameType.Component)
+            .Single();
+        var childComponentId = childComponentFrame.ComponentId;
+        var childComponentDiff = batch.DiffsByComponentId[childComponentFrame.ComponentId].Single();
+        var eventHandlerId = batch.ReferenceFrames
+            .Skip(childComponentDiff.Edits[0].ReferenceFrameIndex) // Search from where the child component frames start
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+            .Single(f => f.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act/Assert 1: Event handler fires when we trigger it
+        Assert.Equal(0, eventCount);
+        var renderTask = renderer.DispatchEventAsync(eventHandlerId, args: null);
+        Assert.True(renderTask.IsCompletedSuccessfully);
+        Assert.Equal(1, eventCount);
+        await renderTask;
+
+        // Now remove the EventComponent, but without ever acknowledging the renderbatch, so the event handler doesn't get disposed
+        var disposalBatchAcknowledgementTcs = new TaskCompletionSource();
+        component.IncludeChild = false;
+        renderer.NextRenderResultTask = disposalBatchAcknowledgementTcs.Task;
+        component.TriggerRender();
+
+        // Act/Assert 2: Can no longer fire the original event. It's not an error but the delegate was not invoked.
+        await renderer.DispatchEventAsync(eventHandlerId, args: null);
+        Assert.Equal(1, eventCount);
+    }
+
+    [Fact]
     public async Task DisposesEventHandlersWhenAttributeValueChanged()
     {
         // Arrange
@@ -3015,8 +3065,8 @@ public class RendererTest
         // Assert: correct render result
         Assert.True(renderTask.IsCompletedSuccessfully);
         var newBatch = renderer.Batches.Skip(1).Single();
-        Assert.Equal(1, newBatch.DisposedComponentIDs.Count);
-        Assert.Equal(1, newBatch.DiffsByComponentId.Count);
+        Assert.Single(newBatch.DisposedComponentIDs);
+        Assert.Single(newBatch.DiffsByComponentId);
         Assert.Collection(newBatch.DiffsByComponentId[componentId].Single().Edits,
             edit =>
             {
@@ -3383,7 +3433,7 @@ public class RendererTest
         // Assert: Only the re-rendered component was notified of "after render"
         var batch2 = renderer.Batches.Skip(1).Single();
         Assert.Equal(2, batch2.DiffsInOrder.Count); // Parent and first child
-        Assert.Equal(1, batch2.DisposedComponentIDs.Count); // Third child
+        Assert.Single(batch2.DisposedComponentIDs); // Third child
         Assert.Equal(2, childComponents[0].OnAfterRenderCallCount); // Retained and re-rendered
         Assert.Equal(1, childComponents[1].OnAfterRenderCallCount); // Retained and not re-rendered
         Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed

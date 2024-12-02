@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.get -> bool
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.set -> void

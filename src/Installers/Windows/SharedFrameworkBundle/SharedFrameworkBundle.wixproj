@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
     <WixExtension Include="WixDependencyExtension">
       <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
       <Name>WixDependencyExtension</Name>
@@ -25,6 +29,7 @@
 
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
     <Content Include="thm.xml" />
   </ItemGroup>
 
@@ -41,13 +46,17 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86">
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
+                          SetPlatform="Platform=x86"
+                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'x86'">
           <Name>SharedFrameworkLib</Name>
           <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
           <Private>True</Private>
           <DoNotHarvest>True</DoNotHarvest>
         </ProjectReference>
-        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64">
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
+                          SetPlatform="Platform=x64"
+                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'x64'">
           <Name>SharedFrameworkLib</Name>
           <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
           <Private>True</Private>

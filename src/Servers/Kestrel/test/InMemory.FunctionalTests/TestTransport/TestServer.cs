@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -78,7 +78,7 @@ internal class TestServer : IAsyncDisposable, IStartup
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
-                    .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
+                    .UseSetting(WebHostDefaults.ShutdownTimeoutKey, context.ShutdownTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
                     .Configure(app => { app.Run(_app); });
             })
             .ConfigureServices(services =>

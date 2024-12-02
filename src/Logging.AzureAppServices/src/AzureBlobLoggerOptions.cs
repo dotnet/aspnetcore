@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
@@ -21,10 +22,7 @@ public class AzureBlobLoggerOptions : BatchingLoggerOptions
         get { return _blobName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException($"{nameof(BlobName)} must be non-empty string.", nameof(value));
-            }
+            ArgumentThrowHelper.ThrowIfNullOrEmpty(value);
             _blobName = value;
         }
     }

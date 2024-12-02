@@ -8,7 +8,7 @@
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <!-- Do not exclude this project from source build -->
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.
@@ -30,9 +30,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Target framework is not appended to this because native assets do not have a target framework. -->
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
-    <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
+    <!-- Use the Runtime.AspNetCore.Transport package as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
+    <DotNetRuntimeArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime-pgo-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -43,6 +44,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
     <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</CrossgenOutput>
+    <!-- VMR doesn't produce valid crossgen for the host/build machine https://github.com/dotnet/source-build/issues/3793 -->
+    <CrossgenOutput Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
@@ -104,7 +107,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     -->
     <BuildOsName>$(TargetOsName)</BuildOsName>
     <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)' != 'x64'">linux</BuildOsName>
-    <BuildOsName Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</BuildOsName>
+    <BuildOsName Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</BuildOsName>
     <Crossgen2BuildArchitecture Condition=" '$(BuildOsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
     <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
     <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName.Replace('.', '_'))-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
@@ -170,7 +173,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
     <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
     <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
     <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
@@ -200,7 +202,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _GenerateRuntimeListFile;
       _ResolveRuntimePackContent;
       _ResolveSharedFrameworkContent;
-      _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
@@ -556,16 +557,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   Targets related to creating .zip/.tar.gz
   #########################################
   -->
-  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <!-- Try various places to find the runtime. It's either released (use official version),
-         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+  <Target Name="_DownloadAndExtractDotNetRuntime">
     <ItemGroup>
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/$(DotNetRuntimeDownloadPath)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(DotNetRuntimeDownloadPath)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(DotNetRuntimeDownloadPath)"
-          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)$(DotNetRuntimeDownloadPath)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
@@ -680,30 +674,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Copy SourceFiles="@(AspnetCompositesByName->'$(CompositeTargetDir)%(Filename)%(Extension)')"
           DestinationFolder="$(LayoutAspnetPath)" />
-  </Target>
-
-  <Target Name="_CleanLocalDotNet" BeforeTargets="_InstallFrameworkIntoLocalDotNet">
-    <ItemGroup>
-      <_ExtraDotNetFiles Include="$(LocalInstallationOutputPath)**\*.*"
-          Exclude="@(RefPackContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraDotNetFiles)" />
-  </Target>
-
-  <!--
-    Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework
-    into the $reporoot/.dotnet folder so tests can run against the shared framework. This workaround is not
-    needed in source build.
-  -->
-  <Target Name="_InstallFrameworkIntoLocalDotNet"
-          Condition="'$(DotNetBuildFromSource)' != 'true'"
-          Inputs="@(SharedFxContent)"
-          Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
-
-    <Copy SourceFiles="@(SharedFxContent)"
-          DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
-          UseHardlinksIfPossible="true" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"

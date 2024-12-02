@@ -67,7 +67,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         _exceptionHandler = DisplayException;
         _serializationContext = CreateSerializationContext(jsonOptions?.Value);
         _problemDetailsService = problemDetailsService;
-        foreach (var filter in filters.Reverse())
+        foreach (var filter in Enumerable.Reverse(filters))
         {
             var nextFilter = _exceptionHandler;
             _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
@@ -102,8 +102,13 @@ internal class DeveloperExceptionPageMiddlewareImpl
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
+    [DebuggerDisableUserUnhandledExceptions]
     public async Task Invoke(HttpContext context)
     {
+        // We want to avoid treating exceptions as user-unhandled if an exception filter like the DatabaseDeveloperPageExceptionFilter
+        // handles the exception rather than letting it flow to the default DisplayException method. This is because we don't want to stop the
+        // debugger if the developer shouldn't be handling the exception and instead just needs to do something like click a link to run a
+        // database migration.
         try
         {
             await _next(context);
@@ -122,6 +127,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
 
+                // Generally speaking, we do not expect application code to handle things like IOExceptions during a request
+                // body read due to a client disconnect. But aborted requests should be rare in development, and developers
+                // might be surprised if an IOException propagating through their code was not considered user-unhandled.
+                // That said, if developers complain, we consider removing the following line.
+                Debugger.BreakForUserUnhandledException(ex);
                 return;
             }
 
@@ -131,6 +141,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
             {
                 _logger.ResponseStartedErrorPageMiddleware();
                 _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
+
+                // Rethrowing informs the debugger that this exception should be considered user-unhandled.
                 throw;
             }
 
@@ -161,11 +173,16 @@ internal class DeveloperExceptionPageMiddlewareImpl
             }
             catch (Exception ex2)
             {
+                // It might make sense to call BreakForUserUnhandledException for ex2 after we do the same for the original exception.
+                // But for now, considering the rarity of user-defined IDeveloperPageExceptionFilters, we're not for simplicity.
+
                 // If there's a Exception while generating the error page, re-throw the original exception.
                 _logger.DisplayErrorPageException(ex2);
             }
 
             _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
+
+            // Rethrowing informs the debugger that this exception should be considered user-unhandled.
             throw;
         }
 
@@ -178,6 +195,9 @@ internal class DeveloperExceptionPageMiddlewareImpl
     // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
     private Task DisplayException(ErrorContext errorContext)
     {
+        // We need to inform the debugger that this exception should be considered user-unhandled since it wasn't fully handled by an exception filter.
+        Debugger.BreakForUserUnhandledException(errorContext.Exception);
+
         var httpContext = errorContext.HttpContext;
         var headers = httpContext.Request.GetTypedHeaders();
         var acceptHeader = headers.Accept;
@@ -208,8 +228,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
         if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
             {
                 HttpContext = httpContext,
-                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
-                Exception = errorContext.Exception 
+                ProblemDetails = CreateProblemDetails(errorContext, httpContext),
+                Exception = errorContext.Exception
             }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
@@ -320,8 +340,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
         EndpointModel? endpointModel = null;
         if (endpoint != null)
         {
-            endpointModel = new EndpointModel();
-            endpointModel.DisplayName = endpoint.DisplayName;
+            endpointModel = new EndpointModel
+            {
+                DisplayName = endpoint.DisplayName,
+                Metadata = endpoint.Metadata
+            };
 
             if (endpoint is RouteEndpoint routeEndpoint)
             {

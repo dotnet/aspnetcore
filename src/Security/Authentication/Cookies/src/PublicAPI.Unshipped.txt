@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CookieAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

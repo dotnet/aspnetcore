@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -488,7 +488,7 @@ public class FileBufferingReadStreamTests
         // 4K is the lower bound on buffer sizes
         var bufferSize = 4096;
         var mostExpectedWrites = 8;
-        var data = Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b).Reverse().ToArray();
+        var data = Enumerable.Reverse(Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b)).ToArray();
         var inner = new MemoryStream(data);
 
         using var stream = new FileBufferingReadStream(inner, 100, bufferLimit: null, GetCurrentDirectory());

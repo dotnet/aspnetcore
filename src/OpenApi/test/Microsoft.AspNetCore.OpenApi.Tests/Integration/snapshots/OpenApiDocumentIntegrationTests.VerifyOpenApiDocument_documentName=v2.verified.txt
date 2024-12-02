@@ -1,0 +1,70 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Sample | v2",
+    "contact": {
+      "name": "OpenAPI Enthusiast",
+      "email": "iloveopenapi@example.com"
+    },
+    "license": {
+      "name": "MIT"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v2/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "externalDocs": {
+                      "description": "Documentation for this OpenAPI schema",
+                      "url": "https://example.com/api/docs/schemas/string"
+                    }
+                  },
+                  "externalDocs": {
+                    "description": "Documentation for this OpenAPI schema",
+                    "url": "https://example.com/api/docs/schemas/array"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "externalDocs": {
+          "description": "Documentation for this OpenAPI endpoint",
+          "url": "https://example.com/api/docs/operations/CreateUser"
+        },
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { },
+  "tags": [
+    {
+      "name": "users"
+    },
+    {
+      "name": "Sample"
+    }
+  ]
+}

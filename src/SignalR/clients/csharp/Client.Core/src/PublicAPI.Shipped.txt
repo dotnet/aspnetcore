@@ -20,6 +20,14 @@ Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder.HubConnectionBuilder() 
 Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions
 Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.HubConnectionOptions() -> void
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.get -> System.TimeSpan
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.set -> void
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.set -> void
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.StatefulReconnectBufferSize.get -> long
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.StatefulReconnectBufferSize.set -> void
 Microsoft.AspNetCore.SignalR.Client.HubConnectionState
 Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Connected = 1 -> Microsoft.AspNetCore.SignalR.Client.HubConnectionState
 Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Connecting = 2 -> Microsoft.AspNetCore.SignalR.Client.HubConnectionState
@@ -44,6 +52,8 @@ static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.Config
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy! retryPolicy) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan[]! reconnectDelays) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithKeepAliveInterval(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan interval) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithServerTimeout(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan timeout) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.InvokeAsync(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, object? arg1, object? arg2, object? arg3, object? arg4, object? arg5, object? arg6, object? arg7, object? arg8, object? arg9, object? arg10, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.InvokeAsync(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, object? arg1, object? arg2, object? arg3, object? arg4, object? arg5, object? arg6, object? arg7, object? arg8, object? arg9, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.InvokeAsync(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, object? arg1, object? arg2, object? arg3, object? arg4, object? arg5, object? arg6, object? arg7, object? arg8, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

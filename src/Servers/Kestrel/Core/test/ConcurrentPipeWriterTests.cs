@@ -7,7 +7,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -25,7 +25,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
 
@@ -89,7 +89,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var flushTask0 = default(ValueTask<FlushResult>);
@@ -186,7 +186,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var memory = default(Memory<byte>);
@@ -270,7 +270,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var memory = default(Memory<byte>);
@@ -338,7 +338,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var flushTask0 = default(ValueTask<FlushResult>);

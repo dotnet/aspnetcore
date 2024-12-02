@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -41,15 +41,18 @@ export class BrowserRenderer {
       throw new Error(`Root component '${componentId}' could not be attached because its target element is already associated with a root component`);
     }
 
+    // If we want to append content to the end of the element, we create a new logical child container
+    // at the end of the element and treat that as the new parent.
+    if (appendContent) {
+      const indexAfterLastChild = getLogicalChildrenArray(element).length;
+      element = createAndInsertLogicalContainer(element, indexAfterLastChild);
+    }
+
     markAsInteractiveRootComponentElement(element, true);
     this.attachComponentToElement(componentId, element);
     this.rootComponentIds.add(componentId);
 
-    // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
-    // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
-    if (!appendContent) {
-      elementsToClearOnRootComponentRender.add(element);
-    }
+    elementsToClearOnRootComponentRender.add(element);
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {

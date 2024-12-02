@@ -47,6 +47,12 @@ internal sealed class KeyRing : IKeyRing
 
     public Guid DefaultKeyId { get; }
 
+    // For testing
+    internal IReadOnlyCollection<Guid> GetAllKeyIds()
+    {
+        return _keyIdToKeyHolderMap.Keys;
+    }
+
     public IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
     {
         isRevoked = false;

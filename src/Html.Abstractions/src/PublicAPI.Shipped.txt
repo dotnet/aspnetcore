@@ -20,6 +20,8 @@ Microsoft.AspNetCore.Html.HtmlString
 Microsoft.AspNetCore.Html.HtmlString.HtmlString(string? value) -> void
 Microsoft.AspNetCore.Html.HtmlString.Value.get -> string?
 Microsoft.AspNetCore.Html.HtmlString.WriteTo(System.IO.TextWriter! writer, System.Text.Encodings.Web.HtmlEncoder! encoder) -> void
+Microsoft.AspNetCore.Html.IHtmlAsyncContent
+Microsoft.AspNetCore.Html.IHtmlAsyncContent.WriteToAsync(System.IO.TextWriter! writer) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Html.IHtmlContent
 Microsoft.AspNetCore.Html.IHtmlContent.WriteTo(System.IO.TextWriter! writer, System.Text.Encodings.Web.HtmlEncoder! encoder) -> void
 Microsoft.AspNetCore.Html.IHtmlContentBuilder

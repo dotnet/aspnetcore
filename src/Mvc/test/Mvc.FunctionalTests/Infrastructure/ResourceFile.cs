@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -75,13 +75,13 @@ public static class ResourceFile
                 if (sourceFile)
                 {
                     // Even when generating baselines, a missing source file is a serious problem.
-                    Assert.True(false, $"Manifest resource: { fullName } not found.");
+                    Assert.Fail($"Manifest resource: { fullName } not found.");
                 }
             }
             else
             {
                 // When not generating baselines, a missing source or output file is always an error.
-                Assert.True(false, $"Manifest resource '{ fullName }' not found.");
+                Assert.Fail($"Manifest resource '{ fullName }' not found.");
             }
 
             return null;

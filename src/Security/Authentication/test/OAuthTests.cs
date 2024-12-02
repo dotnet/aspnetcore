@@ -44,7 +44,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientId", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientId", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientSecret", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientSecret", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -191,6 +191,32 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
 
         Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
         Assert.Contains("scope=foo%20bar", res.Headers.Location.Query);
+    }
+
+    [Fact]
+    public async Task RedirectToAuthorizeEndpoint_HasAdditionalAuthorizationParametersAsConfigured()
+    {
+        using var host = await CreateHost(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
+                "Weblie",
+                opt =>
+                {
+                    ConfigureDefaults(opt);
+                    opt.AdditionalAuthorizationParameters.Add("prompt", "login");
+                    opt.AdditionalAuthorizationParameters.Add("audience", "https://api.example.com");
+                }),
+            async ctx =>
+            {
+                await ctx.ChallengeAsync("Weblie");
+                return true;
+            });
+
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://www.example.com/challenge");
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        Assert.Contains("prompt=login&audience=https%3A%2F%2Fapi.example.com", res.Headers.Location.Query);
     }
 
     [Fact]

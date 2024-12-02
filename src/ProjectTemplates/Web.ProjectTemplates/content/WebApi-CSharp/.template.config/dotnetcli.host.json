@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
     "UseLocalDB": {
       "longName": "use-local-db"
@@ -35,7 +35,7 @@
     "DefaultScope": {
       "longName": "default-scope",
       "shortName": ""
-    },    
+    },
     "Framework": {
       "longName": "framework"
     },

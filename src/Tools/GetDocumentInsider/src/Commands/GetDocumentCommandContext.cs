@@ -19,5 +19,24 @@ public class GetDocumentCommandContext
 
     public string ProjectName { get; set; }
 
+    /// <summary>
+    /// The version of the OpenAPI document to generate.
+    /// Maps to <see cref="OpenApi.OpenApiSpecVersion" />.
+    /// Can be null, in which case <see cref="OpenApiSpecVersion.OpenApi3_0"/> is used.
+    /// </summary>
+    public string OpenApiVersion { get; set; }
+
+    // The name of the OpenAPI document to generate.
+    // Generates all documents if not provided.
+    public string DocumentName { get; set; }
+
+    /// <summary>
+    /// The name of the generated OpenAPI document.
+    /// When the default document (v1) is generated, this maps
+    /// to {FileName}.json. For custom file names, this maps to
+    /// {FileName}_{DocumentName}.json.
+    /// </summary>
+    public string FileName { get; set; }
+
     public IReporter Reporter { get; set; }
 }

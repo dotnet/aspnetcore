@@ -6,23 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     @*#if (SampleContent)
-    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     ##endif*@
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="BlazorWeb-CSharp.styles.css" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["BlazorWeb-CSharp.styles.css"]" />
+    <ImportMap />
     @*#if (SampleContent)
     <link rel="icon" type="image/png" href="favicon.png" />
     ##endif*@
     @*#if (!InteractiveAtRoot)
     <HeadOutlet />
     ##elseif (IndividualLocalAuth)
-    <HeadOutlet @rendermode="@RenderModeForPage" />
+    <HeadOutlet @rendermode="PageRenderMode" />
     ##elseif (UseServer && UseWebAssembly)
-    <HeadOutlet @rendermode="@InteractiveAuto" />
+    <HeadOutlet @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
-    <HeadOutlet @rendermode="@InteractiveServer" />
+    <HeadOutlet @rendermode="InteractiveServer" />
     ##else
-    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
     ##endif*@
 </head>
 
@@ -30,15 +31,15 @@
     @*#if (!InteractiveAtRoot)
     <Routes />
     ##elseif (IndividualLocalAuth)
-    <Routes @rendermode="@RenderModeForPage" />
+    <Routes @rendermode="PageRenderMode" />
     ##elseif (UseServer && UseWebAssembly)
-    <Routes @rendermode="@InteractiveAuto" />
+    <Routes @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
-    <Routes @rendermode="@InteractiveServer" />
+    <Routes @rendermode="InteractiveServer" />
     ##else
-    <Routes @rendermode="@InteractiveWebAssembly" />
+    <Routes @rendermode="InteractiveWebAssembly" />
     ##endif*@
-    <script src="_framework/blazor.web.js"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>
@@ -49,9 +50,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveAuto;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : null;
 }
 #elseif (UseServer)
 
@@ -59,9 +59,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveServer;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveServer : null;
 }
 #else
 
@@ -69,8 +68,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveWebAssembly;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveWebAssembly : null;
 }
 #endif*@

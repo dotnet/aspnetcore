@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly Func<Func<Task>, Task> _dispatchInboundActivity;
+    private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
@@ -103,7 +104,7 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.InitializationStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        return HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_initialized)
             {
@@ -164,7 +165,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
-        });
+        }));
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -728,18 +729,16 @@ internal partial class CircuitHost : IAsyncDisposable
     internal Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
-        IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
             var shouldClearStore = false;
+            var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
-            Task[]? pendingTasks = null;
             try
             {
                 if (Descriptors.Count > 0)
@@ -752,6 +751,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
+                    shouldWaitForQuiescence = true;
                     if (store != null)
                     {
                         shouldClearStore = true;
@@ -759,10 +759,12 @@ internal partial class CircuitHost : IAsyncDisposable
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                         await appLifetime.RestoreStateAsync(store);
+                        RestoreAntiforgeryToken(_scope);
                     }
 
                     // Retrieve the circuit handlers at this point.
                     _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                    _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
                     await OnCircuitOpenedAsync(cancellation);
                     await OnConnectionUpAsync(cancellation);
 
@@ -774,44 +776,9 @@ internal partial class CircuitHost : IAsyncDisposable
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
                     }
-
-                    pendingTasks = new Task[operations.Length];
                 }
 
-                for (var i = 0; i < operations.Length; i++)
-                {
-                    var operation = operations[i];
-                    switch (operation.Type)
-                    {
-                        case RootComponentOperationType.Add:
-                            var task = webRootComponentManager.AddRootComponentAsync(
-                                operation.SsrComponentId,
-                                operation.Descriptor.ComponentType,
-                                operation.Marker.Value.Key,
-                                operation.Descriptor.Parameters);
-                            if (pendingTasks != null)
-                            {
-                                pendingTasks[i] = task;
-                            }
-                            break;
-                        case RootComponentOperationType.Update:
-                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                            _ = webRootComponentManager.UpdateRootComponentAsync(
-                                operation.SsrComponentId,
-                                operation.Descriptor.ComponentType,
-                                operation.Marker.Value.Key,
-                                operation.Descriptor.Parameters);
-                            break;
-                        case RootComponentOperationType.Remove:
-                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
-                            break;
-                    }
-                }
-
-                if (pendingTasks != null)
-                {
-                    await Task.WhenAll(pendingTasks);
-                }
+                await PerformRootComponentOperations(operations, shouldWaitForQuiescence);
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
@@ -835,6 +802,67 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
             }
         });
+    }
+
+    private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
+    {
+        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
+        // state and is available on the circuit whether or not is used by a component on the first
+        // render.
+        var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
+        _ = antiforgery?.GetAntiforgeryToken();
+    }
+
+    private async ValueTask PerformRootComponentOperations(
+        RootComponentOperation[] operations,
+        bool shouldWaitForQuiescence)
+    {
+        var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+        var pendingTasks = shouldWaitForQuiescence
+            ? new Task[operations.Length]
+            : null;
+
+        // The inbound activity pipeline needs to be awaited because it populates
+        // the pending tasks used to wait for quiescence.
+        await HandleInboundActivityAsync(() =>
+        {
+            for (var i = 0; i < operations.Length; i++)
+            {
+                var operation = operations[i];
+                switch (operation.Type)
+                {
+                    case RootComponentOperationType.Add:
+                        var task = webRootComponentManager.AddRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        if (pendingTasks != null)
+                        {
+                            pendingTasks[i] = task;
+                        }
+                        break;
+                    case RootComponentOperationType.Update:
+                        // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                        _ = webRootComponentManager.UpdateRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        break;
+                    case RootComponentOperationType.Remove:
+                        webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                        break;
+                }
+            }
+
+            return Task.CompletedTask;
+        });
+
+        if (pendingTasks != null)
+        {
+            await Task.WhenAll(pendingTasks);
+        }
     }
 
     private static partial class Log

@@ -56,6 +56,11 @@ public partial class HubConnectionContext
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
     internal bool UsingStatefulReconnect() => _useStatefulReconnect;
 
+    // Tracks groups that the connection has been added to
+    internal HashSet<string> GroupNames { get; } = new HashSet<string>();
+
+    internal Activity? OriginalActivity { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
     /// </summary>
@@ -72,7 +77,7 @@ public partial class HubConnectionContext
         _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
 
         _connectionContext = connectionContext;
-        _logger = loggerFactory.CreateLogger<HubConnectionContext>();
+        _logger = loggerFactory.CreateLogger(typeof(HubConnectionContext));
         ConnectionAborted = _connectionAbortedTokenSource.Token;
         _closedRegistration = connectionContext.ConnectionClosed.Register(static (state) => ((HubConnectionContext)state!).Abort(), this);
 

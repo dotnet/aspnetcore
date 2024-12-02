@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -1260,6 +1261,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         private readonly ModelStateDictionary _dictionary = dictionary;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, ModelStateEntry?>[] Items => _dictionary.ToArray();
+        public DictionaryItemDebugView<string, ModelStateEntry?>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, ModelStateEntry?>(pair)).ToArray();
     }
 }

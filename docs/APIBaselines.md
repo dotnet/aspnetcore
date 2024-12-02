@@ -1,6 +1,6 @@
 # API Baselines
 
-This document contains information regarding API baseline files and how to work with them. For additional details on how these files works, consult:
+This document contains information regarding API baseline files and how to work with them. For additional details on how these files work, consult:
 
 - <https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/PublicApiAnalyzers.Help.md>
 - <https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.md>
@@ -56,7 +56,7 @@ Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Dis
 1. `{directory containing relevant *.slnf}\startvs.cmd`
 1. F6 *or whatever your favourite build gesture is*
 1. Click on a RS0016 (or whatever) error
-1. Right click in editor on underscored symbol or go straight to the “quick fix” icon to its left. Control-. also works.
+1. Right click in editor on the underscored symbol or go straight to the “quick fix” icon to its left. Control-. also works.
 1. Choose “Add Blah to public API” / “Fix all occurrences in … Solution”
 1. Click Apply
 1. F6 *again to see if the fixer missed anything or if other RS00xx errors show up (not uncommon)*

@@ -27,7 +27,8 @@ public class Startup
                 RoutePatternFactory.Parse("/"),
                 0,
                 new EndpointMetadataCollection(
-                    new HttpMethodMetadata(new[] { "GET", "POST" })),
+                    new HttpMethodMetadata(new[] { "GET", "POST" }),
+                    "this is a metadata \r\n with multuple line\r\n and <p>Html tags</p>"),
                 "Endpoint display name");
 
             context.SetEndpoint(endpoint);

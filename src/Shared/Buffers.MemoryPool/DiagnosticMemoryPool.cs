@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace System.Buffers;
 
@@ -161,5 +159,28 @@ internal sealed class DiagnosticMemoryPool : MemoryPool<byte>
         }
 
         await task;
+    }
+
+    public bool ContainsMemory(Memory<byte> memory)
+    {
+        lock (_syncObj)
+        {
+            foreach (var block in _blocks)
+            {
+                unsafe
+                {
+                    fixed (byte* inUseMemoryPtr = memory.Span)
+                    fixed (byte* beginPooledMemoryPtr = block.Memory.Span)
+                    {
+                        byte* endPooledMemoryPtr = beginPooledMemoryPtr + block.Memory.Length;
+                        if (inUseMemoryPtr >= beginPooledMemoryPtr && inUseMemoryPtr < endPooledMemoryPtr)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

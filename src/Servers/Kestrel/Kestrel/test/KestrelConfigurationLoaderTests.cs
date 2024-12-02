@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -239,6 +239,8 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    // inherently flaky (writes to a well-known path)
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48736")]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try
@@ -840,6 +842,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Null(end1.EndpointConfig.SslProtocols);
     }
 
+    // On helix retry list - inherently flaky (FS events)
     [Theory]
     [InlineData(true)] // This might be flaky, since it depends on file system events (or polling)
     [InlineData(false)] // This will be slow (1 seconds)
@@ -922,6 +925,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
+    // On helix retry list - inherently flaky (FS events)
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)] // Windows has poor support for directory symlinks (e.g. https://github.com/dotnet/runtime/issues/27826)
     public async Task CertificateChangedOnDisk_Symlink()
@@ -1839,6 +1843,23 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added by Reload"));
 
         _ = serverOptions.ConfigurationLoader.Reload();
+    }
+
+    [Fact]
+    public void AddNamedPipeEndpoint()
+    {
+        var serverOptions = CreateServerOptions();
+        var builder = serverOptions.Configure()
+            .NamedPipeEndpoint("abc");
+
+        Assert.Empty(serverOptions.GetListenOptions());
+        Assert.Equal(builder, serverOptions.ConfigurationLoader);
+
+        builder.Load();
+
+        Assert.Single(serverOptions.GetListenOptions());
+        Assert.Equal("abc", serverOptions.CodeBackedListenOptions[0].PipeName);
+        Assert.NotNull(serverOptions.ConfigurationLoader);
     }
 
     private static string GetCertificatePath()

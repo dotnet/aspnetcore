@@ -354,7 +354,7 @@ function ensureEditableValueSynchronized(destination: Element, value: any) {
   } else if (destination instanceof HTMLSelectElement && destination.selectedIndex !== value) {
     destination.selectedIndex = value as number;
   } else if (destination instanceof HTMLInputElement) {
-    if (destination.type === 'checkbox') {
+    if (destination.type === 'checkbox' || destination.type === 'radio') {
       if (destination.checked !== value) {
         destination.checked = value as boolean;
       }
@@ -368,7 +368,7 @@ function getEditableElementValue(elem: Element): string | boolean | number | nul
   if (elem instanceof HTMLSelectElement) {
     return elem.selectedIndex;
   } else if (elem instanceof HTMLInputElement) {
-    return elem.type === 'checkbox' ? elem.checked : (elem.getAttribute('value') || '');
+    return elem.type === 'checkbox' || elem.type === 'radio' ? elem.checked : (elem.getAttribute('value') || '');
   } else if (elem instanceof HTMLTextAreaElement) {
     return elem.value;
   } else {

@@ -47,7 +47,7 @@ jobs:
         mkdir ..\artifacts
         git status > ..\artifacts\status.txt
         git diff > ..\artifacts\diff.txt
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: results
         path: artifacts

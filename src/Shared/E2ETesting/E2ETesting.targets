@@ -1,6 +1,4 @@
 <Project>
-  <!-- Version of this SDK is set in global.json -->
-  <Sdk Name="Yarn.MSBuild" />
 
   <!-- Make sure the settings files get copied to the test output folder. -->
   <ItemGroup>
@@ -71,7 +69,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.Supported</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.Supported</_Parameter1>
         <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
@@ -82,7 +80,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.ProcessTracking</_Parameter1>
         <_Parameter2>$(SeleniumProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
@@ -90,7 +88,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SauceConnect.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.SauceConnect.ProcessTracking</_Parameter1>
         <_Parameter2>$(SauceConnectProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>

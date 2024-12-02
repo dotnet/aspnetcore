@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -19,6 +20,9 @@ internal class Endpoint
     {
         Operation = operation;
         Location = GetLocation(operation);
+#pragma warning disable RSEXPERIMENTAL002 // Experimental interceptable location API
+        InterceptableLocation = semanticModel.GetInterceptableLocation((InvocationExpressionSyntax)operation.Syntax)!;
+#pragma warning restore RSEXPERIMENTAL002
         HttpMethod = GetHttpMethod(operation);
         EmitterContext = new EmitterContext();
 
@@ -98,17 +102,20 @@ internal class Endpoint
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
     public (string File, int LineNumber, int CharacterNumber) Location { get; }
+#pragma warning disable RSEXPERIMENTAL002 // Experimental interceptable location API
+    public InterceptableLocation InterceptableLocation { get; }
+#pragma warning restore RSEXPERIMENTAL002
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>
-        o is Endpoint other && Location == other.Location && SignatureEquals(this, other);
+        o is Endpoint other && InterceptableLocation == other.InterceptableLocation && SignatureEquals(this, other);
 
     public override int GetHashCode() =>
         HashCode.Combine(Location, GetSignatureHashCode(this));
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        if (!string.Equals(a.Response?.WrappedResponseType, b.Response?.WrappedResponseType, StringComparison.Ordinal) ||
+        if (!string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
         {
@@ -129,7 +136,7 @@ internal class Endpoint
     public static int GetSignatureHashCode(Endpoint endpoint)
     {
         var hashCode = new HashCode();
-        hashCode.Add(endpoint.Response?.WrappedResponseType);
+        hashCode.Add(endpoint.Response?.WrappedResponseTypeDisplayName);
         hashCode.Add(endpoint.HttpMethod);
 
         foreach (var parameter in endpoint.Parameters)

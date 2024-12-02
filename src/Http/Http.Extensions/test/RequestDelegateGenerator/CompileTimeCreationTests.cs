@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -427,7 +429,7 @@ app.MapGet("/", () => "Hello world!");
         Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
     }
 
-    public static IEnumerable<object[]> NullResult
+    public static IEnumerable<object[]> NullResultWithNullAnnotation
     {
         get
         {
@@ -443,7 +445,7 @@ app.MapGet("/", () => "Hello world!");
     }
 
     [Theory]
-    [MemberData(nameof(NullResult))]
+    [MemberData(nameof(NullResultWithNullAnnotation))]
     public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(string innerSource, string message)
     {
         var source = $"""
@@ -456,6 +458,21 @@ app.MapGet("/", {innerSource});
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
 
         Assert.Equal(message, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("Task<bool> () => null!")]
+    [InlineData("Task<bool?> () => null!")]
+    public async Task AwaitableRequestDelegateThrowsNullReferenceExceptionOnUnannotatedNullDelegate(string innerSource)
+    {
+        var source = $"""
+app.MapGet("/", {innerSource});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        _ = await Assert.ThrowsAsync<NullReferenceException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 
     [Theory]
@@ -557,6 +574,46 @@ app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
         Assert.Equal(@"Implicit body inferred for parameter ""todo1"" but no body was provided. Did you mean to use a Service instead?", log2.Message);
     }
 
+    [Theory]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return("Hello"));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new Todo { Name = "Hello" }));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(TypedResults.Ok(new Todo { Name = "Hello" })));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(Microsoft.FSharp.Core.Unit)!));""")]
+    public async Task MapAction_NoParam_FSharpAsyncReturn_NotCoercedToTaskAtCompileTime(string source)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.False(endpointModel.Response.IsAwaitable);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody: "{}");
+    }
+
+    [Theory]
+    [InlineData("""app.MapGet("/", () => Task.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    [InlineData("""app.MapGet("/", () => ValueTask.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    public async Task MapAction_NoParam_TaskLikeOfUnitReturn_NotConvertedToVoidReturningAtCompileTime(string source)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.True(endpointModel.Response.IsAwaitable);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody: "null");
+    }
+
     [Fact]
     public async Task SkipsMapWithIncorrectNamespaceAndAssembly()
     {
@@ -626,5 +683,109 @@ namespace Microsoft.AspNetCore.Builder
         // Emits diagnostic and generates source for all endpoints
         var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
         Assert.Empty(GetStaticEndpoints(result, GeneratorSteps.EndpointModelStep));
+    }
+
+    [Fact]
+    public async Task TestHandlingOfGenericWithNullableReferenceTypes()
+    {
+        var source = """
+#nullable enable
+using System;
+using System.Globalization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+namespace TestApp
+{
+    public static class TestMapActions
+    {
+        public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+        {
+            app.MapGet("/", (IGenericService<SomeInput, string?> service)
+                => "Maybe? " + service.Get(new SomeInput(Random.Shared.Next())));
+            return app;
+        }
+    }
+
+    public interface IInputConstraint<TOutput>;
+
+    public interface IGenericService<TInput, TOutput> where TInput : IInputConstraint<TOutput>
+    {
+        TOutput Get(TInput input);
+    }
+
+    public record SomeInput(int Value) : IInputConstraint<string?>;
+
+    public class ConcreteService : IGenericService<SomeInput, string?>
+    {
+        public string? Get(SomeInput input) => input.Value % 2 == 0 ? input.Value.ToString(CultureInfo.InvariantCulture) : null;
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var _);
+
+        var diagnostics = updatedCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
+    }
+
+    [Fact]
+    public async Task RequestDelegateGenerator_SkipsComplexFormParameter()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] Todo todo) => { });
+app.MapPost("/", ([FromForm] Todo todo, IFormFile formFile) => { });
+app.MapPost("/", ([FromForm] Todo todo, [FromForm] int[] ids) => { });
+""";
+        var (generatorRunResult, _) = await RunGeneratorAsync(source);
+
+        // Emits diagnostics but no generated sources
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Empty(result.GeneratedSources);
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
+    }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/55840
+    [Fact]
+    public async Task RequestDelegatePopulatesFromOptionalFormParameterStringArray()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
+{
+    httpContext.Items["message"] = message;
+});
+""";
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["message"] = new(["hello", "bye"])
+        });
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
 }

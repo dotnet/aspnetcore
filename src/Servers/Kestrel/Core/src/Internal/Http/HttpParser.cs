@@ -54,6 +54,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const byte ByteQuestionMark = (byte)'?';
     private const byte BytePercentage = (byte)'%';
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
+    private static ReadOnlySpan<byte> RequestLineDelimiters => [ByteLF, 0];
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
@@ -61,17 +62,26 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
-        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
+        // Find the next delimiter.
+        if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, RequestLineDelimiters, advancePastDelimiter: false))
         {
-            ParseRequestLine(handler, requestLine);
-            return true;
+            return false;
         }
 
-        return false;
-    }
+        // Consume the delimiter.
+        var foundDelimiter = reader.TryRead(out var next);
+        Debug.Assert(foundDelimiter);
+        // If null character found, or request line is empty
+        if (next == 0 || requestLine.Length == 0)
+        {
+            // Rewind and re-read to format error message correctly
+            reader.Rewind(requestLine.Length + 1);
+            var readResult = reader.TryReadExact(requestLine.Length + 1, out var requestLineSequence);
+            Debug.Assert(readResult);
+            requestLine = requestLineSequence.IsSingleSegment ? requestLineSequence.FirstSpan : requestLineSequence.ToArray();
+            RejectRequestLine(requestLine);
+        }
 
-    private void ParseRequestLine(TRequestHandler handler, ReadOnlySpan<byte> requestLine)
-    {
         // Get Method and set the offset
         var method = requestLine.GetKnownMethod(out var methodEnd);
         if (method == HttpMethod.Custom)
@@ -105,18 +115,19 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         offset++;
 
         // Find end of path and if path is encoded
-        for (; (uint)offset < (uint)requestLine.Length; offset++)
+        var index = requestLine.Slice(offset).IndexOfAny(ByteSpace, ByteQuestionMark, BytePercentage);
+        if (index >= 0)
         {
-            ch = requestLine[offset];
-            if (ch == ByteSpace || ch == ByteQuestionMark)
-            {
-                // End of path
-                break;
-            }
-            else if (ch == BytePercentage)
+            if (requestLine[offset + index] == BytePercentage)
             {
                 pathEncoded = true;
+                offset += index;
+                // Found an encoded character, now just search for end of path
+                index = requestLine.Slice(offset).IndexOfAny(ByteSpace, ByteQuestionMark);
             }
+
+            offset += index;
+            ch = requestLine[offset];
         }
 
         var path = new TargetOffsetPathLength(targetStart, length: offset - targetStart, pathEncoded);
@@ -174,6 +185,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // in-place normalization and decoding to transform into a canonical path
         var startLine = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(requestLine), queryEnd);
         handler.OnStartLine(versionAndMethod, path, startLine);
+
+        return true;
     }
 
     /// <summary>

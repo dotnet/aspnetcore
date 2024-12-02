@@ -31,7 +31,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext + _nextStreamingIdContext++);
 
-    // Validates that we can use persisted state across server, webasembly, and auto modes, with and without
+    // Validates that we can use persisted state across server, webassembly, and auto modes, with and without
     // streaming rendering.
     // For streaming rendering, we validate that the state is captured and restored after streaming completes.
     // For enhanced navigation we validate that the state is captured at the time components are rendered for
@@ -50,8 +50,8 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     [InlineData(false, typeof(InteractiveServerRenderMode), "ServerStreaming")]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
-    // [InlineData(false, typeof(InteractiveAutoRenderMode), (string)null)] https://github.com/dotnet/aspnetcore/issues/50810
-    // [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")] https://github.com/dotnet/aspnetcore/issues/50810
+    [InlineData(false, typeof(InteractiveAutoRenderMode), (string)null)]
+    [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")]
     public void CanRenderComponentWithPersistedState(bool suppressEnhancedNavigation, Type renderMode, string streaming)
     {
         var mode = renderMode switch
@@ -83,7 +83,11 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         else
         {
-            SuppressEnhancedNavigation(true);
+            EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true);
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
         }
 
         if (mode != "auto")
@@ -92,10 +96,6 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         else
         {
-            if (suppressEnhancedNavigation)
-            {
-                BlockWebAssemblyResourceLoad();
-            }
             // For auto mode, validate that the state is persisted for both runtimes and is able
             // to be loaded on server and wasm.
             RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "server");
@@ -123,16 +123,19 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         Browser.Click(By.Id("page-with-components-link"));
 
-        RenderComponentsWithPersistentStateAndValidate(suppresEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming);
+        RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming);
         Browser.Click(By.Id("page-no-components-link"));
         // Ensure that the circuit is gone.
         await Task.Delay(1000);
         Browser.Click(By.Id("page-with-components-link-and-state"));
-        RenderComponentsWithPersistentStateAndValidate(suppresEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
+        RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
     }
 
     private void BlockWebAssemblyResourceLoad()
     {
+        // Clear local storage so that the resource hash is not found
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
 
         // Clear caches so that we can block the resource load
@@ -142,19 +145,19 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     private void UnblockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockLoadBootResource()");
+        Browser.Exists(By.Id("unblocked-wasm"));
     }
 
     private void RenderComponentsWithPersistentStateAndValidate(
-        bool suppresEnhancedNavigation,
+        bool suppressEnhancedNavigation,
         string mode,
         Type renderMode,
         string streaming,
         string interactiveRuntime = null,
-        string stateValue = null)
+        string stateValue = "restored")
     {
-        stateValue ??= "restored";
         // No need to navigate if we are using enhanced navigation, the tests will have already navigated to the page via a link.
-        if (suppresEnhancedNavigation)
+        if (suppressEnhancedNavigation)
         {
             // In this case we suppress auto start to check some server side state before we boot Blazor.
             if (streaming == null)
@@ -189,10 +192,12 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             streamingCompleted: false,
             interactiveRuntime: interactiveRuntime);
 
-        if (streaming != null)
+        if (streaming == null)
         {
-            Browser.Click(By.Id("end-streaming"));
+            return;
         }
+
+        Browser.Click(By.Id("end-streaming"));
 
         AssertPageState(
             mode: mode,
@@ -231,7 +236,4 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             Browser.Equal("Streaming: True", () => Browser.FindElement(By.Id("streaming")).Text);
         }
     }
-
-    private void SuppressEnhancedNavigation(bool shouldSuppress)
-        => EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress);
 }

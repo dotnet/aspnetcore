@@ -8,7 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
@@ -634,11 +634,11 @@ public class SimpleTypeModelBinderIntegrationTest
         Assert.Empty(modelState.Keys);
     }
 
-    public static TheoryData<IDictionary<string, StringValues>> PersonStoreData
+    public static TheoryData<Dictionary<string, StringValues>> PersonStoreData
     {
         get
         {
-            return new TheoryData<IDictionary<string, StringValues>>
+            return new TheoryData<Dictionary<string, StringValues>>
                 {
                     new Dictionary<string, StringValues>
                     {

@@ -13,7 +13,7 @@ public class UsePathBaseExtensionsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("/")]
-    public void EmptyOrNullPathBase_DoNotAddMiddleware(string pathBase)
+    public void EmptyOrNullPathBase_DoNotAddMiddleware(string? pathBase)
     {
         // Arrange
         var useCalled = false;
@@ -54,7 +54,6 @@ public class UsePathBaseExtensionsTests
         public IFeatureCollection ServerFeatures => _wrappedBuilder.ServerFeatures;
         public RequestDelegate Build() => _wrappedBuilder.Build();
         public IApplicationBuilder New() => _wrappedBuilder.New();
-
     }
 
     [Theory]
@@ -238,6 +237,28 @@ public class UsePathBaseExtensionsTests
 
     private static ApplicationBuilder CreateBuilder()
     {
-        return new ApplicationBuilder(serviceProvider: null!);
+        return new ApplicationBuilder(new DummyServiceProvider());
+    }
+
+    private class DummyServiceProvider : IServiceProvider
+    {
+        private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
+
+        public void AddService(Type type, object value) => _services[type] = value;
+
+        public object? GetService(Type serviceType)
+        {
+            if (serviceType == typeof(IServiceProvider))
+            {
+                return this;
+            }
+
+            if (_services.TryGetValue(serviceType, out var value))
+            {
+                return value;
+            }
+
+            return null;
+        }
     }
 }

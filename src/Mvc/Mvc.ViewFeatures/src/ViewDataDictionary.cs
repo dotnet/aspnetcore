@@ -6,9 +6,9 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(ViewDataDictionaryDebugView))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class ViewDataDictionary : IDictionary<string, object?>
 {
     private readonly IDictionary<string, object?> _data;
@@ -594,12 +594,4 @@ public class ViewDataDictionary : IDictionary<string, object?>
         return _data.GetEnumerator();
     }
     #endregion
-
-    private sealed class ViewDataDictionaryDebugView(ViewDataDictionary dictionary)
-    {
-        private readonly ViewDataDictionary _dictionary = dictionary;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object?>[] Items => _dictionary.ToArray();
-    }
 }

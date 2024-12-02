@@ -4,7 +4,7 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <ProductVersion>3.14</ProductVersion>
-    <WixVersion>1.0.0-v3.14.0.5722</WixVersion>
+    <WixVersion>$(MicrosoftSignedWixVersion)</WixVersion>
   </PropertyGroup>
 
   <PropertyGroup>

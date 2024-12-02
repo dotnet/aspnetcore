@@ -29,43 +29,60 @@ The following contains a description of each sub-directory in the `Components` d
 
 ## Development Setup
 
-### Build
+**Note**: To build other specific projects from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
-To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
+### Building ASP.NET Core Components
 
-**Note:** You also need to run the preceding `build` command in the command line before building in VS to ensure that the Web.JS dependency is built.
+1. You'll need to install [Node](https://nodejs.org) on your machine.
 
-### A Guide to build Web.JS
+1. Ensure the repository is clean from any asset that could remain from previous version of the repository. This is recommended when switching branches, or after updating the working branch.
 
-Prior to building `src\Components\Web.JS\`
+    ```powershell
+    git clean -xdff
+    ```
 
-1. You'll need to install [Node](https://nodejs.org) and [yarn](https://yarnpkg.com) on your machine.
+    You may need to kill some processes holding on files that are being deleted, like closing Visual Studio and other `msbuild` or `dotnet` processes. There may also be lingering headless 
+    `chrome` processes, but they are not included in this command. The following command may help you but be aware that this could also stop other important tasks:
 
-2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
+    ```powershell
+    Get-Process dotnet, escape-node-job, msbuild, VBCSCompiler, node, vstest.console, Microsoft.CodeAnalysis.LanguageServer -ErrorAction Continue | Stop-Process;
+    ```
 
-```bash
-./restore.sh
-```
+1. Use NPM to restore the required JavaScript modules. This doesn't require an Internet connection since the sources are read from a sub-module.
 
-```powershell
-./restore.ps1
-```
+    ```powershell
+    npm ci --offline
+    ```
 
-3. After the restore script has finished executing, activate the locally installed .NET by running the following command.
+1. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
+    
+    ```bash
+    # Linux or Mac
+    ./restore.sh
+    ```
 
-```bash
-source activate.sh
-```
+    ```powershell
+    # Windows
+    ./restore.cmd
+    ```
 
-```powershell
-. ./activate.ps1
-```
+1. Now you can build all the JavaScript assets required by the repository (including SignalR for instance) by running the following command:
 
-4. Now you can build `src\Components\Web.JS\` by running the following commands in the `src\Components\Web.JS` directory:
+     ```powershell
+     npm run build
+     ```
 
-```powershell
-dotnet build
-```
+1. Build the Components:
+
+     ```powershell
+     ./src/Components/build.cmd
+     ```
+
+2. Optionally, open the Components in Visual Studio:
+
+     ```powershell
+     ./src/Components/startvs.cmd
+     ```
 
 ### Test
 
@@ -84,25 +101,26 @@ These tests are run in the CI as part of the [`aspnetcore-components-e2e`](https
 
 #### How to run the E2E Tests
 
-To run the tests for this project, follow these steps (from the root directory):
+The E2E tests can be run and debugged directly from Visual Studio (as explained in the previous section). To run the tests from the command line,
+follow the previous build steps and then these commands:
 
-##### Windows
+1. Activate the locally installed .NET by running the following command.
 
-```powershell
-./restore.cmd
-npm install --prefix ./src/Components/test/E2ETest
-. .\activate.ps1
-dotnet test ./src/Components/test/E2ETest
-```
+     ```bash
+     # Linux or Mac
+     source activate.sh
+     ```
 
-##### Linux / MacOS
+     ```powershell
+     # Windows
+     . ./activate.ps1
+     ```
 
-```shell
-./restore.sh
-npm install --prefix ./src/Components/test/E2ETest
-source ./activate.sh
-dotnet test ./src/Components/test/E2ETest
-```
+1. Start the tests.
+
+     ```powershell
+     dotnet test ./src/Components/test/E2ETest
+     ```
 
 Note, you may wish to filter tests using the `--filter` command (ie. `dotnet test --filter <TEST_NAME> ./src/Components/test/E2ETest`).
 
@@ -110,17 +128,17 @@ Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/m
 
 ##### WebAssembly Trimming
 
-By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
+By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedOrMultithreadingApps` property set. For e.g.
 
 ```
 dotnet test -c Release
 ```
 or
 ```
-dotnet build /p:TestTrimmedApps=true
+dotnet build /p:TestTrimmedOrMultithreadingApps=true
 dotnet test --no-build
 ```
 
 ## More Information
 
-For more information, see the [ASP.NET Core README](../../README.md).
+For more information, see the [ASP.NET Core README](https://github.com/dotnet/aspnetcore/blob/main/README.md).

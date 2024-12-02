@@ -171,7 +171,7 @@ public class CorsPolicyBuilder
     public CorsPolicyBuilder AllowAnyMethod()
     {
         _policy.Methods.Clear();
-        _policy.Methods.Add("*");
+        _policy.Methods.Add(CorsConstants.AnyMethod);
         return this;
     }
 
@@ -182,7 +182,7 @@ public class CorsPolicyBuilder
     public CorsPolicyBuilder AllowAnyHeader()
     {
         _policy.Headers.Clear();
-        _policy.Headers.Add("*");
+        _policy.Headers.Add(CorsConstants.AnyHeader);
         return this;
     }
 

@@ -1,2 +1,1 @@
 #nullable enable
-virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SchemaVersion.get -> System.Version!

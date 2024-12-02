@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.OpenApi" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
@@ -38,4 +39,8 @@
   <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' And '$(Platform)' != 'x86' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ApiDescription.Tool.Tests" />
+  </ItemGroup>
 </Project>
