@@ -44,15 +44,11 @@ case "$os" in
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         # Skip brew update for now, see https://github.com/actions/setup-python/issues/577
         # brew update --preinstall
-
-        # Temporarily uninstall pkg-config@0.29.2 to work around https://github.com/actions/runner-images/issues/10984
-        brew uninstall --ignore-dependencies --force pkg-config@0.29.2
-
         brew bundle --no-upgrade --no-lock --file=- <<EOF
 brew "cmake"
 brew "icu4c"
 brew "openssl@3"
-brew "pkg-config"
+brew "pkgconf"
 brew "python3"
 brew "pigz"
 EOF
