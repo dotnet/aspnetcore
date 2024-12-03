@@ -228,10 +228,6 @@
       Code="BUILD004"
       Text="%25(Private) metadata should not be applied to the %(Identity) package reference. Did you mean %25(PrivateAssets)?" />
     <Warning
-      Condition=" '@(ProjectReference->HasMetadata('PrivateAssets')->Count())' != '0' "
-      Code="BUILD005"
-      Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) project reference. Did you mean %25(Private)?" />
-    <Warning
       Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
       Code="BUILD006"
       Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) assembly reference. Did you mean %25(Private)?" />

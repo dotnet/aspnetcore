@@ -39,6 +39,11 @@
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
         !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownAspNetCorePack
+      Include="@(KnownAspNetCorePack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
+        !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
@@ -94,6 +99,11 @@
       <WebAssemblySdkPackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
+
+    <KnownAspNetCorePack Update="Microsoft.AspNetCore.App.Internal.Assets">
+      <AspNetCorePackVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</AspNetCorePackVersion>
+    </KnownAspNetCorePack>
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
       <Crossgen2PackVersion

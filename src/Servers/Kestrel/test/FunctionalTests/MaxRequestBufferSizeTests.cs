@@ -211,7 +211,6 @@ public class MaxRequestBufferSizeTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24557")]
     public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
     {
         // Parameters

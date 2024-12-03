@@ -402,21 +402,21 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     // Arguments to call where.exe
     STARTUPINFOW        startupInfo{};
     PROCESS_INFORMATION processInformation{};
-    SECURITY_ATTRIBUTES securityAttributes;
+    SECURITY_ATTRIBUTES securityAttributes{};
 
-    CHAR                pzFileContents[READ_BUFFER_SIZE];
+    CHAR                pzFileContents[READ_BUFFER_SIZE]{0};
     HandleWrapper<InvalidHandleTraits>     hStdOutReadPipe;
     HandleWrapper<InvalidHandleTraits>     hStdOutWritePipe;
     HandleWrapper<InvalidHandleTraits>     hProcess;
     HandleWrapper<InvalidHandleTraits>     hThread;
     CComBSTR            pwzDotnetName = nullptr;
-    DWORD               dwFilePointer;
-    BOOL                fIsCurrentProcess64Bit;
-    DWORD               dwExitCode;
+    DWORD               dwFilePointer = 0;
+    BOOL                fIsCurrentProcess64Bit = FALSE;
+    DWORD               dwExitCode = 0;
     STRU                struDotnetSubstring;
     STRU                struDotnetLocationsString;
-    DWORD               dwNumBytesRead;
-    DWORD               dwBinaryType;
+    DWORD               dwNumBytesRead = 0;
+    DWORD               dwBinaryType = 0;
     INT                 index = 0;
     INT                 prevIndex = 0;
     std::optional<fs::path> result;
