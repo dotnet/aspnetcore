@@ -47,15 +47,6 @@
         '$(IsBenchmarkProject)' == 'true' OR
         '$(IsPublishedAppTestProject)' == 'true' OR
         $(IsUnitTestProject) ">false</IsShipping>
-
-    <!--
-      Following logic mimics core-setup approach as well as
-      https://github.com/dotnet/arcade/blob/694d59f090b743f894779d04a7ffe11cbaf352e7/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj#L30-L31
-      $(DotNetFinalVersionKind) is set globally when doing final aka stable builds. Arcade infrastructure should pick
-      up $(IsStableBuild) automatically; property is also used to control prerelease branding.
-    -->
-    <IsStableBuild>false</IsStableBuild>
-    <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
   </PropertyGroup>
 
   <!-- Disable logging of some task parameters or metadata to reduce binlog size.
