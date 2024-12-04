@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="eng\Common.props" />
 
   <PropertyGroup>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -98,6 +97,7 @@
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\QuarantinedTests.AfterArcade.props" />
+  <Import Project="eng\Common.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
