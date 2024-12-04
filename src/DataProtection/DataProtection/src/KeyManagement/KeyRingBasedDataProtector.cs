@@ -397,8 +397,6 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             ArrayPool<int>.Shared.Return(purposeLengthsPool);
             Debug.Assert(index == targetArr.Length);
 
-            Console.WriteLine("Original purposes: " + string.Join(";", purposes));
-            Console.WriteLine("Payload: " + Convert.ToBase64String(targetArr));
             _aadTemplate = targetArr;
         }
 
