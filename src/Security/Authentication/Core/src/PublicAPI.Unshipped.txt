@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
-Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?

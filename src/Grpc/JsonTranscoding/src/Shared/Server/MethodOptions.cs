@@ -116,7 +116,7 @@ internal sealed class MethodOptions
         string? responseCompressionAlgorithm = null;
         CompressionLevel? responseCompressionLevel = null;
 
-        foreach (var options in serviceOptions.Reverse())
+        foreach (var options in Enumerable.Reverse(serviceOptions))
         {
             AddCompressionProviders(resolvedCompressionProviders, options.CompressionProviders);
             tempInterceptors.InsertRange(0, options.Interceptors);

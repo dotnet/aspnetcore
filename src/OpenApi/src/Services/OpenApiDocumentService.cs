@@ -356,10 +356,9 @@ internal sealed class OpenApiDocumentService(
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
-        var description = ReasonPhrases.GetReasonPhrase(statusCode);
         var response = new OpenApiResponse
         {
-            Description = description,
+            Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
@@ -411,10 +410,10 @@ internal sealed class OpenApiDocumentService(
                     "Query" => ParameterLocation.Query,
                     "Header" => ParameterLocation.Header,
                     "Path" => ParameterLocation.Path,
-                    _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
+                    _ => ParameterLocation.Query
                 },
                 Required = IsRequired(parameter),
-                Schema = await _componentService.GetOrCreateSchemaAsync(parameter.Type, scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
+                Schema = await _componentService.GetOrCreateSchemaAsync(GetTargetType(description, parameter), scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
                 Description = GetParameterDescriptionFromAttribute(parameter)
             };
 
@@ -664,5 +663,42 @@ internal sealed class OpenApiDocumentService(
         }
 
         return requestBody;
+    }
+
+    /// <remarks>
+    /// This method is used to determine the target type for a given parameter. The target type
+    /// is the actual type that should be used to generate the schema for the parameter. This is
+    /// necessary because MVC's ModelMetadata layer will set ApiParameterDescription.Type to string
+    /// when the parameter is a parsable or convertible type. In this case, we want to use the actual
+    /// model type to generate the schema instead of the string type.
+    /// </remarks>
+    /// <remarks>
+    /// This method will also check if no target type was resolved from the <see cref="ApiParameterDescription"/>
+    /// and default to a string schema. This will happen if we are dealing with an inert route parameter
+    /// that does not define a specific parameter type in the route handler or in the response.
+    /// </remarks>
+    private static Type GetTargetType(ApiDescription description, ApiParameterDescription parameter)
+    {
+        var bindingMetadata = description.ActionDescriptor.EndpointMetadata
+            .OfType<IParameterBindingMetadata>()
+            .SingleOrDefault(metadata => metadata.Name == parameter.Name);
+        var parameterType = parameter.Type is not null
+            ? Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type
+            : parameter.Type;
+
+        // parameter.Type = typeof(string)
+        // parameter.ModelMetadata.Type = typeof(TEnum)
+        var requiresModelMetadataFallbackForEnum = parameterType == typeof(string)
+            && parameter.ModelMetadata.ModelType != parameter.Type
+            && parameter.ModelMetadata.ModelType.IsEnum;
+        // Enums are exempt because we want to set the OpenApiSchema.Enum field when feasible.
+        // parameter.Type = typeof(TEnum), typeof(TypeWithTryParse)
+        // parameter.ModelMetadata.Type = typeof(string)
+        var hasTryParse = bindingMetadata?.HasTryParse == true && parameterType is not null && !parameterType.IsEnum;
+        var targetType = requiresModelMetadataFallbackForEnum || hasTryParse
+            ? parameter.ModelMetadata.ModelType
+            : parameter.Type;
+        targetType ??= typeof(string);
+        return targetType;
     }
 }

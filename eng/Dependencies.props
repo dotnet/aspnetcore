@@ -68,6 +68,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
     <LatestPackageReference Include="Microsoft.OpenApi.Readers" />
     <LatestPackageReference Include="System.Buffers" />
@@ -79,7 +80,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
-    <LatestPackageReference Include="System.Drawing.Common" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
@@ -89,6 +89,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <LatestPackageReference Include="System.Runtime.Caching" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.X509Certificates" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
@@ -141,10 +142,10 @@ and are generated based on the last package release.
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x64" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />

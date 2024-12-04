@@ -52,9 +52,9 @@
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
     <!--
-      Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+      Use the Microsoft.Internal.Runtime.AspNetCore.Transport transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
     -->
-    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+    <AdditionalDotNetPackage Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
 
@@ -74,7 +74,7 @@
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net9.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net10.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
 

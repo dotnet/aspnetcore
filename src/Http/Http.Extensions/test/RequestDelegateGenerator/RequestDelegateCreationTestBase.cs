@@ -35,7 +35,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
-    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.AspNetCore.Http.Generated") });
+    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Generated") });
     private static readonly Project _baseProject = CreateProject();
     private static readonly string _interceptsLocationAttributeRegex = @"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\(\d+, "".*""\)\]";
 
@@ -287,6 +287,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using Http;
 
 public static class {{className}}
 {

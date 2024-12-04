@@ -7,7 +7,7 @@
 FORWARDER_CONNECTION::FORWARDER_CONNECTION(
     VOID
 ) : m_cRefs (1),
-    m_hConnection (NULL)
+    m_hConnection (nullptr)
 {
 }
 

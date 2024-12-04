@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "Номер порта, используемый для конечной точки HTTP IIS Express в launchSettings.json.",
   "symbols/iisHttpsPort/description": "Номер порта, используемый для конечной точки HTTPS IIS Express в launchSettings.json.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/NoHttps/description": "Следует ли отключить HTTPS.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",

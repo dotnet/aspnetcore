@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".net9.0">
+      <group targetFramework=".net10.0">
         <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerVersion$" />
         <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationVersion$" exclude="Build,Analyzers" />
       </group>

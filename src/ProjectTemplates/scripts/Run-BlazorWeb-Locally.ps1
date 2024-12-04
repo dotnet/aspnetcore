@@ -6,7 +6,7 @@
     param(
         [Parameter(Mandatory = $false, Position = 0)]
         [ValidateSet("net9.0", "net10.0")]
-        [string] $Framework = "net9.0",
+        [string] $Framework = "net10.0",
         [Parameter(Mandatory = $false)]
         [switch] $NoRestore,
         [Parameter(Mandatory = $false)]
@@ -27,6 +27,9 @@
         [switch] $NoHttps,
         [Parameter(Mandatory = $false)]
         [switch] $UseProgramMain,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Debug", "Release")]
+        [string] $Configuration = "Release",
         [Parameter(ValueFromRemainingArguments = $true)]
         [string[]] $Args
     )
@@ -82,4 +85,5 @@
         -TemplateArguments $templateArguments `
         -MainProjectRelativePath $mainProjectRelativePath `
         -TargetFramework $Framework `
+        -Configuration $Configuration `
         -Verbose:$VerbosePreference;

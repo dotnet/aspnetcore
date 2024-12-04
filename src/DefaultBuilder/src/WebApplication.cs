@@ -185,7 +185,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     }
 
     /// <summary>
-    /// Runs an application and block the calling thread until host shutdown.
+    /// Runs an application and blocks the calling thread until host shutdown.
     /// </summary>
     /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
     public void Run([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)

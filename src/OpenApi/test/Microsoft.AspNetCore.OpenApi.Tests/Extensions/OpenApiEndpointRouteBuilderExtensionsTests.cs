@@ -29,11 +29,13 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.IsAssignableFrom<IEndpointConventionBuilder>(returnedBuilder);
     }
 
-    [Fact]
-    public void MapOpenApi_SupportsCustomizingPath()
+    [Theory]
+    [InlineData("/custom/{documentName}/openapi.json")]
+    [InlineData("/custom/{documentName}/openapi.yaml")]
+    [InlineData("/custom/{documentName}/openapi.yml")]
+    public void MapOpenApi_SupportsCustomizingPath(string expectedPath)
     {
         // Arrange
-        var expectedPath = "/custom/{documentName}/openapi.json";
         var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
 
@@ -72,13 +74,17 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         });
     }
 
-    [Fact]
-    public async Task MapOpenApi_ReturnsDefaultDocumentIfNoNameProvided()
+    [Theory]
+    [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.toml", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
+    [InlineData("/openapi.yml", "text/plain+yaml;charset=utf-8", true)]
+    public async Task MapOpenApi_ReturnsDefaultDocumentIfNoNameProvided(string expectedPath, string expectedContentType, bool isYaml)
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
-        builder.MapOpenApi("/openapi.json");
+        builder.MapOpenApi(expectedPath);
         var context = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();
         context.Response.Body = responseBodyStream;
@@ -91,6 +97,11 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal(expectedContentType, context.Response.ContentType);
+        var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // String check to validate that generated document starts with YAML syntax
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
             Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
@@ -121,8 +132,11 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal("No OpenAPI document with the name 'v2' was found.", Encoding.UTF8.GetString(responseBodyStream.ToArray()));
     }
 
-    [Fact]
-    public async Task MapOpenApi_ReturnsDocumentIfNameProvidedInQuery()
+    [Theory]
+    [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
+    [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
+    [InlineData("/openapi.yml", "text/plain+yaml;charset=utf-8", true)]
+    public async Task MapOpenApi_ReturnsDocumentIfNameProvidedInQuery(string expectedPath, string expectedContentType, bool isYaml)
     {
         // Arrange
         var documentName = "v2";
@@ -130,7 +144,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         var serviceProviderIsService = new ServiceProviderIsService();
         var serviceProvider = CreateServiceProvider(documentName);
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
-        builder.MapOpenApi("/openapi.json");
+        builder.MapOpenApi(expectedPath);
         var context = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();
         context.Response.Body = responseBodyStream;
@@ -144,6 +158,11 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal(expectedContentType, context.Response.ContentType);
+        var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // String check to validate that generated document starts with YAML syntax
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
             Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);

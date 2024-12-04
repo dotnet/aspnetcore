@@ -3,7 +3,7 @@
   "name": "Blazor Web 应用",
   "description": "用于创建支持服务器端呈现和客户端交互的 Blazor Web 应用的项目模板。此模板可用于具有丰富动态用户界面 (UI) 的 Web 应用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "用于机密的 ID (与个人身份验证一起使用)。",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",

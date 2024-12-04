@@ -4,7 +4,7 @@
   "description": "An empty project template for creating a worker service.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "_symbols/UseProgramMain/displayName.comment": "Use '_' as accelerator key when translating.",

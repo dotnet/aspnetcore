@@ -3,7 +3,7 @@
   "name": "Aplicación web Blazor",
   "description": "Plantilla de proyecto para crear una aplicación web de Blazor que admita tanto la representación del lado del servidor como la interactividad del cliente. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "Identificador que se va a usar para los secretos (se usa con la autenticación individual).",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
   "symbols/ExcludeLaunchSettings/description": "Indica si se va a excluir launchSettings.json de la plantilla generada.",

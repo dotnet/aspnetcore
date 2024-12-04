@@ -4,7 +4,7 @@
   "description": "Um modelo de projeto vazio para criar um worker service.",
   "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'"

@@ -3,10 +3,12 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -338,6 +340,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
         [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
         [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
         [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
         [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
         [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); }],
@@ -349,6 +352,63 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [Theory]
     [MemberData(nameof(RouteParametersWithValidationAttributes))]
     public async Task GetOpenApiParameters_HandlesRouteParameterWithValidationAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            verifySchema(parameter.Schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes =>
+    [
+        [([Range(4, 8)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(int.MinValue, int.MaxValue)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(int.MinValue, schema.Minimum); Assert.Equal(int.MaxValue, schema.Maximum); }],
+        [([Range(0, double.MaxValue)] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(double), "0", "1.79769313486232E+308")] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(long), "-9223372036854775808", "9223372036854775807")] long id) => {}, (OpenApiSchema schema) => { Assert.Equal(long.MinValue, schema.Minimum); Assert.Equal(long.MaxValue, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes))]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            verifySchema(parameter.Schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes_CultureInfo =>
+    [
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99")] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(1.99m, schema.Minimum); Assert.Equal(3.99m, schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99", ParseLimitsInInvariantCulture = true)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(199, schema.Minimum); Assert.Equal(399, schema.Maximum); }],
+        [([Range(1000, 2000)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(1000, schema.Minimum); Assert.Equal(2000, schema.Maximum); }]
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes_CultureInfo))]
+    [UseCulture("fr-FR")]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes_CultureInfo(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -536,5 +596,130 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // transformer for types with a converter.
             Assert.Null(operation.RequestBody.Content["application/json"].Schema.Type);
         });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsParameterWithEnumType(bool useAction)
+    {
+        // Arrange
+        if (!useAction)
+        {
+            var builder = CreateBuilder();
+            builder.MapGet("/api/with-enum", (Status status) => status);
+            await VerifyOpenApiDocument(builder, AssertOpenApiDocument);
+        }
+        else
+        {
+            var action = CreateActionDescriptor(nameof(GetItemStatus));
+            await VerifyOpenApiDocument(action, AssertOpenApiDocument);
+        }
+
+        static void AssertOpenApiDocument(OpenApiDocument document)
+        {
+            var operation = document.Paths["/api/with-enum"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
+            Assert.NotNull(parameter.Schema.Reference);
+            Assert.Equal(parameter.Schema.Reference.Id, response.Reference.Id);
+            var schema = parameter.Schema.GetEffective(document);
+            Assert.Collection(schema.Enum,
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Pending", openApiString.Value);
+            },
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Approved", openApiString.Value);
+            },
+            value =>
+            {
+                var openApiString = Assert.IsType<OpenApiString>(value);
+                Assert.Equal("Rejected", openApiString.Value);
+            });
+        }
+    }
+
+    [Route("/api/with-enum")]
+    private Status GetItemStatus([FromQuery] Status status) => status;
+
+    [Fact]
+    public async Task SupportsMvcActionWithAmbientRouteParameter()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AmbientRouteParameter));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = document.Paths["/api/with-ambient-route-param/{versionId}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("string", parameter.Schema.Type);
+        });
+    }
+
+    [Route("/api/with-ambient-route-param/{versionId}")]
+    private void AmbientRouteParameter() { }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsRouteParameterWithCustomTryParse(bool useAction)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        if (!useAction)
+        {
+            builder.MapGet("/api/{student}", (Student student) => student);
+            await VerifyOpenApiDocument(builder, AssertOpenApiDocument);
+        }
+        else
+        {
+            var action = CreateActionDescriptor(nameof(GetStudent));
+            await VerifyOpenApiDocument(action, AssertOpenApiDocument);
+        }
+
+        // Assert
+        static void AssertOpenApiDocument(OpenApiDocument document)
+        {
+            // Parameter is a plain-old string when it comes from the route or query
+            var operation = document.Paths["/api/{student}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("string", parameter.Schema.Type);
+
+            // Type is fully serialized in the response
+            var response = Assert.Single(operation.Responses).Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema.GetEffective(document);
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties, property =>
+            {
+                Assert.Equal("name", property.Key);
+                Assert.Equal("string", property.Value.Type);
+            });
+        }
+    }
+
+    [Route("/api/{student}")]
+    private Student GetStudent(Student student) => student;
+
+    public record Student(string Name)
+    {
+        public static bool TryParse(string value, out Student result)
+        {
+            if (value is null)
+            {
+                result = null;
+                return false;
+            }
+
+            result = new Student(value);
+            return true;
+        }
     }
 }

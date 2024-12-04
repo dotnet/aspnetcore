@@ -3,7 +3,7 @@
   "name": "ASP.NET Core gRPC 服务",
   "description": "用于使用 ASP.NET Core 创建 gRPC 服务的项目模板，可选择支持发布为 native AOT。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/kestrelHttpPort/description": "要用于 launchSettings.json 中 HTTP 终结点的端口号。",

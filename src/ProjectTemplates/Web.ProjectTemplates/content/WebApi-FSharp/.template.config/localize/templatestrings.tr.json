@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/iisHttpsPort/description": "launchSettings.json içinde IIS Express HTTPS uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",

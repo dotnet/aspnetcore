@@ -9,7 +9,7 @@ public class StringWithQualityHeaderValueTest
     public void Ctor_StringOnlyOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token");
-        Assert.Equal("token", value.Value);
+        Assert.Equal("token", value.Value.AsSpan());
         Assert.Null(value.Quality);
 
         Assert.Throws<ArgumentException>(() => new StringWithQualityHeaderValue(null));
@@ -21,7 +21,7 @@ public class StringWithQualityHeaderValueTest
     public void Ctor_StringWithQualityOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token", 0.5);
-        Assert.Equal("token", value.Value);
+        Assert.Equal("token", value.Value.AsSpan());
         Assert.Equal(0.5, value.Quality);
 
         Assert.Throws<ArgumentException>(() => new StringWithQualityHeaderValue(null, 0.1));

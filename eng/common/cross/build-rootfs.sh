@@ -66,6 +66,7 @@ __UbuntuPackages+=" libcurl4-openssl-dev"
 __UbuntuPackages+=" libkrb5-dev"
 __UbuntuPackages+=" libssl-dev"
 __UbuntuPackages+=" zlib1g-dev"
+__UbuntuPackages+=" libbrotli-dev"
 
 __AlpinePackages+=" curl-dev"
 __AlpinePackages+=" krb5-dev"
@@ -91,18 +92,18 @@ __HaikuPackages="gcc_syslibs"
 __HaikuPackages+=" gcc_syslibs_devel"
 __HaikuPackages+=" gmp"
 __HaikuPackages+=" gmp_devel"
-__HaikuPackages+=" icu66"
-__HaikuPackages+=" icu66_devel"
+__HaikuPackages+=" icu[0-9]+"
+__HaikuPackages+=" icu[0-9]*_devel"
 __HaikuPackages+=" krb5"
 __HaikuPackages+=" krb5_devel"
 __HaikuPackages+=" libiconv"
 __HaikuPackages+=" libiconv_devel"
-__HaikuPackages+=" llvm12_libunwind"
-__HaikuPackages+=" llvm12_libunwind_devel"
+__HaikuPackages+=" llvm[0-9]*_libunwind"
+__HaikuPackages+=" llvm[0-9]*_libunwind_devel"
 __HaikuPackages+=" mpfr"
 __HaikuPackages+=" mpfr_devel"
-__HaikuPackages+=" openssl"
-__HaikuPackages+=" openssl_devel"
+__HaikuPackages+=" openssl3"
+__HaikuPackages+=" openssl3_devel"
 __HaikuPackages+=" zlib"
 __HaikuPackages+=" zlib_devel"
 
@@ -496,7 +497,7 @@ if [[ "$__CodeName" == "alpine" ]]; then
     arch="$(uname -m)"
 
     ensureDownloadTool
-    
+
     if [[ "$__hasWget" == 1 ]]; then
         wget -P "$__ApkToolsDir" "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static"
     else
@@ -681,7 +682,7 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 
     ensureDownloadTool
 
-    echo "Downloading Haiku package tool"
+    echo "Downloading Haiku package tools"
     git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 "$__RootfsDir/tmp/script"
     if [[ "$__hasWget" == 1 ]]; then
         wget -O "$__RootfsDir/tmp/download/hosttools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --hosttools)"
@@ -691,34 +692,42 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 
     unzip -o "$__RootfsDir/tmp/download/hosttools.zip" -d "$__RootfsDir/tmp/bin"
 
-    DepotBaseUrl="https://depot.haiku-os.org/__api/v2/pkg/get-pkg"
-    HpkgBaseUrl="https://eu.hpkg.haiku-os.org/haiku/master/$__HaikuArch/current"
+    HaikuBaseUrl="https://eu.hpkg.haiku-os.org/haiku/master/$__HaikuArch/current"
+    HaikuPortsBaseUrl="https://eu.hpkg.haiku-os.org/haikuports/master/$__HaikuArch/current"
 
-    # Download Haiku packages
+    echo "Downloading HaikuPorts package repository index..."
+    if [[ "$__hasWget" == 1 ]]; then
+        wget -P "$__RootfsDir/tmp/download" "$HaikuPortsBaseUrl/repo"
+    else
+        curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$HaikuPortsBaseUrl/repo"
+    fi
+
     echo "Downloading Haiku packages"
     read -ra array <<<"$__HaikuPackages"
     for package in "${array[@]}"; do
         echo "Downloading $package..."
-        # API documented here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L60
-        # The schema here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L598
+        hpkgFilename="$(LD_LIBRARY_PATH="$__RootfsDir/tmp/bin" "$__RootfsDir/tmp/bin/package_repo" list -f "$__RootfsDir/tmp/download/repo" |
+            grep -E "${package}-" | sort -V | tail -n 1 | xargs)"
+        if [ -z "$hpkgFilename" ]; then
+            >&2 echo "ERROR: package $package missing."
+            exit 1
+        fi
+        echo "Resolved filename: $hpkgFilename..."
+        hpkgDownloadUrl="$HaikuPortsBaseUrl/packages/$hpkgFilename"
         if [[ "$__hasWget" == 1 ]]; then
-            hpkgDownloadUrl="$(wget -qO- --post-data '{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
-                --header 'Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
             wget -P "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
         else
-            hpkgDownloadUrl="$(curl -sSL -XPOST --data '{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
-                --header 'Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
             curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
         fi
     done
     for package in haiku haiku_devel; do
         echo "Downloading $package..."
         if [[ "$__hasWget" == 1 ]]; then
-            hpkgVersion="$(wget -qO- "$HpkgBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
-            wget -P "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
+            hpkgVersion="$(wget -qO- "$HaikuBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
+            wget -P "$__RootfsDir/tmp/download" "$HaikuBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
         else
-            hpkgVersion="$(curl -sSL "$HpkgBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
-            curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
+            hpkgVersion="$(curl -sSL "$HaikuBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
+            curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$HaikuBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
         fi
     done
 

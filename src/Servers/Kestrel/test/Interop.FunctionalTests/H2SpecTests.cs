@@ -61,6 +61,8 @@ public class H2SpecTests : LoggedTest
         get
         {
             var dataset = new TheoryData<H2SpecTestCase>();
+            // { Test name, Skip Reason }
+            var toSkip = new Dictionary<string, string>();
 
             var testCases = H2SpecCommands.EnumerateTestCases();
 
@@ -77,11 +79,18 @@ public class H2SpecTests : LoggedTest
 
             foreach (var testcase in testCases)
             {
+                string skip = null;
+                if (toSkip.TryGetValue(testcase.Item1, out var skipReason))
+                {
+                    skip = skipReason;
+                }
+
                 dataset.Add(new H2SpecTestCase
                 {
                     Id = testcase.Item1,
                     Description = testcase.Item2,
                     Https = false,
+                    Skip = skip,
                 });
 
                 // https://github.com/dotnet/aspnetcore/issues/11301 We should use Skip but it's broken at the moment.
@@ -92,6 +101,7 @@ public class H2SpecTests : LoggedTest
                         Id = testcase.Item1,
                         Description = testcase.Item2,
                         Https = true,
+                        Skip = skip,
                     });
                 }
             }

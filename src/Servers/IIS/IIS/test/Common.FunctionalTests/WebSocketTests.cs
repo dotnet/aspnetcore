@@ -1,57 +1,73 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.InternalTesting;
-using Xunit;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Xunit.Abstractions;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
 namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
+#endif
+#else
 
-[Collection(IISTestSiteCollection.Name)]
-[MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
-public class WebSocketsTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+#endif
+
+public abstract class WebSocketsTests : FunctionalTestsBase
 {
-    private readonly string _requestUri;
-    private readonly string _webSocketUri;
+    public IISTestSiteFixture Fixture { get; }
 
-    public WebSocketsTests(IISTestSiteFixture fixture)
+    public WebSocketsTests(IISTestSiteFixture fixture, ITestOutputHelper testOutput) : base(testOutput)
     {
-        _requestUri = fixture.DeploymentResult.ApplicationBaseUri;
-        _webSocketUri = _requestUri.Replace("http:", "ws:");
+        Fixture = fixture;
     }
 
     [ConditionalFact]
     public async Task RequestWithBody_NotUpgradable()
     {
         using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
-        using var response = await client.PostAsync(_requestUri + "WebSocketNotUpgradable", new StringContent("Hello World"));
+        using var response = await client.PostAsync(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketNotUpgradable", new StringContent("Hello World"));
         response.EnsureSuccessStatusCode();
     }
 
     [ConditionalFact]
     public async Task RequestWithoutBody_Upgradable()
     {
+        if (Fixture.DeploymentParameters.HostingModel == HostingModel.OutOfProcess)
+        {
+            // OutOfProcess doesn't support upgrade requests without the "Upgrade": "websocket" header.
+            return;
+        }
+
         using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
         // POST with Content-Length: 0 counts as not having a body.
-        using var response = await client.PostAsync(_requestUri + "WebSocketUpgradable", new StringContent(""));
+        using var response = await client.PostAsync(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketUpgradable", new StringContent(""));
         response.EnsureSuccessStatusCode();
     }
 
     [ConditionalFact]
     public async Task OnStartedCalledForWebSocket()
     {
-        var cws = new ClientWebSocket();
-        await cws.ConnectAsync(new Uri(_webSocketUri + "WebSocketLifetimeEvents"), default);
+        var webSocketUri = Fixture.DeploymentResult.ApplicationBaseUri;
+        webSocketUri = webSocketUri.Replace("http:", "ws:");
+
+        using var cws = new ClientWebSocket();
+        await cws.ConnectAsync(new Uri(webSocketUri + "WebSocketLifetimeEvents"), default);
 
         await ReceiveMessage(cws, "OnStarting");
         await ReceiveMessage(cws, "Upgraded");
@@ -60,8 +76,11 @@ public class WebSocketsTests
     [ConditionalFact]
     public async Task WebReadBeforeUpgrade()
     {
-        var cws = new ClientWebSocket();
-        await cws.ConnectAsync(new Uri(_webSocketUri + "WebSocketReadBeforeUpgrade"), default);
+        var webSocketUri = Fixture.DeploymentResult.ApplicationBaseUri;
+        webSocketUri = webSocketUri.Replace("http:", "ws:");
+
+        using var cws = new ClientWebSocket();
+        await cws.ConnectAsync(new Uri(webSocketUri + "WebSocketReadBeforeUpgrade"), default);
 
         await ReceiveMessage(cws, "Yay");
     }
@@ -69,8 +88,11 @@ public class WebSocketsTests
     [ConditionalFact]
     public async Task CanSendAndReceieveData()
     {
-        var cws = new ClientWebSocket();
-        await cws.ConnectAsync(new Uri(_webSocketUri + "WebSocketEcho"), default);
+        var webSocketUri = Fixture.DeploymentResult.ApplicationBaseUri;
+        webSocketUri = webSocketUri.Replace("http:", "ws:");
+
+        using var cws = new ClientWebSocket();
+        await cws.ConnectAsync(new Uri(webSocketUri + "WebSocketEcho"), default);
 
         for (int i = 0; i < 1000; i++)
         {
@@ -81,9 +103,32 @@ public class WebSocketsTests
     }
 
     [ConditionalFact]
+    public async Task AttemptCompressionWorks()
+    {
+        var webSocketUri = Fixture.DeploymentResult.ApplicationBaseUri;
+        webSocketUri = webSocketUri.Replace("http:", "ws:");
+
+        using var cws = new ClientWebSocket();
+        cws.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
+        await cws.ConnectAsync(new Uri(webSocketUri + "WebSocketAllowCompression"), default);
+
+        // Compression doesn't work with OutOfProcess, let's make sure the websocket extensions aren't forwarded and the connection still works
+        var expected = Fixture.DeploymentParameters.HostingModel == HostingModel.InProcess
+            ? "permessage-deflate; client_max_window_bits=15" : "None";
+        await ReceiveMessage(cws, expected);
+
+        for (int i = 0; i < 1000; i++)
+        {
+            var message = i.ToString(CultureInfo.InvariantCulture);
+            await SendMessage(cws, message);
+            await ReceiveMessage(cws, message);
+        }
+    }
+
+    [ConditionalFact]
     public async Task Http1_0_Request_NotUpgradable()
     {
-        Uri uri = new Uri(_requestUri + "WebSocketNotUpgradable");
+        Uri uri = new Uri(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketNotUpgradable");
         using TcpClient client = new TcpClient();
 
         await client.ConnectAsync(uri.Host, uri.Port);
@@ -103,7 +148,7 @@ public class WebSocketsTests
     [ConditionalFact]
     public async Task Http1_0_Request_UpgradeErrors()
     {
-        Uri uri = new Uri(_requestUri + "WebSocketUpgradeFails");
+        Uri uri = new Uri(Fixture.DeploymentResult.ApplicationBaseUri + "WebSocketUpgradeFails");
         using TcpClient client = new TcpClient();
 
         await client.ConnectAsync(uri.Host, uri.Port);
@@ -148,6 +193,7 @@ public class WebSocketsTests
 
     private async Task ReceiveMessage(ClientWebSocket webSocket, string expectedMessage)
     {
+        Debug.Assert(expectedMessage.Length > 0);
         var received = new byte[expectedMessage.Length];
 
         var offset = 0;
@@ -156,7 +202,7 @@ public class WebSocketsTests
         {
             result = await webSocket.ReceiveAsync(new ArraySegment<byte>(received, offset, received.Length - offset), default);
             offset += result.Count;
-        } while (!result.EndOfMessage);
+        } while (!result.EndOfMessage && result.CloseStatus is null && received.Length - offset > 0);
 
         Assert.Equal(expectedMessage, Encoding.ASCII.GetString(received));
     }
