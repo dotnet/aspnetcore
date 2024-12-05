@@ -29,8 +29,7 @@ RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true -o /app ./src/Compo
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
-
-FROM mcr.microsoft.com/playwright/dotnet:v1.45.1-jammy-amd64 AS final
+FROM mcr.microsoft.com/playwright/dotnet:v1.49.0-jammy-amd64 AS final
 COPY --from=build ./app ./
 COPY ./exec.sh ./
 
