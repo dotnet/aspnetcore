@@ -25,6 +25,7 @@
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <InstallerPackageDescription>$(SharedFxDescription)</InstallerPackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
