@@ -367,7 +367,8 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             var keySize = sizeof(Guid);
             int totalPurposeLen = 4 + keySize + 4;
 
-            var purposeLengthsPool = ArrayPool<int>.Shared.Rent(purposes.Length);
+            int[]? lease = null;
+            Span<int> purposeLengthsPool = purposes.Length <= 32 ? stackalloc int[purposes.Length] : (lease = ArrayPool<int>.Shared.Rent(purposes.Length)).AsSpan(0, purposes.Length);
             for (int i = 0; i < purposes.Length; i++)
             {
                 string purpose = purposes[i];
@@ -393,18 +394,18 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             {
                 string purpose = purposes[i];
 
-                // writing `utf8ByteCount (7-bit encoded integer) || utf8Text`
+                // writing `utf8ByteCount (7-bit encoded integer)`
                 // we have already calculated the lengths of the purpose strings, so just get it from the pool
                 index += targetSpan.Slice(index).Write7BitEncodedInt(purposeLengthsPool[i]);
 
-#if NET10_0_OR_GREATER
-                index += EncodingUtil.SecureUtf8Encoding.GetBytes(purpose.AsSpan(), targetSpan.Slice(index));
-#else
+                // write the utf8text for the purpose
                 index += EncodingUtil.SecureUtf8Encoding.GetBytes(purpose, charIndex: 0, charCount: purpose.Length, bytes: targetArr, byteIndex: index);
-#endif
             }
 
-            ArrayPool<int>.Shared.Return(purposeLengthsPool);
+            if (lease is not null)
+            {
+                ArrayPool<int>.Shared.Return(lease);
+            }
             Debug.Assert(index == targetArr.Length);
 
             return targetArr;
