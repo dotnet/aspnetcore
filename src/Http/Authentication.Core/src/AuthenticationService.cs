@@ -68,11 +68,8 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
+        var handler = await Handlers.GetHandlerAsync(context, scheme)
+            ?? throw await CreateMissingHandlerException(scheme);
 
         // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
         var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
@@ -116,12 +113,8 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
-
+        var handler = await Handlers.GetHandlerAsync(context, scheme)
+            ?? throw await CreateMissingHandlerException(scheme);
         await handler.ChallengeAsync(properties);
     }
 
@@ -144,12 +137,8 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
-
+        var handler = await Handlers.GetHandlerAsync(context, scheme)
+            ?? throw await CreateMissingHandlerException(scheme);
         await handler.ForbidAsync(properties);
     }
 
@@ -187,17 +176,11 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingSignInHandlerException(scheme);
-        }
+        var handler = await Handlers.GetHandlerAsync(context, scheme)
+            ?? throw await CreateMissingSignInHandlerException(scheme);
 
-        var signInHandler = handler as IAuthenticationSignInHandler;
-        if (signInHandler == null)
-        {
-            throw await CreateMismatchedSignInHandlerException(scheme, handler);
-        }
+        var signInHandler = handler as IAuthenticationSignInHandler
+            ?? throw await CreateMismatchedSignInHandlerException(scheme, handler);
 
         await signInHandler.SignInAsync(principal, properties);
     }
@@ -221,17 +204,11 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingSignOutHandlerException(scheme);
-        }
+        var handler = await Handlers.GetHandlerAsync(context, scheme)
+            ?? throw await CreateMissingSignOutHandlerException(scheme);
 
-        var signOutHandler = handler as IAuthenticationSignOutHandler;
-        if (signOutHandler == null)
-        {
-            throw await CreateMismatchedSignOutHandlerException(scheme, handler);
-        }
+        var signOutHandler = handler as IAuthenticationSignOutHandler
+            ?? throw await CreateMismatchedSignOutHandlerException(scheme, handler);
 
         await signOutHandler.SignOutAsync(properties);
     }
