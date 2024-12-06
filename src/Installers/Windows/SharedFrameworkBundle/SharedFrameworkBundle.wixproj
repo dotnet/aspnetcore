@@ -10,6 +10,8 @@
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ProjectGuid>{D6C54D8B-043F-4877-B751-60E7390F9EC6}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
+    <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
+    <DefineConstants>$(DefineConstants);SharedFxRedistInstaller=$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-$(Platform).msi</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,44 +31,18 @@
 
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
-    <Compile Include="SharedFramework.wxs" />
     <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
     <Content Include="thm.xml" />
   </ItemGroup>
 
-  <Choose>
-    <When Condition="'$(Platform)' == 'arm64'">
-      <ItemGroup>
-        <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj" SetPlatform="Platform=arm64">
-          <Name>SharedFramework</Name>
-          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-          <Private>True</Private>
-          <DoNotHarvest>True</DoNotHarvest>
-        </ProjectReference>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj"
-                          SetPlatform="Platform=x86"
-                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'x86'">
-          <Name>SharedFramework</Name>
-          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-          <Private>True</Private>
-          <DoNotHarvest>True</DoNotHarvest>
-        </ProjectReference>
-        <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj"
-                          SetPlatform="Platform=x64"
-                          Condition="'$(DotNetBuild)' != 'true' or '$(Platform)' == 'x64'">
-          <Name>SharedFramework</Name>
-          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-          <Private>True</Private>
-          <DoNotHarvest>True</DoNotHarvest>
-        </ProjectReference>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
-
+  <ItemGroup>
+    <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj" SetPlatform="Platform=$(Platform)">
+      <Name>SharedFramework</Name>
+      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 

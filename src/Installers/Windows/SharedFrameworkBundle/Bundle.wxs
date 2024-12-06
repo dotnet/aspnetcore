@@ -94,7 +94,11 @@
         <Variable Name="BundleNameFull" Value="$(var.BundleNameFull)"/>
 
         <Chain>
-            <PackageGroupRef Id="PG_SHAREDFX_REDIST_BUNDLE"/>
+            <MsiPackage Id="SharedFxRedist" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstaller)"
+                        Name="$(var.SharedFxRedistInstaller)"
+                        Compressed="yes"
+                        Vital="yes">
+            </MsiPackage>
         </Chain>
     </Bundle>
 </Wix>
