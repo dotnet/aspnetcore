@@ -144,7 +144,7 @@ function onDocumentSubmit(event: SubmitEvent) {
     const formData = new FormData(formElem);
 
     const submitterName = event.submitter?.getAttribute('name');
-    const submitterValue = event.submitter!.getAttribute('value');
+    const submitterValue = event.submitter?.getAttribute('value');
     if (submitterName && submitterValue) {
       formData.append(submitterName, submitterValue);
     }
