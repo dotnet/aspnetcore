@@ -972,7 +972,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App.Runtime", "App.Runtime", "{F1A6BA04-853E-43B5-B27E-54558603837B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Runtime", "src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj", "{3163C56E-99BC-4BD1-8880-4F94A2407741}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Runtime", "src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj", "{3163C56E-99BC-4BD1-8880-4F94A2407741}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test", "src\Razor\Razor\test\Microsoft.AspNetCore.Razor.Test.csproj", "{776BFCDC-8591-4E3D-BD0D-858A188A033D}"
 EndProject
@@ -1354,7 +1354,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FilePr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded.Tests", "src\FileProviders\Embedded\test\Microsoft.Extensions.FileProviders.Embedded.Tests.csproj", "{B06ADD57-E855-4D8C-85DC-B323509AE540}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Ref", "src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj", "{BAD47859-95DF-4C8F-9AF7-C48B68F478A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Ref", "src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj", "{BAD47859-95DF-4C8F-9AF7-C48B68F478A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.UnitTests", "src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj", "{010A9638-F20E-4FE6-A186-85732BFC9CB0}"
 EndProject

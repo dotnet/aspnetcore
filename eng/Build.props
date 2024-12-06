@@ -115,8 +115,11 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime.proj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-base-runtime.proj;
                           $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepoRoot)src\Assets\**\*.*proj;

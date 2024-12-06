@@ -24,7 +24,7 @@
   <ItemGroup>
     <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
-    <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

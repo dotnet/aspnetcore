@@ -19,7 +19,7 @@
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
     <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <CommonFilesToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+    <CommonFilesToSign Include="$(ArtifactsDir)packages\$(Configuration)\**\*.zip" />
     <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
   </ItemGroup>
   <Choose>
