@@ -11,7 +11,7 @@
     <ProjectGuid>{D6C54D8B-043F-4877-B751-60E7390F9EC6}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
-    <DefineConstants>$(DefineConstants);SharedFxRedistInstaller=$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-$(Platform).msi</DefineConstants>
+    <DefineConstants>$(DefineConstants);SharedFxRedistInstaller=$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform).msi</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
