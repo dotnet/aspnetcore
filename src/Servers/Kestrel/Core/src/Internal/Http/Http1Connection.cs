@@ -625,12 +625,15 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // authority component, excluding any userinfo subcomponent and its "@"
             // delimiter.
 
+            // Accessing authority always allocates, store it in a local to only allocate once
+            var authority = _absoluteRequestTarget!.Authority;
+
             // System.Uri doesn't not tell us if the port was in the original string or not.
             // When IsDefaultPort = true, we will allow Host: with or without the default port
-            if (hostText != _absoluteRequestTarget!.Authority)
+            if (hostText != authority)
             {
                 if (!_absoluteRequestTarget.IsDefaultPort
-                    || hostText != $"{_absoluteRequestTarget.Authority}:{_absoluteRequestTarget.Port}")
+                    || hostText != $"{authority}:{_absoluteRequestTarget.Port}")
                 {
                     if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
                     {
@@ -639,7 +642,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                         // see: https://datatracker.ietf.org/doc/html/rfc2616/#section-14.23
                         // A "host" without any trailing port information implies the default
                         // port for the service requested (e.g., "80" for an HTTP URL).
-                        hostText = _absoluteRequestTarget.Authority;
+                        hostText = authority;
                         HttpRequestHeaders.HeaderHost = hostText;
                     }
                     else

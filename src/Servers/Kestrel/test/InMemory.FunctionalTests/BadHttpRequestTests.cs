@@ -160,15 +160,12 @@ public class BadHttpRequestTests : LoggedTest
             {
                 AllowHostHeaderOverride = true,
             }
-        }))
-        {
-            using (var client = server.CreateConnection())
-            {
-                await client.SendAll($"GET {requestString} HTTP/1.1\r\n{hostHeader}\r\n\r\n");
+        });
+        using var client = server.CreateConnection();
 
-                await client.Receive("HTTP/1.1 200 OK");
-            }
-        }
+        await client.SendAll($"GET {requestString} HTTP/1.1\r\n{hostHeader}\r\n\r\n");
+
+        await client.Receive("HTTP/1.1 200 OK");
 
         Assert.Equal(expectedHost, receivedHost);
     }
