@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -649,11 +648,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             if (hostText != _absoluteRequestTarget!.Authority)
             {
                 if (!_absoluteRequestTarget.IsDefaultPort
-                    || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
+                    || hostText != $"{_absoluteRequestTarget.Authority}:{_absoluteRequestTarget.Port}")
                 {
                     if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
                     {
-                        hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
+                        // No need to include the port here, it's either already in the Authority
+                        // or it's the default port
+                        // see: https://datatracker.ietf.org/doc/html/rfc2616/#section-14.23
+                        // A "host" without any trailing port information implies the default
+                        // port for the service requested (e.g., "80" for an HTTP URL).
+                        hostText = _absoluteRequestTarget.Authority;
                         HttpRequestHeaders.HeaderHost = hostText;
                     }
                     else
