@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <Fragment>
+        <PackageGroup Id="PG_SHAREDFX_REDIST_BUNDLE">
+            <RollbackBoundary Id="RB_SHAREDFX_REDIST_BUNDLE" />
+
+            <?if $(var.Platform)=x86?>
+            <MsiPackage Id="SharedFxRedist_x86" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerx86)"
+                        Name="$(var.SharedFxRedistInstallerx86)"
+                        Compressed="yes"
+                        Vital="yes">
+            </MsiPackage>
+            <?elseif $(var.Platform)=x64?>
+            <MsiPackage Id="SharedFxRedist_x64" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerx64)"
+                        Name="$(var.SharedFxRedistInstallerx64)"
+                        Compressed="yes"
+                        Vital="yes">
+            </MsiPackage>
+            <?elseif $(var.Platform)=arm64?>
+            <MsiPackage Id="SharedFxRedist_arm64" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerarm64)"
+                        Name="$(var.SharedFxRedistInstallerarm64)"
+                        Compressed="yes"
+                        Vital="yes">
+            </MsiPackage>
+            <?endif?>
+        </PackageGroup>
+    </Fragment>
+</Wix>

@@ -94,13 +94,7 @@
         <Variable Name="BundleNameFull" Value="$(var.BundleNameFull)"/>
 
         <Chain>
-            <?if $(var.Platform)=x86?>
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
-            <?elseif $(var.Platform)=x64?>
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
-            <?elseif $(var.Platform)=arm64?>
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
-            <?endif?>
+            <PackageGroupRef Id="PG_SHAREDFX_REDIST_BUNDLE"/>
         </Chain>
     </Bundle>
 </Wix>
