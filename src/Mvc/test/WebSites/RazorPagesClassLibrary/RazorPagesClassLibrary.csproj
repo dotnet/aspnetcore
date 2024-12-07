@@ -7,6 +7,22 @@
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <_RazorMSBuildRoot>$(RepositoryRoot)src\Razor\Razor.Design\src\bin\$(Configuration)\netstandard2.0\</_RazorMSBuildRoot>
+    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</_RazorTaskFolder>
+    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</_RazorTaskFolder>
+    <_RazorTaskAssembly>$(RepositoryRoot)src\Razor\Razor.Tasks\src\bin\$(Configuration)\$(_RazorTaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
+  </PropertyGroup>
+
+  <Import Project="$(RepositoryRoot)src\Razor\Razor.Design\src\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
+
+  <PropertyGroup>
+    <!-- Override for the MVC extension -->
+    <_MvcExtensionAssemblyPath>$(RepositoryRoot)src\Razor\Mvc.Razor.Extensions\src\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
+  </PropertyGroup>
+  <Import Project="$(RepositoryRoot)src\Razor\Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
+  <Import Project="$(RepositoryRoot)src\Razor\Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="System.Threading.Tasks.Extensions" />
