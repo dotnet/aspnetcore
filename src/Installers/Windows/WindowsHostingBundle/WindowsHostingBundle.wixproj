@@ -61,7 +61,7 @@
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
+    <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
