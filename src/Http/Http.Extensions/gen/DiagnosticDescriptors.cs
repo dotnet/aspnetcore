@@ -125,4 +125,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: GetHelpLinkUrl("RDG013"));
+
+    public static DiagnosticDescriptor InvalidAsParametersEnumerableType { get; } = new(
+        "RDG014",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersEnumerableType_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersEnumerableType_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: GetHelpLinkUrl("RDG014"));
 }
