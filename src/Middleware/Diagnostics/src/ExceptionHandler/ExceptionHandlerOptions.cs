@@ -40,10 +40,16 @@ public class ExceptionHandlerOptions
     public bool AllowStatusCode404Response { get; set; }
 
     /// <summary>
-    /// Gets or sets a delegate used to map an exception to a http status code.
+    /// Gets or sets a delegate used to map an exception to an HTTP status code.
     /// </summary>
     /// <remarks>
     /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code 500 is used.
     /// </remarks>
     public Func<Exception, int>? StatusCodeSelector { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that determines if the exception handler middleware should suppress logging
+    /// if the exception was handled by a <see cref="IExceptionHandler"/> registered in the DI container.
+    /// </summary>
+    public bool SuppressLoggingIExceptionHandler { get; set; }
 }
