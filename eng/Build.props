@@ -241,14 +241,6 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
 
-        <!-- Build the targeting pack installers -->
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
-        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
-        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
-
         <!-- Build the SharedFramework installers -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
@@ -268,8 +260,6 @@
         <!-- Build the ANCM msis -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
-        <!-- Build the targeting pack installers -->
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
         <!-- Build the SharedFramework installers -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFramework\SharedFramework.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
