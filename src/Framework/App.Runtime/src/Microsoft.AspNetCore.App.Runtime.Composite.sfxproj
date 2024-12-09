@@ -77,7 +77,7 @@
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) "
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative)  AND '$(MSBuildRestoreSessionId)' == ''"
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <!-- A custom item group to be used in targets later.  -->
