@@ -174,7 +174,7 @@ internal sealed class MultipartReaderStream : Stream
             if (index != 0)
             {
                 // Sync, it's already buffered
-                var slice = buffer.AsSpan(0, Math.Min(buffer.Length, index));
+                var slice = buffer.AsSpan(offset, Math.Min(count, index));
 
                 var readAmount = _innerStream.Read(slice);
                 return UpdatePosition(readAmount);
