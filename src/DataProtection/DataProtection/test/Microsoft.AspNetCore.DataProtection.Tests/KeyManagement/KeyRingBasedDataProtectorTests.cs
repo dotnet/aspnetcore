@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -617,6 +618,23 @@ public class KeyRingBasedDataProtectorTests
         // Assert
         Assert.Equal(expectedProtectedData, retVal);
     }
+
+    [Fact]
+    public void Test()
+    {
+        const string sampleToken = "CfDJ8H5oH_fp1QNBmvs-OWXxsVoV30hrXeI4-PI4p1VZytjsgd0DTstMdtTZbFtm2dKHvsBlDCv7TiEWKztZf8fb48pUgBgUE2SeYV3eOUXvSfNWU0D8SmHLy5KEnwKKkZKqudDhCnjQSIU7mhDliJJN1e4";
+
+        var dataProtector = GetServiceCollectionBuiltDataProtector();
+        var encrypted = dataProtector.Protect(sampleToken);
+        var decrypted = dataProtector.Unprotect(encrypted);
+        Assert.Equal(sampleToken, decrypted);
+    }
+
+    private static IDataProtector GetServiceCollectionBuiltDataProtector()
+        => new ServiceCollection()
+            .AddDataProtection()
+            .Services.BuildServiceProvider()
+            .GetDataProtector("SamplePurpose");
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {
