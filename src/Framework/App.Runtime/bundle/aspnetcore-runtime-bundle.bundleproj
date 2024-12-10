@@ -3,9 +3,10 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- We aren't producing a NuGet package here, so disable package validation -->
+    <EnablePackageValidation>false</EnablePackageValidation>
     <BundleInstallerUpgradeCodeSeed>ASP.NET Core Shared Framework Bundle Installer</BundleInstallerUpgradeCodeSeed>
     <BundleThemeDirectory>$(MSBuildProjectDirectory)</BundleThemeDirectory>
-    <!-- <BundleThemeDirectory>E:/runtime/src/installer/pkg/sfx/bundle</BundleThemeDirectory> -->
     <InstallerName>aspnetcore-runtime</InstallerName>
     <InstallerRuntimeIdentifiers>win-x86;win-x64;win-arm64</InstallerRuntimeIdentifiers>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
