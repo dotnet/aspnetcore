@@ -736,4 +736,9 @@ public static class HeaderUtilities
             throw new InvalidOperationException("The object cannot be modified because it is read-only.");
         }
     }
+
+    internal static bool IsEmptyOrAtEnd(StringSegment value, int index)
+    {
+        return StringSegment.IsNullOrEmpty(value) || index == value.Length;
+    }
 }
