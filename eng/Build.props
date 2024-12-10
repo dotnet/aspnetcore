@@ -245,9 +245,6 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFramework\SharedFramework.wixproj" AdditionalProperties="Platform=x64" />
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFramework\SharedFramework.wixproj" AdditionalProperties="Platform=x86" />
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFramework\SharedFramework.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Windows hosting bundle -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
@@ -262,7 +259,6 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
         <!-- Build the SharedFramework installers -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFramework\SharedFramework.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
       </ItemGroup>
 
       <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
