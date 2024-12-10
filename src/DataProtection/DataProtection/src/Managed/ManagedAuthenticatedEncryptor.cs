@@ -137,13 +137,18 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         return retVal;
     }
 
-    private SymmetricAlgorithm CreateSymmetricAlgorithm()
+    private SymmetricAlgorithm CreateSymmetricAlgorithm(byte[]? key = null)
     {
         var retVal = _symmetricAlgorithmFactory();
         CryptoUtil.Assert(retVal != null, "retVal != null");
 
         retVal.Mode = CipherMode.CBC;
         retVal.Padding = PaddingMode.PKCS7;
+        if (key is not null)
+        {
+            retVal.Key = key;
+        }
+
         return retVal;
     }
 
@@ -188,12 +193,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             }
 
             ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array!, keyModifierOffset, ivOffset - keyModifierOffset);
-            var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
-            Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
-
-            // note: this does not work for some reason???
-            // var keyModifier = protectedPayloadSpan.Slice(keyModifierOffset, ivOffset - keyModifierOffset);
-            // var iv = protectedPayloadSpan.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes).ToArray();
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
             // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -244,8 +243,23 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     }
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
-                    using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
-                    // if we know which type of symmetric algorithm we're using, we can avoid the using block by calling symmetricAlgorithm.DecryptXXX(...<spans here>...)
+
+#if NET10_0_OR_GREATER
+                    var iv = protectedPayloadSpan.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
+                    return symmetricAlgorithm.DecryptCbc(protectedPayloadSpan.Slice(ciphertextOffset, macOffset - ciphertextOffset), iv);
+                    // System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+                    // ---> System.Security.Cryptography.CryptographicException: Padding is invalid and cannot be removed.
+                    //   at System.Security.Cryptography.SymmetricPadding.GetPaddingLength(ReadOnlySpan`1 block, PaddingMode paddingMode, Int32 blockSize)
+                    //   at System.Security.Cryptography.UniversalCryptoOneShot.OneShotDecrypt(ILiteSymmetricCipher cipher, PaddingMode paddingMode, ReadOnlySpan`1 input, Span`1 output, Int32 & bytesWritten)
+                    //   at System.Security.Cryptography.AesImplementation.TryDecryptCbcCore(ReadOnlySpan`1 ciphertext, ReadOnlySpan`1 iv, Span`1 destination, PaddingMode paddingMode, Int32 & bytesWritten)
+                    //   at System.Security.Cryptography.SymmetricAlgorithm.DecryptCbc(ReadOnlySpan`1 ciphertext, ReadOnlySpan`1 iv, PaddingMode paddingMode)
+                    //   at Microsoft.AspNetCore.DataProtection.Managed.ManagedAuthenticatedEncryptor.Decrypt(ArraySegment`1 protectedPayload, ArraySegment`1 additionalAuthenticatedData)
+#else
+                    var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
+                    Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
+
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))
                     {
                         var length = macOffset - ciphertextOffset;
@@ -253,6 +267,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         _ = cryptoTransform.TransformBlock(protectedPayload.Array!, ciphertextOffset, length, result, 0);
                         return result;
                     }
+#endif
                 }
                 finally
                 {
