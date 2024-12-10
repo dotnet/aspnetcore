@@ -93,7 +93,8 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 var prfOutput = prf.ComputeHash(prfInput);
                 CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
                 var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
-                Buffer.BlockCopy(prfOutput, 0, output.Array!, outputOffset, numBytesToCopyThisIteration);
+
+                prfOutput.CopyTo(output.AsSpan().Slice(outputOffset, numBytesToCopyThisIteration));
                 Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
 
                 // adjust offsets
