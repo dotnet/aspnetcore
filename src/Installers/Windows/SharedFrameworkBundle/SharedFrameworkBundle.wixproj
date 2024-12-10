@@ -34,9 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj" SetPlatform="Platform=$(Platform)">
-      <Name>SharedFramework</Name>
-      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+    <ProjectReference Include="$(RepoRoot)src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj">
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
     </ProjectReference>
@@ -69,7 +67,7 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
-    <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
+    <DefineConstants>$(DefineConstants);InstallersOutputPath=$(ArtifactsShippingPackagesDir)</DefineConstants>
     <DefineConstants>$(DefineConstants);SharedFxRedistInstaller=$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform).msi</DefineConstants>
   </PropertyGroup>
 

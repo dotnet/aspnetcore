@@ -24,11 +24,13 @@
     <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <VSInsertionShortComponentName>AspNetCore.SharedFramework</VSInsertionShortComponentName>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <InstallerPackageDescription>$(SharedFxDescription)</InstallerPackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetRuntimeDependencyVersion>
@@ -46,6 +48,7 @@
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,7 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(DotNetBuildSourceOnly)' != 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Condition="'$(BuildInstallers)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
     <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
   </ItemGroup>
 
