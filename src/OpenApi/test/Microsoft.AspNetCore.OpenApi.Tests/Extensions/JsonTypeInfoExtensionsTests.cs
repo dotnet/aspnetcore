@@ -17,6 +17,21 @@ public class JsonTypeInfoExtensionsTests
         internal delegate void ContainedTestDelegate(int x, int y);
     }
 
+    /// <remarks>
+    /// https://github.com/dotnet/aspnetcore/issues/59092
+    /// </remarks>
+    public static class Foo<T>
+    {
+        public static class Bar<TT>
+        {
+            public class Baz
+            {
+                public required T One { get; set; }
+                public required TT Two { get; set; }
+            }
+        }
+    }
+
     /// <summary>
     /// This data is used to test the <see cref="TypeExtensions.GetSchemaReferenceId"/> method
     /// which is used to generate reference IDs for OpenAPI schemas in the OpenAPI document.
@@ -58,6 +73,7 @@ public class JsonTypeInfoExtensionsTests
         [typeof(Dictionary<string, string[]>), null],
         [typeof(Dictionary<string, List<string[]>>), null],
         [typeof(Dictionary<string, IEnumerable<string[]>>), null],
+        [typeof(Foo<int>.Bar<string>.Baz), "BazOfintAndstring"],
     ];
 
     [Theory]
