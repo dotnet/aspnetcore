@@ -15,6 +15,12 @@ internal sealed class RemoveCommand
             cmd.Description = Resources.RemoveCommand_Description;
 
             var idArgument = cmd.Argument("[id]", Resources.RemoveCommand_IdArgument_Description);
+
+            var appsettingsFileOption = cmd.Option(
+                "--appsettings-file",
+                Resources.CreateCommand_appsettingsFileOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
@@ -24,17 +30,35 @@ internal sealed class RemoveCommand
                     cmd.ShowHelp();
                     return 0;
                 }
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), idArgument.Value);
+
+                if (!DevJwtCliHelpers.GetProjectAndSecretsId(cmd.ProjectOption.Value(), cmd.Reporter, out var project, out var userSecretsId))
+                {
+                    return 1;
+                }
+
+                var appsettingsFile = "appsettings.Development.json";
+                if (appsettingsFileOption.HasValue())
+                {
+                    appsettingsFile = appsettingsFileOption.Value();
+                    if (!appsettingsFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cmd.Reporter.Error(Resources.RemoveCommand_InvalidAppsettingsFile_Error);
+                        return 1;
+                    }
+                    else if (!File.Exists(Path.Combine(Path.GetDirectoryName(project), appsettingsFile)))
+                    {
+                        cmd.Reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.GetDirectoryName(project)));
+                        return 1;
+                    }
+                }
+
+                return Execute(cmd.Reporter, project, userSecretsId, idArgument.Value, appsettingsFile);
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string id)
+    private static int Execute(IReporter reporter, string project, string userSecretsId, string id, string appsettingsFile)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
-        {
-            return 1;
-        }
         var jwtStore = new JwtStore(userSecretsId);
 
         if (!jwtStore.Jwts.TryGetValue(id, out var jwt))
@@ -43,7 +67,7 @@ internal sealed class RemoveCommand
             return 1;
         }
 
-        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), appsettingsFile);
         JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Scheme);
         jwtStore.Jwts.Remove(id);
         jwtStore.Save();
