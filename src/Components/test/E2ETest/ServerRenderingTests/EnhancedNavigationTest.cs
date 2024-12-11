@@ -182,7 +182,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => Browser.GetScrollY() > 500);
         Browser.True(() => Browser
             .Exists(By.Id("uri-on-page-load"))
-            .GetAttribute("data-value")
+            .GetDomAttribute("data-value")
             .EndsWith("scroll-to-hash", StringComparison.Ordinal));
     }
 

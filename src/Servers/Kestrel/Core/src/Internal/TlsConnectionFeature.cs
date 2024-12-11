@@ -54,16 +54,22 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public TlsCipherSuite? NegotiatedCipherSuite => _sslStream.NegotiatedCipherSuite;
 
+    [Obsolete("Obsolete on SslStream.")]
     public CipherAlgorithmType CipherAlgorithm => _sslStream.CipherAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     public int CipherStrength => _sslStream.CipherStrength;
 
+    [Obsolete("Obsolete on SslStream.")]
     public HashAlgorithmType HashAlgorithm => _sslStream.HashAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     public int HashStrength => _sslStream.HashStrength;
 
+    [Obsolete("Obsolete on SslStream.")]
     public ExchangeAlgorithmType KeyExchangeAlgorithm => _sslStream.KeyExchangeAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     public int KeyExchangeStrength => _sslStream.KeyExchangeStrength;
 
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)

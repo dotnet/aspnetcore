@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Xunit.Abstractions;

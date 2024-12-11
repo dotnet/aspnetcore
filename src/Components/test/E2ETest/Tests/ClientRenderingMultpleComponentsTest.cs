@@ -51,7 +51,7 @@ public class ClientRenderingMultpleComponentsTest : E2ETest.Infrastructure.Serve
         Assert.Single(greets, "Hello Abraham");
         Assert.Equal(2, greets.Where(g => g == "Hello Blue fish").Count());
         Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 server prerendered without parameters
-        var content = Browser.Exists(By.Id("test-container")).GetAttribute("innerHTML");
+        var content = Browser.Exists(By.Id("test-container")).GetDomProperty("innerHTML");
         var markers = ReadMarkers(content);
         var componentSequence = markers.Select(m => m.Item1.PrerenderId != null).ToArray();
         Assert.Equal(13, componentSequence.Length);

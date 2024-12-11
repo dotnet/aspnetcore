@@ -118,7 +118,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     public void AdditionalAttributesApplied()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
-        Assert.Equal("somevalue", grid.GetAttribute("custom-attrib"));
-        Assert.Contains("custom-class-attrib", grid.GetAttribute("class")?.Split(" "));
+        Assert.Equal("somevalue", grid.GetDomAttribute("custom-attrib"));
+        Assert.Contains("custom-class-attrib", grid.GetDomAttribute("class")?.Split(" "));
     }
 }

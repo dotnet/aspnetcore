@@ -118,11 +118,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public SslProtocols Protocol { get; private set; }
     public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
     public string SniHostName { get; private set; } = default!;
+    [Obsolete("Obsolete on SslStream.")]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    [Obsolete("Obsolete on SslStream.")]
     public int CipherStrength { get; private set; }
+    [Obsolete("Obsolete on SslStream.")]
     public HashAlgorithmType HashAlgorithm { get; private set; }
+    [Obsolete("Obsolete on SslStream.")]
     public int HashStrength { get; private set; }
+    [Obsolete("Obsolete on SslStream.")]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    [Obsolete("Obsolete on SslStream.")]
     public int KeyExchangeStrength { get; private set; }
 
     protected IAsyncIOEngine? AsyncIO { get; set; }
@@ -395,12 +401,16 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         var handshake = GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
         HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var sni = GetClientSni();
         SniHostName = sni.Hostname.ToString();

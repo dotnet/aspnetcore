@@ -26,8 +26,8 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     {
         Navigate($"{ServerPathBase}/interactivity/virtualization");
 
-        Browser.Equal("interactive", () => Browser.FindElement(By.Id("virtualize-server")).GetAttribute("class"));
-        Browser.Equal("interactive", () => Browser.FindElement(By.Id("virtualize-webassembly")).GetAttribute("class"));
+        Browser.Equal("interactive", () => Browser.FindElement(By.Id("virtualize-server")).GetDomAttribute("class"));
+        Browser.Equal("interactive", () => Browser.FindElement(By.Id("virtualize-webassembly")).GetDomAttribute("class"));
 
         Browser.True(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-server"))).Contains("Item 1"));
         Browser.True(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-webassembly"))).Contains("Item 1"));

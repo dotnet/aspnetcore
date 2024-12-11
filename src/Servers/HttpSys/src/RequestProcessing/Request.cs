@@ -336,28 +336,38 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public int CipherStrength { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public HashAlgorithmType HashAlgorithm { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public int HashStrength { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
 
+    [Obsolete("Obsolete on SslStream.")]
     public int KeyExchangeStrength { get; private set; }
 
     private void GetTlsHandshakeResults()
     {
         var handshake = RequestContext.GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
         HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var sni = RequestContext.GetClientSni();
         SniHostName = sni.Hostname.ToString();

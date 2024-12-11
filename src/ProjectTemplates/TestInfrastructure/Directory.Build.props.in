@@ -19,19 +19,6 @@
     <TestRequiresRuntimePackDownload>true</TestRequiresRuntimePackDownload>
   </PropertyGroup>
 
-  <!--
-    Temorary until the package reference gets implicitly added via the SDK.
-    At that point, we can remove this explicit reference, and
-    'eng\tools\GenerateFiles\Directory.Build.targets.in' will control which
-    version of the package gets consumed.
-  -->
-  <ItemGroup>
-    <PackageReference
-      Include="Microsoft.AspNetCore.App.Internal.Assets"
-      Version="${MicrosoftAspNetCoreAppRuntimeVersion}"
-      ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
 
   <PropertyGroup>

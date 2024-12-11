@@ -39,21 +39,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Wait until items have been rendered.
         Browser.True(() => (initialItemCount = GetItemCount()) > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll halfway.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight * 0.5;");
 
         // Validate that we get the same item count after scrolling halfway.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll to the bottom.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight;");
 
         // Validate that we get the same item count after scrolling to the bottom.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         int GetItemCount() => Browser.FindElements(By.Id("sync-item")).Count;
     }
@@ -199,7 +199,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
 
         // Validate that the top spacer has a height of zero.
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
@@ -208,7 +208,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => lastElement.Displayed);
 
         // Validate that the top spacer has expanded.
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
         // due to the incorrect item size, whereby it would not realise it's necessary to show more
@@ -233,7 +233,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validate that the top spacer did change
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
     }
@@ -249,7 +249,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetAttribute("style"));
+        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetDomAttribute("style"));
 
         // Check scrolling document element works
         Browser.DoesNotExist(By.Id("row-999"));
@@ -258,8 +258,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => lastElement.Displayed);
 
         // Validate that the top spacer has expanded, and bottom one has collapsed
-        Browser.False(() => topSpacer.GetAttribute("style").Contains(expectedInitialSpacerStyle));
-        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
+        Browser.False(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
+        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetDomAttribute("style"));
     }
 
     [Theory]
