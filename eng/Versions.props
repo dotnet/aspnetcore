@@ -171,7 +171,7 @@
     <MicrosoftDotNetRemoteExecutorVersion>10.0.0-beta.24606.6</MicrosoftDotNetRemoteExecutorVersion>
     <MicrosoftSourceBuildIntermediatearcadeVersion>10.0.0-beta.24606.6</MicrosoftSourceBuildIntermediatearcadeVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>10.0.0-alpha.1.24575.3</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>10.0.560301</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/source-build-reference-packages -->
     <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>10.0.560901</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
     <!-- Packages from dotnet/symreader -->
