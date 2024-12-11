@@ -55,7 +55,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Assert.Equal("stroke: red;", svgCircleElement.GetDomAttribute("style"));
 
         appElement.FindElement(By.TagName("button")).Click();
-        Browser.Equal("", () => svgCircleElement.GetDomAttribute("style"));
+        Browser.Equal(null, () => svgCircleElement.GetDomAttribute("style"));
     }
 
     [Fact]

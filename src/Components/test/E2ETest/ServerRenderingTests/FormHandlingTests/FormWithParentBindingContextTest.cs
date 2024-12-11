@@ -1598,7 +1598,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 // Verify the same form element is still in the page
                 // We wouldn't be allowed to read the attribute if the element is stale
-                Assert.Equal("post", form.GetDomAttribute("method"));
+                Assert.Equal("post", form.GetDomAttribute("method"), ignoreCase: true);
             }
         }
     }
