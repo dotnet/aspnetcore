@@ -66,7 +66,7 @@ public interface ITlsHandshakeFeature
     int HashStrength { get; }
 
     /// <summary>
-    /// Gets the <see cref="KeyExchangeAlgorithm"/>.
+    /// Gets the <see cref="ExchangeAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
     [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
