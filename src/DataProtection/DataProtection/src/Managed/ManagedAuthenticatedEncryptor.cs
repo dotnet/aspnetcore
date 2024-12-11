@@ -244,9 +244,12 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
 #if NET10_0_OR_GREATER
-                    var iv = protectedPayloadSpan.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
+
+                    // note: here protectedPayload.Array is taken without an offset (cant use AsSpan() on ArraySegment)
                     var ciphertext = protectedPayload.Array.AsSpan().Slice(ciphertextOffset, macOffset - ciphertextOffset);
+                    var iv = protectedPayload.Array.AsSpan().Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
+
                     return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
 #else
                     var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
