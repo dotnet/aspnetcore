@@ -133,13 +133,13 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("valid", () => departureTimeInput.GetDomAttribute("class"));
         departureTimeInput.SendKeys("111111");
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
-        Browser.Equal("11:11:11", () => departureTimeInput.GetDomAttribute("value"));
+        Browser.Equal("11:11:11", () => departureTimeInput.GetDomProperty("value"));
 
         // Input works with non-zero seconds value
         // Move to the beginning of the input and put the new time
         departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010");
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
-        Browser.Equal("10:10:10", () => departureTimeInput.GetDomAttribute("value"));
+        Browser.Equal("10:10:10", () => departureTimeInput.GetDomProperty("value"));
     }
 
     [Fact]
@@ -225,13 +225,13 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("valid", () => appointmentInput.GetDomAttribute("class"));
         appointmentInput.SendKeys($"11111970{Keys.ArrowRight}114216");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
-        Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetDomAttribute("value"));
+        Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetDomProperty("value"));
 
         // Input works when starting with a non-zero seconds value
         // Move to the beginning of the input and put the new value
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
-        Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomAttribute("value"));
+        Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)

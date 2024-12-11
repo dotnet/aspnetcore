@@ -77,7 +77,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "You pressed: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetDomAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
             }, GetLogLines);
 
         // Check it was actually preventDefault-ed
-        Assert.Equal("", input.GetDomAttribute("value"));
+        Assert.Equal("", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "Yet another aliased event received: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetDomAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "Yet another aliased event received: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetDomAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
 
     private string[] GetLogLines()
         => Browser.Exists(By.Id("test-log"))
-        .GetDomAttribute("value")
+        .GetDomProperty("value")
         .Replace("\r\n", "\n")
         .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }

@@ -117,7 +117,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             li => Assert.Equal("b", li.Text));
 
         // Textbox contains typed text
-        Assert.Equal("ab", inputElement.GetDomAttribute("value"));
+        Assert.Equal("ab", inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -363,12 +363,12 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var inputElement = appElement.FindElement(By.Id("capturedElement"));
         var buttonElement = appElement.FindElement(By.TagName("button"));
 
-        Assert.Equal(string.Empty, inputElement.GetDomAttribute("value"));
+        Assert.Equal(string.Empty, inputElement.GetDomProperty("value"));
 
         buttonElement.Click();
-        Browser.Equal("Clicks: 1", () => inputElement.GetDomAttribute("value"));
+        Browser.Equal("Clicks: 1", () => inputElement.GetDomProperty("value"));
         buttonElement.Click();
-        Browser.Equal("Clicks: 2", () => inputElement.GetDomAttribute("value"));
+        Browser.Equal("Clicks: 2", () => inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -499,11 +499,11 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         // Re-add it; observe it starts empty again
         checkbox.Click();
         var inputElement = appElement.FindElement(By.Id("capturedElement"));
-        Assert.Equal(string.Empty, inputElement.GetDomAttribute("value"));
+        Assert.Equal(string.Empty, inputElement.GetDomProperty("value"));
 
         // See that the capture variable was automatically updated to reference the new instance
         buttonElement.Click();
-        Browser.Equal("Clicks: 1", () => inputElement.GetDomAttribute("value"));
+        Browser.Equal("Clicks: 1", () => inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -541,7 +541,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     public void CanUseJsInteropForRefElementsDuringOnAfterRender()
     {
         var appElement = Browser.MountTestComponent<AfterRenderInteropComponent>();
-        Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetDomAttribute("value"));
+        Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetDomProperty("value"));
     }
 
     [Fact]
@@ -665,7 +665,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     {
         var appElement = Browser.MountTestComponent<InteropOnInitializationComponent>();
         Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-get-by-interop")).Text);
-        Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetDomAttribute("value"));
+        Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetDomProperty("value"));
     }
 
     [Fact]

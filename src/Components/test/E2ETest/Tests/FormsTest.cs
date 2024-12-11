@@ -272,7 +272,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccesor = CreateValidationMessagesAccessor(appElement);
 
         // Binding applies to option selection
-        Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetDomAttribute("value")));
+        Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetDomProperty("value")));
 
         // Validates on edit
         Browser.Equal("valid", () => select.GetDomAttribute("class"));
@@ -363,8 +363,8 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // By capturing the inputradio elements just once up front, we're implicitly showing
         // that they are retained as their values change
-        var unknownAirlineInput = FindAirlineInputs().First(i => string.Equals("Unknown", i.GetDomAttribute("value")));
-        var bestAirlineInput = FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetDomAttribute("value")));
+        var unknownAirlineInput = FindAirlineInputs().First(i => string.Equals("Unknown", i.GetDomProperty("value")));
+        var bestAirlineInput = FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetDomProperty("value")));
 
         // Validate selected inputs
         Browser.True(() => unknownAirlineInput.Selected);
@@ -458,10 +458,10 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             => appElement.FindElement(By.ClassName("radio-group-bool-values")).FindElements(By.TagName("input"));
 
         IWebElement FindTrueInput()
-            => FindInputs().First(i => string.Equals("True", i.GetDomAttribute("value")));
+            => FindInputs().First(i => string.Equals("True", i.GetDomProperty("value")));
 
         IWebElement FindFalseInput()
-            => FindInputs().First(i => string.Equals("False", i.GetDomAttribute("value")));
+            => FindInputs().First(i => string.Equals("False", i.GetDomProperty("value")));
     }
 
     [Fact]
@@ -605,29 +605,29 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // Select with custom options component and HTML component behave the
         // same when the selectElement.value is provided
-        Browser.Equal("B", () => selectWithoutComponent.GetDomAttribute("value"));
-        Browser.Equal("B", () => selectWithComponent.GetDomAttribute("value"));
+        Browser.Equal("B", () => selectWithoutComponent.GetDomProperty("value"));
+        Browser.Equal("B", () => selectWithComponent.GetDomProperty("value"));
 
         // Reset to a value that doesn't exist
         input.Clear();
         input.SendKeys("D\t");
 
         // Confirm that both values are cleared
-        Browser.Equal("", () => selectWithComponent.GetDomAttribute("value"));
-        Browser.Equal("", () => selectWithoutComponent.GetDomAttribute("value"));
+        Browser.Equal("", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("", () => selectWithoutComponent.GetDomProperty("value"));
 
         // Dynamically showing the fourth option updates the selected value
         showAdditionalOptionButton.Click();
 
-        Browser.Equal("D", () => selectWithComponent.GetDomAttribute("value"));
-        Browser.Equal("D", () => selectWithoutComponent.GetDomAttribute("value"));
+        Browser.Equal("D", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("D", () => selectWithoutComponent.GetDomProperty("value"));
 
         // Change the value to one that does really doesn't exist
         input.Clear();
         input.SendKeys("F\t");
 
-        Browser.Equal("", () => selectWithComponent.GetDomAttribute("value"));
-        Browser.Equal("", () => selectWithoutComponent.GetDomAttribute("value"));
+        Browser.Equal("", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("", () => selectWithoutComponent.GetDomProperty("value"));
     }
 
     [Fact]
@@ -637,7 +637,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var select = new SelectElement(appElement.FindElement(By.Id("select-cities")));
 
         // Assert that the binding works in the .NET -> JS direction
-        Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetDomAttribute("value")));
+        Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetDomProperty("value")));
 
         select.DeselectByIndex(0);
         select.SelectByIndex(1);
@@ -963,14 +963,14 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // The bound value is expected and no inputs have a class attribute
         Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
-        Browser.True(() => FindRadioInputs().First(input => input.GetDomAttribute("value") == "Unknown").Selected);
+        Browser.True(() => FindRadioInputs().First(input => input.GetDomProperty("value") == "Unknown").Selected);
         Browser.Equal("Unknown", () => selectedInputText.Text);
 
         FindRadioInputs().First().Click();
 
         // Value binding continues to work without an edit context and class attributes are unchanged
         Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
-        Browser.True(() => FindRadioInputs().First(input => input.GetDomAttribute("value") == "BestAirline").Selected);
+        Browser.True(() => FindRadioInputs().First(input => input.GetDomProperty("value") == "BestAirline").Selected);
         Browser.Equal("BestAirline", () => selectedInputText.Text);
 
         IReadOnlyCollection<IWebElement> FindRadioInputs()

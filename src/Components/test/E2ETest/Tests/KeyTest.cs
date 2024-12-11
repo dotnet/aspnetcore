@@ -222,7 +222,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
             // Send keys to whatever has focus
             new Actions(Browser).SendKeys(nextChar).Perform();
-            Browser.Equal(expectedTextTyped, () => textboxFinder().GetDomAttribute("value"));
+            Browser.Equal(expectedTextTyped, () => textboxFinder().GetDomProperty("value"));
 
             // We delay between typings to ensure the events aren't all collapsed into one.
             await Task.Delay(50);
@@ -235,7 +235,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             By.CssSelector(".incomplete-items .item-1 input[type=checkbox]")).Click();
         Browser.Equal(expectedTextTyped, () => appElem
             .FindElement(By.CssSelector(".complete-items .item-1 input[type=text]"))
-            .GetDomAttribute("value"));
+            .GetDomProperty("value"));
     }
 
     [Fact]
