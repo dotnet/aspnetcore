@@ -137,13 +137,18 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         return retVal;
     }
 
-    private SymmetricAlgorithm CreateSymmetricAlgorithm()
+    private SymmetricAlgorithm CreateSymmetricAlgorithm(byte[]? key = null)
     {
         var retVal = _symmetricAlgorithmFactory();
         CryptoUtil.Assert(retVal != null, "retVal != null");
 
         retVal.Mode = CipherMode.CBC;
         retVal.Padding = PaddingMode.PKCS7;
+        if (key is not null)
+        {
+            retVal.Key = key;
+        }
+
         return retVal;
     }
 
@@ -161,6 +166,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         protectedPayload.Validate();
         additionalAuthenticatedData.Validate();
 
+        var protectedPayloadSpan = protectedPayload.AsSpan();
+
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
         if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
         {
@@ -172,7 +179,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         try
         {
             // Step 1: Extract the key modifier and IV from the payload.
-
             int keyModifierOffset; // position in protectedPayload.Array where key modifier begins
             int ivOffset; // position in protectedPayload.Array where key modifier ends / IV begins
             int ciphertextOffset; // position in protectedPayload.Array where IV ends / ciphertext begins
@@ -187,8 +193,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             }
 
             ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array!, keyModifierOffset, ivOffset - keyModifierOffset);
-            var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
-            Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
             // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -206,16 +210,16 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 try
                 {
                     _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
                         label: additionalAuthenticatedData,
                         contextHeader: _contextHeader,
-                        context: keyModifier,
+                        contextData: keyModifier,
                         prfFactory: _kdkPrfFactory,
                         output: new ArraySegment<byte>(derivedKeysBuffer));
 
-                    Buffer.BlockCopy(derivedKeysBuffer, 0, decryptionSubkey, 0, decryptionSubkey.Length);
-                    Buffer.BlockCopy(derivedKeysBuffer, decryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
+                    derivedKeysBuffer.AsSpan().Slice(start: 0, length: decryptionSubkey.Length).CopyTo(decryptionSubkey);
+                    derivedKeysBuffer.AsSpan().Slice(start: decryptionSubkey.Length, length: validationSubkey.Length).CopyTo(validationSubkey);
 
                     // Step 3: Calculate the correct MAC for this payload.
                     // correctHash := MAC(IV || ciphertext)
@@ -233,27 +237,30 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     }
 
                     // Step 4: Validate the MAC provided as part of the payload.
-
                     if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array!, macOffset, eofOffset - macOffset))
                     {
                         throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                     }
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
+#if NET10_0_OR_GREATER
+                    var iv = protectedPayloadSpan.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
+                    var ciphertext = protectedPayload.Array.AsSpan().Slice(ciphertextOffset, macOffset - ciphertextOffset);
+                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
+#else
+                    var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
+                    Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
 
-                    using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
-                    using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
+                    using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))    
                     {
-                        var outputStream = new MemoryStream();
-                        using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
-                        {
-                            cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
-                            cryptoStream.FlushFinalBlock();
-
-                            // At this point, outputStream := { plaintext }, and we're done!
-                            return outputStream.ToArray();
-                        }
+                        var length = macOffset - ciphertextOffset;
+                        var result = new byte[length];
+                        _ = cryptoTransform.TransformBlock(protectedPayload.Array!, ciphertextOffset, length, result, 0);
+                        return result;
                     }
+#endif
                 }
                 finally
                 {
