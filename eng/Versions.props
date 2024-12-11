@@ -177,8 +177,8 @@
     <!-- Packages from dotnet/symreader -->
     <MicrosoftSourceBuildIntermediatesymreaderVersion>2.2.0-beta.24574.1</MicrosoftSourceBuildIntermediatesymreaderVersion>
     <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>9.0.0-preview.24522.2</MicrosoftWebXdtVersion>
-    <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24522.2</MicrosoftSourceBuildIntermediatexdtVersion>
+    <MicrosoftWebXdtVersion>10.0.0-preview.24609.2</MicrosoftWebXdtVersion>
+    <MicrosoftSourceBuildIntermediatexdtVersion>10.0.0-preview.24609.2</MicrosoftSourceBuildIntermediatexdtVersion>
     <!-- dotnet-optimization dependencies -->
     <optimizationwindows_ntx64MIBCRuntimeVersion>1.0.0-prerelease.24462.2</optimizationwindows_ntx64MIBCRuntimeVersion>
     <optimizationwindows_ntx86MIBCRuntimeVersion>1.0.0-prerelease.24462.2</optimizationwindows_ntx86MIBCRuntimeVersion>
