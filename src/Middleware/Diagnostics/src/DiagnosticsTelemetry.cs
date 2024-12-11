@@ -3,16 +3,13 @@
 
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
 internal static class DiagnosticsTelemetry
 {
-    public static void ReportUnhandledException(ILogger logger, HttpContext context, Exception ex)
+    public static void AddMetricsTags(HttpContext context, Exception ex)
     {
-        logger.UnhandledException(ex);
-
         if (context.Features.Get<IHttpMetricsTagsFeature>() is { } tagsFeature)
         {
             // Multiple exception middleware could be registered that have already added the tag.
