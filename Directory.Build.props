@@ -239,7 +239,7 @@
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.azureedge.net/public/</PublicBaseURL>
     <InternalBaseURL>https://dotnetbuilds.azureedge.net/internal/</InternalBaseURL>
     <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
-    <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(InstallersOutputPath)</CrossArchitectureInstallerBasePath>
+    <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(ArtifactsShippingPackagesDir)</CrossArchitectureInstallerBasePath>
   </PropertyGroup>
 
   <!-- Try various places to find the runtime. It's either released (use official version),
