@@ -5,6 +5,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We aren't producing a NuGet package here, so disable package validation -->
     <EnablePackageValidation>false</EnablePackageValidation>
+    <IsPackable>false</IsPackable>
     <BundleInstallerUpgradeCodeSeed>ASP.NET Core Shared Framework Bundle Installer</BundleInstallerUpgradeCodeSeed>
     <BundleThemeDirectory>$(MSBuildProjectDirectory)</BundleThemeDirectory>
     <InstallerName>aspnetcore-runtime</InstallerName>
