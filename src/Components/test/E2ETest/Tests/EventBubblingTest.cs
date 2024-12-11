@@ -166,7 +166,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         var textbox = Browser.Exists(By.Id($"textbox-that-can-block-keystrokes"));
         textbox.SendKeys("a");
         Browser.Equal(new[] { "Received keydown" }, GetLogLines);
-        Browser.Equal("a", () => textbox.GetAttribute("value"));
+        Browser.Equal("a", () => textbox.GetDomAttribute("value"));
 
         // We can turn on preventDefault to stop keystrokes
         // There will still be a keydown event, but we're preventing it from actually changing the textbox value
@@ -174,19 +174,19 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Exists(By.Id($"prevent-keydown")).Click();
         textbox.SendKeys("b");
         Browser.Equal(new[] { "Received keydown" }, GetLogLines);
-        Browser.Equal("a", () => textbox.GetAttribute("value"));
+        Browser.Equal("a", () => textbox.GetDomAttribute("value"));
 
         // We can turn it back off
         ClearLog();
         Browser.Exists(By.Id($"prevent-keydown")).Click();
         textbox.SendKeys("c");
         Browser.Equal(new[] { "Received keydown" }, GetLogLines);
-        Browser.Equal("ac", () => textbox.GetAttribute("value"));
+        Browser.Equal("ac", () => textbox.GetDomAttribute("value"));
     }
 
     private string[] GetLogLines()
         => Browser.Exists(By.TagName("textarea"))
-        .GetAttribute("value")
+        .GetDomAttribute("value")
         .Replace("\r\n", "\n")
         .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 

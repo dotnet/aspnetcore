@@ -46,7 +46,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Collection(() => container.FindElements(By.CssSelector("*")),
             elem =>
             {
-                Assert.Equal("blazor-error-boundary", elem.GetAttribute("class"));
+                Assert.Equal("blazor-error-boundary", elem.GetDomAttribute("class"));
                 Assert.Empty(elem.FindElements(By.CssSelector("*")));
             });
 
