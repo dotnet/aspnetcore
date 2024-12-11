@@ -409,16 +409,22 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     string ITlsHandshakeFeature.HostName => SniHostName;
 
+    [Obsolete("Obsolete on SslStream.")]
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => CipherAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     int ITlsHandshakeFeature.CipherStrength => CipherStrength;
 
+    [Obsolete("Obsolete on SslStream.")]
     HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => HashAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     int ITlsHandshakeFeature.HashStrength => HashStrength;
 
+    [Obsolete("Obsolete on SslStream.")]
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => KeyExchangeAlgorithm;
 
+    [Obsolete("Obsolete on SslStream.")]
     int ITlsHandshakeFeature.KeyExchangeStrength => KeyExchangeStrength;
 
     IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();

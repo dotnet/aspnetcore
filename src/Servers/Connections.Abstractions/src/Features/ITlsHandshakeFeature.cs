@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Authentication;
-
+using System.Security.Cryptography;
+using System;
 #if NETCOREAPP
 using System.Net.Security;
 #endif
@@ -35,30 +36,48 @@ public interface ITlsHandshakeFeature
     /// <summary>
     /// Gets the <see cref="CipherAlgorithmType"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     CipherAlgorithmType CipherAlgorithm { get; }
 
     /// <summary>
     /// Gets the cipher strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     int CipherStrength { get; }
 
     /// <summary>
     /// Gets the <see cref="HashAlgorithmType"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     HashAlgorithmType HashAlgorithm { get; }
 
     /// <summary>
     /// Gets the hash strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     int HashStrength { get; }
 
     /// <summary>
     /// Gets the <see cref="KeyExchangeAlgorithm"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     ExchangeAlgorithmType KeyExchangeAlgorithm { get; }
 
     /// <summary>
     /// Gets the key exchange algorithm strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherAlgorithmStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+#endif
     int KeyExchangeStrength { get; }
 }
