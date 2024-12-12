@@ -1015,20 +1015,17 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     }
 
     [Fact]
-    public void CanReadMultipleIssuersFromConfig()
+    public void CanReadSigningKeysForValidIssuersFromConfig()
     {
         var services = new ServiceCollection();
-        var firstKey = "qPG6tDtfxFYZifHW3sEueQ==";
-        var secondKey = "6JPzXj6aOPdojlZdeLshaA==";
+        var keys = new[] { "G6tDtfxFYZifHW3sEueQ", "6JPzXj6aOPdojlZdeLshaA==" };
         var config = new ConfigurationBuilder().AddInMemoryCollection([
             new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
             new("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
             new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
-            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
-            new("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", keys[0]),
             new("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
-            new("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
-            new("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Value", keys[1]),
         ]).Build();
         services.AddSingleton<IConfiguration>(config);
 
@@ -1037,10 +1034,132 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         var sp = services.BuildServiceProvider();
 
         // Assert
-        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(2, jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.Count());
-        Assert.Equal(firstKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().FirstOrDefault()?.Key));
-        Assert.Equal(secondKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().LastOrDefault()?.Key));
+        var tokenValidationParameters = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme)
+            .TokenValidationParameters;
+        var securityKeys = tokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().ToArray();
+        Assert.Equal("dotnet-user-jwts", tokenValidationParameters.ValidIssuer);
+        Assert.Equal(["dotnet-user-jwts-2"], tokenValidationParameters.ValidIssuers);
+        Assert.Equal(keys, securityKeys.Select(k => Convert.ToBase64String(k.Key)));
+        Assert.Equal([120, 128], securityKeys.Select(k => k.KeySize));
+    }
+
+    [Fact]
+    public void CanReadSigningKeyForValidIssuerFromConfig()
+    {
+        var services = new ServiceCollection();
+        var key = "6JPzXj6aOPdojlZdeLshaA==";
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", key)
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var tokenValidationParameters = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme)
+            .TokenValidationParameters;
+        var securityKeys = tokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().ToArray();
+        Assert.Equal("dotnet-user-jwts", tokenValidationParameters.ValidIssuer);
+        Assert.Empty(tokenValidationParameters.ValidIssuers);
+        Assert.Single(securityKeys);
+        Assert.Equal(key, Convert.ToBase64String(securityKeys[0].Key));
+        Assert.Equal(128, securityKeys[0].KeySize);
+    }
+
+    [Fact]
+    public void CanReadSigningKeysForValidIssuerAndValidIssuersFromConfig()
+    {
+        var services = new ServiceCollection();
+        var keys = new[] { "G6tDtfxFYZifHW3sEueQ", "6JPzXj6aOPdojlZdeLshaA==" };
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts-2"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", keys[0]),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Value", keys[1])
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var tokenValidationParameters = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme)
+            .TokenValidationParameters;
+        var securityKeys = tokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().ToArray();
+        Assert.Equal("dotnet-user-jwts", tokenValidationParameters.ValidIssuer);
+        Assert.Equal(["dotnet-user-jwts-2"], tokenValidationParameters.ValidIssuers);
+        Assert.Equal(keys, securityKeys.Select(x => Convert.ToBase64String(x.Key)));
+        Assert.Equal([120, 128], securityKeys.Select(x => x.KeySize));
+    }
+
+    [Fact]
+    public void CanReadCorrectSigningKeyForIssuerFromConfig()
+    {
+        var services = new ServiceCollection();
+        var keys = new[] { "G6tDtfxFYZifHW3sEueQ", "6JPzXj6aOPdojlZdeLshaA==" };
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "unknown_issuer"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", keys[0]),
+            new("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "no_value"),
+            new("Authentication:Schemes:Bearer:SigningKeys:2:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:2:Value", keys[1])
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var tokenValidationParameters = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme)
+            .TokenValidationParameters;
+        var securityKeys = tokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().ToArray();
+        Assert.Equal("dotnet-user-jwts", tokenValidationParameters.ValidIssuer);
+        Assert.Empty(tokenValidationParameters.ValidIssuers);
+        Assert.Single(securityKeys);
+        Assert.Equal(keys[1], Convert.ToBase64String(securityKeys[0].Key));
+        Assert.Equal(128, securityKeys[0].KeySize);
+    }
+
+    [Fact]
+    public void CanReadSingleSigningKeyForIssuerFromConfig()
+    {
+        var services = new ServiceCollection();
+        var key = "6JPzXj6aOPdojlZdeLshaA==";
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", key)
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var tokenValidationParameters = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme)
+            .TokenValidationParameters;
+        var securityKeys = tokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().ToArray();
+        Assert.Equal("dotnet-user-jwts", tokenValidationParameters.ValidIssuer);
+        Assert.Equal(["dotnet-user-jwts"], tokenValidationParameters.ValidIssuers);
+        Assert.Single(securityKeys);
+        Assert.Equal(key, Convert.ToBase64String(securityKeys[0].Key));
+        Assert.Equal(128, securityKeys[0].KeySize);
     }
 
     [Fact]

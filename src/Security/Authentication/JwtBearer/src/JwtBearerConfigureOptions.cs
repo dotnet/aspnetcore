@@ -72,17 +72,18 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             ValidAudiences = audiences,
             ValidAudience = audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
+            IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers, issuer)
         };
     }
 
-    private static IEnumerable<SecurityKey> GetIssuerSigningKeys(IConfiguration configuration, List<string?> issuers)
+    private static IEnumerable<SecurityKey> GetIssuerSigningKeys(
+        IConfiguration configuration, IEnumerable<string?> validIssuers, string? validIssuer)
     {
+        var signingKeys = configuration.GetSection("SigningKeys").GetChildren().ToArray();
+        var issuers = new[] { validIssuer }.Union(validIssuers).Where(x => x is not null);
         foreach (var issuer in issuers)
         {
-            var signingKey = configuration.GetSection("SigningKeys")
-                .GetChildren()
-                .SingleOrDefault(key => key["Issuer"] == issuer);
+            var signingKey = signingKeys.SingleOrDefault(key => key["Issuer"] == issuer);
             if (signingKey is not null && signingKey["Value"] is string keyValue)
             {
                 yield return new SymmetricSecurityKey(Convert.FromBase64String(keyValue));
