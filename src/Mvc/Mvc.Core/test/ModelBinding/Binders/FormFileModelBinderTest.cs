@@ -221,7 +221,7 @@ public class FormFileModelBinderTest
     }
 
     [Fact]
-    public async Task FormFileModelBinder_SingleFileWithinIndexableCollection_BindSuccessful()
+    public async Task FormFileModelBinder_SingleFileWithIndexer_BindSuccessful()
     {
         // Arrange
         var formFiles = new FormFileCollection
@@ -285,7 +285,7 @@ public class FormFileModelBinderTest
     }
 
     [Fact]
-    public async Task FormFileModelBinder_MultipleFilesWithinIndexableCollection_BindSuccessful()
+    public async Task FormFileModelBinder_MultipleFilesWithIndexersWithinIndexableCollection_BindSuccessful()
     {
         // Arrange
         var formFiles = new FormFileCollection
