@@ -49,6 +49,7 @@
     </_InstallersToPublish>
 
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
+    <_InstallersToPublish Remove="$(ArtifactsDir)packages\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
     <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
 
     <Artifact Include="@(_InstallersToPublish)">
