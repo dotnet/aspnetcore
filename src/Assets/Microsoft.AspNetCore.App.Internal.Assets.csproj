@@ -21,7 +21,7 @@
     <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(BuildNodeJS)' == 'true'">
     <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" />
     <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" />
     <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js" />

@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.Build.Traversal">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <!-- We aren't producing a NuGet package here, so disable package validation -->
+    <EnablePackageValidation>false</EnablePackageValidation>
+
+    <!-- TODO: Try to remove this disable property -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!--
+      Build this project in source-build as we want the archives to be built and this project is the transitive entry point
+      for the shared framework.
+    -->
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+    <ProjectReference Include="Microsoft.AspNetCore.App.Runtime.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <!--
+    The aspnetcore-runtime archive contains both the Microsoft.NETCore.App.Runtime layout and the Microsoft.AspNetCore.App.Runtime layout.
+    Download the Microsoft.NETCore.App.Runtime layout.
+  -->
+  <PropertyGroup>
+    <!-- Use the Microsoft.Internal.Runtime.AspNetCore.Transport package as a sentinel for the nonshipping version for .NETCoreApp -->
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier).$(ArchiveFormat)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime-pgo-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
+    <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
+  </PropertyGroup>
+
+  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuild)' != 'true'" Returns="$(DotNetRuntimeArchive)">
+    <ItemGroup>
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)$(DotNetRuntimeDownloadPath)')" />
+    </ItemGroup>
+
+    <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="$(DotNetRuntimeArchive)" />
+  </Target>
+
+  <Target Name="PublishToDisk">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_DownloadAndExtractDotNetRuntime"
+             RemoveProperties="OutputPath" />
+
+    <RemoveDir Directories="$(OutputPath)" />
+    <MakeDir Directories="$(OutputPath)" />
+
+    <!-- Extract the dotnet-runtime archive -->
+    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz' and '$(DotNetBuild)' != 'true'"
+      Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
+
+    <Unzip Condition="'$(ArchiveFormat)' == 'zip' and '$(DotNetBuild)' != 'true'"
+      SourceFiles="$(DotNetRuntimeArchive)"
+      DestinationFolder="$(OutputPath)"
+      OverwriteReadOnlyFiles="true" />
+
+    <MSBuild Projects="@(ProjectReference)"
+              Targets="PublishToDisk"
+              Properties="OutputPath=$(OutputPath)" />
+  </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(RedistSharedFrameworkLayoutRoot)" />
+  </Target>
+</Project>
