@@ -40,7 +40,10 @@
       <_FrameworkStaticWebAssetCandidate Remove="@(_MissingFrameworkStaticWebAssetCandidate)" />
     </ItemGroup>
 
-    <Message Importance="High" Text="Framework asset '%(_MissingFrameworkStaticWebAssetCandidate.Identity)' could not be found and won't be included in the project." />
+    <Message
+      Importance="High"
+      Condition="'@(_MissingFrameworkStaticWebAssetCandidate->Count())' != '0'"
+      Text="Framework asset '%(_MissingFrameworkStaticWebAssetCandidate.Identity)' could not be found and won't be included in the project." />
 
     <PropertyGroup>
       <_FrameworkAssetsPath>$(IntermediateOutputPath)frameworkassets</_FrameworkAssetsPath>
