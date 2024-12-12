@@ -226,7 +226,7 @@ public class FormFileModelBinderTest
         // Arrange
         var formFiles = new FormFileCollection
             {
-                GetMockFormFile("files[0]", "file1.txt")
+                GetMockFormFile("file[0]", "file1.txt")
             };
         var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
 
@@ -235,7 +235,7 @@ public class FormFileModelBinderTest
             Mock.Of<IValueProvider>(),
             new EmptyModelMetadataProvider().GetMetadataForType(typeof(IFormFile)),
             bindingInfo: null,
-            modelName: "files");
+            modelName: "file");
 
         var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
@@ -247,7 +247,7 @@ public class FormFileModelBinderTest
 
         var entry = bindingContext.ValidationState[bindingContext.Result.Model];
         Assert.False(entry.SuppressValidation);
-        Assert.Equal("files", entry.Key);
+        Assert.Equal("file", entry.Key);
         Assert.Null(entry.Metadata);
     }
 
