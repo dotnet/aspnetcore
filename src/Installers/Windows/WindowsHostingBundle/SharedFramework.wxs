@@ -6,7 +6,7 @@
             <RollbackBoundary Id="RB_SHAREDFX_REDIST_BUNDLE" />
 
             <!-- OPT_NO_SHAREDFX could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_arm64" SourceFile="$(var.SharedFxRedistInstallerarm64)"
+            <MsiPackage Id="SharedFxRedist_arm64" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerarm64)"
                         Name="$(var.SharedFxRedistInstallerarm64)"
                         Compressed="yes"
                         Vital="yes"
@@ -14,7 +14,7 @@
             </MsiPackage>
 
             <!-- OPT_NO_SHAREDFX could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_x64" SourceFile="$(var.SharedFxRedistInstallerx64)"
+            <MsiPackage Id="SharedFxRedist_x64" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerx64)"
                         Name="$(var.SharedFxRedistInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
@@ -22,7 +22,7 @@
             </MsiPackage>
 
             <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_x86" SourceFile="$(var.SharedFxRedistInstallerx86)"
+            <MsiPackage Id="SharedFxRedist_x86" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerx86)"
                         Name="$(var.SharedFxRedistInstallerx86)"
                         Compressed="yes"
                         Vital="yes"

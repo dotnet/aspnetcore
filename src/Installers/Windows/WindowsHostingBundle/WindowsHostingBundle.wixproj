@@ -127,12 +127,13 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePath)</DefineConstants>
   </PropertyGroup>
 
   <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
-    <!-- Create properties that holds the executable path. These are passed to the bundles so we can reference them as variables
+    <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
-    <CreateProperty Value="%(SharedFxInstallers.Identity)">
+    <CreateProperty Value="%(SharedFxInstallers.Filename)%(Extension)">
       <Output TaskParameter="Value" PropertyName="%(SharedFxInstallers.BundleNameProperty)"/>
     </CreateProperty>
 
