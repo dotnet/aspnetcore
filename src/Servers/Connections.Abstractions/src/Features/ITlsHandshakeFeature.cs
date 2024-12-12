@@ -39,7 +39,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="CipherAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     CipherAlgorithmType CipherAlgorithm { get; }
 
@@ -47,7 +47,7 @@ public interface ITlsHandshakeFeature
     /// Gets the cipher strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     int CipherStrength { get; }
 
@@ -55,7 +55,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="HashAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     HashAlgorithmType HashAlgorithm { get; }
 
@@ -63,7 +63,7 @@ public interface ITlsHandshakeFeature
     /// Gets the hash strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     int HashStrength { get; }
 
@@ -71,7 +71,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="ExchangeAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     ExchangeAlgorithmType KeyExchangeAlgorithm { get; }
 
@@ -79,7 +79,7 @@ public interface ITlsHandshakeFeature
     /// Gets the key exchange algorithm strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     int KeyExchangeStrength { get; }
 }
