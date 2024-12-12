@@ -147,7 +147,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
             Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
-#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
@@ -156,7 +155,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
             Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 #pragma warning restore SYSLIB0058 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
@@ -187,7 +185,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
-#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
@@ -196,7 +193,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
             Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 #pragma warning restore SYSLIB0058 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))

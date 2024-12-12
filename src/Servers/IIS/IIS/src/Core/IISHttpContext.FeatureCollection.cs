@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
@@ -409,22 +410,22 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     string ITlsHandshakeFeature.HostName => SniHostName;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => CipherAlgorithm;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     int ITlsHandshakeFeature.CipherStrength => CipherStrength;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => HashAlgorithm;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     int ITlsHandshakeFeature.HashStrength => HashStrength;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => KeyExchangeAlgorithm;
 
-    [Obsolete("Obsolete on SslStream.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     int ITlsHandshakeFeature.KeyExchangeStrength => KeyExchangeStrength;
 
     IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();

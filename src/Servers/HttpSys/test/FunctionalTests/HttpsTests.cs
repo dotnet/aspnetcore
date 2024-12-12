@@ -219,7 +219,6 @@ public class HttpsTests : LoggedTest
                 }
 
                 // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
-#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
                 Assert.Equal((uint)tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
@@ -228,7 +227,6 @@ public class HttpsTests : LoggedTest
                 Assert.Equal((uint)tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
 #pragma warning restore SYSLIB0058 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
             }
             catch (Exception ex)
             {

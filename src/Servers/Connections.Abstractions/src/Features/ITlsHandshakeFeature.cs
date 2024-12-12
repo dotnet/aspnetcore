@@ -4,6 +4,8 @@
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System;
+using Microsoft.AspNetCore.Shared;
+
 #if NETCOREAPP
 using System.Net.Security;
 #endif
@@ -37,7 +39,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="CipherAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     CipherAlgorithmType CipherAlgorithm { get; }
 
@@ -45,7 +47,7 @@ public interface ITlsHandshakeFeature
     /// Gets the cipher strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     int CipherStrength { get; }
 
@@ -53,7 +55,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="HashAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     HashAlgorithmType HashAlgorithm { get; }
 
@@ -61,7 +63,7 @@ public interface ITlsHandshakeFeature
     /// Gets the hash strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     int HashStrength { get; }
 
@@ -69,7 +71,7 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="ExchangeAlgorithmType"/>.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     ExchangeAlgorithmType KeyExchangeAlgorithm { get; }
 
@@ -77,7 +79,7 @@ public interface ITlsHandshakeFeature
     /// Gets the key exchange algorithm strength.
     /// </summary>
 #if NETCOREAPP
-    [Obsolete("KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherAlgorithmStrength, HashAlgorithm and HashStrength properties of ITlsHandshakeFeature are obsolete. Use NegotiatedCipherSuite instead.")]
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
 #endif
     int KeyExchangeStrength { get; }
 }
