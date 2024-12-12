@@ -150,7 +150,8 @@ public partial class FormFileModelBinder : IModelBinder
                     continue;
                 }
 
-                if (file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase))
+                if (file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase) ||
+                    file.Name.StartsWith($"{modelName}[", StringComparison.OrdinalIgnoreCase))
                 {
                     postedFiles.Add(file);
                 }

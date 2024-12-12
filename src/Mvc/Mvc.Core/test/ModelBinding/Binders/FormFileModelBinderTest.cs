@@ -221,6 +221,70 @@ public class FormFileModelBinderTest
     }
 
     [Fact]
+    public async Task FormFileModelBinder_SingleFileWithinIndexableCollection_BindSuccessful()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("files[0]", "file1.txt")
+            };
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+
+        var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+            new ActionContext { HttpContext = httpContext },
+            Mock.Of<IValueProvider>(),
+            new EmptyModelMetadataProvider().GetMetadataForType(typeof(IFormFile)),
+            bindingInfo: null,
+            modelName: "files");
+
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+        Assert.False(entry.SuppressValidation);
+        Assert.Equal("files", entry.Key);
+        Assert.Null(entry.Metadata);
+    }
+
+    [Fact]
+    public async Task FormFileModelBinder_MultipleFilesWithinIndexableCollection_BindSuccessful()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("files[0]", "file1.txt"),
+                GetMockFormFile("files[1]", "file2.txt")
+            };
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+            new ActionContext { HttpContext = httpContext },
+            Mock.Of<IValueProvider>(),
+            new EmptyModelMetadataProvider().GetMetadataForType(typeof(IList<IFormFile>)),
+            bindingInfo: null,
+            modelName: "files");
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+        Assert.False(entry.SuppressValidation);
+        Assert.Equal("files", entry.Key);
+        Assert.Null(entry.Metadata);
+
+        var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Result.Model);
+        Assert.Equal(2, files.Count);
+    }
+
+    [Fact]
     public async Task FormFileModelBinder_ExpectMultipleFiles_BindSuccessful()
     {
         // Arrange
