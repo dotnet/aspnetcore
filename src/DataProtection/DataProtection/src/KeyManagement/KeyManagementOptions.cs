@@ -111,7 +111,7 @@ public class KeyManagementOptions
     /// <remarks>
     /// Settable for testing.
     /// </remarks>
-    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200);
+    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200.0);
 
     /// <summary>
     /// Controls the lifetime (number of days before expiration)
