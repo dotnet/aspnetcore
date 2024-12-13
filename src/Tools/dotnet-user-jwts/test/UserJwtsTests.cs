@@ -1,14 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Tools.Internal;
-using Xunit.Abstractions;
-using System.Text.RegularExpressions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.IdentityModel.Tokens.Jwt;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Tools.Internal;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -60,6 +65,38 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
         Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+    }
+
+    [Fact]
+    public async Task Create_TokenAcceptedByJwtBearerHandler()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var secrets = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
+        var app = new Program(_console);
+
+        app.Run(["create", "--project", project, "-o", "token"]);
+        var token = _console.GetOutput().Trim();
+
+        var builder = WebApplication.CreateEmptyBuilder(new());
+        builder.WebHost.UseTestServer();
+
+        builder.Configuration.AddJsonFile(appsettings);
+        builder.Configuration.AddJsonFile(secrets);
+
+        builder.Services.AddRouting();
+        builder.Services.AddAuthentication().AddJwtBearer();
+        builder.Services.AddAuthorization();
+
+        using var webApp = builder.Build();
+        webApp.MapGet("/secret", (ClaimsPrincipal user) => $"Hello {user.Identity?.Name}!")
+            .RequireAuthorization();
+
+        await webApp.StartAsync();
+
+        var client = webApp.GetTestClient();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        Assert.Equal($"Hello {Environment.UserName}!", await client.GetStringAsync("/secret"));
     }
 
     [Fact]
