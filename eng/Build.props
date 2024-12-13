@@ -259,13 +259,6 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
-      <ItemGroup Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64'">
-        <InstallerProject Condition=" '$(LinuxInstallerType)' == 'deb' "
-                        Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
-        <InstallerProject Condition=" '$(LinuxInstallerType)' == 'rpm' "
-                        Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
-      </ItemGroup>
-
       <ItemGroup>
         <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" BuildStep="installer" />
       </ItemGroup>
