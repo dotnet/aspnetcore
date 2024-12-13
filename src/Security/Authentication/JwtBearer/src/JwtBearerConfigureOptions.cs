@@ -72,7 +72,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             ValidAudiences = audiences,
             ValidAudience = audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
+            IssuerSigningKeys = GetIssuerSigningKeys(configSection, [issuer, ..issuers]),
         };
     }
 
