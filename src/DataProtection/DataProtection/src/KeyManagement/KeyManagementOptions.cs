@@ -95,6 +95,25 @@ public class KeyManagementOptions
     }
 
     /// <summary>
+    /// During each default key resolution, if a key decryption attempt fails,
+    /// it can be retried, as long as the total number of retries across all keys
+    /// does not exceed this value.
+    /// </summary>
+    /// <remarks>
+    /// Settable for testing.
+    /// </remarks>
+    internal int MaximumTotalDefaultKeyResolverRetries { get; set; } = 10;
+
+    /// <summary>
+    /// Wait this long before each default key resolution decryption retry.
+    /// <seealso cref="MaximumTotalDefaultKeyResolverRetries"/>
+    /// </summary>
+    /// <remarks>
+    /// Settable for testing.
+    /// </remarks>
+    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200);
+
+    /// <summary>
     /// Controls the lifetime (number of days before expiration)
     /// for newly-generated keys.
     /// </summary>

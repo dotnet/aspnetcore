@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "Portnummer, die für den IIS Express HTTP Endpunkt in launchSettings.json verwendet werden soll.",
   "symbols/iisHttpsPort/description": "Portnummer, die für den IIS Express HTTPS Endpunkt in launchSettings.json verwendet werden soll. Diese Option ist nur anwendbar, wenn der Parameter no-https nicht verwendet wird (no-https wird ignoriert, wenn entweder IndividualAuth oder OrganizationalAuth verwendet wird).",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn Individual, IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",

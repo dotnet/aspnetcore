@@ -136,7 +136,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Error);
     }
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData(1)]
     [InlineData(4)]
     [InlineData(16)]

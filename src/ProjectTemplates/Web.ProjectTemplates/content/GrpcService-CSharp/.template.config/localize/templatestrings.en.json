@@ -3,7 +3,7 @@
   "name": "ASP.NET Core gRPC Service",
   "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",

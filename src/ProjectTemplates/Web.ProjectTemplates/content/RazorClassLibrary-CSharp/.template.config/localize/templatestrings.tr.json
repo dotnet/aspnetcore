@@ -3,7 +3,7 @@
   "name": "Razor Sınıf Kitaplığı",
   "description": ".NET’i hedefleyen bir Razor sınıf kitaplığı oluşturma projesi.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/SupportPagesAndViews/displayName": "Destek sayfaları ve görünümleri",
   "symbols/SupportPagesAndViews/description": "Bu kitaplığa geleneksel Razor sayfaları ve görünümleri eklemenin desteklenip desteklenmeyeceği.",

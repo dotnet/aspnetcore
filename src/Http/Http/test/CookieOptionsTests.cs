@@ -49,7 +49,7 @@ public class CookieOptionsTests
                     Assert.NotSame(property.GetValue(original), property.GetValue(copy));
                     break;
                 default:
-                    Assert.True(false, "Not implemented: " + property.Name);
+                    Assert.Fail("Not implemented: " + property.Name);
                     break;
             }
         }

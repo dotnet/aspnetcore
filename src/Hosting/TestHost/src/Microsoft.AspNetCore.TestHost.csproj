@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="System.IO.Pipelines" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 

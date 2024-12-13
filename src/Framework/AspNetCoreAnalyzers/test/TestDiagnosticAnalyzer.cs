@@ -151,7 +151,7 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
 
         Func<Workspace> createWorkspace = CreateWorkspace;
 
-        var project = DiagnosticProject.Create(testAssembly, source, createWorkspace, typeof(RoutePatternClassifier));
+        var project = DiagnosticProject.Create(testAssembly, source, createWorkspace, [typeof(RoutePatternClassifier), typeof(ExtensionMethodsCompletionProvider)]);
         foreach (var assembly in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
         {
             if (!project.MetadataReferences.Any(c => string.Equals(Path.GetFileNameWithoutExtension(c.Display), Path.GetFileNameWithoutExtension(assembly), StringComparison.OrdinalIgnoreCase)))

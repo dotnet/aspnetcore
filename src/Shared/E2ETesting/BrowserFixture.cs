@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.E2ETesting;
 public class BrowserFixture : IAsyncLifetime
 {
     public static string StreamingContext { get; } = "streaming";
+    public static string RoutingTestContext { get; } = "routing";
+
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
@@ -122,6 +124,17 @@ public class BrowserFixture : IAsyncLifetime
     private (IWebDriver browser, ILogs log) CreateBrowser(string context, ITestOutputHelper output)
     {
         var opts = new ChromeOptions();
+
+        if (context?.StartsWith(RoutingTestContext, StringComparison.Ordinal) == true)
+        {
+            // Enables WebDriver BiDi, which is required to allow the 'beforeunload' event
+            // to display an alert dialog. This is needed by some of our routing tests.
+            // See: https://w3c.github.io/webdriver/#user-prompts
+            // We could consider making this the default for all tests when the BiDi spec
+            // becomes standard (it's in draft at the time of writing).
+            // See: https://w3c.github.io/webdriver-bidi/
+            opts.UseWebSocketUrl = true;
+        }
 
         if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
         {

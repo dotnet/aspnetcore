@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -26,7 +27,7 @@ public class HubConnectionTestsCollection : ICollectionFixture<InProcessTestServ
 }
 
 [Collection(HubConnectionTestsCollection.Name)]
-public class HubConnectionTests : FunctionalTestBase
+public partial class HubConnectionTests : FunctionalTestBase
 {
     private const string DefaultHubDispatcherLoggerName = "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
 
@@ -36,7 +37,8 @@ public class HubConnectionTests : FunctionalTestBase
         HttpTransportType? transportType = null,
         IHubProtocol protocol = null,
         ILoggerFactory loggerFactory = null,
-        bool withAutomaticReconnect = false)
+        bool withAutomaticReconnect = false,
+        SignalRClientActivitySource activitySourceContainer = null)
     {
         var hubConnectionBuilder = new HubConnectionBuilder();
 
@@ -60,6 +62,10 @@ public class HubConnectionTests : FunctionalTestBase
         var delegateConnectionFactory = new DelegateConnectionFactory(
             GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
         hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+        if (activitySourceContainer != null)
+        {
+            hubConnectionBuilder.Services.AddSingleton(activitySourceContainer);
+        }
 
         return hubConnectionBuilder.Build();
     }
@@ -571,7 +577,7 @@ public class HubConnectionTests : FunctionalTestBase
                     var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
                     await foreach (var streamValue in stream)
                     {
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        Assert.Fail("Expected an exception from the streaming invocation.");
                     }
                 });
             }
@@ -652,7 +658,7 @@ public class HubConnectionTests : FunctionalTestBase
                 {
                     await foreach (var streamValue in asyncEnumerable)
                     {
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        Assert.Fail("Expected an exception from the streaming invocation.");
                     }
                 });
 
@@ -2330,6 +2336,7 @@ public class HubConnectionTests : FunctionalTestBase
             // Yield first so the rest of the test runs in the OneAtATimeSynchronizationContext.Run loop
             await Task.Yield();
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
             Assert.True(connection.StartAsync().Wait(DefaultTimeout));
 
             var invokeTask = connection.InvokeAsync<string>(nameof(TestHub.HelloWorld));
@@ -2337,6 +2344,7 @@ public class HubConnectionTests : FunctionalTestBase
             Assert.Equal("Hello World!", invokeTask.Result);
 
             Assert.True(connection.DisposeAsync().AsTask().Wait(DefaultTimeout));
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         }
         catch (Exception ex)
         {

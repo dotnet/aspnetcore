@@ -1,0 +1,22 @@
+variables:
+  - group: Publish-Build-Assets
+
+  # Whether the build is internal or not
+  - name: IsInternalBuild
+    value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
+
+  # Default Maestro++ API Endpoint and API Version
+  - name: MaestroApiEndPoint
+    value: "https://maestro.dot.net"
+  - name: MaestroApiVersion
+    value: "2020-02-20"
+
+  - name: SourceLinkCLIVersion
+    value: 3.0.0
+  - name: SymbolToolVersion
+    value: 1.0.1
+  - name: BinlogToolVersion
+    value: 1.0.11
+
+  - name: runCodesignValidationInjection
+    value: false

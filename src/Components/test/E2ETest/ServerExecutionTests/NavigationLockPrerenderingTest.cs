@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -20,7 +21,11 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57153")]
     public void NavigationIsLockedAfterPrerendering()
     {
         Navigate("/locked-navigation");

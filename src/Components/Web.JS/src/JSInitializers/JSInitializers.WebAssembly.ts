@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { MonoConfig } from 'dotnet-runtime';
+import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { WebAssemblyStartOptions } from '../Platform/WebAssemblyStartOptions';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { JSInitializer } from './JSInitializers';

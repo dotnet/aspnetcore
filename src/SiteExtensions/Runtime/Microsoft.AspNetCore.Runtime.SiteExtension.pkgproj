@@ -34,7 +34,7 @@
       SkipGetTargetFrameworkProperties="true" />
 
     <!-- Make sure redist folder is built and ready -->
-    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <ProjectReference Include="..\..\Framework\App.Runtime\src\aspnetcore-runtime.proj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

@@ -7,6 +7,12 @@
 Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions
 Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions
 Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.AuthenticationStateSerializationOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializationCallback.get -> System.Func<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!, System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData?>>!
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializationCallback.set -> void
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializeAllClaims.get -> bool
+Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.SerializeAllClaims.set -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi
 Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.Display(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.DisplayFirefox(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
@@ -14,10 +20,13 @@ Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.TargetPickerUi
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
+Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.get -> string?
+Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.set -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
 Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions
 static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions.UseWebAssemblyDebugging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void
 static Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveWebAssemblyRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions!>? callback = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddAuthenticationStateSerialization(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
 static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddInteractiveWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

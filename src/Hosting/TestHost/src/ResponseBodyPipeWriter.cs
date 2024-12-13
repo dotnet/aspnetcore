@@ -95,4 +95,8 @@ internal sealed class ResponseBodyPipeWriter : PipeWriter
         CheckNotComplete();
         return _pipe.Writer.GetSpan(sizeHint);
     }
+
+    public override bool CanGetUnflushedBytes => _pipe.Writer.CanGetUnflushedBytes;
+
+    public override long UnflushedBytes => _pipe.Writer.UnflushedBytes;
 }

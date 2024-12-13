@@ -36,7 +36,7 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>
     /// </summary>
-    public string ContentType => "application/problem+json";
+    public string ContentType => ContentTypeConstants.ProblemDetailsContentType;
 
     /// <summary>
     /// Gets the HTTP status code.

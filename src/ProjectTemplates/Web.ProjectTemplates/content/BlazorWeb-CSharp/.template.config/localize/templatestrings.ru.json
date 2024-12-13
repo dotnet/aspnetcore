@@ -3,7 +3,7 @@
   "name": "Веб-приложение Blazor",
   "description": "Шаблон проекта для создания приложения Blazor, поддерживающего как отрисовку на стороне сервера, так и интерактивные возможности клиента. Этот шаблон можно использовать для веб-приложений с многофункциональными динамическими пользовательскими интерфейсами (UI).",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "Идентификатор, используемый для секретов (применяется с индивидуальной проверкой подлинности).",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",

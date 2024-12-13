@@ -1,5 +1,5 @@
 ﻿@inject HtmlGenerationWebSite.ProductsService ProductsService
 <cache vary-by-route="category">
 Category: @ViewBag.Category
-<cache>Products: @string.Join(", ", ProductsService.GetProductNames(ViewBag.Category)) (@ViewBag.CorrelationId)</cache>
+<cache>Products: @string.Join(", ", ProductsService.GetProductNames((string)ViewBag.Category)) (@ViewBag.CorrelationId)</cache>
 </cache>

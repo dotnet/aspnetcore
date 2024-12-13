@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components;
@@ -29,12 +30,10 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     protected void DeserializeState(byte[] existingState)
     {
-        var state = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(existingState);
-        if (state == null)
-        {
-            throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
-        }
-
+        var state = JsonSerializer.Deserialize(
+            existingState,
+            PrerenderComponentApplicationStoreSerializerContext.Default.DictionaryStringByteArray)
+            ?? throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
         ExistingState = state;
     }
 
@@ -73,3 +72,6 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     public virtual bool SupportsRenderMode(IComponentRenderMode renderMode) =>
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
 }
+
+[JsonSerializable(typeof(Dictionary<string, byte[]>), GenerationMode = JsonSourceGenerationMode.Serialization)]
+internal sealed partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext;

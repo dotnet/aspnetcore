@@ -43,7 +43,7 @@ public abstract class ResultContext<TOptions> : BaseContext<TOptions> where TOpt
     /// <summary>
     /// Gets the <see cref="AuthenticateResult"/> result.
     /// </summary>
-    public AuthenticateResult Result { get; private set; } = default!;
+    public AuthenticateResult? Result { get; private set; }
 
     /// <summary>
     /// Calls success creating a ticket with the <see cref="Principal"/> and <see cref="Properties"/>.

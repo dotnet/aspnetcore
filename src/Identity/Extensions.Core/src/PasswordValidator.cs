@@ -39,10 +39,10 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string? password)
     {
-        ArgumentNullThrowHelper.ThrowIfNull(password);
         ArgumentNullThrowHelper.ThrowIfNull(manager);
         List<IdentityError>? errors = null;
         var options = manager.Options.Password;
+        password ??= "";
         if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
         {
             errors ??= new List<IdentityError>();

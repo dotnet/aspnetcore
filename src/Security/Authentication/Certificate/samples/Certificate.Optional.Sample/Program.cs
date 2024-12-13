@@ -22,7 +22,7 @@ public class Program
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 // load the self-signed certificate issued for 127.0.0.1 and 127.0.0.2 domains
-                // https://learn.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide
+                // https://learn.microsoft.com/dotnet/core/additional-tools/self-signed-certificates-guide
                 var serverCertificate = CertificateLoader.LoadFromStoreCert(
                     "localhost", "My", StoreLocation.CurrentUser,
                     allowInvalid: true);

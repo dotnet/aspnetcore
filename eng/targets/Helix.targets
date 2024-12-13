@@ -141,7 +141,7 @@
     <ItemGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
       <_Temp Include="@(HelixAvailableTargetQueue)" />
       <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
-      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open',''))" />
+      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open','')->Replace('.open',''))" />
     </ItemGroup>
 
     <ItemGroup>

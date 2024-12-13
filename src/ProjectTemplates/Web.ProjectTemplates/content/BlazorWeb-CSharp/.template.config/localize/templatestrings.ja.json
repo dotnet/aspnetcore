@@ -3,7 +3,7 @@
   "name": "Blazor Web アプリ",
   "description": "サーバー側のレンダリングとクライアントの対話機能の両方をサポートする Blazor Web アプリを作成するためのプロジェクト テンプレートです。このテンプレートは、リッチな動的ユーザー インターフェイス (UI) を持つ Web アプリに使用できます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "シークレットで使用する ID (IndividualAuth で使用)。",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/ExcludeLaunchSettings/description": "生成されたテンプレートから launchSettings.json を除外するかどうか。",

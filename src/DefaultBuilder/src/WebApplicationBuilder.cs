@@ -246,9 +246,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             // Logic taken from https://github.com/dotnet/runtime/blob/dc5a6c8be1644915c14c4a464447b0d54e223a46/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L209-L227
 
             // If we're running anywhere other than C:\Windows\system32, we default to using the CWD for the ContentRoot.
-            // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as there CWD which is not likely
-            // to really be the home for things like appsettings.json, we skip changing the ContentRoot in that case. The non-"default" initial
-            // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which probably makes more sense than the system32.
+            // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as their CWD, which is not likely
+            // to be the home for things like appsettings.json, we skip changing the ContentRoot in that case. The non-"default" initial
+            // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which probably makes more sense than system32.
 
             // In my testing, both Environment.CurrentDirectory and Environment.SystemDirectory return the path without
             // any trailing directory separator characters. I'm not even sure the casing can ever be different from these APIs, but I think it makes sense to
@@ -472,7 +472,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
         app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
 
-        // reset route builder if it existed, this is needed for StartupFilters
+        // Reset route builder if it existed, this is needed for StartupFilters
         if (priorRouteBuilder is not null)
         {
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;

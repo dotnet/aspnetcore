@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "Określa, czy wyłączyć protokół HTTPS. Ta opcja ma zastosowanie tylko wtedy, gdy elementy IndividualB2C, SingleOrg lub MultiOrg nie są używane dla uwierzytelniania --auth.",
   "symbols/UseLocalDB/description": "Określa, czy używać bazy danych LocalDB zamiast oprogramowania SQLite. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth Individual lub --auth IndividualB2C.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/CalledApiUrl/description": "Adres URL interfejsu API do wywołania z aplikacji internetowej. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth SingleOrg lub --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Określa, czy aplikacja internetowa wywołuje program Microsoft Graph. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth SingleOrg.",

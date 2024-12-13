@@ -823,7 +823,7 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async void Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
+    public async Task Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
     {
         // Arrange
         var expectedError = @"There is more than one named submit event with the name 'default'. Ensure named submit events have unique names, or are in scopes with distinct names. The following components use this name:
@@ -1680,7 +1680,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
-
+        services.AddScoped<ResourceCollectionProvider>();
         return services;
     }
 

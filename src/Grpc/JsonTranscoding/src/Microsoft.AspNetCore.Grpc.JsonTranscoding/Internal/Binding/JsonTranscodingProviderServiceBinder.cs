@@ -58,7 +58,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -67,7 +67,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -76,7 +76,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {
@@ -97,7 +97,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {

@@ -179,7 +179,7 @@ public abstract class EnumerableValueProviderTest
         var result = valueProvider.GetValue("some");
 
         // Assert
-        Assert.Equal(new[] { "someValue1", "someValue2" }, result.Values);
+        Assert.Equal(new[] { "someValue1", "someValue2" }, result.Values.ToArray());
         Assert.Equal("someValue1,someValue2", (string)result);
         Assert.Equal(culture, result.Culture);
     }
@@ -215,7 +215,7 @@ public abstract class EnumerableValueProviderTest
         var result = valueProvider.GetValue("key");
 
         // Assert
-        Assert.Equal(new[] { null, null, "value" }, result.Values);
+        Assert.Equal(new[] { null, null, "value" }, result.Values.ToArray());
     }
 
     [Fact]

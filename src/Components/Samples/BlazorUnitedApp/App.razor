@@ -4,38 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />   
-    <link rel="stylesheet" href="css/bootstrap-icons/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/site.css" />
-    <link href="BlazorUnitedApp.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Assets["css/bootstrap/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/bootstrap-icons/bootstrap-icons.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/site.css"]" />
+    <link href="@Assets["BlazorUnitedApp.styles.css"]" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet></HeadOutlet>
+
+    <ImportMap nonce="my-value" />
+    <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-
-    <div id="blazor-error-ui">
-        <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
-        </environment>
-        <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
-        </environment>
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-
-    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>

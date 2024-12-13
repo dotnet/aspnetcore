@@ -201,7 +201,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             try
             {
                 await next();
-                Assert.False(true, "Expected exception is not thrown");
+                Assert.Fail("Expected exception is not thrown");
             }
             catch (Exception)
             {

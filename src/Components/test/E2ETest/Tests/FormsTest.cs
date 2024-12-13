@@ -25,7 +25,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     protected virtual IWebElement MountSimpleValidationComponent()
@@ -45,7 +45,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // The form emits unmatched attributes
-        Browser.Equal("off", () => form.GetAttribute("autocomplete"));
+        Browser.Equal("off", () => form.GetDomAttribute("autocomplete"));
 
         // Editing a field doesn't trigger validation on its own
         userNameInput.SendKeys("Bert\t");
@@ -105,17 +105,17 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             ".validation-errors > .validation-message"); // Shows that the default class name for ValidationSummary is validation-errors
 
         // InputText emits unmatched attributes
-        Browser.Equal("Enter your name", () => nameInput.GetAttribute("placeholder"));
+        Browser.Equal("Enter your name", () => nameInput.GetDomAttribute("placeholder"));
 
         // Validates on edit
-        Browser.Equal("valid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("valid", () => nameInput.GetDomAttribute("class"));
         nameInput.SendKeys("Bert\t");
-        Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => nameInput.GetDomAttribute("class"));
         EnsureAttributeNotRendered(nameInput, "aria-invalid");
 
         // Can become invalid
         nameInput.SendKeys("01234567890123456789\t");
-        Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => nameInput.GetDomAttribute("class"));
         EnsureAttributeValue(nameInput, "aria-invalid", "true");
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
         Browser.True(() => summaryMessagesAccessor().Contains("That name is too long"));
@@ -123,7 +123,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Can become valid
         nameInput.Clear();
         nameInput.SendKeys("Bert\t");
-        Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => nameInput.GetDomAttribute("class"));
         EnsureAttributeNotRendered(nameInput, "aria-invalid");
         Browser.Empty(messagesAccessor);
         Browser.False(() => summaryMessagesAccessor().Contains("That name is too long"));
@@ -137,28 +137,28 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // InputNumber emits unmatched attributes
-        Browser.Equal("Enter your age", () => ageInput.GetAttribute("placeholder"));
+        Browser.Equal("Enter your age", () => ageInput.GetDomAttribute("placeholder"));
 
         // Validates on edit
-        Browser.Equal("valid", () => ageInput.GetAttribute("class"));
+        Browser.Equal("valid", () => ageInput.GetDomAttribute("class"));
         ageInput.SendKeys("123\t");
-        Browser.Equal("modified valid", () => ageInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => ageInput.GetDomAttribute("class"));
 
         // Can become invalid
         ageInput.SendKeys("e100\t");
-        Browser.Equal("modified invalid", () => ageInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => ageInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
 
         // Empty is invalid, because it's not a nullable int
         ageInput.Clear();
         ageInput.SendKeys("\t");
-        Browser.Equal("modified invalid", () => ageInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => ageInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
         Browser.Equal("", () => ageInput.GetDomProperty("value")); // We can display 'empty' even though it's not representable within the bound property
 
         // Zero is within the allowed range
         ageInput.SendKeys("0\t");
-        Browser.Equal("modified valid", () => ageInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => ageInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
@@ -170,19 +170,19 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Validates on edit
-        Browser.Equal("valid", () => heightInput.GetAttribute("class"));
+        Browser.Equal("valid", () => heightInput.GetDomAttribute("class"));
         heightInput.SendKeys("123.456\t");
-        Browser.Equal("modified valid", () => heightInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => heightInput.GetDomAttribute("class"));
 
         // Can become invalid
         heightInput.SendKeys("e100\t");
-        Browser.Equal("modified invalid", () => heightInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => heightInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The OptionalHeight field must be a number." }, messagesAccessor);
 
         // Empty is valid, because it's a nullable float
         heightInput.Clear();
         heightInput.SendKeys("\t");
-        Browser.Equal("modified valid", () => heightInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => heightInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
@@ -194,22 +194,22 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // InputTextArea emits unmatched attributes
-        Browser.Equal("Tell us about yourself", () => descriptionInput.GetAttribute("placeholder"));
+        Browser.Equal("Tell us about yourself", () => descriptionInput.GetDomAttribute("placeholder"));
 
         // Validates on edit
-        Browser.Equal("valid", () => descriptionInput.GetAttribute("class"));
+        Browser.Equal("valid", () => descriptionInput.GetDomAttribute("class"));
         descriptionInput.SendKeys("Hello\t");
-        Browser.Equal("modified valid", () => descriptionInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => descriptionInput.GetDomAttribute("class"));
 
         // Can become invalid
         descriptionInput.SendKeys("too long too long too long too long too long\t");
-        Browser.Equal("modified invalid", () => descriptionInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => descriptionInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "Description is max 20 chars" }, messagesAccessor);
 
         // Can become valid
         descriptionInput.Clear();
         descriptionInput.SendKeys("Hello\t");
-        Browser.Equal("modified valid", () => descriptionInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => descriptionInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
@@ -222,16 +222,16 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // InputSelect emits unmatched attributes
-        Browser.Equal("4", () => select.GetAttribute("size"));
+        Browser.Equal("4", () => select.GetDomAttribute("size"));
 
         // Validates on edit
-        Browser.Equal("valid", () => select.GetAttribute("class"));
+        Browser.Equal("valid", () => select.GetDomAttribute("class"));
         ticketClassInput.SelectByText("First class");
-        Browser.Equal("modified valid", () => select.GetAttribute("class"));
+        Browser.Equal("modified valid", () => select.GetDomAttribute("class"));
 
         // Can become invalid
         ticketClassInput.SelectByText("(select)");
-        Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => select.GetDomAttribute("class"));
         Browser.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
     }
 
@@ -244,14 +244,14 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Invalidates on edit
-        Browser.Equal("valid", () => select.GetAttribute("class"));
+        Browser.Equal("valid", () => select.GetDomAttribute("class"));
         ticketClassInput.SelectByText("true");
-        Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => select.GetDomAttribute("class"));
         Browser.Equal(new[] { "77 + 33 = 100 is a false statement, unfortunately." }, messagesAccessor);
 
         // Nullable conversion can fail
         ticketClassInput.SelectByText("(select)");
-        Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => select.GetDomAttribute("class"));
         Browser.Equal(new[]
         {
                 "77 + 33 = 100 is a false statement, unfortunately.",
@@ -260,7 +260,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // Can become valid
         ticketClassInput.SelectByText("false");
-        Browser.Equal("modified valid", () => select.GetAttribute("class"));
+        Browser.Equal("modified valid", () => select.GetDomAttribute("class"));
     }
 
     [Fact]
@@ -272,17 +272,17 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccesor = CreateValidationMessagesAccessor(appElement);
 
         // Binding applies to option selection
-        Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+        Browser.Equal(new[] { "SanFrancisco" }, () => citiesInput.AllSelectedOptions.Select(option => option.GetDomProperty("value")));
 
         // Validates on edit
-        Browser.Equal("valid", () => select.GetAttribute("class"));
+        Browser.Equal("valid", () => select.GetDomAttribute("class"));
         citiesInput.SelectByIndex(2);
-        Browser.Equal("modified valid", () => select.GetAttribute("class"));
+        Browser.Equal("modified valid", () => select.GetDomAttribute("class"));
 
         // Can become invalid
         citiesInput.SelectByIndex(1);
         citiesInput.SelectByIndex(3);
-        Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => select.GetDomAttribute("class"));
         Browser.Equal(new[] { "The field SelectedCities must be a string or array type with a maximum length of '3'." }, messagesAccesor);
     }
 
@@ -333,25 +333,25 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // InputCheckbox emits unmatched attributes
-        Browser.Equal("You have to check this", () => acceptsTermsInput.GetAttribute("title"));
+        Browser.Equal("You have to check this", () => acceptsTermsInput.GetDomAttribute("title"));
 
         // Correct initial checkedness
         Assert.False(acceptsTermsInput.Selected);
         Assert.True(isEvilInput.Selected);
 
         // Validates on edit
-        Browser.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
-        Browser.Equal("valid", () => isEvilInput.GetAttribute("class"));
+        Browser.Equal("valid", () => acceptsTermsInput.GetDomAttribute("class"));
+        Browser.Equal("valid", () => isEvilInput.GetDomAttribute("class"));
         acceptsTermsInput.Click();
         isEvilInput.Click();
-        Browser.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
-        Browser.Equal("modified valid", () => isEvilInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => acceptsTermsInput.GetDomAttribute("class"));
+        Browser.Equal("modified valid", () => isEvilInput.GetDomAttribute("class"));
 
         // Can become invalid
         acceptsTermsInput.Click();
         isEvilInput.Click();
-        Browser.Equal("modified invalid", () => acceptsTermsInput.GetAttribute("class"));
-        Browser.Equal("modified invalid", () => isEvilInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => acceptsTermsInput.GetDomAttribute("class"));
+        Browser.Equal("modified invalid", () => isEvilInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "Must accept terms", "Must not be evil" }, messagesAccessor);
     }
 
@@ -363,30 +363,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // By capturing the inputradio elements just once up front, we're implicitly showing
         // that they are retained as their values change
-        var unknownAirlineInput = FindAirlineInputs().First(i => string.Equals("Unknown", i.GetAttribute("value")));
-        var bestAirlineInput = FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetAttribute("value")));
+        var unknownAirlineInput = FindAirlineInputs().First(i => string.Equals("Unknown", i.GetDomProperty("value")));
+        var bestAirlineInput = FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetDomProperty("value")));
 
         // Validate selected inputs
         Browser.True(() => unknownAirlineInput.Selected);
         Browser.False(() => bestAirlineInput.Selected);
 
         // InputRadio emits additional attributes
-        Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
+        Browser.True(() => unknownAirlineInput.GetDomAttribute("extra").Equals("additional"));
 
         // Validates on edit
-        Browser.Equal("valid", () => unknownAirlineInput.GetAttribute("class"));
-        Browser.Equal("valid", () => bestAirlineInput.GetAttribute("class"));
+        Browser.Equal("valid", () => unknownAirlineInput.GetDomAttribute("class"));
+        Browser.Equal("valid", () => bestAirlineInput.GetDomAttribute("class"));
 
         bestAirlineInput.Click();
 
-        Browser.Equal("modified valid", () => unknownAirlineInput.GetAttribute("class"));
-        Browser.Equal("modified valid", () => bestAirlineInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => unknownAirlineInput.GetDomAttribute("class"));
+        Browser.Equal("modified valid", () => bestAirlineInput.GetDomAttribute("class"));
 
         // Can become invalid
         unknownAirlineInput.Click();
 
-        Browser.Equal("modified invalid", () => unknownAirlineInput.GetAttribute("class"));
-        Browser.Equal("modified invalid", () => bestAirlineInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => unknownAirlineInput.GetDomAttribute("class"));
+        Browser.Equal("modified invalid", () => bestAirlineInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
 
         IReadOnlyCollection<IWebElement> FindAirlineInputs()
@@ -405,23 +405,23 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.True(() => FindColorInputs().All(i => !i.Selected));
 
         // Invalidates on submit
-        Browser.True(() => FindCountryInputs().All(i => string.Equals("valid", i.GetAttribute("class"))));
-        Browser.True(() => FindColorInputs().All(i => string.Equals("valid", i.GetAttribute("class"))));
+        Browser.True(() => FindCountryInputs().All(i => string.Equals("valid", i.GetDomAttribute("class"))));
+        Browser.True(() => FindColorInputs().All(i => string.Equals("valid", i.GetDomAttribute("class"))));
 
         submitButton.Click();
 
-        Browser.True(() => FindCountryInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
-        Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
+        Browser.True(() => FindCountryInputs().All(i => string.Equals("invalid", i.GetDomAttribute("class"))));
+        Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetDomAttribute("class"))));
 
         // Validates on edit
         FindCountryInputs().First().Click();
 
-        Browser.True(() => FindCountryInputs().All(i => string.Equals("modified valid", i.GetAttribute("class"))));
-        Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
+        Browser.True(() => FindCountryInputs().All(i => string.Equals("modified valid", i.GetDomAttribute("class"))));
+        Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetDomAttribute("class"))));
 
         FindColorInputs().First().Click();
 
-        Browser.True(() => FindColorInputs().All(i => string.Equals("modified valid", i.GetAttribute("class"))));
+        Browser.True(() => FindColorInputs().All(i => string.Equals("modified valid", i.GetDomAttribute("class"))));
 
         IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.Name("country"));
 
@@ -439,29 +439,29 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.True(() => FindFalseInput().Selected);
 
         // Validates on edit
-        Browser.Equal("valid", () => FindTrueInput().GetAttribute("class"));
-        Browser.Equal("valid", () => FindFalseInput().GetAttribute("class"));
+        Browser.Equal("valid", () => FindTrueInput().GetDomAttribute("class"));
+        Browser.Equal("valid", () => FindFalseInput().GetDomAttribute("class"));
 
         FindTrueInput().Click();
 
-        Browser.Equal("modified valid", () => FindTrueInput().GetAttribute("class"));
-        Browser.Equal("modified valid", () => FindFalseInput().GetAttribute("class"));
+        Browser.Equal("modified valid", () => FindTrueInput().GetDomAttribute("class"));
+        Browser.Equal("modified valid", () => FindFalseInput().GetDomAttribute("class"));
 
         // Can become invalid
         FindFalseInput().Click();
 
-        Browser.Equal("modified invalid", () => FindTrueInput().GetAttribute("class"));
-        Browser.Equal("modified invalid", () => FindFalseInput().GetAttribute("class"));
+        Browser.Equal("modified invalid", () => FindTrueInput().GetDomAttribute("class"));
+        Browser.Equal("modified invalid", () => FindFalseInput().GetDomAttribute("class"));
         Browser.Equal(new[] { "7 * 3 = 21 is a true statement." }, messagesAccessor);
 
         IReadOnlyCollection<IWebElement> FindInputs()
             => appElement.FindElement(By.ClassName("radio-group-bool-values")).FindElements(By.TagName("input"));
 
         IWebElement FindTrueInput()
-            => FindInputs().First(i => string.Equals("True", i.GetAttribute("value")));
+            => FindInputs().First(i => string.Equals("True", i.GetDomProperty("value")));
 
         IWebElement FindFalseInput()
-            => FindInputs().First(i => string.Equals("False", i.GetAttribute("value")));
+            => FindInputs().First(i => string.Equals("False", i.GetDomProperty("value")));
     }
 
     [Fact]
@@ -475,30 +475,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var submissionStatus = appElement.FindElement(By.Id("submission-status"));
 
         // Editing a field triggers validation immediately
-        Browser.Equal("valid", () => userNameInput.GetAttribute("class"));
+        Browser.Equal("valid", () => userNameInput.GetDomAttribute("class"));
         userNameInput.SendKeys("Too long too long\t");
-        Browser.Equal("modified invalid", () => userNameInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => userNameInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
         // Submitting the form validates remaining fields
         submitButton.Click();
         Browser.Equal(new[] { "That name is too long", "You must accept the terms" }, messagesAccessor);
-        Browser.Equal("modified invalid", () => userNameInput.GetAttribute("class"));
-        Browser.Equal("invalid", () => acceptsTermsInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => userNameInput.GetDomAttribute("class"));
+        Browser.Equal("invalid", () => acceptsTermsInput.GetDomAttribute("class"));
 
         // Can make fields valid
         userNameInput.Clear();
         userNameInput.SendKeys("Bert\t");
-        Browser.Equal("modified valid", () => userNameInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => userNameInput.GetDomAttribute("class"));
         acceptsTermsInput.Click();
-        Browser.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => acceptsTermsInput.GetDomAttribute("class"));
         Browser.Equal(string.Empty, () => submissionStatus.Text);
         submitButton.Click();
         Browser.True(() => submissionStatus.Text.StartsWith("Submitted", StringComparison.Ordinal));
 
         // Fields can revert to unmodified
-        Browser.Equal("valid", () => userNameInput.GetAttribute("class"));
-        Browser.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
+        Browser.Equal("valid", () => userNameInput.GetDomAttribute("class"));
+        Browser.Equal("valid", () => acceptsTermsInput.GetDomAttribute("class"));
     }
 
     [Fact]
@@ -586,12 +586,12 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // Initially shows no error
         Browser.Empty(() => messagesAccessor());
-        Browser.Equal("valid", () => input.GetAttribute("class"));
+        Browser.Equal("valid", () => input.GetDomAttribute("class"));
 
         // Can trigger async error
         triggerAsyncErrorButton.Click();
         Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
-        Browser.Equal("invalid", () => input.GetAttribute("class"));
+        Browser.Equal("invalid", () => input.GetDomAttribute("class"));
     }
 
     [Fact]
@@ -605,29 +605,29 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // Select with custom options component and HTML component behave the
         // same when the selectElement.value is provided
-        Browser.Equal("B", () => selectWithoutComponent.GetAttribute("value"));
-        Browser.Equal("B", () => selectWithComponent.GetAttribute("value"));
+        Browser.Equal("B", () => selectWithoutComponent.GetDomProperty("value"));
+        Browser.Equal("B", () => selectWithComponent.GetDomProperty("value"));
 
         // Reset to a value that doesn't exist
         input.Clear();
         input.SendKeys("D\t");
 
         // Confirm that both values are cleared
-        Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
-        Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+        Browser.Equal("", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("", () => selectWithoutComponent.GetDomProperty("value"));
 
         // Dynamically showing the fourth option updates the selected value
         showAdditionalOptionButton.Click();
 
-        Browser.Equal("D", () => selectWithComponent.GetAttribute("value"));
-        Browser.Equal("D", () => selectWithoutComponent.GetAttribute("value"));
+        Browser.Equal("D", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("D", () => selectWithoutComponent.GetDomProperty("value"));
 
         // Change the value to one that does really doesn't exist
         input.Clear();
         input.SendKeys("F\t");
 
-        Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
-        Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+        Browser.Equal("", () => selectWithComponent.GetDomProperty("value"));
+        Browser.Equal("", () => selectWithoutComponent.GetDomProperty("value"));
     }
 
     [Fact]
@@ -637,7 +637,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var select = new SelectElement(appElement.FindElement(By.Id("select-cities")));
 
         // Assert that the binding works in the .NET -> JS direction
-        Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetAttribute("value")));
+        Browser.Equal(new[] { "\"sf\"", "\"sea\"" }, () => select.AllSelectedOptions.Select(option => option.GetDomProperty("value")));
 
         select.DeselectByIndex(0);
         select.SelectByIndex(1);
@@ -672,13 +672,13 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Validates on edit
-        Browser.Equal("valid-socks", () => socksInput.GetAttribute("class"));
+        Browser.Equal("valid-socks", () => socksInput.GetDomAttribute("class"));
         socksInput.SendKeys("Purple\t");
-        Browser.Equal("modified valid-socks", () => socksInput.GetAttribute("class"));
+        Browser.Equal("modified valid-socks", () => socksInput.GetDomAttribute("class"));
 
         // Can become invalid
         socksInput.SendKeys(" with yellow spots\t");
-        Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
+        Browser.Equal("modified invalid-socks", () => socksInput.GetDomAttribute("class"));
     }
 
     [Fact]
@@ -701,20 +701,20 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Func<string> lastLogEntryAccessor = () => appElement.FindElement(By.CssSelector(".submission-log-entry:last-of-type")).Text;
 
         nameInput.SendKeys("01234567890123456789\t");
-        Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => nameInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
         // Remove DataAnnotations support
         appElement.FindElement(By.Id("toggle-dataannotations")).Click();
         Browser.Equal("DataAnnotations support is now disabled", lastLogEntryAccessor);
-        Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => nameInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
 
         // Re-add DataAnnotations support
         appElement.FindElement(By.Id("toggle-dataannotations")).Click();
         nameInput.SendKeys("0\t");
         Browser.Equal("DataAnnotations support is now enabled", lastLogEntryAccessor);
-        Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => nameInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
     }
 
@@ -915,7 +915,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // should not replace the input contents with last known component value (null)
         input.SendKeys("INVALID\t");
         Browser.Equal("INVALID", () => input.GetDomProperty("value"));
-        Browser.Equal("modified invalid", () => input.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
     }
 
     [Fact]
@@ -963,14 +963,14 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         // The bound value is expected and no inputs have a class attribute
         Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
-        Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "Unknown").Selected);
+        Browser.True(() => FindRadioInputs().First(input => input.GetDomProperty("value") == "Unknown").Selected);
         Browser.Equal("Unknown", () => selectedInputText.Text);
 
         FindRadioInputs().First().Click();
 
         // Value binding continues to work without an edit context and class attributes are unchanged
         Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
-        Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "BestAirline").Selected);
+        Browser.True(() => FindRadioInputs().First(input => input.GetDomProperty("value") == "BestAirline").Selected);
         Browser.Equal("BestAirline", () => selectedInputText.Text);
 
         IReadOnlyCollection<IWebElement> FindRadioInputs()
@@ -1057,12 +1057,12 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
     private void EnsureAttributeValue(IWebElement element, string attributeName, string value)
     {
-        Browser.Equal(value, () => element.GetAttribute(attributeName));
+        Browser.Equal(value, () => element.GetDomAttribute(attributeName));
     }
 
     private void EnsureAttributeNotRendered(IWebElement element, string attributeName)
     {
-        Browser.True(() => element.GetAttribute(attributeName) == null);
+        Browser.True(() => element.GetDomAttribute(attributeName) == null);
     }
 
     private bool ElementHasAttribute(IWebElement webElement, string attribute)

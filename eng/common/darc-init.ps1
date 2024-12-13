@@ -1,6 +1,6 @@
 param (
     $darcVersion = $null,
-    $versionEndpoint = 'https://maestro.dot.net/api/assets/darc-version?api-version=2019-01-16',
+    $versionEndpoint = 'https://maestro.dot.net/api/assets/darc-version?api-version=2020-02-20',
     $verbosity = 'minimal',
     $toolpath = $null
 )

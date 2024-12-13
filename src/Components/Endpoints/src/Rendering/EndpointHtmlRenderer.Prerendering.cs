@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -88,6 +89,8 @@ internal partial class EndpointHtmlRenderer
         ParameterView parameters)
         => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
@@ -129,6 +132,8 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type rootComponentType,
@@ -198,7 +203,8 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException(
                 "A navigation command was attempted during prerendering after the server already started sending the response. " +
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
+                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                navigationException);
         }
         else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location)
             && IsProgressivelyEnhancedNavigation(httpContext.Request))

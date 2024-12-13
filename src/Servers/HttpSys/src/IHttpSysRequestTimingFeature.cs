@@ -12,7 +12,7 @@ public interface IHttpSysRequestTimingFeature
     /// Gets all Http.Sys timing timestamps
     /// </summary>
     /// <remarks>
-    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
+    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
     /// The index of the timing can be cast to <see cref="HttpSysRequestTimingType"/> to know what the timing represents.
     /// The value may be 0 if the timing is not available for the current request.
     /// </remarks>

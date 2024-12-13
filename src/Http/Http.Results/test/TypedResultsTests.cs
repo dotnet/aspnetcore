@@ -1084,6 +1084,30 @@ public partial class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Fact]
+    public void Problem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value") };
+
+        // Act
+        var result = TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
@@ -1170,6 +1194,32 @@ public partial class TypedResultsTests
         var title = "test title";
         var type = "test type";
         var extensions = new Dictionary<string, object>() { { "testExtension", "test value" } };
+
+        // Act
+        var result = TypedResults.ValidationProblem(errors, detail, instance, title, type, extensions);
+
+        // Assert
+        Assert.Equal(errors, result.ProblemDetails.Errors);
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.ProblemDetails.Status);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void ValidationProblem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var errors = new List<KeyValuePair<string, string[]>> { new("testField", new[] { "test error" }) };
+        var detail = "test detail";
+        var instance = "test instance";
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("testField", "test value") };
 
         // Act
         var result = TypedResults.ValidationProblem(errors, detail, instance, title, type, extensions);

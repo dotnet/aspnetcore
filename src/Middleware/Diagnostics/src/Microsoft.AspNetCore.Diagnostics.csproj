@@ -17,6 +17,7 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Reroute.cs" />
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

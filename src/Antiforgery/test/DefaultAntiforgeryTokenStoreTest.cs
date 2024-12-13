@@ -396,7 +396,7 @@ public class DefaultAntiforgeryTokenStoreTest
     [InlineData("/", "/")]
     [InlineData("/vdir1", "/vdir1")]
     [InlineData("/vdir1/vdir2", "/vdir1/vdir2")]
-    public void SaveCookieToken_SetsCookieWithApproriatePathBase(string requestPathBase, string expectedCookiePath)
+    public void SaveCookieToken_SetsCookieWithApproriatePathBase(string? requestPathBase, string expectedCookiePath)
     {
         // Arrange
         var token = "serialized-value";

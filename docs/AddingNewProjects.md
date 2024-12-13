@@ -14,7 +14,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
     - This only lists APIs that have already been shipped to customers and cannot be changed.
     - There is an empty template at `eng/PublicAPI.empty.txt` for your reference. You can copy and rename the file to add it to your project. Make sure the name is exactly as shown above.
   - `PublicAPI.UnShipped.txt`
-    - Lists publicly visible APIs that are exported from your final compiled `.dll`. If this is not configured properly, you will get build errors. VS will warn you though with green squiggly lines. If you see these squiggly lines, open the VS Quick Actions (CTRL + '.') and select the option to and it to the public API.
+    - Lists publicly visible APIs that are exported from your final compiled `.dll`. If this is not configured properly, you will get build errors. VS will warn you though with green squiggly lines. If you see these squiggly lines, open the VS Quick Actions (CTRL + '.') and select the option to add it to the public API.
     - This only lists APIs that have NOT already been shipped to customers. So, these can still change.
     - There is an empty template at `eng/PublicAPI.empty.txt` for your reference. You can copy and rename the file to add it to your project. Make sure the name is exactly as shown above.
   - You can expose internals via `@(InternalsVisibleTo)` items in your `.csproj`.
@@ -47,7 +47,7 @@ while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     ```
 2. Re-run the `eng/scripts/GenerateProjectList.ps1` to add your project to the `eng/SharedFramework.Local.props` file and, if applicable, the `eng/TrimmableProjects.props` file.
-3. Add your project name to the lists in `src\Framework\test\TestData.cs`. This is not strictly necessary for the project to work but there is a test on CI that will fail if this is not done. Make sure to include your project in a way that maintains alphabetical ordering.
+3. Add your project name to the lists in `src\Framework\test\TestData.cs`. This is not strictly necessary for the project to work but there is a test on CI that will fail if this is not done. Make sure to include your project in a way that maintains alphabetical order.
 
 ## Manually saving solution and solution filter files
-VS is pretty good at keeping the files up to date and organized correctly. It will also prompt you if it finds an error and, in most cases, offer a solution to fix the issue. Sometimes just saving the file will trigger VS to resolve any issues automatically. However, if you would like to add a new solution filter file or update one manually you can find a tutorial link [here](https://learn.microsoft.com/en-us/visualstudio/ide/filtered-solutions).
+VS is pretty good at keeping the files up to date and organized correctly. It will also prompt you if it finds an error and, in most cases, offer a solution to fix the issue. Sometimes just saving the file will trigger VS to resolve any issues automatically. However, if you would like to add a new solution filter file or update one manually you can find a tutorial link [here](https://learn.microsoft.com/visualstudio/ide/filtered-solutions).

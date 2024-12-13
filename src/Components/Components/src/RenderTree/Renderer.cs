@@ -142,6 +142,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected internal virtual IComponentRenderMode? GetComponentRenderMode(IComponent component)
         => null;
 
+    internal IComponentRenderMode? GetComponentRenderMode(int componentId)
+        => GetComponentRenderMode(GetRequiredComponentState(componentId).Component);
+
     /// <summary>
     /// Resolves the component state for a given <see cref="IComponent"/> instance.
     /// </summary>
@@ -149,6 +152,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <returns></returns>
     protected internal ComponentState GetComponentState(IComponent component)
         => _componentStateByComponent.GetValueOrDefault(component);
+
+    /// <summary>
+    /// Gets the <see cref="RendererInfo"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual RendererInfo RendererInfo { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual ResourceAssetCollection Assets { get; } = ResourceAssetCollection.Empty;
 
     private async void RenderRootComponentsOnHotReload()
     {

@@ -43,7 +43,6 @@ public abstract class RenderModeEndpointProvider
         {
             builder.Metadata.Add(new RootComponentMetadata(rootComponent));
             builder.Metadata.Add(renderMode);
-
             foreach (var convention in conventions)
             {
                 convention(builder);

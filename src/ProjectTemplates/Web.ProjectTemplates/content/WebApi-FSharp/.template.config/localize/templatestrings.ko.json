@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json의 IIS Express HTTP 엔드포인트에 사용할 포트 번호입니다.",
   "symbols/iisHttpsPort/description": "launchSettings.json의 IIS Express HTTPS 엔드포인트에 사용할 포트 번호입니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다.",
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",

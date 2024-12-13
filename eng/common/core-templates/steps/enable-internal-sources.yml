@@ -1,0 +1,47 @@
+parameters:
+# This is the Azure federated service connection that we log into to get an access token.
+- name: nugetFederatedServiceConnection
+  type: string
+  default: 'dnceng-artifacts-feeds-read'
+- name: is1ESPipeline
+  type: boolean
+  default: false
+# Legacy parameters to allow for PAT usage
+- name: legacyCredential
+  type: string
+  default: ''
+
+steps:
+- ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - ${{ if ne(parameters.legacyCredential, '') }}:
+    - task: PowerShell@2
+      displayName: Setup Internal Feeds
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+        arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+      env:
+        Token: ${{ parameters.legacyCredential }}
+  # If running on dnceng (internal project), just use the default behavior for NuGetAuthenticate.
+  # If running on DevDiv, NuGetAuthenticate is not really an option. It's scoped to a single feed, and we have many feeds that
+  # may be added. Instead, we'll use the traditional approach (add cred to nuget.config), but use an account token.
+  - ${{ else }}:
+    - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      - task: PowerShell@2
+        displayName: Setup Internal Feeds
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config
+    - ${{ else }}:
+      - template: /eng/common/templates/steps/get-federated-access-token.yml
+        parameters:
+          federatedServiceConnection: ${{ parameters.nugetFederatedServiceConnection }}
+          outputVariableName: 'dnceng-artifacts-feeds-read-access-token'
+      - task: PowerShell@2
+        displayName: Setup Internal Feeds
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $(dnceng-artifacts-feeds-read-access-token)
+  # This is required in certain scenarios to install the ADO credential provider.
+  # It installed by default in some msbuild invocations (e.g. VS msbuild), but needs to be installed for others
+  # (e.g. dotnet msbuild).
+  - task: NuGetAuthenticate@1

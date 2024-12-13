@@ -11,8 +11,15 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
+/// <remarks>
+/// Normally, we avoid the use of <see cref="X509Certificate2.Thumbprint"/> because it's a SHA-1 hash and, therefore,
+/// not adequate for security applications.  However, the MacOS security tool uses SHA-1 hashes for certificate
+/// identification, so we're stuck.
+/// </remarks>
 internal sealed class MacOSCertificateManager : CertificateManager
 {
+    private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     // User keychain. Guard with quotes when using in command lines since users may have set
     // their user profile (HOME) directory to a non-standard path that includes whitespace.
     private static readonly string MacOSUserKeychain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
@@ -64,12 +71,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         "To fix this issue, run 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' " +
         "to remove all existing ASP.NET Core development certificates " +
         "and create a new untrusted developer certificate. " +
-        "On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.";
-
-    public const string KeyNotAccessibleWithoutUserInteraction =
-        "The application is trying to access the ASP.NET Core developer certificate key. " +
-        "A prompt might appear to ask for permission to access the key. " +
-        "When that happens, select 'Always Allow' to grant 'dotnet' access to the certificate key in the future.";
+        "Use 'dotnet dev-certs https --trust' to trust the new certificate.";
 
     public MacOSCertificateManager()
     {
@@ -80,17 +82,20 @@ internal sealed class MacOSCertificateManager : CertificateManager
     {
     }
 
-    protected override void TrustCertificateCore(X509Certificate2 publicCertificate)
+    protected override TrustLevel TrustCertificateCore(X509Certificate2 publicCertificate)
     {
-        if (IsTrusted(publicCertificate))
+        var oldTrustLevel = GetTrustLevel(publicCertificate);
+        if (oldTrustLevel != TrustLevel.None)
         {
+            Debug.Assert(oldTrustLevel == TrustLevel.Full); // Mac trust is all or nothing
             Log.MacOSCertificateAlreadyTrusted();
-            return;
+            return oldTrustLevel;
         }
 
         var tmpFile = Path.GetTempFileName();
         try
         {
+            // We can't guarantee that the temp file is in a directory with sensible permissions, but we're not exporting the private key
             ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
             if (Log.IsEnabled())
             {
@@ -106,6 +111,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 }
             }
             Log.MacOSTrustCommandEnd();
+            return TrustLevel.Full;
         }
         finally
         {
@@ -120,7 +126,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate)
     {
         return File.Exists(GetCertificateFilePath(candidate)) ?
             new CheckCertificateStateResult(true, null) :
@@ -131,9 +137,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     {
         try
         {
-            // Ensure that the directory exists before writing to the file.
-            Directory.CreateDirectory(MacOSUserHttpsCertificateLocation);
-
+            // This path is in a well-known folder, so we trust the permissions.
             var certificatePath = GetCertificateFilePath(candidate);
             ExportCertificate(candidate, certificatePath, includePrivateKey: true, null, CertificateKeyExportFormat.Pfx);
         }
@@ -144,11 +148,12 @@ internal sealed class MacOSCertificateManager : CertificateManager
     }
 
     // Use verify-cert to verify the certificate for the SSL and X.509 Basic Policy.
-    public override bool IsTrusted(X509Certificate2 certificate)
+    public override TrustLevel GetTrustLevel(X509Certificate2 certificate)
     {
         var tmpFile = Path.GetTempFileName();
         try
         {
+            // We can't guarantee that the temp file is in a directory with sensible permissions, but we're not exporting the private key
             ExportCertificate(certificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
 
             using var checkTrustProcess = Process.Start(new ProcessStartInfo(
@@ -161,7 +166,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 RedirectStandardError = true,
             });
             checkTrustProcess!.WaitForExit();
-            return checkTrustProcess.ExitCode == 0;
+            return checkTrustProcess.ExitCode == 0 ? TrustLevel.Full : TrustLevel.None;
         }
         finally
         {
@@ -313,7 +318,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             }
 
             // Ensure that the directory exists before writing to the file.
-            Directory.CreateDirectory(MacOSUserHttpsCertificateLocation);
+            CreateDirectoryWithPermissions(MacOSUserHttpsCertificateLocation);
 
             File.WriteAllBytes(GetCertificateFilePath(certificate), certBytes);
         }
@@ -470,5 +475,23 @@ internal sealed class MacOSCertificateManager : CertificateManager
         {
             RemoveCertificateFromKeychain(MacOSUserKeychain, certificate);
         }
+    }
+
+    protected override void CreateDirectoryWithPermissions(string directoryPath)
+    {
+#pragma warning disable CA1416 // Validate platform compatibility (not supported on Windows)
+        var dirInfo = new DirectoryInfo(directoryPath);
+        if (dirInfo.Exists)
+        {
+            if ((dirInfo.UnixFileMode & ~DirectoryPermissions) != 0)
+            {
+                Log.DirectoryPermissionsNotSecure(dirInfo.FullName);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(directoryPath, DirectoryPermissions);
+        }
+#pragma warning restore CA1416 // Validate platform compatibility
     }
 }

@@ -29,7 +29,7 @@ public:
         PCSTR
         GetTrailer(
             _In_  PCSTR    pszHeaderName,
-            _Out_ USHORT* pcchHeaderValue = NULL
+            _Out_ USHORT* pcchHeaderValue = nullptr
         ) const = 0;
 
     virtual
@@ -70,7 +70,7 @@ register_callbacks(
     _In_ VOID* pvShutdownHandlerContext
 )
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -114,8 +114,10 @@ http_get_server_variable(
     _Out_ BSTR* pwszReturn
 )
 {
-    PCWSTR pszVariableValue;
-    DWORD cbLength;
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
+
+    *pwszReturn = nullptr;
 
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()
@@ -128,7 +130,7 @@ http_get_server_variable(
 
     *pwszReturn = SysAllocString(pszVariableValue);
 
-    if (*pwszReturn == NULL)
+    if (*pwszReturn == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -245,7 +247,7 @@ http_get_application_properties(
 )
 {
     auto pInProcessApplication = IN_PROCESS_APPLICATION::GetInstance();
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_FAIL;
     }
@@ -276,8 +278,9 @@ http_read_request_bytes(
 )
 {
     HRESULT hr = S_OK;
+    *pvBuffer = 0;
 
-    if (pInProcessHandler == NULL)
+    if (pInProcessHandler == nullptr)
     {
         return E_FAIL;
     }
@@ -522,7 +525,7 @@ EXTERN_C __declspec(dllexport)
 HRESULT
 http_stop_calls_into_managed(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -535,7 +538,7 @@ EXTERN_C __declspec(dllexport)
 HRESULT
 http_stop_incoming_requests(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }

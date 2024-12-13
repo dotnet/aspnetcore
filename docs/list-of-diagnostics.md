@@ -30,6 +30,10 @@
 |  __`ASP0022`__ | Route conflict detected between route handlers |
 |  __`ASP0023`__ | Route conflict detected between controller actions |
 |  __`ASP0024`__ | Route handler has multiple parameters with the [FromBody] attribute |
+|  __`ASP0025`__ | Use AddAuthorizationBuilder |
+|  __`ASP0026`__ | [Authorize] overridden by [AllowAnonymous] from farther away |
+|  __`ASP0027`__ | Unnecessary public Program class declaration |
+|  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 
 ### API (`API1000-API1003`)
 

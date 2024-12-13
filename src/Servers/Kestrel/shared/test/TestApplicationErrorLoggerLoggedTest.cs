@@ -34,7 +34,7 @@ public class TestApplicationErrorLoggerLoggedTest : LoggedTest
     public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
         => TestApplicationErrorLogger.WaitForMessage(messageFilter);
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 

@@ -29,22 +29,23 @@ internal sealed class HostingMetrics : IDisposable
         _requestDuration = _meter.CreateHistogram<double>(
             "http.server.request.duration",
             unit: "s",
-            description: "Duration of HTTP server requests.");
+            description: "Duration of HTTP server requests.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
     }
 
     // Note: Calling code checks whether counter is enabled.
-    public void RequestStart(bool isHttps, string scheme, string method, HostString host)
+    public void RequestStart(string scheme, string method)
     {
         // Tags must match request end.
         var tags = new TagList();
-        InitializeRequestTags(ref tags, isHttps, scheme, method, host);
+        InitializeRequestTags(ref tags, scheme, method);
         _activeRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, string scheme, string method, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp, bool disableHttpRequestDurationMetric)
     {
         var tags = new TagList();
-        InitializeRequestTags(ref tags, isHttps, scheme, method, host);
+        InitializeRequestTags(ref tags, scheme, method);
 
         // Tags must match request start.
         if (_activeRequestsCounter.Enabled)
@@ -52,7 +53,7 @@ internal sealed class HostingMetrics : IDisposable
             _activeRequestsCounter.Add(-1, tags);
         }
 
-        if (_requestDuration.Enabled)
+        if (!disableHttpRequestDurationMetric && _requestDuration.Enabled)
         {
             if (TryGetHttpVersion(protocol, out var httpVersion))
             {
@@ -69,18 +70,23 @@ internal sealed class HostingMetrics : IDisposable
             {
                 tags.Add("http.route", route);
             }
-            // This exception is only present if there is an unhandled exception.
-            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
-            if (exception != null)
-            {
-                tags.Add("error.type", exception.GetType().FullName);
-            }
+
+            // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
             if (customTags != null)
             {
                 for (var i = 0; i < customTags.Count; i++)
                 {
                     tags.Add(customTags[i]);
                 }
+            }
+
+            // This exception is only present if there is an unhandled exception.
+            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
+            if (exception != null)
+            {
+                // Exception tag could have been added by middleware. If an exception is later thrown in request pipeline
+                // then we don't want to add a duplicate tag here because that breaks some metrics systems.
+                tags.TryAddTag("error.type", exception.GetType().FullName);
             }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -95,30 +101,10 @@ internal sealed class HostingMetrics : IDisposable
 
     public bool IsEnabled() => _activeRequestsCounter.Enabled || _requestDuration.Enabled;
 
-    private static void InitializeRequestTags(ref TagList tags, bool isHttps, string scheme, string method, HostString host)
+    private static void InitializeRequestTags(ref TagList tags, string scheme, string method)
     {
         tags.Add("url.scheme", scheme);
         tags.Add("http.request.method", ResolveHttpMethod(method));
-
-        _ = isHttps;
-        _ = host;
-        // TODO: Support configuration for enabling host header annotations
-        /*
-        if (host.HasValue)
-        {
-            tags.Add("server.address", host.Host);
-
-            // Port is parsed each time it's accessed. Store part in local variable.
-            if (host.Port is { } port)
-            {
-                // Add port tag when not the default value for the current scheme
-                if ((isHttps && port != 443) || (!isHttps && port != 80))
-                {
-                    tags.Add("server.port", port);
-                }
-            }
-        }
-        */
     }
 
     private static readonly object[] BoxedStatusCodes = new object[512];

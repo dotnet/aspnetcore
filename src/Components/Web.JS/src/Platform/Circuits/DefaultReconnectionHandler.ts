@@ -27,8 +27,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-        ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
-        : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
+        ? new UserSpecifiedDisplay(modal, document, options.maxRetries)
+        : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -63,13 +63,23 @@ class ReconnectionProcess {
   }
 
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
-    for (let i = 0; i < options.maxRetries; i++) {
-      this.reconnectDisplay.update(i + 1);
+    for (let i = 0; options.maxRetries === undefined || i < options.maxRetries; i++) {
+      let retryInterval: number;
+      if (typeof(options.retryIntervalMilliseconds) === 'function') {
+        const computedRetryInterval = options.retryIntervalMilliseconds(i);
+        if (computedRetryInterval === null || computedRetryInterval === undefined) {
+          break;
+        }
+        retryInterval = computedRetryInterval;
+      } else {
+        retryInterval = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+          ? ReconnectionProcess.MaximumFirstRetryInterval
+          : options.retryIntervalMilliseconds;
+      }
 
-      const delayDuration = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-        ? ReconnectionProcess.MaximumFirstRetryInterval
-        : options.retryIntervalMilliseconds;
-      await this.delay(delayDuration);
+      await this.runTimer(retryInterval, /* intervalMs */ 1000, remainingMs => {
+        this.reconnectDisplay.update(i + 1, Math.round(remainingMs / 1000));
+      });
 
       if (this.isDisposed) {
         break;
@@ -96,7 +106,62 @@ class ReconnectionProcess {
     this.reconnectDisplay.failed();
   }
 
-  delay(durationMilliseconds: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, durationMilliseconds));
+  private async runTimer(totalTimeMs: number, intervalMs: number, callback: (remainingMs: number) => void): Promise<void> {
+    if (totalTimeMs <= 0) {
+      callback(0);
+      return;
+    }
+
+    let lastTime = Date.now();
+    let timeoutId: unknown;
+    let resolveTimerPromise: () => void;
+
+    callback(totalTimeMs);
+
+    const step = () => {
+      if (this.isDisposed) {
+        // Stop invoking the callback after disposal.
+        resolveTimerPromise();
+        return;
+      }
+
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      // Get the number of steps that should have passed have since the last
+      // call to "step". We expect this to be 1 in most cases, but it may
+      // be higher if something causes the timeout to get significantly
+      // delayed (e.g., the browser sleeps the tab).
+      const simulatedSteps = Math.max(1, Math.floor(deltaTime / intervalMs));
+      const simulatedTime = intervalMs * simulatedSteps;
+
+      totalTimeMs -= simulatedTime;
+      if (totalTimeMs < Number.EPSILON) {
+        callback(0);
+        resolveTimerPromise();
+        return;
+      }
+
+      const nextTimeout = Math.min(totalTimeMs, intervalMs - (deltaTime - simulatedTime));
+      callback(totalTimeMs);
+      timeoutId = setTimeout(step, nextTimeout);
+    };
+
+    const stepIfDocumentIsVisible = () => {
+      // If the document becomes visible while the timeout is running, immediately
+      // invoke the callback.
+      if (document.visibilityState === 'visible') {
+        clearTimeout(timeoutId as number);
+        callback(0);
+        resolveTimerPromise();
+      }
+    };
+
+    timeoutId = setTimeout(step, intervalMs);
+
+    document.addEventListener('visibilitychange', stepIfDocumentIsVisible);
+    await new Promise<void>(resolve => resolveTimerPromise = resolve);
+    document.removeEventListener('visibilitychange', stepIfDocumentIsVisible);
   }
 }

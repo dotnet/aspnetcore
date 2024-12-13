@@ -22,4 +22,12 @@
     <ProjectReference Include="..\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)\src\Shared\HashCode.cs" />
+  </ItemGroup>
+
 </Project>

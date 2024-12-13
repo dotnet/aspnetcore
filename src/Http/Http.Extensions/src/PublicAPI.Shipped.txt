@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute
+Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.DisableHttpMetricsAttribute() -> void
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.Description.get -> string!
 Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.EndpointDescriptionAttribute(string! description) -> void
@@ -107,6 +110,7 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Coll
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.Json.JsonOptions
 Microsoft.AspNetCore.Http.Json.JsonOptions.JsonOptions() -> void
 Microsoft.AspNetCore.Http.Json.JsonOptions.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
@@ -153,12 +157,14 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, containe
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
+override Microsoft.AspNetCore.Http.DisableHttpMetricsAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Http.EndpointSummaryAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string!
 override Microsoft.AspNetCore.Http.TagsAttribute.ToString() -> string!
+static Microsoft.AspNetCore.Builder.HttpMetricsEndpointConventionBuilderExtensions.DisableHttpMetrics<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
 static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!

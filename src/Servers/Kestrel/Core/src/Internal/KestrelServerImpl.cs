@@ -54,8 +54,8 @@ internal sealed class KestrelServerImpl : IServer
     {
         ArgumentNullException.ThrowIfNull(transportFactories);
 
-        _transportFactories = transportFactories.Reverse().ToList();
-        _multiplexedTransportFactories = multiplexedFactories.Reverse().ToList();
+        _transportFactories = Enumerable.Reverse(transportFactories).ToList();
+        _multiplexedTransportFactories = Enumerable.Reverse(multiplexedFactories).ToList();
         _httpsConfigurationService = httpsConfigurationService;
 
         if (_transportFactories.Count == 0 && _multiplexedTransportFactories.Count == 0)

@@ -35,10 +35,27 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.Temporar
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!
+Microsoft.AspNetCore.Components.ImportMap
+Microsoft.AspNetCore.Components.ImportMap.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.ImportMap.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.ImportMap.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
+Microsoft.AspNetCore.Components.ImportMap.HttpContext.set -> void
+Microsoft.AspNetCore.Components.ImportMap.ImportMap() -> void
+Microsoft.AspNetCore.Components.ImportMap.ImportMapDefinition.get -> Microsoft.AspNetCore.Components.ImportMapDefinition?
+Microsoft.AspNetCore.Components.ImportMap.ImportMapDefinition.set -> void
+Microsoft.AspNetCore.Components.ImportMapDefinition
+Microsoft.AspNetCore.Components.ImportMapDefinition.ImportMapDefinition(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? imports, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyDictionary<string!, string!>!>? scopes, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? integrity) -> void
+Microsoft.AspNetCore.Components.ImportMapDefinition.Imports.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.ImportMapDefinition.Integrity.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.ImportMapDefinition.Scopes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyDictionary<string!, string!>!>?
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.ComponentType.get -> System.Type!
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.ContentType.get -> string?
@@ -59,7 +76,14 @@ Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>.RazorComp
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
+override Microsoft.AspNetCore.Components.ImportMapDefinition.ToString() -> string!
+override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.AddAdditionalAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.WithStaticAssets(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, string? manifestPath = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents<TRootComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpointConventionBuilderHelper.AddRenderMode(Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
+static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Routing.IEndpointRouteBuilder!
+static Microsoft.AspNetCore.Components.ImportMapDefinition.Combine(params Microsoft.AspNetCore.Components.ImportMapDefinition![]! sources) -> Microsoft.AspNetCore.Components.ImportMapDefinition!
+static Microsoft.AspNetCore.Components.ImportMapDefinition.FromResourceCollection(Microsoft.AspNetCore.Components.ResourceAssetCollection! assets) -> Microsoft.AspNetCore.Components.ImportMapDefinition!
+static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AcceptsInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext! context) -> bool
 static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

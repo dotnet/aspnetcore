@@ -3,7 +3,7 @@
   "name": "ASP.NET Core gRPC Hizmeti",
   "description": "Yerel AOT olarak yayımlamak için isteğe bağlı destek ile ASP.NET Core kullanarak gRPC hizmeti oluşturmaya yönelik proje şablonu.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/kestrelHttpPort/description": "launchSettings.json içinde HTTP uç noktası için kullanılacak bağlantı noktası numarası.",

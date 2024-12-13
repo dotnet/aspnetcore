@@ -21,10 +21,12 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" LinkBase="Shared\RequestProcessing\" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" Link="Shared\Obsoletions.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
@@ -62,7 +64,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </Reference>
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />

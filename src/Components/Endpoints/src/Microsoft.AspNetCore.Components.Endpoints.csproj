@@ -8,17 +8,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <IsPackable>false</IsPackable>
-    <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
   </PropertyGroup>
-
-  <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
-  <PropertyGroup>
-    <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
-  </PropertyGroup>
-
-  <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
     <EmbeddedResource Update="FormMapping\FormDataResources.resx" ExcludeFromManifest="true" />
@@ -30,11 +22,13 @@
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ResourceCollectionResolver.cs" LinkBase="Assets" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 
@@ -54,23 +48,8 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
   </ItemGroup>
-
-  <Target Name="_AddEmbeddedBlazorWebJS" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
-    <PropertyGroup>
-      <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
-      <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
-      <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
-    </PropertyGroup>
-
-    <Warning Condition="!Exists('$(BlazorWebJSFile)')" Text="'$(BlazorWebJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
-
-    <ItemGroup>
-      <EmbeddedResource Include="$(BlazorWebJSFile)" LogicalName="_framework/$(BlazorWebJSFilename)" />
-      <EmbeddedResource Include="$(BlazorWebJSFile).map" LogicalName="_framework/$(BlazorWebJSFilename).map" Condition="Exists('$(BlazorWebJSFile).map')" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks" />

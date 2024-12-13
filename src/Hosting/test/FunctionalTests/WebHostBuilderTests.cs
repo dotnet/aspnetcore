@@ -44,11 +44,11 @@ public class WebHostBuilderTests : LoggedTest
                     if (!string.IsNullOrWhiteSpace(data))
                     {
                         output += data + '\n';
-                        tcs.TrySetResult();
                     }
                 };
 
-                await deployer.DeployAsync();
+                var deploymentResult = await deployer.DeployAsync();
+                deploymentResult.HostShutdownToken.Register(tcs.SetResult);
 
                 try
                 {

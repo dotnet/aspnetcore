@@ -298,7 +298,7 @@ public readonly struct HostString : IEquatable<HostString>
         {
             return !HasValue;
         }
-        return obj is HostString && Equals((HostString)obj);
+        return obj is HostString value && Equals(value);
     }
 
     /// <summary>

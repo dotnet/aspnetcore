@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
@@ -17,6 +18,26 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class WebAssemblyAuthenticationServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds an <see cref="AuthenticationStateProvider"/> where the <see cref="AuthenticationState"/> is deserialized from the server
+    /// using <see cref="AuthenticationStateData"/> and <see cref="PersistentComponentState"/>. There should be a corresponding call to
+    /// AddAuthenticationStateSerialization from the Microsoft.AspNetCore.Components.WebAssembly.Server package in the server project.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="configure">An action that will configure the <see cref="AuthenticationStateDeserializationOptions"/>.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddAuthenticationStateDeserialization(this IServiceCollection services, Action<AuthenticationStateDeserializationOptions>? configure = null)
+    {
+        services.AddOptions();
+        services.TryAddScoped<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
+
+        return services;
+    }
+
     /// <summary>
     /// Adds support for authentication for SPA applications using the given <typeparamref name="TProviderOptions"/> and
     /// <typeparamref name="TRemoteAuthenticationState"/>.

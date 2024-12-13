@@ -29,17 +29,10 @@
       $(DefaultNetCoreTargetFramework), add previous SiteExtension packages to the list below. Remove
       entries when packages aren't needed in the bundle anymore.
       -->
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x64" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x86" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" PrivateAssets="All" />
     <!--
       Bundle the just-built LB.csproj package content into this one the easy way. See
       UpdateLatestPackageReferences for the hard way.

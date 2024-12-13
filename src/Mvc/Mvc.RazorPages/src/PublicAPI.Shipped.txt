@@ -15,6 +15,7 @@ const Microsoft.AspNetCore.Mvc.Diagnostics.BeforePageFilterOnPageHandlerSelectio
 Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
+Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilderResourceCollectionExtensions
 Microsoft.AspNetCore.Builder.RazorPagesEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Mvc.ApplicationModels.IPageApplicationModelConvention
 Microsoft.AspNetCore.Mvc.ApplicationModels.IPageApplicationModelConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel! model) -> void
@@ -393,6 +394,7 @@ override Microsoft.AspNetCore.Mvc.RazorPages.PageBase.EnsureRenderedBodyOrSectio
 override Microsoft.AspNetCore.Mvc.RazorPages.PageBase.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext!
 override Microsoft.AspNetCore.Mvc.RazorPages.PageBase.ViewContext.set -> void
 override Microsoft.AspNetCore.Mvc.RazorPages.PageResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets(this Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder! builder, string? manifestPath = null) -> Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RazorPagesEndpointRouteBuilderExtensions.MapDynamicPageRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern) -> void
 static Microsoft.AspNetCore.Builder.RazorPagesEndpointRouteBuilderExtensions.MapDynamicPageRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, object! state, int order) -> void
 static Microsoft.AspNetCore.Builder.RazorPagesEndpointRouteBuilderExtensions.MapDynamicPageRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, object? state) -> void

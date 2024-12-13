@@ -58,7 +58,7 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
             NoDelay = _options.NoDelay
         };
 
-        await socket.ConnectAsync(ipEndPoint);
+        await socket.ConnectAsync(ipEndPoint, cancellationToken);
 
         var socketConnection = new SocketConnection(
             socket,

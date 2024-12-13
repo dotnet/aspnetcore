@@ -3,7 +3,7 @@
   "name": "Библиотека классов Razor",
   "description": "Проект для создания библиотеки классов Razor, предназначенной для .NET",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/SupportPagesAndViews/displayName": "Поддержка страниц и представлений",
   "symbols/SupportPagesAndViews/description": "Следует ли поддерживать добавление традиционных страниц и представлений Razor в эту библиотеку.",

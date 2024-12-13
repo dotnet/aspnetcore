@@ -16,6 +16,18 @@ using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// A poolable HTTP/2 stream.
+/// </summary>
+/// <remarks>
+/// In practice, the product code uses <see cref="Http2Stream{TContext}"/>. This appears to be
+/// a simplified version omitting <see cref="Hosting.Server.IHttpApplication{TContext}"/> that
+/// the tests can subtype for mocking.
+/// <para/>
+/// Reusable after calling <see cref="Initialize"/> or <see cref="InitializeWithExistingContext"/>.
+/// <para/>
+/// Indirectly owned, via <see cref="PooledStreamStack{TValue}"/>, by an <see cref="Http2Connection"/>.
+/// </remarks>
 internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable, IPooledStream
 {
     private Http2StreamContext _context = default!;
@@ -32,7 +44,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     internal long DrainExpirationTimestamp { get; set; }
 
     private StreamCompletionFlags _completionState;
-    private readonly object _completionLock = new object();
+    private readonly Lock _completionLock = new();
 
     public void Initialize(Http2StreamContext context)
     {
@@ -435,7 +447,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 pathBuffer[i] = (byte)ch;
             }
 
-            Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
+            Path = PathDecoder.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
 
             return true;
         }

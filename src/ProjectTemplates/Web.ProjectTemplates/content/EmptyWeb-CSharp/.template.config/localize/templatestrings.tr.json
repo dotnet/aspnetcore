@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/iisHttpsPort/description": "launchSettings.json içinde IIS Express HTTPS uç noktası için kullanılacak bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir (IndividualAuth veya OrganizationalAuth kullanılırsa no-https yoksayılır).",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca Bireysel, IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",

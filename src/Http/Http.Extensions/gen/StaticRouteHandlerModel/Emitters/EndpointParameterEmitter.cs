@@ -89,13 +89,26 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitParsingBlock(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
+        // parsable array
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
         {
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
+            var createArray = $"new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length]";
+
+            // we assign a null to result parameter if it's optional array, otherwise we create new array immediately
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = {createArray};");
+
             codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
-            endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+
+            // emit parsing block for current array element
+            codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation("element", "parsed_element")}})""");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (!string.IsNullOrEmpty(element))");
+            codeWriter.StartBlock();
+            EmitLogOrThrowException(endpointParameter, codeWriter, "element");
+            codeWriter.EndBlock();
+            codeWriter.EndBlock();
 
             // In cases where we are dealing with an array of parsable nullables we need to substitute
             // empty strings for null values.
@@ -109,18 +122,68 @@ internal static class EndpointParameterEmitter
             }
             codeWriter.EndBlock();
         }
-        else if (endpointParameter.IsArray && !endpointParameter.IsParsable)
+        // array fallback
+        else if (endpointParameter.IsArray)
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
-        else if (!endpointParameter.IsArray && endpointParameter.IsParsable)
+        // parsable single
+        else if (endpointParameter.IsParsable)
         {
-            endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
+            var temp_argument = endpointParameter.EmitTempArgument();
+            var output_argument = endpointParameter.EmitParsedTempArgument();
+
+            // emit parsing block for optional OR nullable values
+            if (endpointParameter.IsOptional || endpointParameter.Type.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                var temp_argument_parsed_non_nullable = $"{temp_argument}_parsed_non_nullable";
+
+                codeWriter.WriteLine($"""{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
+                codeWriter.WriteLine($"""if ({endpointParameter.PreferredTryParseInvocation(temp_argument, temp_argument_parsed_non_nullable)})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {temp_argument_parsed_non_nullable};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine($"""else if (string.IsNullOrEmpty({temp_argument}))""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {endpointParameter.DefaultValue};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine("else");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("wasParamCheckFailure = true;");
+                codeWriter.EndBlock();
+            }
+            // parsing block for non-nullable required parameters
+            else
+            {
+                codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation(temp_argument, output_argument)}})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"if (!string.IsNullOrEmpty({temp_argument}))");
+                codeWriter.StartBlock();
+                EmitLogOrThrowException(endpointParameter, codeWriter, temp_argument);
+                codeWriter.EndBlock();
+                codeWriter.EndBlock();
+            }
+
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
-        else // Not parsable, not an array.
+        // Not parsable, not an array.
+        else
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
+        }
+
+        static void EmitLogOrThrowException(EndpointParameter parameter, CodeWriter writer, string inputArgument)
+        {
+            if (parameter.IsArray && parameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(parameter.ToMessageString(), true)});");
+            }
+            else
+            {
+                writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {inputArgument});");
+                writer.WriteLine("wasParamCheckFailure = true;");
+            }
         }
     }
 
@@ -326,8 +389,8 @@ internal static class EndpointParameterEmitter
         // Unlike other scenarios, this will result in an exception being thrown
         // at runtime.
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
-            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
+            $"httpContext.RequestServices.GetService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>();" :
+            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>()";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
@@ -341,8 +404,8 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
 
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :
-            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey})";
+            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey});" :
+            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey})";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 

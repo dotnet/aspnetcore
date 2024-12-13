@@ -177,7 +177,7 @@ Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.get -> Sys
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.set -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Properties.set -> void
-Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.ResultContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options) -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Success() -> void
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>

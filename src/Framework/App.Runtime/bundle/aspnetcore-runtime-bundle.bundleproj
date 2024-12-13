@@ -1,0 +1,48 @@
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- We aren't producing a NuGet package here, so disable package validation -->
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <IsPackable>false</IsPackable>
+    <BundleInstallerUpgradeCodeSeed>ASP.NET Core Shared Framework Bundle Installer</BundleInstallerUpgradeCodeSeed>
+    <BundleThemeDirectory>$(MSBuildProjectDirectory)</BundleThemeDirectory>
+    <InstallerName>aspnetcore-runtime</InstallerName>
+    <InstallerRuntimeIdentifiers>win-x86;win-x64;win-arm64</InstallerRuntimeIdentifiers>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <BundleNameSuffix>Runtime</BundleNameSuffix>
+
+    <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
+    <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
+
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <WixBootstrapperFlavor>HyperlinkLicense</WixBootstrapperFlavor>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BundleComponentReference Include="$(RepoRoot)/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
+
+  <PropertyGroup>
+    <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
+    <BundleNameSub>Shared Framework</BundleNameSub>
+    <BundleName>$(BundleNameShort) - $(BundleNameSub) ($(TargetArchitecture))</BundleName>
+    <BundleNameFull>$(BundleName)</BundleNameFull>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixThemeVariable Include="BundleNameShort" Value="$(BundleNameShort)" />
+    <WixThemeVariable Include="BundleNameSub" Value="$(BundleNameSub)" />
+    <WixThemeVariable Include="BundleName" Value="$(BundleName)" />
+    <WixThemeVariable Include="BundleNameFull" Value="$(BundleNameFull)" />
+  </ItemGroup>
+</Project>

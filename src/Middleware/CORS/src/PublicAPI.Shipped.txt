@@ -175,6 +175,8 @@ static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AccessCon
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AccessControlMaxAge -> string!
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AccessControlRequestHeaders -> string!
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AccessControlRequestMethod -> string!
+static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AnyHeader -> string!
+static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AnyMethod -> string!
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.AnyOrigin -> string!
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.Origin -> string!
 static readonly Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants.PreflightHttpMethod -> string!

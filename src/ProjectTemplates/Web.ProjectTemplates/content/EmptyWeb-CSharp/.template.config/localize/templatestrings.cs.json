@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",
   "symbols/iisHttpsPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTPS v souboru launchSettings.json. Tato možnost se dá použít jenom v případě, že se nepoužije parametr no-https (no-https se bude ignorovat, pokud se použije IndividualAuth nebo OrganizationalAuth).",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/NoHttps/description": "Určuje, jestli se má protokol HTTPS vypnout. Tato možnost platí jenom v případě, že se pro --auth nepoužívají Individual, IndividualB2C, SingleOrg ani MultiOrg.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",

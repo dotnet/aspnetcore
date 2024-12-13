@@ -1,0 +1,158 @@
+parameters:
+  configuration: 'Debug'
+
+  # Optional: condition for the job to run
+  condition: ''
+
+  # Optional: 'true' if future jobs should run even if this job fails
+  continueOnError: false
+
+  # Optional: dependencies of the job
+  dependsOn: ''
+
+  # Optional: Include PublishBuildArtifacts task
+  enablePublishBuildArtifacts: false
+
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  pool: {}
+
+  # Optional: should run as a public build even in the internal project
+  #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
+  runAsPublic: false
+
+  # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
+  publishUsingPipelines: false
+
+  # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
+  publishAssetsImmediately: false
+
+  artifactsPublishingAdditionalParameters: ''
+
+  signingValidationAdditionalParameters: ''
+
+  is1ESPipeline: ''
+
+jobs:
+- job: Asset_Registry_Publish
+
+  dependsOn: ${{ parameters.dependsOn }}
+  timeoutInMinutes: 150
+
+  ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+    displayName: Publish Assets
+  ${{ else }}:
+    displayName: Publish to Build Asset Registry
+
+  variables:
+  - template: /eng/common/core-templates/variables/pool-providers.yml
+    parameters:
+      is1ESPipeline: ${{ parameters.is1ESPipeline }}
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: Publish-Build-Assets
+    - group: AzureDevOps-Artifact-Feeds-Pats
+    - name: runCodesignValidationInjection
+      value: false
+    # unconditional - needed for logs publishing (redactor tool version)
+    - template: /eng/common/core-templates/post-build/common-variables.yml
+
+  pool:
+    # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+    ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      demands: Cmd
+      os: windows
+    # If it's not devdiv, it's dnceng
+    ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+      name: NetCore1ESPool-Publishing-Internal
+      image: windows.vs2019.amd64
+      os: windows
+  steps:
+  - ${{ if eq(parameters.is1ESPipeline, '') }}:
+    - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - checkout: self
+      fetchDepth: 3
+      clean: true
+      
+    - task: DownloadBuildArtifacts@0
+      displayName: Download artifact
+      inputs:
+        artifactName: AssetManifests
+        downloadPath: '$(Build.StagingDirectory)/Download'
+        checkDownloadedFiles: true
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
+    
+    - task: NuGetAuthenticate@1
+
+    - task: AzureCLI@2
+      displayName: Publish Build Assets
+      inputs:
+        azureSubscription: "Darc: Maestro Production"
+        scriptType: ps
+        scriptLocation: scriptPath
+        scriptPath: $(Build.SourcesDirectory)/eng/common/sdk-task.ps1
+        arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+          /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
+          /p:MaestroApiEndpoint=https://maestro.dot.net
+          /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
+          /p:OfficialBuildId=$(Build.BuildNumber)
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
+    
+    - task: powershell@2
+      displayName: Create ReleaseConfigs Artifact
+      inputs:
+        targetType: inline
+        script: |
+          New-Item -Path "$(Build.StagingDirectory)/ReleaseConfigs" -ItemType Directory -Force
+          $filePath = "$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt"
+          Add-Content -Path $filePath -Value $(BARBuildId)
+          Add-Content -Path $filePath -Value "$(DefaultChannels)"
+          Add-Content -Path $filePath -Value $(IsStableBuild)
+
+          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
+          if (Test-Path -Path $symbolExclusionfile)
+          {
+            Write-Host "SymbolExclusionFile exists"
+            Copy-Item -Path $symbolExclusionfile -Destination "$(Build.StagingDirectory)/ReleaseConfigs"
+          }
+
+    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        args:
+          displayName: Publish ReleaseConfigs Artifact
+          pathToPublish: '$(Build.StagingDirectory)/ReleaseConfigs'
+          publishLocation: Container
+          artifactName: ReleaseConfigs
+
+    - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+      - template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
+        parameters:
+          BARBuildId: ${{ parameters.BARBuildId }}
+          PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+
+      - task: AzureCLI@2
+        displayName: Publish Using Darc
+        inputs:
+          azureSubscription: "Darc: Maestro Production"
+          scriptType: ps
+          scriptLocation: scriptPath
+          scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          arguments: >
+            -BuildId $(BARBuildId)
+            -PublishingInfraVersion 3
+            -AzdoToken '$(System.AccessToken)'
+            -WaitPublishingFinish true
+            -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
+            -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
+
+    - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
+      - template: /eng/common/core-templates/steps/publish-logs.yml
+        parameters:
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          JobLabel: 'Publish_Artifacts_Logs'     

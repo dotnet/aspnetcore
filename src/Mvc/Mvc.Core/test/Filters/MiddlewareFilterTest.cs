@@ -379,7 +379,7 @@ public class MiddlewareFilterTest
         {
             if (CreateCalled && !ReleaseCalled)
             {
-                Assert.False(true, "ReleaseController should have been called.");
+                Assert.Fail("ReleaseController should have been called.");
             }
         }
     }

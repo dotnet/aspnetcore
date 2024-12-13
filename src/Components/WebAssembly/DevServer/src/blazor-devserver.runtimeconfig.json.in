@@ -1,9 +1,9 @@
 {
   "runtimeOptions": {
-    "tfm": "net9.0",
+    "tfm": "net10.0",
     "framework": {
       "name": "Microsoft.AspNetCore.App",
-      "version": "${SharedFxVersion}"
+      "version": "${FrameworkVersion}"
     },
     "rollForwardOnNoCandidateFx": 2
   }

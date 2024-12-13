@@ -73,10 +73,10 @@ public:
         PCSTR             pszName
     )
     {
-        HEADER_RECORD *       pRecord = NULL;
+        HEADER_RECORD* pRecord = nullptr;
 
         FindKey(pszName, &pRecord);
-        if (pRecord != NULL)
+        if (pRecord != nullptr)
         {
             return pRecord->_ulHeaderIndex;
         }
@@ -96,7 +96,7 @@ public:
             return sm_rgHeaders[ulIndex]._pszName;
         }
 
-        return NULL;
+        return nullptr;
     }
     
 private:

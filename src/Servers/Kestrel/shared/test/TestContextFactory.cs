@@ -53,7 +53,8 @@ internal static class TestContextFactory
         MemoryPool<byte> memoryPool = null,
         IPEndPoint localEndPoint = null,
         IPEndPoint remoteEndPoint = null,
-        ITimeoutControl timeoutControl = null)
+        ITimeoutControl timeoutControl = null,
+        ConnectionMetricsContext metricsContext = null)
     {
         var context = new HttpConnectionContext(
             "TestConnectionId",
@@ -65,7 +66,7 @@ internal static class TestContextFactory
             memoryPool ?? MemoryPool<byte>.Shared,
             localEndPoint,
             remoteEndPoint,
-            CreateMetricsContext(connectionContext));
+            metricsContext ?? CreateMetricsContext(connectionContext));
         context.TimeoutControl = timeoutControl;
         context.Transport = transport;
 
@@ -79,18 +80,23 @@ internal static class TestContextFactory
         MemoryPool<byte> memoryPool = null,
         IPEndPoint localEndPoint = null,
         IPEndPoint remoteEndPoint = null,
-        ITimeoutControl timeoutControl = null)
+        ITimeoutControl timeoutControl = null,
+        ConnectionMetricsContext metricsContext = null)
     {
+        connectionContext ??= new TestMultiplexedConnectionContext { ConnectionId = "TEST" };
+        metricsContext ??= new ConnectionMetricsContext { ConnectionContext = connectionContext };
+
         var http3ConnectionContext = new HttpMultiplexedConnectionContext(
             "TEST",
             HttpProtocols.Http3,
             altSvcHeader: null,
-            connectionContext ?? new TestMultiplexedConnectionContext { ConnectionId = "TEST" },
+            connectionContext,
             serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures ?? new FeatureCollection(),
             memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
             localEndPoint,
-            remoteEndPoint)
+            remoteEndPoint,
+            metricsContext)
         {
             TimeoutControl = timeoutControl
         };
@@ -214,11 +220,9 @@ internal static class TestContextFactory
         };
     }
 
-    public static ConnectionMetricsContext CreateMetricsContext(ConnectionContext connectionContext)
+    public static ConnectionMetricsContext CreateMetricsContext(BaseConnectionContext connectionContext)
     {
-        return new ConnectionMetricsContext(connectionContext,
-            currentConnectionsCounterEnabled: false, connectionDurationEnabled: false, queuedConnectionsCounterEnabled: false,
-            queuedRequestsCounterEnabled: false, currentUpgradedRequestsCounterEnabled: false, currentTlsHandshakesCounterEnabled: false);
+        return new ConnectionMetricsContext { ConnectionContext = connectionContext };
     }
 
     private class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler

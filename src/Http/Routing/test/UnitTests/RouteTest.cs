@@ -493,7 +493,7 @@ public class RouteTest
 
         // Assert
         Assert.NotNull(context.Handler);
-        Assert.Equal(1, context.RouteData.Routers.Count);
+        Assert.Single(context.RouteData.Routers);
         Assert.Same(target, context.RouteData.Routers[0]);
     }
 
@@ -1658,7 +1658,7 @@ public class RouteTest
 
         // Assert
         var constraints = ((Route)routeBuilder.Routes[0]).Constraints;
-        Assert.Equal(1, constraints.Count);
+        Assert.Single(constraints);
         var constraint = (CompositeRouteConstraint)constraints["id"];
         Assert.IsType<CompositeRouteConstraint>(constraint);
         Assert.IsType<RegexRouteConstraint>(constraint.Constraints.ElementAt(0));
@@ -1679,7 +1679,7 @@ public class RouteTest
 
         // Assert
         var constraints = ((Route)routeBuilder.Routes[0]).Constraints;
-        Assert.Equal(1, constraints.Count);
+        Assert.Single(constraints);
         Assert.IsType<IntRouteConstraint>(constraints["id"]);
     }
 

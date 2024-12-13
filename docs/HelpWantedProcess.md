@@ -4,7 +4,7 @@ This document describes the process that the team uses for identifying candidate
 
 ## Process
 
-This process (we'll refer to it as `help-wanted` process going forward) triggers from the moment, when the engineering team decides that a particular issue may be a good fit for a community member to tackle. Below are the stages that issue will go through, as part of this process:
+This process (we'll refer to it as `help-wanted` process going forward) triggers when the engineering team decides that a particular issue may be a good fit for a community member to tackle. Below are the stages that issue will go through, as part of this process:
 1. The triage team will **assign the `help candidate` label** to the issue, as well as **assign an engineer to the issue**.
 2. The task for the assigned engineer will be to understand the ask based on all the comments in the issue and **summarize the problem in a comment** using the [Help Wanted Template](/docs/HelpWantedIssueSummaryCommentTemplate.md).
 3. As part of filling out the template, the engineer will also need to **describe a high-level design for how to approach the problem and how it can be solved**.

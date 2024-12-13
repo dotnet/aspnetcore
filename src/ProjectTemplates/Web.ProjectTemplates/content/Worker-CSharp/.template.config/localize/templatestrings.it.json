@@ -4,7 +4,7 @@
   "description": "Modello di progetto vuoto per la creazione di un'istanza di Worker Service.",
   "symbols/ExcludeLaunchSettings/description": "Indica se escludere launchSettings.json dal modello generato.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",

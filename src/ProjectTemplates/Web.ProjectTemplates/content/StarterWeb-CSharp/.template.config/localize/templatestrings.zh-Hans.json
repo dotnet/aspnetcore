@@ -29,7 +29,7 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/CalledApiUrl/description": "要从 Web 应用调用的 API 的 URL。仅当指定了 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/CallsMicrosoftGraph/description": "指定 Web 应用是否调用 Microsoft Graph。仅当指定了 --auth SingleOrg 或 --auth MultiOrg 时，此选项才适用。",

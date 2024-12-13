@@ -49,10 +49,10 @@ public class MiddlewareAnalysisTests
         Assert.Equal(2, listener.MiddlewareStarting.Count);
         Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[1]);
         // reversed "RunInlineMiddleware"
-        Assert.Equal(1, listener.MiddlewareException.Count);
+        Assert.Single(listener.MiddlewareException);
         Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
         // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
-        Assert.Equal(1, listener.MiddlewareFinished.Count);
+        Assert.Single(listener.MiddlewareFinished);
         Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
     }
 }

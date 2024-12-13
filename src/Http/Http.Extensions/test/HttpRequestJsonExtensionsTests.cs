@@ -23,7 +23,7 @@ public class HttpRequestJsonExtensionsTests
     [InlineData("APPLICATION/JSON", true)]
     [InlineData("APPLICATION/JSON; CHARSET=UTF-8", true)]
     [InlineData("APPLICATION/LD+JSON", true)]
-    public void HasJsonContentType(string contentType, bool hasJsonContentType)
+    public void HasJsonContentType(string? contentType, bool hasJsonContentType)
     {
         var request = new DefaultHttpContext().Request;
         request.ContentType = contentType;

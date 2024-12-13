@@ -92,6 +92,8 @@ Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.IsReadOnly.get
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.MaxRequestBodySize.get -> long?
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.MaxRequestBodySize.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature
+Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.MetricsDisabled.get -> bool
+Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.MetricsDisabled.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature
 Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature.CanHaveBody.get -> bool
@@ -443,6 +445,8 @@ Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.get 
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.set -> void
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.get -> bool
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.set -> void
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveTimeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveTimeout.set -> void
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.get -> int
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.set -> void
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.WebSocketAcceptContext() -> void

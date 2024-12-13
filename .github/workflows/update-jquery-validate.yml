@@ -1,0 +1,54 @@
+name: Update jquery-validation
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run on the first day of the month
+  workflow_dispatch:  # Allow manual runs
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  update-jquery-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Set RepoRoot
+        run: echo "RepoRoot=$(pwd)" >> $GITHUB_ENV
+
+      - name: Update dependencies
+        working-directory: ${{ env.RepoRoot }}/src/Mvc/build
+        run: |
+          npm install --no-lockfile
+          npm run build
+          npm run update-identity-ui-scripts
+          echo "JQUERY_VALIDATE_VERSION=$(npm ls jquery-validation --json | jq -r '.dependencies["jquery-validation"].version')" >> $GITHUB_ENV
+
+      - name: Update script tags
+        working-directory: ${{ env.RepoRoot }}/src/Identity/UI
+        run: node update-jquery-validate.mjs
+
+      - name: Create Pull Request
+        uses: dotnet/actions-create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update jquery.validate to ${{ env.JQUERY_VALIDATE_VERSION }}
+          title: '[Templates][Identity] Update jquery-validation to ${{ env.JQUERY_VALIDATE_VERSION }}'
+          body: |
+            Updates the jquery-validation scripts to ${{ env.JQUERY_VALIDATE_VERSION }}
+          branch: update-jquery-validate-to-${{ env.JQUERY_VALIDATE_VERSION }}
+          paths: |
+            **/jquery.validate.js
+            **/jquery.validate.min.js
+            **/*.cshtml
+            src/Identity/UI/jquery-validate-versions.json

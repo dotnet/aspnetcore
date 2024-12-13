@@ -69,7 +69,7 @@ public sealed class AuthenticationManager
     /// and re-used for subsequent anonymous requests on the same connection.
     /// Kerberos or Negotiate authentication must be enabled. The default is false.
     /// This option maps to the native HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING flag.
-    /// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_server_authentication_info"/>
+    /// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_server_authentication_info"/>
     /// </summary>
     public bool EnableKerberosCredentialCaching { get; set; }
 
@@ -78,7 +78,7 @@ public sealed class AuthenticationManager
     /// host and impersonates that user during Kerberos or Negotiate authentication.
     /// Kerberos or Negotiate authentication must be enabled. The default is false.
     /// This option maps to the native HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL flag.
-    /// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_server_authentication_info"/>
+    /// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_server_authentication_info"/>
     /// </summary>
     public bool CaptureCredentials { get; set; }
 

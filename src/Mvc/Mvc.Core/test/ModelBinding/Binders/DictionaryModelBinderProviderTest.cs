@@ -45,7 +45,7 @@ public class DictionaryModelBinderProviderTest
             }
             else
             {
-                Assert.False(true, "Not the right model type");
+                Assert.Fail("Not the right model type");
                 return null;
             }
         });

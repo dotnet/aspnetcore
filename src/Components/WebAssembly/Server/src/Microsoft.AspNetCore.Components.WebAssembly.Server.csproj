@@ -14,11 +14,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
     <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Server.Tests" />
+    <InternalsVisibleTo Include="ThreadingApp.Server" />
   </ItemGroup>
 
   <ItemGroup>

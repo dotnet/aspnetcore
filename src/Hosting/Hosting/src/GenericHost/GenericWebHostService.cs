@@ -132,7 +132,7 @@ internal sealed partial class GenericWebHostService : IHostedService
 
             var builder = ApplicationBuilderFactory.CreateBuilder(Server.Features);
 
-            foreach (var filter in StartupFilters.Reverse())
+            foreach (var filter in Enumerable.Reverse(StartupFilters))
             {
                 configure = filter.Configure(configure);
             }

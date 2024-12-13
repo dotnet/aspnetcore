@@ -24,7 +24,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     private readonly Pipe _pipe;
     private readonly PipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
-    private readonly object _dataWriterLock = new object();
+    private readonly Lock _dataWriterLock = new();
     private ValueTask<FlushResult> _dataWriteProcessingTask;
     private bool _startedWritingDataFrames;
     private bool _streamCompleted;
@@ -68,6 +68,29 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         _dataWriteProcessingTask = ProcessDataWrites().Preserve();
     }
 
+    // Called once Application code has exited
+    // Or on Dispose which also would occur after Application code finished
+    public void Complete()
+    {
+        lock (_dataWriterLock)
+        {
+            Stop();
+
+            _pipeWriter.Complete();
+
+            if (_fakeMemoryOwner != null)
+            {
+                _fakeMemoryOwner.Dispose();
+                _fakeMemoryOwner = null;
+            }
+            if (_fakeMemory != null)
+            {
+                ArrayPool<byte>.Shared.Return(_fakeMemory);
+                _fakeMemory = null;
+            }
+        }
+    }
+
     public void Dispose()
     {
         lock (_dataWriterLock)
@@ -79,23 +102,12 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _disposed = true;
 
-            Stop();
-
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
-
-            if (_fakeMemory != null)
-            {
-                ArrayPool<byte>.Shared.Return(_fakeMemory);
-                _fakeMemory = null;
-            }
+            Complete();
         }
     }
 
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
+    // In HTTP/1.x, this aborts the entire connection. For HTTP/3 we abort the stream.
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _stream.Abort(abortReason, Http3ErrorCode.InternalError);
     }
@@ -121,6 +133,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
             _pipeWriter.Advance(bytes);
         }
     }
+
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
 
     public void CancelPendingFlush()
     {
@@ -285,7 +299,9 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _streamCompleted = true;
 
-            _pipeWriter.Complete(new OperationCanceledException());
+            // Application code could be using this PipeWriter, we cancel the next (or in progress) flush so they can observe this Stop
+            // Additionally, _streamCompleted will cause any future PipeWriter operations to noop
+            _pipeWriter.CancelPendingFlush();
         }
     }
 

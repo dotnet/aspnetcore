@@ -44,5 +44,6 @@
     <InternalsVisibleTo Include="IIS.Http.FunctionalTests" />
     <InternalsVisibleTo Include="IIS.LongTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+    <InternalsVisibleTo Include="Interop.FunctionalTests" />
   </ItemGroup>
 </Project>

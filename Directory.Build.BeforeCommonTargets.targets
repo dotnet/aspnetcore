@@ -6,7 +6,7 @@
         Condition="'$(ExcludeFromSourceOnlyBuild)' == '' and
             '$(DotNetBuildSourceOnly)' == 'true' and
             '$(IsAspNetCoreApp)' != 'true' and
-            '$(MSBuildProjectName)' != '$(TargetingPackName)' and
+            '$(UsingMicrosoftDotNetSharedFrameworkSdk)' != 'true' and
             '$(IsAnalyzersProject)' != 'true' and
             '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceOnlyBuild>
 

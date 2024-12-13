@@ -1,22 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
-using Microsoft.AspNetCore.InternalTesting;
-using Moq;
-using Xunit;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2;
@@ -167,17 +161,14 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39986")]
     public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
     {
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
-
         var testContext = new TestServiceContext(LoggerFactory)
         {
-            MemoryPoolFactory = memoryPoolFactory.Create
+            MemoryPoolFactory = () => new PinnedBlockMemoryPool()
         };
 
         ThrowOnUngracefulShutdown = false;
@@ -227,7 +218,5 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
         Assert.Contains(LogMessages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         Assert.Contains(LogMessages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
         Assert.DoesNotContain(LogMessages, m => m.Message.Contains("Request finished in"));
-
-        await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
     }
 }

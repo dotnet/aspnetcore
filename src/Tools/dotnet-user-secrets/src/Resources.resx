@@ -149,7 +149,7 @@ Use the '--help' flag to see info.</value>
     <value>Project file path {project}.</value>
   </data>
   <data name="Message_Saved_Secret" xml:space="preserve">
-    <value>Successfully saved {key} = {value} to the secret store.</value>
+    <value>Successfully saved {key} to the secret store.</value>
   </data>
   <data name="Message_Saved_Secrets" xml:space="preserve">
     <value>Successfully saved {number} secrets to the secret store.</value>

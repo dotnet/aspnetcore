@@ -67,7 +67,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
             Assert.Contains("500.35", await result2.Content.ReadAsStringAsync());
         }
 
-        EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
     }
 
     [ConditionalTheory]
@@ -94,7 +94,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
             Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
         }
 
-        EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(result, "Mixed hosting model is not supported.", Logger);
     }
 
     private void SetHostingModel(string directory, HostingModel model)

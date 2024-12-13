@@ -3,7 +3,7 @@
   "name": "Blazor-Web-App",
   "description": "Eine Projektvorlage zum Erstellen einer Blazor-Web-App, die sowohl serverseitiges Rendering als auch Clientinteraktivität unterstützt. Diese Vorlage kann für Web-Apps mit umfangreichen dynamischen Benutzeroberflächen (UIs) verwendet werden.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "Die für Geheimnisse zu verwendende ID (Verwendung mit individueller Authentifizierung).",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",

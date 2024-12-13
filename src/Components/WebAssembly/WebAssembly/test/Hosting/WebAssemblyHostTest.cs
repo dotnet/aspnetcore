@@ -12,15 +12,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 public class WebAssemblyHostTest
 {
-    private static readonly JsonSerializerOptions JsonOptions = new();
-
     // This won't happen in the product code, but we need to be able to safely call RunAsync
     // to be able to test a few of the other details.
     [Fact]
     public async Task RunAsync_CanExitBasedOnCancellationToken()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
@@ -40,7 +38,7 @@ public class WebAssemblyHostTest
     public async Task RunAsync_CallingTwiceCausesException()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
@@ -62,7 +60,7 @@ public class WebAssemblyHostTest
     public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         builder.Services.AddSingleton<DisposableService>();
         var host = builder.Build();

@@ -37,10 +37,10 @@ LIST_ENTRY WEBSOCKET_HANDLER::sm_RequestsListHead;
 TRACE_LOG * WEBSOCKET_HANDLER::sm_pTraceLog;
 
 WEBSOCKET_HANDLER::WEBSOCKET_HANDLER() :
-    _pHttpContext(NULL),
-    _pWebSocketContext(NULL),
-    _hWebSocketRequest(NULL),
-    _pHandler(NULL),
+    _pHttpContext(nullptr),
+    _pWebSocketContext(nullptr),
+    _hWebSocketRequest(nullptr),
+    _pHandler(nullptr),
     _dwOutstandingIo(0),
     _fCleanupInProgress(FALSE),
     _fIndicateCompletionToIis(FALSE),
@@ -64,18 +64,18 @@ WEBSOCKET_HANDLER::Terminate(
     RemoveRequest();
     _fCleanupInProgress = TRUE;
 
-    if (_pHttpContext != NULL)
+    if (_pHttpContext != nullptr)
     {
         _pHttpContext->CancelIo();
-        _pHttpContext = NULL;
+        _pHttpContext = nullptr;
     }
     if (_hWebSocketRequest)
     {
         WinHttpCloseHandle(_hWebSocketRequest);
-        _hWebSocketRequest = NULL;
+        _hWebSocketRequest = nullptr;
     }
 
-    _pWebSocketContext = NULL;
+    _pWebSocketContext = nullptr;
     DeleteCriticalSection(&_RequestLock);
 
     delete this;
@@ -129,7 +129,7 @@ WEBSOCKET_HANDLER::StaticTerminate(
     if (sm_pTraceLog)
     {
         DestroyRefTraceLog(sm_pTraceLog);
-        sm_pTraceLog = NULL;
+        sm_pTraceLog = nullptr;
     }
 }
 
@@ -220,14 +220,14 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
     // Make sure no pending IO as there is no IIS websocket cancelation,
     // any unexpected callback will lead to AV. Revisit it once CanelOutGoingIO works
     //
-    if (_hWebSocketRequest != NULL && _dwOutstandingIo == 0)
+    if (_hWebSocketRequest != nullptr && _dwOutstandingIo == 0)
     {
         LOG_TRACE(L"WEBSOCKET_HANDLER::IndicateCompletionToIIS");
 
         _pHandler->SetStatus(FORWARDER_DONE);
         _fHandleClosed = TRUE;
         WinHttpCloseHandle(_hWebSocketRequest);
-        _hWebSocketRequest = NULL;
+        _hWebSocketRequest = nullptr;
     }
 }
 
@@ -279,7 +279,7 @@ Routine Description:
 
      _pWebSocketContext = (IWebSocketContext *) _pHttpContext->
         GetNamedContextContainer()->GetNamedContext(IIS_WEBSOCKET);
-    if ( _pWebSocketContext == NULL )
+    if ( _pWebSocketContext == nullptr )
     {
         hr = HRESULT_FROM_WIN32( ERROR_FILE_NOT_FOUND );
         goto Finished;
@@ -292,7 +292,7 @@ Routine Description:
         hRequest,
         (DWORD_PTR) pHandler);
 
-    if (_hWebSocketRequest == NULL)
+    if (_hWebSocketRequest == nullptr)
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
         goto Finished;
@@ -394,7 +394,7 @@ Routine Description:
             &fClose,
             OnReadIoCompletion,
             this,
-            NULL);
+            nullptr);
     if (FAILED_LOG(hr))
     {
         DecrementOutstandingIo();
@@ -428,8 +428,8 @@ Routine Description:
                 _hWebSocketRequest,
                 &_WinHttpReceiveBuffer,
                 RECEIVE_BUFFER_SIZE,
-                NULL,
-                NULL);
+                nullptr,
+                nullptr);
 
     if (dwError != NO_ERROR)
     {
@@ -468,7 +468,7 @@ Routine Description:
         //
 
         DWORD dwError = NO_ERROR;
-        USHORT uStatus;
+        USHORT uStatus = 0;
         DWORD  dwReceived = 0;
         STACK_STRU(strCloseReason, 128);
 
@@ -509,15 +509,15 @@ Routine Description:
         hr = _pWebSocketContext->SendConnectionClose(
             TRUE,
             uStatus,
-            uStatus == 1005 ? NULL : strCloseReason.QueryStr(),
+            uStatus == 1005 ? nullptr : strCloseReason.QueryStr(),
             OnWriteIoCompletion,
             this,
-            NULL);
+            nullptr);
     }
     else
     {
         //
-        // Get equivalant flags for IIS API from buffer type.
+        // Get equivalent flags for IIS API from buffer type.
         //
 
         WINHTTP_HELPER::GetFlagsFromBufferType(eBufferType,
@@ -538,7 +538,7 @@ Routine Description:
                 fFinalFragment,
                 OnWriteIoCompletion,
                 this,
-                NULL);
+                nullptr);
     }
 
     if (FAILED_LOG(hr))
@@ -607,7 +607,7 @@ Routine Description:
         dwError = WINHTTP_HELPER::sm_pfnWinHttpWebSocketShutdown(
             _hWebSocketRequest,
             uStatus,
-            strCloseReason.QueryCCH() == 0 ? NULL : (PVOID) strCloseReason.QueryStr(),
+            strCloseReason.QueryCCH() == 0 ? nullptr : (PVOID) strCloseReason.QueryStr(),
             strCloseReason.QueryCCH());
 
         if (dwError == ERROR_IO_PENDING)
@@ -638,7 +638,7 @@ Routine Description:
         dwError = WINHTTP_HELPER::sm_pfnWinHttpWebSocketSend(
                         _hWebSocketRequest,
                         eBufferType,
-                        cbData == 0 ? NULL : &_IisReceiveBuffer,
+                        cbData == 0 ? nullptr : &_IisReceiveBuffer,
                         cbData
                         );
     }
@@ -991,7 +991,7 @@ Routine Description:
     HRESULT    hr = S_OK;
     BOOL       fLocked = FALSE;
     CleanupReason cleanupReason = CleanupReasonUnknown;
-    WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType;
+    WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType{};
 
     LOG_TRACE(L"WEBSOCKET_HANDLER::OnIisReceiveComplete");
 
@@ -1099,23 +1099,24 @@ Arguments:
     if (reason == ClientDisconnect || reason == ServerStateUnavailable)
     {
         //
-        // Calling shutdown to notify the backend about disonnect
+        // Calling shutdown to notify the backend about disconnect
         //
         WINHTTP_HELPER::sm_pfnWinHttpWebSocketShutdown(
             _hWebSocketRequest,
-            1011, // indicate that a server is terminating the connection because it encountered
-                  // an unexpected condition that prevent it from fulfilling the request
-            NULL, // Reason
-            0);   // length og Reason
+            1011,    // indicate that a server is terminating the connection because it encountered
+                     // an unexpected condition that prevent it from fulfilling the request
+            nullptr, // Reason
+            0);      // length of Reason
 
     }
 
     if (reason == ServerDisconnect || reason == ServerStateUnavailable)
     {
         _pHttpContext->CancelIo();
+
         //
-        // CancelIo sometime may not be able to cannel pending websocket IO
-        // ResetConnection to force IISWebsocket module to release the pipeline
+        // CancelIo sometimes may not be able to cancel pending websocket IO.
+        // ResetConnection to force IISWebsocket module to release the pipeline.
         //
         _pHttpContext->GetResponse()->ResetConnection();
     }

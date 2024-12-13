@@ -54,7 +54,7 @@ internal static class ObjectMethodExecutorFSharpSupport
     /// by the coercer expression, if it was possible to build a coercer; otherwise, <see langword="null"/>.
     /// </param>
     /// <returns><see langword="true"/> if it was possible to build a coercer; otherwise, <see langword="false"/>.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over the async FSharpAsync<> contract.")]
+    [RequiresUnreferencedCode("Reflecting over the async FSharpAsync<> contract.")]
     public static bool TryBuildCoercerFromFSharpAsyncToAwaitable(
         Type possibleFSharpAsyncType,
         out Expression coerceToAwaitableExpression,
@@ -127,7 +127,7 @@ internal static class ObjectMethodExecutorFSharpSupport
     /// otherwise, <see langword="null"/>.
     /// </param>
     /// <returns><see langword="true"/> if it was possible to build a coercer; otherwise, <see langword="false"/>.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over FSharp.Core.Unit.")]
+    [RequiresUnreferencedCode("Reflecting over FSharp.Core.Unit.")]
     public static bool TryBuildCoercerFromUnitAwaitableToVoidAwaitable(
         Type genericAwaitableType,
         out Expression coercerExpression,
@@ -168,12 +168,15 @@ internal static class ObjectMethodExecutorFSharpSupport
         }
     }
 
+    [RequiresUnreferencedCode("Reflecting over the async FSharpAsync<> contract.")]
     private static bool IsFSharpAsyncOpenGenericType(Type possibleFSharpAsyncType) =>
         IsCoerceableFSharpType(possibleFSharpAsyncType, FSharpAsyncGenericTypeName);
 
+    [RequiresUnreferencedCode("Reflecting over the async FSharpAsync<> contract.")]
     private static bool IsFSharpUnit(Type possibleFSharpUnitType) =>
         IsCoerceableFSharpType(possibleFSharpUnitType, FSharpUnitTypeName);
 
+    [RequiresUnreferencedCode("Reflecting over the async FSharpAsync<> contract.")]
     private static bool IsCoerceableFSharpType(Type possibleFSharpType, string coerceableFSharpTypeName)
     {
         var typeFullName = possibleFSharpType?.FullName;
@@ -199,9 +202,7 @@ internal static class ObjectMethodExecutorFSharpSupport
         }
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Reflecting over the async FSharpAsync<> contract")]
-    [UnconditionalSuppressMessage("Trimmer", "IL2055", Justification = "Reflecting over the async FSharpAsync<> contract")]
-    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Reflecting over the async FSharpAsync<> contract")]
+    [RequiresUnreferencedCode("Reflecting over the async FSharpAsync<> contract.")]
     private static bool TryPopulateFSharpValueCaches(Type possibleFSharpType)
     {
         var assembly = possibleFSharpType.Assembly;

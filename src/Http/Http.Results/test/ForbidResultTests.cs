@@ -56,7 +56,7 @@ public class ForbidResultTests
         auth.Verify();
     }
 
-    public static TheoryData ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData =>
+    public static TheoryData<AuthenticationProperties> ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData =>
         new TheoryData<AuthenticationProperties>
         {
                 null,
@@ -109,14 +109,14 @@ public class ForbidResultTests
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new ForbidHttpResult();
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     private static DefaultHttpContext GetHttpContext(IAuthenticationService auth)

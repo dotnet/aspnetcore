@@ -30,7 +30,7 @@ public class QueryHelperTests
     {
         var collection = QueryHelpers.ParseQuery("?key1=valueA&key2=valueB&key1=valueC");
         Assert.Equal(2, collection.Count);
-        Assert.Equal(new[] { "valueA", "valueC" }, collection["key1"]);
+        Assert.Equal(new[] { "valueA", "valueC" }, collection["key1"].ToArray());
         Assert.Equal("valueB", collection["key2"].FirstOrDefault());
     }
 
@@ -48,7 +48,7 @@ public class QueryHelperTests
     {
         var collection = QueryHelpers.ParseQuery("?=value1&=");
         Assert.Single(collection);
-        Assert.Equal(new[] { "value1", "" }, collection[""]);
+        Assert.Equal(new[] { "value1", "" }, collection[""].ToArray());
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class QueryHelperTests
     {
         var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D");
         Assert.Single(collection);
-        Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, collection["fields [todoItems]"]);
+        Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, collection["fields [todoItems]"].ToArray());
     }
 
     [Theory]

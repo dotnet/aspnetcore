@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public sealed class OutputCacheContext
 {
+    /// <summary>
+    /// Constructs a new instance of <see cref="OutputCacheContext"/>.
+    /// </summary>
     public OutputCacheContext()
     {
     }

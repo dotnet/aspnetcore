@@ -12,7 +12,7 @@
       "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
       "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
       "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
-      "src\\Framework\\App.Runtime\\src\\Microsoft.AspNetCore.App.Runtime.csproj",
+      "src\\Framework\\App.Runtime\\src\\Microsoft.AspNetCore.App.Runtime.sfxproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",

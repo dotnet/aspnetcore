@@ -3,7 +3,7 @@
   "name": "Knihovna tříd Razor",
   "description": "Projekt pro vytvoření knihovny tříd Razor, která cílí na .NET",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/SupportPagesAndViews/displayName": "Stránky podpory a zobrazení",
   "symbols/SupportPagesAndViews/description": "Určuje, jestli se má podporovat přidávání dalších stránek a zobrazení Razor do této knihovny.",

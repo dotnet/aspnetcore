@@ -15,16 +15,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
     where TStartup : class
 {
+    private ILoggerFactory _loggerFactory;
+
+    public MvcTestFixture(ILoggerFactory loggerFactory)
+    {
+        _loggerFactory = loggerFactory;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        ILoggerFactory loggerFactory = _loggerFactory;
+        var testSink = new TestSink();
+        if (_loggerFactory is null)
+        {
+            loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+        }
+
         builder
             .UseRequestCulture<TStartup>("en-GB", "en-US")
             .UseEnvironment("Production")
             .ConfigureServices(
                 services =>
                 {
-                    var testSink = new TestSink();
-                    var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
                     services.AddSingleton<ILoggerFactory>(loggerFactory);
                     services.AddSingleton<TestSink>(testSink);
                 });

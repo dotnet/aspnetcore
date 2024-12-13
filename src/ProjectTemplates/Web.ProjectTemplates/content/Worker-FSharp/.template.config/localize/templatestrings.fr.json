@@ -4,7 +4,7 @@
   "description": "Modèle de projet vide pour la création d'un service Worker.",
   "symbols/ExcludeLaunchSettings/description": "Indique s’il faut exclure launchSettings.json du modèle généré.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"

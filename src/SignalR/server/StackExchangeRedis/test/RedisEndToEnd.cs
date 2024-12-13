@@ -179,6 +179,7 @@ public class RedisEndToEndTests : VerifiableLoggedTest
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53644")]
     [ConditionalTheory]
     [SkipIfDockerNotPresent]
     [MemberData(nameof(TransportTypesAndProtocolTypes))]

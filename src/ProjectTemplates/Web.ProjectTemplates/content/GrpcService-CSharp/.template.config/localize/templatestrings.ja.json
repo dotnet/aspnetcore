@@ -3,7 +3,7 @@
   "name": "ASP.NET Core gRPC サービス",
   "description": "ASP.NET Core を使用して gRPC サービスを作成するプロジェクト テンプレート。native AOT としての公開もオプションでサポートされます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "生成されたテンプレートから launchSettings.json を除外するかどうか。",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/kestrelHttpPort/description": "launchSettings.json の HTTP エンドポイントに使用するポート番号。",

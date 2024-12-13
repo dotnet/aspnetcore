@@ -3,7 +3,7 @@
   "name": "Autonomiczna aplikacja zestawu WebAssembly platformy Blazor",
   "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej na zestawie WebAssembly. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/auth/choices/None/description": "Bez uwierzytelniania",
   "symbols/auth/choices/Individual/description": "Uwierzytelnianie indywidualne",

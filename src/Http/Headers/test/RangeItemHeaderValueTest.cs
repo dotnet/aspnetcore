@@ -119,7 +119,7 @@ public class RangeItemHeaderValueTest
     [InlineData("-12345678901234567890123")] // >>Int64.MaxValue
     [InlineData("9999999999999999999-")] // 19-digit numbers outside the Int64 range.
     [InlineData("-9999999999999999999")] // 19-digit numbers outside the Int64 range.
-    public void TryParse_DifferentInvalidScenarios_AllReturnFalse(string input)
+    public void TryParse_DifferentInvalidScenarios_AllReturnFalse(string? input)
     {
         RangeHeaderValue? result;
         Assert.False(RangeHeaderValue.TryParse("byte=" + input, out result));

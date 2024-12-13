@@ -99,6 +99,7 @@ public class Http2TimeoutTests : Http2TestBase
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionEndReason(ConnectionEndReason.KeepAliveTimeout);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -193,6 +194,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             CoreStrings.BadRequest_RequestHeadersTimeout);
+        AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
@@ -211,6 +213,7 @@ public class Http2TimeoutTests : Http2TestBase
         await SendGoAwayAsync();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
 
         AdvanceTime(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
@@ -298,6 +301,20 @@ public class Http2TimeoutTests : Http2TestBase
             Http2ErrorCode.STREAM_CLOSED,
             CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
 
+        switch (finalFrameType)
+        {
+            case Http2FrameType.DATA:
+                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                break;
+
+            case Http2FrameType.CONTINUATION:
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
+                break;
+
+            default:
+                throw new NotImplementedException(finalFrameType.ToString());
+        }
+
         closed = true;
 
         await sendTask.DefaultTimeout();
@@ -371,6 +388,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -425,6 +443,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -476,6 +495,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -529,6 +549,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -594,6 +615,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -640,6 +662,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -690,6 +713,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -756,6 +780,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -823,6 +848,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -877,6 +903,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
         _mockConnectionContext.VerifyNoOtherCalls();
@@ -962,6 +989,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);

@@ -3,7 +3,7 @@
   "name": "Изолированное приложение Blazor WebAssembly",
   "description": "Шаблон проекта для создания приложения Blazor, которое запускается в WebAssembly. Этот шаблон можно использовать для веб-приложений с полнофункциональными динамическими пользовательскими интерфейсами.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/auth/choices/None/description": "Без проверки подлинности",
   "symbols/auth/choices/Individual/description": "Индивидуальная проверка подлинности",

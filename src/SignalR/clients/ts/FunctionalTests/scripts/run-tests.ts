@@ -232,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net9.0", "SignalR.Client.FunctionalTestApp.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net10.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";

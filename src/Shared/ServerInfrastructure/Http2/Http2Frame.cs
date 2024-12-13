@@ -3,17 +3,23 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-/* https://tools.ietf.org/html/rfc7540#section-4.1
-    +-----------------------------------------------+
-    |                 Length (24)                   |
-    +---------------+---------------+---------------+
-    |   Type (8)    |   Flags (8)   |
-    +-+-------------+---------------+-------------------------------+
-    |R|                 Stream Identifier (31)                      |
-    +=+=============================================================+
-    |                   Frame Payload (0...)                      ...
-    +---------------------------------------------------------------+
-*/
+/// <summary>
+/// Represents an HTTP/2 frame. The expected use pattern is that it will be instantiated once
+/// and then, each time a frame is received or sent, it is reset with a PrepareX method.
+/// This type is not responsible for binary serialization or deserialization.
+/// </summary>
+/// <remarks>
+/// From https://tools.ietf.org/html/rfc7540#section-4.1:
+///    +-----------------------------------------------+
+///    |                 Length (24)                   |
+///    +---------------+---------------+---------------+
+///    |   Type (8)    |   Flags (8)   |
+///    +-+-------------+---------------+-------------------------------+
+///    |R|                 Stream Identifier (31)                      |
+///    +=+=============================================================+
+///    |                   Frame Payload (0...)                      ...
+///    +---------------------------------------------------------------+
+/// </remarks>
 internal partial class Http2Frame
 {
     public int PayloadLength { get; set; }

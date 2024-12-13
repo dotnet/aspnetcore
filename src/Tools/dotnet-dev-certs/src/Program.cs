@@ -164,7 +164,7 @@ internal sealed class Program
 
                     if (check.HasValue())
                     {
-                        return CheckHttpsCertificate(trust, reporter);
+                        return CheckHttpsCertificate(trust, verbose, reporter);
                     }
 
                     if (clean.HasValue())
@@ -252,6 +252,12 @@ internal sealed class Program
                 reporter.Output("Cleaning HTTPS development certificates from the machine. This operation might " +
                     "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
             }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                reporter.Output("Cleaning HTTPS development certificates from the machine. You may wish to update the " +
+                    "SSL_CERT_DIR environment variable. " +
+                    "See https://aka.ms/dev-certs-trust for more information.");
+            }
 
             manager.CleanupHttpsCertificates();
             reporter.Output("HTTPS development certificates successfully removed from the machine.");
@@ -266,7 +272,7 @@ internal sealed class Program
         }
     }
 
-    private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
+    private static int CheckHttpsCertificate(CommandOption trust, CommandOption verbose, IReporter reporter)
     {
         var certificateManager = CertificateManager.Instance;
         var certificates = certificateManager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
@@ -283,7 +289,7 @@ internal sealed class Program
                 // We never want check to require interaction.
                 // When IDEs run dotnet dev-certs https after calling --check, we will try to access the key and
                 // that will trigger a prompt if necessary.
-                var status = certificateManager.CheckCertificateState(certificate, interactive: false);
+                var status = certificateManager.CheckCertificateState(certificate);
                 if (!status.Success)
                 {
                     reporter.Warn(status.FailureMessage);
@@ -295,32 +301,25 @@ internal sealed class Program
 
         if (trust != null && trust.HasValue())
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            var trustedCertificates = certificates.Where(cert => certificateManager.GetTrustLevel(cert) == CertificateManager.TrustLevel.Full).ToList();
+            if (trustedCertificates.Count == 0)
             {
-                var trustedCertificates = certificates.Where(certificateManager.IsTrusted).ToList();
-                if (!trustedCertificates.Any())
+                reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
+                if (verbose == null || !verbose.HasValue())
                 {
-                    reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
-                    return ErrorCertificateNotTrusted;
+                    reporter.Output($@"Run the command with --verbose for more details.");
                 }
-                else
-                {
-                    ReportCertificates(reporter, trustedCertificates, "trusted");
-                }
+                return ErrorCertificateNotTrusted;
             }
             else
             {
-                reporter.Warn("Checking the HTTPS development certificate trust status was requested. Checking whether the certificate is trusted or not is not supported on Linux distributions." +
-                    "For instructions on how to manually validate the certificate is trusted on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                ReportCertificates(reporter, trustedCertificates, "trusted");
             }
         }
         else
         {
             ReportCertificates(reporter, validCertificates, "valid");
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
-            }
+            reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
         }
 
         return Success;
@@ -345,7 +344,7 @@ internal sealed class Program
             var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, exportPath.HasValue());
             foreach (var certificate in certificates)
             {
-                var status = manager.CheckCertificateState(certificate, interactive: true);
+                var status = manager.CheckCertificateState(certificate);
                 if (!status.Success)
                 {
                     reporter.Warn("One or more certificates might be in an invalid state. We will try to access the certificate key " +
@@ -358,7 +357,9 @@ internal sealed class Program
             }
         }
 
-        if (trust?.HasValue() == true)
+        var isTrustOptionSet = trust?.HasValue() == true;
+
+        if (isTrustOptionSet)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -377,8 +378,9 @@ internal sealed class Program
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate on Linux distributions automatically is not supported. " +
-                    "For instructions on how to manually trust the certificate on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                reporter.Warn("Trusting the HTTPS development certificate was requested. " +
+                    "Trust is per-user and may require additional configuration. " +
+                    "See https://aka.ms/dev-certs-trust for more information.");
             }
         }
 
@@ -393,7 +395,7 @@ internal sealed class Program
             now,
             now.Add(HttpsCertificateValidity),
             exportPath.Value(),
-            trust == null ? false : trust.HasValue() && !RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+            isTrustOptionSet,
             password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
             password.Value(),
             exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
@@ -421,10 +423,18 @@ internal sealed class Program
                 reporter.Error("There was an error saving the HTTPS developer certificate to the current user personal certificate store.");
                 return ErrorSavingTheCertificate;
             case EnsureCertificateResult.ErrorExportingTheCertificate:
-                reporter.Warn("There was an error exporting HTTPS developer certificate to a file.");
+                reporter.Warn("There was an error exporting the HTTPS developer certificate to a file.");
                 return ErrorExportingTheCertificate;
+            case EnsureCertificateResult.ErrorExportingTheCertificateToNonExistentDirectory:
+                // A distinct warning is useful, but a distinct error code is probably not.
+                reporter.Warn("There was an error exporting the HTTPS developer certificate to a file. Please create the target directory before exporting. Choose permissions carefully when creating it.");
+                return ErrorExportingTheCertificate;
+            case EnsureCertificateResult.PartiallyFailedToTrustTheCertificate:
+                // A distinct warning is useful, but a distinct error code is probably not.
+                reporter.Warn("There was an error trusting the HTTPS developer certificate. It will be trusted by some clients but not by others.");
+                return ErrorTrustingTheCertificate;
             case EnsureCertificateResult.FailedToTrustTheCertificate:
-                reporter.Warn("There was an error trusting HTTPS developer certificate.");
+                reporter.Warn("There was an error trusting the HTTPS developer certificate.");
                 return ErrorTrustingTheCertificate;
             case EnsureCertificateResult.UserCancelledTrustStep:
                 reporter.Warn("The user cancelled the trust step.");

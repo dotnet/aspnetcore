@@ -36,7 +36,7 @@ public struct CandidateState
     /// <remarks>
     /// <para>
     /// Candidates within a set are ordered in priority order and then assigned a
-    /// sequential score value based on that ordering. Candiates with the same
+    /// sequential score value based on that ordering. Candidates with the same
     /// score are considered to have equal priority.
     /// </para>
     /// <para>

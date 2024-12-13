@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseLocalDB/description": "SQLite の代わりに LocalDB を使用するかどうか。このオプションは、--auth Individual または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/CalledApiUrl/description": "Web アプリから呼び出す API の URL。このオプションは、--auth SingleOrg または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/CallsMicrosoftGraph/description": "Web アプリが Microsoft Graph を呼び出すかどうかを指定します。このオプションは、--auth SingleOrg が指定されている場合にのみ適用されます。",

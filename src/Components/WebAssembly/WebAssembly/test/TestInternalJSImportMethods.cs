@@ -20,6 +20,10 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetPersistedState()
         => null;
 
+    public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId) { }
+
+    public void EndUpdateRootComponents(long batchId) { }
+
     public void NavigationManager_EnableNavigationInterception(int rendererId) { }
 
     public void NavigationManager_ScrollToElement(string id) { }

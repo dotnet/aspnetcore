@@ -1,22 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    //#if (WindowsAuth)
-    "windowsAuthentication": true,
-    "anonymousAuthentication": false,
-    //#else
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    //#endif
-    "iisExpress": {
-      "applicationUrl": "http://localhost:8080",
-      //#if (HasHttpsProfile)
-      "sslPort": 44300
-      //#else
-      "sslPort": 0
-      //#endif
-    }
-  },
   "profiles": {
     //#if (HasHttpProfile)
     "http": {
@@ -28,7 +11,11 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    //#if (HasHttpsProfile)
     },
+    //#else
+    }
+    //#endif
     //#endif
     //#if (HasHttpsProfile)
     "https": {
@@ -40,15 +27,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    //#endif
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
     }
+    //#endif
   }
 }

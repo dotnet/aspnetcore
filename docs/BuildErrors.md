@@ -2,6 +2,8 @@
 
 This document is for common build errors and how to resolve them.
 
+NB: Some problems might be due to older build assets that conflict with newer commits. It's recommended to run `git clean -xddff` between checkouts. If this command fails due to locked files you can try to stop any existing `dotnet` or `.NET Host` process and retry.
+
 ## Warning BUILD001
 
 > warning BUILD001: Reference to '&hellip;' was removed since the last stable release of this package. &hellip;
@@ -33,7 +35,7 @@ The cause of this problem is that the solution filter you are using does not inc
 ### You can fix this in one of three ways
 
 1. Build the project on command line. In most cases, running `build.cmd` on command line solves this problem.
-2. If the project is missing from the .sln file entirely, you can use `dotnet sln add` to add it, or else right click on the solution/folder in Visual Studio and choose Add->Existing Project, and adding it.
+2. If the project is missing from the .sln file entirely, you can use `dotnet sln add` to add it, or else right click on the solution/folder in Visual Studio and choose Add->Existing Project.
 3. If it is present in the .sln, but not the .slnf, you can update the solution filter to include the missing project. You can either do this one by right-clicking on project in Visual Studio and choosing to load it's direct dependencies, and then saving.  Alternatively, you can hand edit the .slnf file - it's a fairly simple json format.
 
 ## Error MSB4019: The imported project "&hellip;\artifacts\bin\GenerateFiles\Directory.Build.props" was not found

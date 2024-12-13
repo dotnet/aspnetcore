@@ -93,6 +93,24 @@ public class ReverseStringBuilderTest
     }
 
     [Fact]
+    public void ToString_Works_AfterExceedingStackAllocatedBuffer_WithUnusedSpaceInInitialBuffer()
+    {
+        const int InitialBufferSize = 64;
+        var builder = new ReverseStringBuilder(stackalloc char[InitialBufferSize]);
+
+        var firstChunk = new string('A', InitialBufferSize - 10);
+        var secondChunk = new string('B', 20);
+
+        builder.InsertFront(firstChunk);
+        builder.InsertFront(secondChunk);
+
+        var expected = secondChunk + firstChunk;
+        var actual = builder.ToString();
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
     public void ToString_Works_AfterExpandingIntoMultipleBuffersFromEstimatedStringSize()
     {
         // Arrange

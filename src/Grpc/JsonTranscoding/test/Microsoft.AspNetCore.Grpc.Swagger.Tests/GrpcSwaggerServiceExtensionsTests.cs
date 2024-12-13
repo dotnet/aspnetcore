@@ -46,7 +46,7 @@ public class GrpcSwaggerServiceExtensionsTests
 
         var path = swagger.Paths["/v1/greeter/{name}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
-        Assert.Equal("Success", operation.Responses["200"].Description);
+        Assert.Equal("OK", operation.Responses["200"].Description);
         Assert.Equal("Error", operation.Responses["default"].Description);
     }
 

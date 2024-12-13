@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
@@ -137,18 +138,21 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         await manager.RestoreStateAsync(store);
 
+        RestoreAntiforgeryToken();
+
         if (MetadataUpdater.IsSupported)
         {
             await WebAssemblyHotReload.InitializeAsync();
         }
 
         var tcs = new TaskCompletionSource();
-
         using (cancellationToken.Register(() => tcs.TrySetResult()))
         {
             var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
-            _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
+            var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
+            var collection = await collectionProvider.GetResourceCollection();
+            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
@@ -227,6 +231,13 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 operation.Descriptor!.Parameters));
         }
 
-        WebAssemblyRenderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
+        renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
+    }
+
+    private void RestoreAntiforgeryToken()
+    {
+        // The act of instantiating the DefaultAntiforgeryStateProvider will automatically
+        // retrieve the antiforgery token from the persistent state
+        _scope.ServiceProvider.GetRequiredService<AntiforgeryStateProvider>();
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +40,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         string baseUri,
         string uri,
         ClaimsPrincipal user,
-        IPersistentComponentStateStore store)
+        IPersistentComponentStateStore store,
+        ResourceAssetCollection resourceCollection)
     {
         var scope = _scopeFactory.CreateAsyncScope();
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -68,6 +70,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             // when the first set of components is provided via an UpdateRootComponents call.
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             await appLifetime.RestoreStateAsync(store);
+            RestoreAntiforgeryToken(scope);
         }
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
@@ -80,7 +83,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             serverComponentDeserializer,
             _loggerFactory.CreateLogger<RemoteRenderer>(),
             jsRuntime,
-            jsComponentInterop);
+            jsComponentInterop,
+            resourceCollection);
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to
@@ -108,6 +112,15 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         circuitHost.SetCircuitUser(user);
 
         return circuitHost;
+    }
+
+    private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
+    {
+        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
+        // state and is available on the circuit whether or not is used by a component on the first
+        // render.
+        var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
+        _ = antiforgery?.GetAntiforgeryToken();
     }
 
     private static partial class Log

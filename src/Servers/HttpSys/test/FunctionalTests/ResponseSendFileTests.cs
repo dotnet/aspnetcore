@@ -30,6 +30,7 @@ public class ResponseSendFileTests : LoggedTest
         AbsoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
         RelativeFilePath = Path.GetFileName(AbsoluteFilePath);
         FileLength = new FileInfo(AbsoluteFilePath).Length;
+        Assert.True(FileLength > 0, "FileLength is 0");
     }
 
     [ConditionalFact]

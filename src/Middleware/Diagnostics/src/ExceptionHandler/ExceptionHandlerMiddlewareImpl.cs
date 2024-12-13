@@ -165,7 +165,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
             context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
             context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-            context.Response.StatusCode = DefaultStatusCode;
+            context.Response.StatusCode = _options.StatusCodeSelector?.Invoke(edi.SourceException) ?? DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
             string? handler = null;
@@ -192,7 +192,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                     {
                         HttpContext = context,
                         AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                        ProblemDetails = { Status = DefaultStatusCode },
+                        ProblemDetails = { Status = context.Response.StatusCode },
                         Exception = edi.SourceException,
                     });
                     if (handled)
@@ -202,7 +202,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 }
             }
             // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || handled || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (context.Response.HasStarted || handled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))

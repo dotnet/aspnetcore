@@ -5,6 +5,18 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
+/// <summary>
+/// Represents the in-bound flow control state of a stream or connection.
+/// </summary>
+/// <remarks>
+/// Owns a <see cref="FlowControl"/> that it uses to track the present window size.
+/// <para/>
+/// <see cref="Http2Connection"/> owns an instance for the connection-level flow control.
+/// <see cref="StreamInputFlowControl"/> owns an instance for the stream-level flow control.
+/// <para/>
+/// Reusable after calling <see cref="Reset"/>.
+/// </remarks>
+/// <seealso href="https://datatracker.ietf.org/doc/html/rfc9113#name-flow-control"/>
 internal sealed class InputFlowControl
 {
     private readonly int _initialWindowSize;
@@ -13,7 +25,7 @@ internal sealed class InputFlowControl
     private FlowControl _flow;
     private int _pendingUpdateSize;
     private bool _windowUpdatesDisabled;
-    private readonly object _flowLock = new object();
+    private readonly Lock _flowLock = new();
 
     public InputFlowControl(uint initialWindowSize, uint minWindowSizeIncrement)
     {
@@ -41,7 +53,7 @@ internal sealed class InputFlowControl
             // flow-control window at the time of the abort.
             if (bytes > _flow.Available)
             {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorFlowControlWindowExceeded, Http2ErrorCode.FLOW_CONTROL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorFlowControlWindowExceeded, Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionEndReason.FlowControlWindowExceeded);
             }
 
             if (_flow.IsAborted)

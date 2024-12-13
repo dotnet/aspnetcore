@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -404,6 +405,40 @@ public class ModelMetadataTest
 
         // Act & Assert
         var result = Assert.Throws<NotImplementedException>(() => metadata.GetMetadataForProperties(typeof(string)));
+    }
+
+    [Fact]
+    public void DynamicPropertiesThrowWhenIsDynamicCodeSupportedIsTrue()
+    {
+        var options = new RemoteInvokeOptions();
+
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", false);
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var metadata = new TestModelMetadata(typeof(DateTime));
+            Assert.Throws<NotSupportedException>(() => metadata.ElementType);
+            Assert.Throws<NotSupportedException>(() => metadata.IsParseableType);
+            Assert.Throws<NotSupportedException>(() => metadata.IsConvertibleType);
+            Assert.Throws<NotSupportedException>(() => metadata.IsComplexType);
+            Assert.Throws<NotSupportedException>(() => metadata.IsCollectionType);
+        }, options);
+    }
+
+    [Fact]
+    public void DynamicPropertiesSetWhenIsDynamicCodeSupportedIsTrue()
+    {
+        var options = new RemoteInvokeOptions();
+
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", true);
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var metadata = new TestModelMetadata(typeof(DateTime));
+            Assert.Null(metadata.ElementType);
+            Assert.True(metadata.IsParseableType);
+            Assert.False(metadata.IsCollectionType);
+            Assert.True(metadata.IsConvertibleType);
+            Assert.False(metadata.IsComplexType);
+        }, options);
     }
 
     private class TestModelMetadata : ModelMetadata

@@ -3,7 +3,7 @@
   "name": "Blazor Web 應用程式",
   "description": "用於建立同時支援伺服器端轉譯和用戶端互動的 Blazor Web 應用程式的專案範本。此範本可用於具有豐富動態使用者介面 (UI) 的 Web 應用程式。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "用於祕密的識別碼 (搭配個別驗證使用)。",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",

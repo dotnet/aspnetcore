@@ -20,6 +20,8 @@ public class TestHub : Hub
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
+
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
     public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
@@ -140,6 +142,8 @@ public class DynamicTestHub : DynamicHub
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
+
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
     public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
@@ -173,6 +177,8 @@ public class TestHubT : Hub<ITestHub>
     public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
 
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
@@ -213,6 +219,8 @@ internal static class TestHubMethodsImpl
     {
         return message;
     }
+
+    public static string InvokeException() => throw new InvalidOperationException();
 
     public static ChannelReader<int> Stream(int count)
     {

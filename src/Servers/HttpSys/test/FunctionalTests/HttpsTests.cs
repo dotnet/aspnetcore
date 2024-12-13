@@ -165,20 +165,26 @@ public class HttpsTests : LoggedTest
             Assert.True(protocol > SslProtocols.None, "Protocol: " + protocol);
             Assert.True(Enum.IsDefined(typeof(SslProtocols), protocol), "Defined: " + protocol); // Mapping is required, make sure it's current
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var cipherAlgorithm = (CipherAlgorithmType)result.GetProperty("cipherAlgorithm").GetInt32();
             Assert.True(cipherAlgorithm > CipherAlgorithmType.Null, "Cipher: " + cipherAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var cipherStrength = result.GetProperty("cipherStrength").GetInt32();
             Assert.True(cipherStrength > 0, "CipherStrength: " + cipherStrength);
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var hashAlgorithm = (HashAlgorithmType)result.GetProperty("hashAlgorithm").GetInt32();
             Assert.True(hashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm: " + hashAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var hashStrength = result.GetProperty("hashStrength").GetInt32();
             Assert.True(hashStrength >= 0, "HashStrength: " + hashStrength); // May be 0 for some algorithms
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var keyExchangeAlgorithm = (ExchangeAlgorithmType)result.GetProperty("keyExchangeAlgorithm").GetInt32();
             Assert.True(keyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm: " + keyExchangeAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
@@ -213,12 +219,14 @@ public class HttpsTests : LoggedTest
                 }
 
                 // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
                 Assert.Equal((uint)tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
                 Assert.Equal((uint)tlsFeature.HashAlgorithm, tlsCopy.HashType);
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);
                 Assert.Equal((uint)tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
             }
             catch (Exception ex)
             {

@@ -14,7 +14,7 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
 {
     /// <summary>
     /// Creates an instance of <see cref="AuthenticationSchemeProvider"/>
-    /// using the specified <paramref name="options"/>,
+    /// using the specified <paramref name="options"/>.
     /// </summary>
     /// <param name="options">The <see cref="AuthenticationOptions"/> options.</param>
     public AuthenticationSchemeProvider(IOptions<AuthenticationOptions> options)

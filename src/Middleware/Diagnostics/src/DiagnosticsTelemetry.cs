@@ -15,7 +15,9 @@ internal static class DiagnosticsTelemetry
 
         if (context.Features.Get<IHttpMetricsTagsFeature>() is { } tagsFeature)
         {
-            tagsFeature.Tags.Add(new KeyValuePair<string, object?>("error.type", ex.GetType().FullName));
+            // Multiple exception middleware could be registered that have already added the tag.
+            // We don't want to add a duplicate tag here because that breaks some metrics systems.
+            tagsFeature.TryAddTag("error.type", ex.GetType().FullName);
         }
     }
 }

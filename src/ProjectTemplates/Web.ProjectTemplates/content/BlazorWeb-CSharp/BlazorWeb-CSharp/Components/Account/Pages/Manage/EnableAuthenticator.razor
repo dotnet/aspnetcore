@@ -48,12 +48,12 @@ else
                     with a unique code. Enter the code in the confirmation box below.
                 </p>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-xl-6">
                         <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                             <DataAnnotationsValidator />
                             <div class="form-floating mb-3">
-                                <InputText @bind-Value="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code." />
-                                <label for="code" class="control-label form-label">Verification Code</label>
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Enter the code" />
+                                <label for="Input.Code" class="control-label form-label">Verification Code</label>
                                 <ValidationMessage For="() => Input.Code" class="text-danger" />
                             </div>
                             <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>

@@ -3,7 +3,7 @@
   "name": "Eigenständige Blazor WebAssembly-App",
   "description": "Eine Projektvorlage für das Erstellen einer Blazor-App, die in WebAssembly ausgeführt wird. Diese Vorlage kann für Web-Apps mit umfangreichen dynamischen Benutzeroberflächen verwendet werden.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/auth/choices/None/description": "Keine Authentifizierung",
   "symbols/auth/choices/Individual/description": "Individuelle Authentifizierung",

@@ -16,8 +16,8 @@ There are two ways you can provide a minimal repro project. The first and simple
 - Add the minimum amount of code necessary to reproduce the behavior you are reporting on this newly created project.
 - Make sure you **do not** add any dependencies that are irrelevant to the behavior.
 - Host the project as a **public** repository on GitHub.
-- Make sure you haven't included any binaries in your project (this is usually about the `bin` and `obj` folders in your project)
-  Note: that this step is important and we won't be able to open zip attachments in your issues.
+- Make sure you haven't included any binaries in your project (this is usually about the `bin` and `obj` folders in your project).
+  Note that this step is important and we won't be able to open zip attachments in your issues.
   Zip files are potential attack vectors that we try to avoid at all cost.
   
 ## Important considerations

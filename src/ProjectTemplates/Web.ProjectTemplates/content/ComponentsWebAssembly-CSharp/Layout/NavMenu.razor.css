@@ -3,7 +3,7 @@
 }
 
 .top-row {
-    height: 3.5rem;
+    min-height: 3.5rem;
     background-color: rgba(0,0,0,0.4);
 }
 
@@ -74,7 +74,7 @@
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
-    
+
     .nav-scrollable {
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);

@@ -1,7 +1,8 @@
 #nullable enable
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail, string? instance, int? statusCode, string? title, string? type) -> Microsoft.AspNetCore.Mvc.ObjectResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail, string? instance, int? statusCode, string? title, string? type, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary) -> Microsoft.AspNetCore.Mvc.ActionResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.set -> void
+Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.set -> void
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.set -> void

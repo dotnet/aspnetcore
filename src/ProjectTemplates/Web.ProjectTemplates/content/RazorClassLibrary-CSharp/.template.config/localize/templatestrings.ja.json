@@ -3,7 +3,7 @@
   "name": "Razor クラス ライブラリ",
   "description": ".NET を対象とする Razor クラス ライブラリを作成するためのプロジェクト",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/SupportPagesAndViews/displayName": "サポート ページとビュー",
   "symbols/SupportPagesAndViews/description": "このライブラリに対して、従来の Razor ページとビューの追加をサポートするかどうか。",

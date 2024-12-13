@@ -64,6 +64,6 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCode
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TValue), new[] { "application/json" }));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status200OK, ContentTypeConstants.ApplicationJsonContentTypes));
     }
 }

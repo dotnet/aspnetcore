@@ -33,9 +33,9 @@ public class SocketConnectionFactoryOptions
     /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.
     /// </summary>
     /// <remarks>
-    /// Defaults to <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
+    /// Defaults to a value based on and limited to <see cref="Environment.ProcessorCount" />.
     /// </remarks>
-    public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
+    public int IOQueueCount { get; set; } = Internal.IOQueue.DefaultCount;
 
     /// <summary>
     /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.

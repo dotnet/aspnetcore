@@ -1,60 +1,65 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 group 'com.microsoft.signalr'
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     api 'io.reactivex.rxjava3:rxjava:3.0.11'
     implementation 'org.slf4j:slf4j-api:1.7.25'
 }
 
-archivesBaseName = 'signalr'
-
-task sourceJar(type: Jar) {
-    classifier "sources"
-    from sourceSets.main.allJava
+base {
+    archivesName = 'signalr'
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier "javadoc"
-    from javadoc.destinationDir
-}
+publishing {
+    publications {
+        release(MavenPublication) {
+            from components.java
 
-task generatePOM {
-    pom {
-        project {
             artifactId 'signalr'
-            inceptionYear '2018'
-            description 'ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/dotnet/aspnetcore'
-            name groupId + ':' + artifactId
-            licenses {
-                license {
-                    name 'MIT License'
-                    url 'https://opensource.org/licenses/MIT'
-                    distribution 'repo'
+
+            pom {
+                packaging = 'jar'
+                inceptionYear = '2018'
+                url = 'https://github.com/dotnet/aspnetcore'
+                name = groupId + ':' + artifactId
+                description = 'ASP.NET Core SignalR Client for Java applications'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                        distribution = 'repo'
+                    }
                 }
-            }
-            scm {
-                connection 'scm:git:https://github.com/dotnet/aspnetcore.git'
-                developerConnection 'scm:git:https://github.com/dotnet/aspnetcore.git'
-                url 'https://github.com/dotnet/aspnetcore/tree/main'
-            }
-            developers {
-                developer {
-                    id 'microsoft'
-                    name 'Microsoft'
+                scm {
+                    connection = 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                    developerConnection = 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                    url = 'https://github.com/dotnet/aspnetcore/tree/main'
+                }
+                developers {
+                    developer {
+                        id = 'microsoft'
+                        name = 'Microsoft'
+                    }
                 }
             }
         }
-    }.writeTo("${buildDir}/libs/signalr-${project.version}.pom")
+    }
 }
 
-task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
+tasks.withType(GenerateMavenPom).all {
+    destination = layout.buildDirectory.file("libs/signalr-${project.version}.pom").get().asFile
+}
 
 task generateVersionClass {
     inputs.property "version", project.version

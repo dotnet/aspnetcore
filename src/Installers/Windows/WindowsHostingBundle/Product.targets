@@ -7,21 +7,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Platforms Include="x64;x86;arm64" />
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
-      <TargetPlatform>x64</TargetPlatform>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
-      <TargetPlatform>x86</TargetPlatform>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe">
-      <TargetPlatform>arm64</TargetPlatform>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerarm64</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <BundleNameProperty>DotNetRedistHostInstallerx64</BundleNameProperty>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <BundleNameProperty>DotNetRedistHostInstallerx86</BundleNameProperty>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+      <BundleNameProperty>DotNetRedistHostInstallerarm64</BundleNameProperty>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <BundleNameProperty>DotNetRedistHostfxrInstallerx64</BundleNameProperty>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <BundleNameProperty>DotNetRedistHostfxrInstallerx86</BundleNameProperty>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+      <BundleNameProperty>DotNetRedistHostfxrInstallerarm64</BundleNameProperty>
     </RuntimeInstallers>
   </ItemGroup>
 
@@ -32,14 +43,32 @@
   <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 
@@ -48,18 +77,12 @@
 
   <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
       Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-    <!--
-      Try various places to find the runtime. It's either released (use official version), public but
-      unreleased (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal).
-    -->
+    <PropertyGroup>
+      <_CurrentRemoteAsset>%(RemoteAsset.Identity)</_CurrentRemoteAsset>
+    </PropertyGroup>
     <ItemGroup>
       <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/Runtime/%(RemoteAsset.Identity)"
-          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)Runtime/$(_CurrentRemoteAsset)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "
@@ -74,42 +97,16 @@
       <Output TaskParameter="Value" PropertyName="%(RuntimeInstallers.BundleNameProperty)"/>
     </CreateProperty>
 
-    <!-- Decompile the bundles so that we can extract the MSI and read their version information. We need this to author ExePackage@DetectCondition
-          in the bundles that chain the runtime bundles -->
-    <Exec Command="$(DarkToolPath) -x $(DotNetDarkOutputPath)\%(RuntimeInstallers.Version)\%(TargetPlatform) %(Identity)" />
-
-    <ItemGroup>
-      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppRuntimeVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
-        <ProductVersionProperty>DotNetRedistLtsInstallerProductVersion%(Platforms.Identity)</ProductVersionProperty>
-        <ProductCodeProperty>DotNetRedistLtsInstallerProductCode%(Platforms.Identity)</ProductCodeProperty>
-        <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCode%(Platforms.Identity)</UpgradeCodeProperty>
-      </DotNetPayload>
-    </ItemGroup>
-
-    <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductVersion">
-      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
-    </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductCode">
-      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
-    </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="UpgradeCode">
-      <Output TaskParameter="Value" PropertyName="%(UpgradeCodeProperty)" />
-    </GetMsiProperty>
-
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx64=$(DotNetRedistLtsInstallerx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx64=$(DotNetRedistLtsInstallerProductVersionx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex64=$(DotNetRedistLtsInstallerProductCodex64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex64=$(DotNetRedistLtsInstallerUpgradeCodex64)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerx86=$(DotNetRedistLtsInstallerx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx86=$(DotNetRedistLtsInstallerProductVersionx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex86=$(DotNetRedistLtsInstallerProductCodex86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex86=$(DotNetRedistLtsInstallerUpgradeCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerarm64=$(DotNetRedistLtsInstallerarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionarm64=$(DotNetRedistLtsInstallerProductVersionarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodearm64=$(DotNetRedistLtsInstallerProductCodearm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodearm64=$(DotNetRedistLtsInstallerUpgradeCodearm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostInstallerx64=$(DotNetRedistHostInstallerx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostInstallerx86=$(DotNetRedistHostInstallerx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostInstallerarm64=$(DotNetRedistHostInstallerarm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostfxrInstallerx64=$(DotNetRedistHostfxrInstallerx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostfxrInstallerx86=$(DotNetRedistHostfxrInstallerx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistHostfxrInstallerarm64=$(DotNetRedistHostfxrInstallerarm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

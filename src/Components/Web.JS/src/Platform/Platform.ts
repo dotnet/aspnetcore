@@ -3,9 +3,9 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { MonoObject, MonoString, MonoArray } from 'dotnet-runtime/dotnet-legacy';
+import { MonoObject, MonoString, MonoArray } from '@microsoft/dotnet-runtime/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
-import { MonoConfig } from 'dotnet-runtime';
+import { MonoConfig } from '@microsoft/dotnet-runtime';
 
 export interface Platform {
   load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void>;

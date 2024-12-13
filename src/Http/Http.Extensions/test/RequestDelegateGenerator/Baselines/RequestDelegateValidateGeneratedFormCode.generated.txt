@@ -14,7 +14,7 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
-        public InterceptsLocationAttribute(string filePath, int line, int column)
+        public InterceptsLocationAttribute(int version, string data)
         {
         }
     }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
 
-        [InterceptsLocation(@"TestMapActions.cs", 30, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPost0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -71,6 +71,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("httpContext", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("file", parameters[1], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("fileCollection", parameters[2], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("collection", parameters[3], hasTryParse: false, hasBindAsync: false, isOptional: false));
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("tryParseRecord", parameters[4], hasTryParse: true, hasBindAsync: false, isOptional: false));
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -387,6 +393,33 @@ file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+    %GENERATEDCODEATTRIBUTE%
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
+    {
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
+
+        public string Name { get; }
+
+        public bool HasTryParse { get; }
+
+        public bool HasBindAsync { get; }
+
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
+    }
 
     %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper

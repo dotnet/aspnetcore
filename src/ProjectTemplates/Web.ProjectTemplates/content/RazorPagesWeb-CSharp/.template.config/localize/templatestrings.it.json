@@ -30,7 +30,7 @@
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se IndividualB2C, SingleOrg o MultiOrg non vengono usati per --auth.",
   "symbols/UseLocalDB/description": "Indica se usare LocalDB invece di SQLite. Questa opzione si applica solo se è specificato --auth Individual o --auth IndividualB2C.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/CalledApiUrl/description": "URL dell'API da chiamare dall'app Web. Questa opzione si applica solo se si specifica --auth SingleOrg, --auth MultiOrg o --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Specifica se l'app Web chiama Microsoft Graph. Questa opzione si applica solo se è specificato --auth SingleOrg o --auth MultiOrg.",
   "symbols/CalledApiScopes/description": "Ambiti per richiedere di chiamare l'API dall'app Web. Questa opzione si applica solo se è specificato --auth SingleOrg, --auth MultiOrg o --auth IndividualB2C.",

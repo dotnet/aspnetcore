@@ -35,7 +35,7 @@ internal static class HttpHelpers
         throw new Exception($"Couldn't find {nameof(HttpProtocolException)}. Original error: {ex}");
     }
 
-    public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false)
+    public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false, int? maxResponseHeadersLength = null)
     {
         var handler = new SocketsHttpHandler();
         handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
@@ -55,10 +55,15 @@ internal static class HttpHelpers
             handler.PooledConnectionIdleTimeout = idleTimeout.Value;
         }
 
+        if (maxResponseHeadersLength != null)
+        {
+            handler.MaxResponseHeadersLength = maxResponseHeadersLength.Value;
+        }
+
         return new HttpMessageInvoker(handler);
     }
 
-    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null)
+    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null, TimeSpan? shutdownTimeout = null)
     {
         return new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -97,7 +102,7 @@ internal static class HttpHelpers
                 }
                 else
                 {
-                    o.ShutdownTimeout = TimeSpan.FromSeconds(5);
+                    o.ShutdownTimeout = shutdownTimeout ?? TimeSpan.FromSeconds(5);
                 }
             });
     }

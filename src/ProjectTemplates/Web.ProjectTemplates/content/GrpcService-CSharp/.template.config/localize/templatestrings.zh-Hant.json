@@ -3,7 +3,7 @@
   "name": "ASP.NET Core gRPC 服務",
   "description": "使用 ASP.NET Core 建立 gRPC 服務的專案範本，選擇性支援發佈為 Native AOT。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",

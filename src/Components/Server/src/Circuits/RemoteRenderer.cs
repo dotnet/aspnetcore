@@ -18,11 +18,13 @@ internal partial class RemoteRenderer : WebRenderer
 #pragma warning restore CA1852 // Seal internal types
 {
     private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
+    private static readonly RendererInfo _componentPlatform = new("Server", isInteractive: true);
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;
     private readonly IServerComponentDeserializer _serverComponentDeserializer;
     private readonly ILogger _logger;
+    private readonly ResourceAssetCollection _resourceCollection;
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
     private bool _disposing;
@@ -43,18 +45,26 @@ internal partial class RemoteRenderer : WebRenderer
         IServerComponentDeserializer serverComponentDeserializer,
         ILogger logger,
         RemoteJSRuntime jsRuntime,
-        CircuitJSComponentInterop jsComponentInterop)
+        CircuitJSComponentInterop jsComponentInterop,
+        ResourceAssetCollection resourceCollection = null)
         : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _client = client;
         _options = options;
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
+        _resourceCollection = resourceCollection;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+    protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
     public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
     {

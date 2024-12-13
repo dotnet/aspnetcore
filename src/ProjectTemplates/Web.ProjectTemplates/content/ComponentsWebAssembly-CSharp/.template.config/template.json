@@ -11,7 +11,7 @@
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm",
-  "precedence": "9900",
+  "precedence": "10000",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
@@ -19,8 +19,8 @@
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98",
     "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
-  "identity": "Microsoft.Web.Blazor.Wasm.CSharp.9.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
+  "identity": "Microsoft.Web.Blazor.Wasm.CSharp.10.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -124,8 +124,7 @@
             "Pages/Weather.*",
             "Layout/MainLayout.razor.css",
             "Layout/NavMenu.*",
-            "wwwroot/css/bootstrap/**",
-            "wwwroot/css/bootstrap-icons/**",
+            "wwwroot/lib/**",
             "wwwroot/favicon.png",
             "wwwroot/sample-data/weather.json"
           ]
@@ -140,12 +139,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "HostIdentifier": {
       "type": "bind",

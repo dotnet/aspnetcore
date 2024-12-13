@@ -211,6 +211,8 @@
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.GlobbingUrlBuilder.get -> Microsoft.AspNetCore.Mvc.TagHelpers.GlobbingUrlBuilder
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.GlobbingUrlBuilder.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.HostingEnvironment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ImportMap.get -> Microsoft.AspNetCore.Components.ImportMapDefinition
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ImportMap.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.JavaScriptEncoder.get -> System.Text.Encodings.Web.JavaScriptEncoder
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ScriptTagHelper(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Text.Encodings.Web.JavaScriptEncoder javaScriptEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Src.get -> string
@@ -219,6 +221,8 @@
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.SrcExclude.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.SrcInclude.get -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.SrcInclude.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Type.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Type.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper.For.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression
 ~Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper.For.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper.Generator.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator

@@ -7,7 +7,7 @@ fi
 
 Log()
 {
-    if [ $VERBOSE -ge $1 ]; then
+    if [ $VERBOSE -ge 1 ]; then
         echo ${@:2}
     fi
 }

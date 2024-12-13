@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- This file is used by the dotnet/sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
+    <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
+    <BaseRuntimeVersionFileOutputPath>$(InstallersOutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
+    <!--
+      This version file is required by source-build.
+    -->
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <Target Name="WriteBaseRuntimeVersionFile" AfterTargets="Build">
+    <WriteLinesToFile File="$(BaseRuntimeVersionFileOutputPath)"
+                      Lines="$(MicrosoftNETCoreAppRuntimeVersion)"
+                      Overwrite="true" />
+  </Target>
+</Project>

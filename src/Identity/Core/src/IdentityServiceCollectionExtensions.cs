@@ -171,12 +171,14 @@ public static class IdentityServiceCollectionExtensions
 
     private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
     {
-        public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+        public PostConfigureSecurityStampValidatorOptions(TimeProvider? timeProvider = null)
         {
+            // We could assign this to "timeProvider ?? TimeProvider.System", but
+            // SecurityStampValidator already has system clock fallback logic.
             TimeProvider = timeProvider;
         }
 
-        private TimeProvider TimeProvider { get; }
+        private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
         {

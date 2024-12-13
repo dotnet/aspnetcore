@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.Extensions.ApiDescription.Tool.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
+    <Content Include="..\sample\*" LinkBase="TestProject\" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GetDocument.Insider" />
+    <Reference Include="Microsoft.OpenApi.Readers" />
+    <ProjectReference Include="$(RepoRoot)\src\Tools\GetDocumentInsider\sample\GetDocumentSample.csproj" />
+  </ItemGroup>
+
+</Project>

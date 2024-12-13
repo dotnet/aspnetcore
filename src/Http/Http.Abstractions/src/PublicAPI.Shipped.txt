@@ -274,10 +274,10 @@ Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.HostString.Host.get -> string!
 Microsoft.AspNetCore.Http.HostString.HostString() -> void
 Microsoft.AspNetCore.Http.HostString.HostString(string! host, int port) -> void
-Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 Microsoft.AspNetCore.Http.HostString.Port.get -> int?
 Microsoft.AspNetCore.Http.HostString.ToUriComponent() -> string!
-Microsoft.AspNetCore.Http.HostString.Value.get -> string!
+Microsoft.AspNetCore.Http.HostString.Value.get -> string?
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpContext.HttpContext() -> void
 Microsoft.AspNetCore.Http.HttpMethods
@@ -294,6 +294,7 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Coll
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IContentTypeHttpResult
@@ -344,6 +345,7 @@ Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.IDisableHttpMetricsMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider
@@ -374,6 +376,12 @@ Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasBindAsync.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasTryParse.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.IsOptional.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.Name.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -> System.Reflection.ParameterInfo!
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int

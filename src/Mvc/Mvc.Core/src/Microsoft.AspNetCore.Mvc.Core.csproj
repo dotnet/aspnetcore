@@ -16,6 +16,12 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <!-- Mark this assembly as trimmable to support the LinkabilityChecker and trim warnings
+    for end-users but disable the analyzers since the entire assembly has not been made
+    trim/AoT compatible. -->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableAoTAnalyzer>false</EnableAoTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -90,6 +96,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

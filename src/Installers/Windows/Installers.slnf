@@ -5,10 +5,7 @@
       "src\\Installers\\Windows\\AspNetCoreModule-Setup\\CustomAction\\aspnetcoreCA.vcxproj",
       "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\iisca\\lib\\iisca.vcxproj",
       "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\IIS-Common\\lib\\IISSetup.CommonLib.vcxproj",
-      "src\\Installers\\Windows\\SharedFrameworkLib\\SharedFrameworkLib.wixproj",
-      "src\\Installers\\Windows\\SharedFrameworkBundle\\SharedFrameworkBundle.wixproj",
-      "src\\Installers\\Windows\\WindowsHostingBundle\\WindowsHostingBundle.wixproj",
-      "src\\Installers\\Windows\\SharedFramework\\SharedFramework.wixproj"
+      "src\\Installers\\Windows\\WindowsHostingBundle\\WindowsHostingBundle.wixproj"
     ]
   }
 }

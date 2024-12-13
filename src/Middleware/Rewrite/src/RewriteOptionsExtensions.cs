@@ -50,7 +50,8 @@ public static class RewriteOptionsExtensions
     }
 
     /// <summary>
-    /// Redirect the request if the regex matches the HttpContext's PathString
+    /// Redirect the request if the regex matches the HttpContext's PathString, with returning a 302
+    /// status code for found.
     /// </summary>
     /// <param name="options">The <see cref="RewriteOptions"/>.</param>
     /// <param name="regex">The regex string to compare with.</param>

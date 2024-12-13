@@ -25,7 +25,7 @@ The following contains a description of each sub-directory in the `Http` directo
 
 ## Development Setup
 
-To run the code generation using [T4 Text Templates](https://learn.microsoft.com/en-us/visualstudio/modeling/code-generation-and-t4-text-templates), you can use an IDE that supports it (eg. Visual Studio or JetBrains Rider) or install the cross-platform open-source dotnet tool [Mono/T4](https://github.com/mono/t4).
+To run the code generation using [T4 Text Templates](https://learn.microsoft.com/visualstudio/modeling/code-generation-and-t4-text-templates), you can use an IDE that supports it (eg. Visual Studio or JetBrains Rider) or install the cross-platform open-source dotnet tool [Mono/T4](https://github.com/mono/t4).
 
 ```powershell
 > dotnet tool install -g dotnet-t4

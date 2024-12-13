@@ -9,6 +9,7 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <BuildHelixPayload Condition="'$(RunTemplateTests)' != 'true'">false</BuildHelixPayload>
 
     <BaseOutputPath />
     <OutputPath />
@@ -18,7 +19,16 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <RestoreFolderName>Mvc</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
-    <HelixTimeout>01:50:00</HelixTimeout>
+    <HelixTimeout>02:30:00</HelixTimeout>
+
+    <!-- These tests fail in Helix in Debian and Mariner due to error -901 -->
+    <!-- Disabling on those OSes until a better fix can be identified -->
+    <SkipHelixQueues>
+      $(HelixQueueArmDebian12);
+      $(HelixQueueDebian12);
+      $(HelixQueueMariner);
+      $(SkipHelixQueues)
+    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,7 +53,7 @@
   <ItemGroup>
     <Reference Include="AngleSharp" />
     <Reference Include="System.Net.Http" />
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

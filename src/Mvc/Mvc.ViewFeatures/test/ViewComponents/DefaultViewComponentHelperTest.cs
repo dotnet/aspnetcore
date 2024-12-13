@@ -22,7 +22,7 @@ public class DefaultViewComponentHelperTest
         var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, null);
 
         // Assert
-        Assert.Equal(0, argumentDictionary.Count);
+        Assert.Empty(argumentDictionary);
         Assert.IsType<Dictionary<string, object>>(argumentDictionary);
     }
 

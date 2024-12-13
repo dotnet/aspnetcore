@@ -16,14 +16,14 @@ class HASH_NODE
     HASH_NODE(
         _Record *       pRecord,
         DWORD           dwHash
-    ) : _pNext (NULL),
+    ) : _pNext (nullptr),
         _pRecord (pRecord),
         _dwHash (dwHash)
     {}
 
     ~HASH_NODE()
     {
-        _ASSERTE(_pRecord == NULL);
+        _ASSERTE(_pRecord == nullptr);
     }
 
  private:
@@ -57,7 +57,7 @@ public:
     HASH_TABLE(
         VOID
     )
-      : _ppBuckets( NULL ),
+      : _ppBuckets(nullptr),
         _nBuckets( 0 ),
         _nItems( 0 )
     {
@@ -158,7 +158,7 @@ private:
         __deref_out
         HASH_NODE<_Record> **   ppNode,
         __deref_opt_out
-        HASH_NODE<_Record> ***  pppPreviousNodeNextPointer = NULL
+        HASH_NODE<_Record> ***  pppPreviousNodeNextPointer = nullptr
     );
 
     VOID
@@ -166,10 +166,10 @@ private:
         HASH_NODE<_Record> *    pNode
     )
     {
-        if (pNode->_pRecord != NULL)
+        if (pNode->_pRecord != nullptr)
         {
             DereferenceRecord(pNode->_pRecord);
-            pNode->_pRecord = NULL;
+            pNode->_pRecord = nullptr;
         }
 
         delete pNode;
@@ -210,8 +210,8 @@ HASH_TABLE<_Record,_Key>::Initialize(
         goto Failed;
     }
 
-    _ASSERTE(_ppBuckets == NULL );
-    if ( _ppBuckets != NULL )
+    _ASSERTE(_ppBuckets == nullptr);
+    if (_ppBuckets != nullptr)
     {
         hr = E_INVALIDARG;
         goto Failed;
@@ -227,7 +227,7 @@ HASH_TABLE<_Record,_Key>::Initialize(
                             GetProcessHeap(),
                             HEAP_ZERO_MEMORY,
                             nBuckets*sizeof(HASH_NODE<_Record> *));
-    if (_ppBuckets == NULL)
+    if (_ppBuckets == nullptr)
     {
         hr = HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
         goto Failed;
@@ -243,7 +243,7 @@ Failed:
         HeapFree(GetProcessHeap(),
                  0,
                  _ppBuckets);
-        _ppBuckets = NULL;
+        _ppBuckets = nullptr;
     }
 
     return hr;
@@ -253,7 +253,7 @@ Failed:
 template <class _Record, class _Key>
 HASH_TABLE<_Record,_Key>::~HASH_TABLE()
 {
-    if (_ppBuckets == NULL)
+    if (_ppBuckets == nullptr)
     {
         return;
     }
@@ -263,7 +263,7 @@ HASH_TABLE<_Record,_Key>::~HASH_TABLE()
     HeapFree(GetProcessHeap(),
              0,
              _ppBuckets);
-    _ppBuckets = NULL;
+    _ppBuckets = nullptr;
     _nBuckets = 0;
 }
 
@@ -288,8 +288,8 @@ template <class _Record, class _Key>
 VOID
 HASH_TABLE<_Record,_Key>::Clear()
 {
-    HASH_NODE<_Record> *pCurrent;
-    HASH_NODE<_Record> *pNext;
+    HASH_NODE<_Record> *pCurrent = nullptr;
+    HASH_NODE<_Record> *pNext = nullptr;
 
     // This is here in the off cases where someone instantiates a hashtable
     // and then does an automatic "clear" before its destruction WITHOUT
@@ -304,8 +304,8 @@ HASH_TABLE<_Record,_Key>::Clear()
     for (DWORD i=0; i<_nBuckets; i++)
     {
         pCurrent = _ppBuckets[i];
-        _ppBuckets[i] = NULL;
-        while (pCurrent != NULL)
+        _ppBuckets[i] = nullptr;
+        while (pCurrent != nullptr)
         {
             pNext = pCurrent->_pNext;
             DeleteNode(pCurrent);
@@ -318,7 +318,7 @@ HASH_TABLE<_Record,_Key>::Clear()
 }
 
 template <class _Record, class _Key>
-__success(*ppNode != NULL && return != FALSE)
+__success(*ppNode != nullptr && return != FALSE)
 BOOL
 HASH_TABLE<_Record,_Key>::FindNodeInternal(
     _Key                    key,
@@ -338,13 +338,13 @@ HASH_TABLE<_Record,_Key>::FindNodeInternal(
   This routine may be called under either read or write lock
 --*/
 {
-    HASH_NODE<_Record> **ppPreviousNodeNextPointer;
-    HASH_NODE<_Record> *pNode;
+    HASH_NODE<_Record> **ppPreviousNodeNextPointer = nullptr;
+    HASH_NODE<_Record> *pNode = nullptr;
     BOOL fFound = FALSE;
 
     ppPreviousNodeNextPointer = _ppBuckets + (dwHash % _nBuckets);
     pNode = *ppPreviousNodeNextPointer;
-    while (pNode != NULL)
+    while (pNode != nullptr)
     {
         if (pNode->_dwHash == dwHash)
         {
@@ -364,10 +364,10 @@ HASH_TABLE<_Record,_Key>::FindNodeInternal(
         pNode = *ppPreviousNodeNextPointer;
     }
 
-    __analysis_assume( (pNode == NULL && fFound == FALSE) ||
-                       (pNode != NULL && fFound == TRUE ) );
+    __analysis_assume( (pNode == nullptr && fFound == FALSE) ||
+                       (pNode != nullptr && fFound == TRUE ) );
     *ppNode = pNode;
-    if (pppPreviousNodeNextPointer != NULL)
+    if (pppPreviousNodeNextPointer != nullptr)
     {
         *pppPreviousNodeNextPointer = ppPreviousNodeNextPointer;
     }
@@ -381,16 +381,19 @@ HASH_TABLE<_Record,_Key>::FindKey(
     _Record **          ppRecord
 )
 {
-    HASH_NODE<_Record> *pNode;
+    HASH_NODE<_Record> *pNode = nullptr;
 
-    *ppRecord = NULL;
+    *ppRecord = nullptr;
 
     DWORD dwHash = CalcKeyHash(key);
 
     _tableLock.SharedAcquire();
 
+    // Dereferencing NULL pointer 'pNode'
+    // FindNodeInternal will set a non-null pNode when true is returned, just need to figure out how to correctly SAL the method
+#pragma warning(suppress: 6011)
     if (FindNodeInternal(key, dwHash, &pNode) &&
-        pNode->_pRecord != NULL)
+        pNode->_pRecord != nullptr)
     {
         ReferenceRecord(pNode->_pRecord);
         *ppRecord = pNode->_pRecord;
@@ -421,9 +424,9 @@ HASH_TABLE<_Record,_Key>::InsertRecord(
     _Key key = ExtractKey(pRecord);
     DWORD dwHash = CalcKeyHash(key);
     HRESULT hr = S_OK;
-    HASH_NODE<_Record> *    pNewNode;
-    HASH_NODE<_Record> *    pNextNode;
-    HASH_NODE<_Record> **   ppPreviousNodeNextPointer;
+    HASH_NODE<_Record> *    pNewNode = nullptr;
+    HASH_NODE<_Record> *    pNextNode = nullptr;
+    HASH_NODE<_Record> **   ppPreviousNodeNextPointer = nullptr;
 
     //
     // Ownership of pRecord is not transferred to pNewNode yet, so remember
@@ -432,7 +435,7 @@ HASH_TABLE<_Record,_Key>::InsertRecord(
     // which users may view as getting flushed out of the hash-table
     //
     pNewNode = new HASH_NODE<_Record>(pRecord, dwHash);
-    if (pNewNode == NULL)
+    if (pNewNode == nullptr)
     {
         hr = HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
         goto Finished;
@@ -451,7 +454,7 @@ HASH_TABLE<_Record,_Key>::InsertRecord(
             //
             // If node already there, return error
             //
-            pNewNode->_pRecord = NULL;
+            pNewNode->_pRecord = nullptr;
             DeleteNode(pNewNode);
 
             //
@@ -470,10 +473,10 @@ HASH_TABLE<_Record,_Key>::InsertRecord(
                                                pNewNode,
                                                pNextNode) != pNextNode);
     // pass ownership of pRecord now
-    if (pRecord != NULL)
+    if (pRecord != nullptr)
     {
         ReferenceRecord(pRecord);
-        pRecord = NULL;
+        pRecord = nullptr;
     }
     InterlockedIncrement((LONG *)&_nItems);
 
@@ -498,8 +501,8 @@ HASH_TABLE<_Record,_Key>::DeleteKey(
     _Key        key
 )
 {
-    HASH_NODE<_Record> *pNode;
-    HASH_NODE<_Record> **ppPreviousNodeNextPointer;
+    HASH_NODE<_Record> *pNode = nullptr;
+    HASH_NODE<_Record> **ppPreviousNodeNextPointer = nullptr;
 
     DWORD dwHash = CalcKeyHash(key);
 
@@ -507,6 +510,9 @@ HASH_TABLE<_Record,_Key>::DeleteKey(
 
     if (FindNodeInternal(key, dwHash, &pNode, &ppPreviousNodeNextPointer))
     {
+        // Dereferencing NULL pointer 'pNode'
+        // FindNodeInternal will set a non-null pNode when true is returned, just need to figure out how to correctly SAL the method
+#pragma warning(suppress: 6011)
         *ppPreviousNodeNextPointer = pNode->_pNext;
         DeleteNode(pNode);
         _nItems--;
@@ -522,8 +528,8 @@ HASH_TABLE<_Record,_Key>::DeleteIf(
     PVOID                       pvContext
 )
 {
-    HASH_NODE<_Record> *pNode;
-    HASH_NODE<_Record> **ppPreviousNodeNextPointer;
+    HASH_NODE<_Record> *pNode = nullptr;
+    HASH_NODE<_Record> **ppPreviousNodeNextPointer = nullptr;
 
     _tableLock.ExclusiveAcquire();
 
@@ -531,7 +537,7 @@ HASH_TABLE<_Record,_Key>::DeleteIf(
     {
         ppPreviousNodeNextPointer = _ppBuckets + i;
         pNode = *ppPreviousNodeNextPointer;
-        while (pNode != NULL)
+        while (pNode != nullptr)
         {
             //
             // Non empty nodes deleted based on DeleteIf, empty nodes deleted
@@ -562,16 +568,16 @@ HASH_TABLE<_Record,_Key>::Apply(
     PVOID                       pvContext
 )
 {
-    HASH_NODE<_Record> *pNode;
+    HASH_NODE<_Record> *pNode = nullptr;
 
     _tableLock.SharedAcquire();
 
     for (DWORD i=0; i<_nBuckets; i++)
     {
         pNode = _ppBuckets[i];
-        while (pNode != NULL)
+        while (pNode != nullptr)
         {
-            if (pNode->_pRecord != NULL)
+            if (pNode->_pRecord != nullptr)
             {
                 pfnApply(pNode->_pRecord, pvContext);
             }
@@ -589,13 +595,13 @@ HASH_TABLE<_Record,_Key>::RehashTableIfNeeded(
     VOID
 )
 {
-    HASH_NODE<_Record> **ppBuckets;
-    DWORD nBuckets;
-    HASH_NODE<_Record> *pNode;
-    HASH_NODE<_Record> *pNextNode;
-    HASH_NODE<_Record> **ppNextPointer;
-    HASH_NODE<_Record> *pNewNextNode;
-    DWORD               nNewBuckets;
+    HASH_NODE<_Record> **ppBuckets = nullptr;
+    DWORD nBuckets = 0;
+    HASH_NODE<_Record> *pNode = nullptr;
+    HASH_NODE<_Record> *pNextNode = nullptr;
+    HASH_NODE<_Record> **ppNextPointer = nullptr;
+    HASH_NODE<_Record> *pNewNextNode = nullptr;
+    DWORD               nNewBuckets = 0;
 
     //
     // If number of items has become too many, we will double the hash table
@@ -624,7 +630,7 @@ HASH_TABLE<_Record,_Key>::RehashTableIfNeeded(
                         GetProcessHeap(),
                         HEAP_ZERO_MEMORY,
                         nBuckets*sizeof(HASH_NODE<_Record> *));
-    if (ppBuckets == NULL)
+    if (ppBuckets == nullptr)
     {
         goto Finished;
     }
@@ -636,13 +642,13 @@ HASH_TABLE<_Record,_Key>::RehashTableIfNeeded(
     for (DWORD i=0; i<_nBuckets; i++)
     {
         pNode = _ppBuckets[i];
-        while (pNode != NULL)
+        while (pNode != nullptr)
         {
             pNextNode = pNode->_pNext;
 
             ppNextPointer = ppBuckets + (pNode->_dwHash % nBuckets);
             pNewNextNode = *ppNextPointer;
-            while (pNewNextNode != NULL &&
+            while (pNewNextNode != nullptr &&
                    pNewNextNode->_dwHash <= pNode->_dwHash)
             {
                 ppNextPointer = &pNewNextNode->_pNext;
@@ -658,7 +664,7 @@ HASH_TABLE<_Record,_Key>::RehashTableIfNeeded(
     HeapFree(GetProcessHeap(), 0, _ppBuckets);
     _ppBuckets = ppBuckets;
     _nBuckets = nBuckets;
-    ppBuckets = NULL;
+    ppBuckets = nullptr;
 
 Finished:
 

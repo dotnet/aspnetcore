@@ -17,5 +17,8 @@ internal partial class RequestContext
 
         [LoggerMessage(LoggerEventIds.ChannelBindingRetrieved, LogLevel.Debug, "Channel binding retrieved.", EventName = "ChannelBindingRetrieved")]
         public static partial void ChannelBindingRetrieved(ILogger logger);
+
+        [LoggerMessage(LoggerEventIds.RequestParsingError, LogLevel.Debug, "Failed to parse request.", EventName = "RequestParsingError")]
+        public static partial void RequestParsingError(ILogger logger, Exception exception);
     }
 }

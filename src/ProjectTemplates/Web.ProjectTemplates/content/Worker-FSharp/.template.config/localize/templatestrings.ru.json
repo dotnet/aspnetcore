@@ -4,7 +4,7 @@
   "description": "Шаблон пустого проекта для создания службы Worker Service.",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""

@@ -68,7 +68,7 @@
       "src\\SignalR\\samples\\WebSocketSample\\WebSocketSample.csproj",
       "src\\SignalR\\server\\Core\\src\\Microsoft.AspNetCore.SignalR.Core.csproj",
       "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",
-      "src\\SignalR\\server\\SignalR\\test\\Microsoft.AspNetCore.SignalR.Tests.csproj",
+      "src\\SignalR\\server\\SignalR\\test\\Microsoft.AspNetCore.SignalR.Tests\\Microsoft.AspNetCore.SignalR.Tests.csproj",
       "src\\SignalR\\server\\Specification.Tests\\src\\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\src\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\test\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj",

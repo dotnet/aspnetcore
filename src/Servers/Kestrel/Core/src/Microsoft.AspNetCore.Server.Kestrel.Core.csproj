@@ -22,6 +22,7 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\InternalHeaderNames.cs"/>
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\Infrastructure\PipeWriterHelpers" />
     <Compile Include="$(SharedSourceRoot)runtime\*.cs" Link="Shared\runtime\%(Filename)%(Extension)" />
@@ -32,7 +33,10 @@
     <Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

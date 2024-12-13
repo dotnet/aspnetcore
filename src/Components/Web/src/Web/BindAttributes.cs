@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Components.Web;
 [BindInputElement("date", "value", "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-dd")]
 
 // type="datetime-local" is invariant culture with a specific format.
-// See https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings for details.
+// See https://learn.microsoft.com/dotnet/standard/base-types/standard-date-and-time-format-strings for details.
 [BindInputElement("datetime-local", null, "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-ddTHH:mm:ss")]
 [BindInputElement("datetime-local", "value", "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-ddTHH:mm:ss")]
 
 // type="month" is invariant culture with a specific format.
-// See https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings for details.
+// See https://learn.microsoft.com/dotnet/standard/base-types/standard-date-and-time-format-strings for details.
 [BindInputElement("month", null, "value", "onchange", isInvariantCulture: true, format: "yyyy-MM")]
 [BindInputElement("month", "value", "value", "onchange", isInvariantCulture: true, format: "yyyy-MM")]
 

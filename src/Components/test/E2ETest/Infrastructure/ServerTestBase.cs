@@ -26,9 +26,9 @@ public abstract class ServerTestBase<TServerFixture>
         _serverFixture = serverFixture;
     }
 
-    public void Navigate(string relativeUrl, bool noReload = false)
+    public void Navigate(string relativeUrl)
     {
-        Browser.Navigate(_serverFixture.RootUri, relativeUrl, noReload);
+        Browser.Navigate(_serverFixture.RootUri, relativeUrl);
     }
 
     protected override void InitializeAsyncCore()

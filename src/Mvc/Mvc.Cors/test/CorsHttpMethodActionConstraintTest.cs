@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 
 public class CorsHttpMethodActionConstraintTest
 {
-    public static TheoryData AcceptCaseInsensitiveData =
+    public static TheoryData<IEnumerable<string>, string> AcceptCaseInsensitiveData =
         new TheoryData<IEnumerable<string>, string>
         {
                 { new string[] { "get", "Get", "GET", "GEt"}, "gEt" },

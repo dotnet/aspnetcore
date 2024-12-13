@@ -3,7 +3,7 @@
   "name": "Webová aplikace Blazor",
   "description": "Šablona projektu pro vytvoření webové aplikace Blazor, která podporuje vykreslování na straně serveru i interaktivitu klienta. Tato šablona se dá použít pro webové aplikace s bohatými dynamickými uživatelskými rozhraními (UI).",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "ID, které se má použít pro tajné kódy (používá se s individuálním ověřováním).",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",

@@ -245,7 +245,7 @@ public class HtmlHelperNameExtensionsTest
     }
 
     // expression, expected name, expected id
-    public static TheoryData StaticExpressionNamesData
+    public static TheoryData<Expression<Func<List<OuterClass>, string>>, string, string> StaticExpressionNamesData
     {
         get
         {
@@ -256,7 +256,7 @@ public class HtmlHelperNameExtensionsTest
     }
 
     // expression, expected name, expected id
-    private TheoryData ExpressionNamesData
+    private TheoryData<Expression<Func<List<OuterClass>, string>>, string, string> ExpressionNamesData
     {
         get
         {

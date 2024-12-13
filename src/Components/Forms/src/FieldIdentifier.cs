@@ -126,7 +126,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                         // so, given that it embeds captured values such as "this". We could consider special-casing
                         // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
                         // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-                        var modelLambda = Expression.Lambda(memberExpression.Expression);
+                        var modelLambda = Expression.Lambda(typeof(Func<object?>), memberExpression.Expression);
                         var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
                         var result = modelLambdaCompiled() ??
                             throw new ArgumentException("The provided expression must evaluate to a non-null value.");
@@ -201,7 +201,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     private static object GetModelFromIndexer(Expression methodCallExpression)
     {
         object model;
-        var methodCallObjectLambda = Expression.Lambda(methodCallExpression!);
+        var methodCallObjectLambda = Expression.Lambda(typeof(Func<object?>), methodCallExpression!);
         var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
         var result = methodCallObjectLambdaCompiled();
         if (result is null)

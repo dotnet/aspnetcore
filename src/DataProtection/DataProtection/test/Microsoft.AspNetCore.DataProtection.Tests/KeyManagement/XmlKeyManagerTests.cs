@@ -328,7 +328,7 @@ public class XmlKeyManagerTests
         var keys = RunGetAllKeysCore(xml, activator);
 
         // Assert
-        Assert.Equal(0, keys.Count);
+        Assert.Empty(keys);
     }
 
     [Fact]
@@ -742,6 +742,281 @@ public class XmlKeyManagerTests
 
         // Assert
         Assert.InRange(actualRevocationDate.Value, minRevocationDate, DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public void CreatedKeyReused()
+    {
+        // Arrange
+
+        // The only descriptor we'll use
+        var descriptor = new Mock<IAuthenticatedEncryptorDescriptor>(MockBehavior.Strict);
+        descriptor
+            .Setup(o => o.ExportToXml())
+            // Shouldn't be an interface, but we control the activator and will return a mock
+            .Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(IAuthenticatedEncryptorDescriptorDeserializer)));
+
+        // The factory always returns the only descriptor
+        var authenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>(MockBehavior.Strict);
+        authenticatedEncryptorConfiguration
+            .Setup(o => o.CreateNewDescriptor())
+            .Returns(descriptor.Object);
+
+        // Any xml element deserializes to the only descriptor
+        var descriptorDeserializer = new Mock<IAuthenticatedEncryptorDescriptorDeserializer>(MockBehavior.Strict);
+        descriptorDeserializer
+            .Setup(o => o.ImportFromXml(It.IsAny<XElement>()))
+            .Returns(descriptor.Object);
+
+        // Keep track of how many times a key needs to be decrypted
+        var decryptionCount = 0;
+        var decryptor = new Mock<IXmlDecryptor>(MockBehavior.Strict);
+        decryptor
+            .Setup(o => o.Decrypt(It.IsAny<XElement>()))
+            .Returns<XElement>(element =>
+            {
+                decryptionCount++;
+                return element;
+            });
+
+        // We need a simple encryptor for the newly created key
+        var encryptor = new Mock<IXmlEncryptor>(MockBehavior.Strict);
+        encryptor
+            .Setup(o => o.Encrypt(It.IsAny<XElement>()))
+            // Shouldn't be an interface, but we control the activator and will return a mock
+            .Returns<XElement>(element => new EncryptedXmlInfo(element, typeof(IXmlDecryptor)));
+
+        // We control deserialization by hooking activation
+        var activator = new Mock<IActivator>(MockBehavior.Strict);
+        activator
+            .Setup(o => o.CreateInstance(typeof(IXmlDecryptor), It.IsAny<string>()))
+            .Returns(decryptor.Object);
+        activator
+            .Setup(o => o.CreateInstance(typeof(IAuthenticatedEncryptorDescriptorDeserializer), It.IsAny<string>()))
+            .Returns(descriptorDeserializer.Object);
+
+        var keyManagementOptions = Options.Create(new KeyManagementOptions()
+        {
+            AuthenticatedEncryptorConfiguration = authenticatedEncryptorConfiguration.Object,
+            XmlRepository = new EphemeralXmlRepository(NullLoggerFactory.Instance), // A realistic repository is fine
+            XmlEncryptor = encryptor.Object,
+        });
+
+        var keyManager = new XmlKeyManager(keyManagementOptions, activator.Object);
+
+        var creationDate = DateTimeOffset.UtcNow;
+        var activationDate = creationDate.AddDays(2);
+        var expirationDate = creationDate.AddDays(90);
+
+        var createdKey = keyManager.CreateNewKey(activationDate, expirationDate);
+
+        // Force decryption, if encrypted.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
+        _ = createdKey.Descriptor;
+        Assert.Equal(0, decryptionCount);
+
+        // Act
+        var fetchedKeys = keyManager.GetAllKeys();
+
+        // Assert
+        var fetchedKey = Assert.Single(fetchedKeys);
+        Assert.NotSame(createdKey, fetchedKey); // It's mutable, so we don't want to reuse the same instance
+        Assert.Equal(createdKey.KeyId, fetchedKey.KeyId); // But it should be equivalent
+
+        // Nothing up to this point should have required decryption
+        Assert.Equal(0, decryptionCount);
+
+        // Force decryption, if encrypted.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
+        _ = fetchedKey.Descriptor;
+        Assert.Equal(0, decryptionCount);
+
+        var fetchedKeys2 = keyManager.GetAllKeys();
+
+        var fetchedKey2 = Assert.Single(fetchedKeys2);
+        Assert.NotSame(createdKey, fetchedKey2); // It's mutable, so we don't want to reuse the same instance
+        Assert.NotSame(fetchedKey, fetchedKey2);
+        Assert.Equal(createdKey.KeyId, fetchedKey2.KeyId); // But it should be equivalent
+
+        // Force decryption, if encrypted.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
+        _ = fetchedKey2.Descriptor;
+        Assert.Equal(0, decryptionCount);
+    }
+
+    [Fact]
+    public void NovelFetchedKeyRequiresDecryption()
+    {
+        // Arrange
+        var descriptorDeserializer = new Mock<IAuthenticatedEncryptorDescriptorDeserializer>(MockBehavior.Strict);
+        descriptorDeserializer
+            .Setup(o => o.ImportFromXml(It.IsAny<XElement>()))
+            .Returns(new Mock<IAuthenticatedEncryptorDescriptor>(MockBehavior.Strict).Object);
+
+        // Keep track of how many times a key needs to be decrypted
+        var decryptionCount = 0;
+        var decryptor = new Mock<IXmlDecryptor>(MockBehavior.Strict);
+        decryptor
+            .Setup(o => o.Decrypt(It.IsAny<XElement>()))
+            .Returns<XElement>(element =>
+            {
+                decryptionCount++;
+                return element;
+            });
+
+        var encryptor = new Mock<IXmlEncryptor>(MockBehavior.Strict);
+
+        // We control deserialization by hooking activation
+        var activator = new Mock<IActivator>(MockBehavior.Strict);
+        activator
+            .Setup(o => o.CreateInstance(typeof(IXmlDecryptor), It.IsAny<string>()))
+            .Returns(decryptor.Object);
+        activator
+            .Setup(o => o.CreateInstance(typeof(IAuthenticatedEncryptorDescriptorDeserializer), It.IsAny<string>()))
+            .Returns(descriptorDeserializer.Object);
+
+        var keyElement = XElement.Parse(@"
+<key id=""3d6d01fd-c0e7-44ae-82dd-013b996b4093"">
+    <creationDate>2015-01-01T00:00:00Z</creationDate>
+    <activationDate>2015-01-02T00:00:00Z</activationDate>
+    <expirationDate>2015-03-01T00:00:00Z</expirationDate>
+    <descriptor deserializerType=""SomeAQN1"">
+        <descriptor>
+        <encryption algorithm=""AES_256_CBC"" />
+        <validation algorithm=""HMACSHA256"" />
+        <encryptedSecret decryptorType=""SomeAQN2"" xmlns=""http://schemas.asp.net/2015/03/dataProtection"">
+            <encryptedKey xmlns="""">
+                <value>KeyAsBase64</value>
+            </encryptedKey>
+        </encryptedSecret>
+        </descriptor>
+    </descriptor>
+</key>
+");
+
+        var respository = new Mock<IXmlRepository>();
+        respository
+            .Setup(o => o.GetAllElements())
+            .Returns([keyElement]);
+
+        var keyManagementOptions = Options.Create(new KeyManagementOptions()
+        {
+            XmlRepository = respository.Object,
+            XmlEncryptor = encryptor.Object,
+        });
+
+        var keyManager = new XmlKeyManager(keyManagementOptions, activator.Object);
+
+        // Act
+        var fetchedKeys = keyManager.GetAllKeys();
+
+        // Assert
+        var fetchedKey = Assert.Single(fetchedKeys);
+
+        // Decryption is lazy
+        Assert.Equal(0, decryptionCount);
+
+        // Force decryption.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
+        _ = fetchedKey.Descriptor;
+        Assert.Equal(1, decryptionCount);
+
+        var fetchedKeys2 = keyManager.GetAllKeys();
+
+        var fetchedKey2 = Assert.Single(fetchedKeys2);
+        Assert.NotSame(fetchedKey, fetchedKey2); // It's mutable, so we don't want to reuse the same instance
+        Assert.Equal(fetchedKey.KeyId, fetchedKey2.KeyId); // But it should be equivalent
+
+        // Force decryption, if encrypted.  The real call would be CreateEncryptor(), but that would access Descriptor under the hood
+        _ = fetchedKey2.Descriptor;
+        Assert.Equal(1, decryptionCount); // Still 1 (i.e. no change)
+    }
+
+    [Fact]
+    public void DeleteKeys()
+    {
+        var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
+
+        var keyManager = new XmlKeyManager(
+            Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new AuthenticatedEncryptorConfiguration(),
+                XmlRepository = repository,
+                XmlEncryptor = null
+            }),
+            SimpleActivator.DefaultWithoutServices,
+            NullLoggerFactory.Instance);
+
+        var activationTime = DateTimeOffset.UtcNow.AddHours(1);
+
+        var key1 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1
+        var key2 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1 and key2
+        var key3 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        var key4 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+
+        keyManager.RevokeKey(key2.KeyId); // Revoked by time, but also individually
+        keyManager.RevokeKey(key3.KeyId);
+        keyManager.RevokeKey(key3.KeyId); // Nothing prevents us from revoking the same key twice
+
+        Assert.Equal(9, repository.GetAllElements().Count); // 4 keys, 2 time-revocations, 3 guid-revocations
+
+        // The keys are stale now, but we only care about the IDs
+
+        var keyDictWithRevocations = keyManager.GetAllKeys().ToDictionary(k => k.KeyId);
+        Assert.Equal(4, keyDictWithRevocations.Count);
+        Assert.True(keyDictWithRevocations[key1.KeyId].IsRevoked);
+        Assert.True(keyDictWithRevocations[key2.KeyId].IsRevoked);
+        Assert.True(keyDictWithRevocations[key3.KeyId].IsRevoked);
+        Assert.False(keyDictWithRevocations[key4.KeyId].IsRevoked);
+
+        Assert.True(keyManager.DeleteKeys(key => key.KeyId == key1.KeyId || key.KeyId == key3.KeyId));
+
+        Assert.Equal(4, repository.GetAllElements().Count); // 2 keys, 1 time-revocation, 1 guid-revocations
+
+        var keyDictWithDeletions = keyManager.GetAllKeys().ToDictionary(k => k.KeyId);
+        Assert.Equal(2, keyDictWithDeletions.Count);
+        Assert.DoesNotContain(key1.KeyId, keyDictWithDeletions.Keys);
+        Assert.True(keyDictWithRevocations[key2.KeyId].IsRevoked);
+        Assert.DoesNotContain(key3.KeyId, keyDictWithDeletions.Keys);
+        Assert.False(keyDictWithRevocations[key4.KeyId].IsRevoked);
+    }
+
+    [Fact]
+    public void CanDeleteKey()
+    {
+        var withDeletion = new XmlKeyManager(Options.Create(new KeyManagementOptions()
+        {
+            XmlRepository = XmlRepositoryWithDeletion.Instance,
+            XmlEncryptor = null
+        }), SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
+        Assert.True(withDeletion.CanDeleteKeys);
+
+        var withoutDeletion = new XmlKeyManager(Options.Create(new KeyManagementOptions()
+        {
+            XmlRepository = XmlRepositoryWithoutDeletion.Instance,
+            XmlEncryptor = null
+        }), SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
+        Assert.False(withoutDeletion.CanDeleteKeys);
+        Assert.Throws<NotSupportedException>(() => withoutDeletion.DeleteKeys(_ => false));
+    }
+
+    private sealed class XmlRepositoryWithoutDeletion : IXmlRepository
+    {
+        public static readonly IXmlRepository Instance = new XmlRepositoryWithoutDeletion();
+
+        private XmlRepositoryWithoutDeletion() { }
+
+        IReadOnlyCollection<XElement> IXmlRepository.GetAllElements() => [];
+        void IXmlRepository.StoreElement(XElement element, string friendlyName) => throw new InvalidOperationException();
+    }
+
+    private sealed class XmlRepositoryWithDeletion : IDeletableXmlRepository
+    {
+        public static readonly IDeletableXmlRepository Instance = new XmlRepositoryWithDeletion();
+
+        private XmlRepositoryWithDeletion() { }
+
+        IReadOnlyCollection<XElement> IXmlRepository.GetAllElements() => [];
+        void IXmlRepository.StoreElement(XElement element, string friendlyName) => throw new InvalidOperationException();
+        bool IDeletableXmlRepository.DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new InvalidOperationException();
     }
 
     private class MyDeserializer : IAuthenticatedEncryptorDescriptorDeserializer

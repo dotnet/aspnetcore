@@ -121,7 +121,9 @@ public class JSRuntimeTest
             ref reader);
         Assert.False(unrelatedTask.IsCompleted);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal("my result", task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -140,7 +142,9 @@ public class JSRuntimeTest
             /* succeeded: */ true,
             ref reader);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var poco = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Debug.Assert(poco != null);
         Assert.Equal(10, poco.Id);
         Assert.Equal("Test", poco.Name);
@@ -163,7 +167,9 @@ public class JSRuntimeTest
             /* succeeded: */ true,
             ref reader);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var poco = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Debug.Assert(poco != null);
         Assert.Equal(10, poco.Id);
         Assert.Equal("Test", poco.Name);
@@ -405,7 +411,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
+    public async Task ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
     {
         // Arrange
         var runtime = new TestJSRuntime();

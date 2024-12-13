@@ -232,5 +232,6 @@ static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(byte[]! inp
 static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(byte[]! input, int offset, char[]! output, int outputOffset, int count) -> int
 static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(byte[]! input, int offset, int count) -> string!
 static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.ReadOnlySpan<byte> input) -> string!
+static Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.ReadOnlySpan<byte> input, System.Span<char> output) -> int
 static Microsoft.AspNetCore.WebUtilities.WebEncoders.GetArraySizeRequiredToDecode(int count) -> int
 static Microsoft.AspNetCore.WebUtilities.WebEncoders.GetArraySizeRequiredToEncode(int count) -> int

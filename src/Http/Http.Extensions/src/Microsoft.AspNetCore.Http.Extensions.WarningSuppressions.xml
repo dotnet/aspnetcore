@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <linker>
-  <assembly fullname="Microsoft.AspNetCore.Http.Extensions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+  <assembly fullname="Microsoft.AspNetCore.Http.Extensions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2026</argument>

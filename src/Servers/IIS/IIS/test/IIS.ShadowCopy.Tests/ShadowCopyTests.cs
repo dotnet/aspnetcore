@@ -235,6 +235,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58106")]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();
@@ -389,7 +390,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    // copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+    // copied from https://learn.microsoft.com/dotnet/standard/io/how-to-copy-directories
     private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
     {
         // Get the subdirectories for the specified directory.

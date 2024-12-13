@@ -212,8 +212,6 @@ internal sealed class PropertyHelper
         // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
         if (RuntimeFeature.IsDynamicCodeSupported)
         {
-            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code
             // path for value types and a code path for reference types.
@@ -233,7 +231,6 @@ internal sealed class PropertyHelper
                     getMethod,
                     propertyGetterWrapperMethod);
             }
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         }
         else
         {
@@ -287,8 +284,6 @@ internal sealed class PropertyHelper
         // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
         if (RuntimeFeature.IsDynamicCodeSupported)
         {
-            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code
             // path for value types and a code path for reference types.
@@ -305,7 +300,6 @@ internal sealed class PropertyHelper
                     typeof(Action<object, object?>), propertySetterAsAction);
 
             return (Action<object, object?>)callPropertySetterDelegate;
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         }
         else
         {

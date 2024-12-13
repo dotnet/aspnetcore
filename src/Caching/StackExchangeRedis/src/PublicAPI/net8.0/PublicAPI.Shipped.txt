@@ -1,0 +1,26 @@
+#nullable enable
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Dispose() -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Get(string! key) -> byte[]?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAsync(string! key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]?>!
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.RedisCache(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions!>! optionsAccessor) -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Refresh(string! key) -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.RefreshAsync(string! key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Remove(string! key) -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.RemoveAsync(string! key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Set(string! key, byte[]! value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options) -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.SetAsync(string! key, byte[]! value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.Configuration.get -> string?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.Configuration.set -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConfigurationOptions.get -> StackExchange.Redis.ConfigurationOptions?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConfigurationOptions.set -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.get -> System.Func<System.Threading.Tasks.Task<StackExchange.Redis.IConnectionMultiplexer!>!>?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.set -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.InstanceName.get -> string?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.InstanceName.set -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ProfilingSession.get -> System.Func<StackExchange.Redis.Profiling.ProfilingSession!>?
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ProfilingSession.set -> void
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.RedisCacheOptions() -> void
+Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions.AddStackExchangeRedisCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

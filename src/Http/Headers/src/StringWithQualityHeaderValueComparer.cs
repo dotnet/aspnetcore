@@ -14,6 +14,8 @@ namespace Microsoft.Net.Http.Headers;
 /// </summary>
 public class StringWithQualityHeaderValueComparer : IComparer<StringWithQualityHeaderValue>
 {
+    private static readonly StringSegment Any = new("*");
+
     private StringWithQualityHeaderValueComparer()
     {
     }
@@ -55,11 +57,11 @@ public class StringWithQualityHeaderValueComparer : IComparer<StringWithQualityH
 
         if (!StringSegment.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
         {
-            if (StringSegment.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
+            if (StringSegment.Equals(stringWithQuality1.Value, Any, StringComparison.Ordinal))
             {
                 return -1;
             }
-            else if (StringSegment.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
+            else if (StringSegment.Equals(stringWithQuality2.Value, Any, StringComparison.Ordinal))
             {
                 return 1;
             }

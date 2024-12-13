@@ -88,7 +88,7 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
     {
         // Arrange
         var expected = new MemoryStream();
-        await JsonSerializer.SerializeAsync(expected, LargeAsync(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await JsonSerializer.SerializeAsync(expected, LargeAsync(), JsonSerializerOptions.Web);
         var formatter = GetOutputFormatter();
         var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);

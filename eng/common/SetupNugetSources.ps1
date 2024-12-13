@@ -1,17 +1,10 @@
-# This file is a temporary workaround for internal builds to be able to restore from private AzDO feeds.
-# This file should be removed as part of this issue: https://github.com/dotnet/arcade/issues/4080
+# This script adds internal feeds required to build commits that depend on internal package sources. For instance,
+# dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. In addition also enables
+# disabled internal Maestro (darc-int*) feeds.
 #
-# What the script does is iterate over all package sources in the pointed NuGet.config and add a credential entry
-# under <packageSourceCredentials> for each Maestro managed private feed. Two additional credential 
-# entries are also added for the two private static internal feeds: dotnet3-internal and dotnet3-internal-transport.
+# Optionally, this script also adds a credential entry for each of the internal feeds if supplied.
 #
-# This script needs to be called in every job that will restore packages and which the base repo has
-# private AzDO feeds in the NuGet.config.
-#
-# See example YAML call for this script below. Note the use of the variable `$(dn-bot-dnceng-artifact-feeds-rw)`
-# from the AzureDevOps-Artifact-Feeds-Pats variable group.
-#
-# Any disabledPackageSources entries which start with "darc-int" will be re-enabled as part of this script executing
+# See example call for this script below.
 #
 #  - task: PowerShell@2
 #    displayName: Setup Private Feeds Credentials
@@ -21,11 +14,18 @@
 #      arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
 #    env:
 #      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+#
+# Note that the NuGetAuthenticate task should be called after SetupNugetSources.
+# This ensures that:
+# - Appropriate creds are set for the added internal feeds (if not supplied to the scrupt)
+# - The credential provider is installed.
+#
+# This logic is also abstracted into enable-internal-sources.yml.
 
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)][string]$ConfigFile,
-    [Parameter(Mandatory = $true)][string]$Password
+    $Password
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,11 +48,17 @@ function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Usern
     else {
         Write-Host "Package source $SourceName already present."
     }
+
     AddCredential -Creds $creds -Source $SourceName -Username $Username -pwd $pwd
 }
 
 # Add a credential node for the specified source
 function AddCredential($creds, $source, $username, $pwd) {
+    # If no cred supplied, don't do anything.
+    if (!$pwd) {
+        return;
+    }
+
     # Looks for credential configuration for the given SourceName. Create it if none is found.
     $sourceElement = $creds.SelectSingleNode($Source)
     if ($sourceElement -eq $null)
@@ -110,11 +116,6 @@ if (!(Test-Path $ConfigFile -PathType Leaf)) {
   ExitWithExitCode 1
 }
 
-if (!$Password) {
-    Write-PipelineTelemetryError -Category 'Build' -Message 'Eng/common/SetupNugetSources.ps1 returned a non-zero exit code. Please supply a valid PAT'
-    ExitWithExitCode 1
-}
-
 # Load NuGet.config
 $doc = New-Object System.Xml.XmlDocument
 $filename = (Get-Item $ConfigFile).FullName
@@ -127,11 +128,14 @@ if ($sources -eq $null) {
     $doc.DocumentElement.AppendChild($sources) | Out-Null
 }
 
-# Looks for a <PackageSourceCredentials> node. Create it if none is found.
-$creds = $doc.DocumentElement.SelectSingleNode("packageSourceCredentials")
-if ($creds -eq $null) {
-    $creds = $doc.CreateElement("packageSourceCredentials")
-    $doc.DocumentElement.AppendChild($creds) | Out-Null
+$creds = $null
+if ($Password) {
+    # Looks for a <PackageSourceCredentials> node. Create it if none is found.
+    $creds = $doc.DocumentElement.SelectSingleNode("packageSourceCredentials")
+    if ($creds -eq $null) {
+        $creds = $doc.CreateElement("packageSourceCredentials")
+        $doc.DocumentElement.AppendChild($creds) | Out-Null
+    }
 }
 
 # Check for disabledPackageSources; we'll enable any darc-int ones we find there
@@ -153,7 +157,7 @@ if ($dotnet31Source -ne $null) {
     AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -pwd $Password
 }
 
-$dotnetVersions = @('5','6','7','8')
+$dotnetVersions = @('5','6','7','8','9')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;

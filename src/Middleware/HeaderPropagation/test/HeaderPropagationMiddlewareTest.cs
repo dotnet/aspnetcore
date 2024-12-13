@@ -44,7 +44,7 @@ public class HeaderPropagationMiddlewareTest
 
         // Assert
         Assert.Contains("in", CapturedHeaders.Keys);
-        Assert.Equal(new[] { "test" }, CapturedHeaders["in"]);
+        Assert.Equal(new[] { "test" }, CapturedHeaders["in"].ToArray());
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class HeaderPropagationMiddlewareTest
 
         // Assert
         Assert.Contains("in", CapturedHeaders.Keys);
-        Assert.Equal(new[] { "test" }, CapturedHeaders["in"]);
+        Assert.Equal(new[] { "test" }, CapturedHeaders["in"].ToArray());
         Assert.Contains("another", CapturedHeaders.Keys);
-        Assert.Equal(new[] { "test2" }, CapturedHeaders["another"]);
+        Assert.Equal(new[] { "test2" }, CapturedHeaders["another"].ToArray());
     }
 
     [Theory]
@@ -132,7 +132,7 @@ public class HeaderPropagationMiddlewareTest
 
         // Assert
         Assert.Contains("in", CapturedHeaders.Keys);
-        Assert.Equal(expectedValues, CapturedHeaders["in"]);
+        Assert.Equal(expectedValues, CapturedHeaders["in"].ToArray());
         Assert.Equal("in", receivedName);
         Assert.Equal(new StringValues("value"), receivedValue);
         Assert.Same(Context, receivedContext);

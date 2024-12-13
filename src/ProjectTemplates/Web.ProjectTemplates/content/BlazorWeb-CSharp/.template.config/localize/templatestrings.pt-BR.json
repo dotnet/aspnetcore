@@ -3,7 +3,7 @@
   "name": "Aplicativo Web Blazor",
   "description": "Um modelo de projeto para criar um aplicativo Web Blazor que dá suporte à renderização do lado do servidor e à interatividade do cliente. Este modelo pode ser usado para aplicativos da Web com interfaces de usuário (UIs) dinâmicas avançadas.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "O ID a ser usado para segredos (usado com autenticação individual).",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",

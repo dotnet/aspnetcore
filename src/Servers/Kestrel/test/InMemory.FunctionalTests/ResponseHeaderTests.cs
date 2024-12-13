@@ -109,11 +109,11 @@ public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
 
         await using var server = new TestServer(context =>
         {
-            Assert.Empty(context.Response.Headers[tag]);
+            Assert.Equal(0, context.Response.Headers[tag].Count);
 
             context.Response.Headers.Add(tag, new StringValues((string)null));
 
-            Assert.Empty(context.Response.Headers[tag]);
+            Assert.Equal(0, context.Response.Headers[tag].Count);
 
             // this should not throw
             context.Response.Headers.Add(tag, new StringValues("Hello"));

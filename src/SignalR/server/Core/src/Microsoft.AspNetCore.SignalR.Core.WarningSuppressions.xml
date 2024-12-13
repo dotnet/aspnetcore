@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.SignalR.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.DiscoverHubMethods(System.Boolean)</property>
+      <property name="Justification">This warning is left in the product so developers get an ILLink warning when trimming an app when Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=true.</property>
+    </attribute>
+  </assembly>
+</linker>

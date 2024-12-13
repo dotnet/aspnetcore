@@ -1,71 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <linker>
-  <assembly fullname="Microsoft.JSInterop, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo,System.String)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeDotNetAfterTask(System.Threading.Tasks.Task,Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo@)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime,Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo@,System.String)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ParseArguments(Microsoft.JSInterop.JSRuntime,System.String,System.String,System.Type[])</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntime.EndInvokeJS(System.Int64,System.Boolean,System.Text.Json.Utf8JsonReader@)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntime.InvokeAsync``1(System.Int64,System.String,System.Threading.CancellationToken,System.Object[])</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2055</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetObjectReferenceJsonConverterFactory.CreateConverter(System.Type,System.Text.Json.JsonSerializerOptions)</property>
-    </attribute>
+  <assembly fullname="Microsoft.JSInterop, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2065</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ScanAssemblyForCallableMethods(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.AssemblyKey)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2091</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSObjectReferenceExtensions.&lt;InvokeAsync&gt;d__4`1.MoveNext</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2091</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntime.&lt;InvokeAsync&gt;d__16`1.MoveNext</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2091</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntimeExtensions.&lt;InvokeAsync&gt;d__4`1.MoveNext</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

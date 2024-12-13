@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -8,24 +9,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal static class HubReflectionHelper
 {
-    private static readonly Type[] _excludeInterfaces = new[] { typeof(IDisposable) };
-
-    public static IEnumerable<MethodInfo> GetHubMethods(Type hubType)
+    public static IEnumerable<MethodInfo> GetHubMethods([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type hubType)
     {
         var methods = hubType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-        var allInterfaceMethods = _excludeInterfaces.SelectMany(i => GetInterfaceMethods(hubType, i));
+        var excludedInterfaceMethods = hubType.GetInterfaceMap(typeof(IDisposable)).TargetMethods;
 
-        return methods.Except(allInterfaceMethods).Where(IsHubMethod);
-    }
-
-    private static IEnumerable<MethodInfo> GetInterfaceMethods(Type type, Type iface)
-    {
-        if (!iface.IsAssignableFrom(type))
-        {
-            return Enumerable.Empty<MethodInfo>();
-        }
-
-        return type.GetInterfaceMap(iface).TargetMethods;
+        return methods.Except(excludedInterfaceMethods).Where(IsHubMethod);
     }
 
     private static bool IsHubMethod(MethodInfo methodInfo)

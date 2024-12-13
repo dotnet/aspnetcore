@@ -43,7 +43,7 @@ Or for the less detailed explanation, run the following command inside this dire
 
 To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
-Note: IIS.Tests require both IIS to be enabled, and the [ASP.NET Hosting bundle](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/hosting-bundle) which must be run after IIS has been enabled.
+Note: IIS.Tests require both IIS to be enabled, and the [ASP.NET Hosting bundle](https://learn.microsoft.com/aspnet/core/host-and-deploy/iis/hosting-bundle) which must be run after IIS has been enabled.
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell

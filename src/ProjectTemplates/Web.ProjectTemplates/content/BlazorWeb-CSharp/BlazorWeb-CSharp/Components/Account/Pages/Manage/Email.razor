@@ -18,7 +18,7 @@
 
 <StatusMessage Message="@message"/>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-xl-6">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
             <AntiforgeryToken />
         </form>
@@ -28,7 +28,7 @@
             @if (isEmailConfirmed)
             {
                 <div class="form-floating mb-3 input-group">
-                    <input type="text" value="@email" class="form-control" placeholder="Please enter your email." disabled />
+                    <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
                     <div class="input-group-append">
                         <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
                     </div>
@@ -38,14 +38,14 @@
             else
             {
                 <div class="form-floating mb-3">
-                    <input type="text" value="@email" class="form-control" placeholder="Please enter your email." disabled />
+                    <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
                     <label for="email" class="form-label">Email</label>
                     <button type="submit" class="btn btn-link" form="send-verification-form">Send verification email</button>
                 </div>
             }
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label for="new-email" class="form-label">New email</label>
+                <InputText @bind-Value="Input.NewEmail" id="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
+                <label for="Input.NewEmail" class="form-label">New email</label>
                 <ValidationMessage For="() => Input.NewEmail" class="text-danger" />
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>

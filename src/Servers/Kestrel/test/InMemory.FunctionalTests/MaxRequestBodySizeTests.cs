@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -107,6 +109,9 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task RejectsRequestWithChunckedBodySizeExceedingPerRequestLimitAndExceptionWasCaughtByApplication()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var maxRequestBodySize = 3;
         var customApplicationResponse = "custom";
         var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
@@ -127,7 +132,7 @@ public class MaxRequestBodySizeTests : LoggedTest
             await context.Response.WriteAsync(customApplicationResponse);
             throw requestRejectedEx;
         },
-        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
         {
             using var connection = server.CreateConnection();
             await connection.Send(
@@ -146,6 +151,8 @@ public class MaxRequestBodySizeTests : LoggedTest
                 customApplicationResponse,
                 "");
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestBodySizeExceeded, m.Tags));
     }
 
     [Fact]
@@ -355,6 +362,9 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task EveryReadFailsWhenContentLengthHeaderExceedsGlobalLimit()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
 #pragma warning disable CS0618 // Type or member is obsolete
         BadHttpRequestException requestRejectedEx1 = null;
         BadHttpRequestException requestRejectedEx2 = null;
@@ -371,7 +381,7 @@ public class MaxRequestBodySizeTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
             throw requestRejectedEx2;
         },
-        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)) { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -395,6 +405,8 @@ public class MaxRequestBodySizeTests : LoggedTest
         Assert.NotNull(requestRejectedEx2);
         Assert.Equal(CoreStrings.FormatBadRequest_RequestBodyTooLarge(0), requestRejectedEx1.Message);
         Assert.Equal(CoreStrings.FormatBadRequest_RequestBodyTooLarge(0), requestRejectedEx2.Message);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MaxRequestBodySizeExceeded, m.Tags));
     }
 
     [Fact]

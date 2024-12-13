@@ -14,7 +14,6 @@ public class Program
         var webHost = CreateWebHostBuilder(args).Build();
         var applicationName = webHost.Services.GetRequiredService<IHostEnvironment>().ApplicationName;
         Console.WriteLine(applicationName);
-        Console.ReadKey();
     }
 
     // Do not change the signature of this method. It's used for tests.

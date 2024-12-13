@@ -17,7 +17,7 @@ internal static unsafe class HttpApiTypes
 
     private static FrozenDictionary<string, int> CreateLookupTable()
     {
-        // See https://learn.microsoft.com/en-us/windows/win32/api/http/ne-http-http_header_id
+        // See https://learn.microsoft.com/windows/win32/api/http/ne-http-http_header_id
         string[] headerNames =
         [
             HeaderNames.CacheControl,

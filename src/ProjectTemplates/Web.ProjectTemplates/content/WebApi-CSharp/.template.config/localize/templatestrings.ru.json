@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется, только если для --auth не используются IndividualB2C, SingleOrg или MultiOrg.",
   "symbols/UseLocalDB/description": "Следует ли использовать LocalDB вместо SQLite. Этот параметр применяется, только если указывается --auth Individual или --auth IndividualB2C.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/CalledApiUrl/description": "URL-адрес API для вызова из веб-приложения. Этот параметр применяется, только если указывается --auth SingleOrg или --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Указывает, вызывает ли веб-приложение Microsoft Graph. Этот параметр применяется, только если указывается --auth SingleOrg.",

@@ -35,7 +35,7 @@ public class BinaryHttpClientTest : BrowserTestBase,
 
     protected override void InitializeAsyncCore()
     {
-        Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
+        Browser.Navigate(_devHostServerFixture.RootUri, "/subdir");
         _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
     }
 

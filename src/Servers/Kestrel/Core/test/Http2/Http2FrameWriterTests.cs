@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -91,6 +85,13 @@ public class Http2FrameWriterTests
         var payload = await pipe.Reader.ReadForLengthAsync(Http2FrameReader.HeaderLength);
 
         Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x00 }, payload.Skip(5).Take(4).ToArray());
+    }
+
+    [Fact]
+    public void UpdateMaxFrameSize_To_ProtocolMaximum()
+    {
+        var sut = CreateFrameWriter(new Pipe());
+        sut.UpdateMaxFrameSize((int)Math.Pow(2, 24) - 1);
     }
 }
 

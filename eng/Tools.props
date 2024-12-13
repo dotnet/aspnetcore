@@ -1,8 +1,7 @@
 <Project>
-  <!-- Update the generated files when we restore projects. Skip in desktop msbuild due to VS 16.8 requirements. -->
+  <!-- Update the generated files when we restore projects. -->
   <Target Name="GenerateDirectoryBuildFiles"
-      AfterTargets="Restore"
-      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
+      AfterTargets="Restore">
     <!-- Separate invocations and use different properties to ensure second can load the restored package info. -->
     <MSBuild Projects="$(RepoRoot)eng\tools\GenerateFiles\GenerateFiles.csproj"
         RemoveProperties="BaseIntermediateOutputPath"

@@ -29,11 +29,12 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private readonly MemoryPool<byte> _memoryPool;
     private readonly KestrelTrace _log;
     private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
+    private readonly ConnectionMetricsContext _connectionMetricsContext;
     private readonly IHttpOutputAborter _outputAborter;
     private readonly TimingPipeFlusher _flusher;
 
     // This locks access to all of the below fields
-    private readonly object _contextLock = new object();
+    private readonly Lock _contextLock = new();
 
     private bool _pipeWriterCompleted;
     private bool _aborted;
@@ -61,6 +62,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     // Fields needed to store writes before calling either startAsync or Write/FlushAsync
     // These should be cleared by the end of the request
     private List<CompletedBuffer>? _completedSegments;
+    private int _completedSegmentsByteCount;
     private Memory<byte> _currentSegment;
     private IMemoryOwner<byte>? _currentSegmentOwner;
     private int _position;
@@ -74,6 +76,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         KestrelTrace log,
         ITimeoutControl timeoutControl,
         IHttpMinResponseDataRateFeature minResponseDataRateFeature,
+        ConnectionMetricsContext connectionMetricsContext,
         IHttpOutputAborter outputAborter)
     {
         // Allow appending more data to the PipeWriter when a flush is pending.
@@ -83,6 +86,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         _memoryPool = memoryPool;
         _log = log;
         _minResponseDataRateFeature = minResponseDataRateFeature;
+        _connectionMetricsContext = connectionMetricsContext;
         _outputAborter = outputAborter;
 
         _flusher = new TimingPipeFlusher(timeoutControl, log);
@@ -273,6 +277,15 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
+    public long UnflushedBytes
+    {
+        get
+        {
+            var bytes = _position + _advancedBytesForChunk + _pipeWriter.UnflushedBytes + _completedSegmentsByteCount;
+            return bytes;
+        }
+    }
+
     public void CancelPendingFlush()
     {
         _pipeWriter.CancelPendingFlush();
@@ -372,6 +385,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 segment.Return();
             }
 
+            _completedSegmentsByteCount = 0;
             _completedSegments.Clear();
         }
 
@@ -444,7 +458,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
-    public void Abort(ConnectionAbortedException error)
+    public void Abort(ConnectionAbortedException error, ConnectionEndReason reason)
     {
         // Abort can be called after Dispose if there's a flush timeout.
         // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -454,6 +468,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return;
             }
+
+            KestrelMetrics.AddConnectionEndReason(_connectionMetricsContext, reason);
 
             _aborted = true;
             _connectionContext.Abort(error);
@@ -730,6 +746,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
             // ignore any empty space in it.
             _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+            _completedSegmentsByteCount += _position;
         }
 
         if (sizeHint <= _memoryPool.MaxBufferSize)

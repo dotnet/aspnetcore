@@ -14,6 +14,7 @@
     <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <DisableStaticWebAssetEndpointsBuildPropsFileGeneration>true</DisableStaticWebAssetEndpointsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
@@ -89,20 +90,76 @@
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </V5AssetsCandidates>
     </ItemGroup>
-    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+
+    <DefineStaticWebAssets
+      Condition="'@(V4AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V4"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V4Assets" />
     </DefineStaticWebAssets>
-    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+
+    <DefineStaticWebAssets
+      Condition="'@(V5AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V5AssetsCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V5"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V5Assets" />
     </DefineStaticWebAssets>
 
-    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
-    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(V4Assets)' != ''"
+      CandidateAssets="@(V4Assets)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="V4AssetEndpoints" />
+    </DefineStaticWebAssetEndpoints>
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(V5Assets)' != ''"
+      CandidateAssets="@(V5Assets)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="V5AssetEndpoints" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <FinalV4Assets Include="@(V4Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV4Assets>
+      <FinalV5Assets Include="@(V5Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV5Assets>
+    </ItemGroup>
+
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+
+    <GenerateStaticWebAssetEndpointsPropsFile
+      StaticWebAssets="@(V4Assets)"
+      PackagePathPrefix="staticwebassets/V4"
+      StaticWebAssetEndpoints="@(V4AssetEndpoints)"
+      TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.endpoints.targets" />
+
+    <GenerateStaticWebAssetEndpointsPropsFile
+      StaticWebAssets="@(V5Assets)"
+      PackagePathPrefix="staticwebassets/V5"
+      StaticWebAssetEndpoints="@(V5AssetEndpoints)"
+      TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets" />
+
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
@@ -110,8 +167,14 @@
       <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.targets</PackagePath>
       </StaticWebAssetPackageFile>
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.endpoints.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.endpoints.targets</PackagePath>
+      </StaticWebAssetPackageFile>
       <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V5.targets</PackagePath>
+      </StaticWebAssetPackageFile>
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V5.endpoints.targets</PackagePath>
       </StaticWebAssetPackageFile>
     </ItemGroup>
   </Target>

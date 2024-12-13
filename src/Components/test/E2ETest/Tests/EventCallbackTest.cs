@@ -23,7 +23,7 @@ public class EventCallbackTest : ServerTestBase<ToggleExecutionModeServerFixture
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<BasicTestApp.EventCallbackTest.EventCallbackCases>();
     }
 

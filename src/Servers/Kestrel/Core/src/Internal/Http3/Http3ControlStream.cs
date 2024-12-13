@@ -28,7 +28,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
     private long _headerType;
-    private readonly object _completionLock = new();
+    private readonly Lock _completionLock = new();
 
     private bool _haveReceivedSettingsFrame;
     private StreamCompletionFlags _completionState;
@@ -202,7 +202,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                     if (!_context.StreamLifetimeHandler.OnInboundControlStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
-                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("control"), Http3ErrorCode.StreamCreationError);
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("control"), Http3ErrorCode.StreamCreationError, ConnectionEndReason.StreamCreationError);
                     }
 
                     await HandleControlStream();
@@ -211,7 +211,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                     if (!_context.StreamLifetimeHandler.OnInboundEncoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
-                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("encoder"), Http3ErrorCode.StreamCreationError);
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("encoder"), Http3ErrorCode.StreamCreationError, ConnectionEndReason.StreamCreationError);
                     }
 
                     await HandleEncodingDecodingTask();
@@ -220,7 +220,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                     if (!_context.StreamLifetimeHandler.OnInboundDecoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
-                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("decoder"), Http3ErrorCode.StreamCreationError);
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("decoder"), Http3ErrorCode.StreamCreationError, ConnectionEndReason.StreamCreationError);
                     }
                     await HandleEncodingDecodingTask();
                     break;
@@ -302,7 +302,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             case Http3FrameType.Headers:
             case Http3FrameType.PushPromise:
                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2
-                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
+                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
             case Http3FrameType.Settings:
                 return ProcessSettingsFrameAsync(payload);
             case Http3FrameType.GoAway:
@@ -321,7 +321,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         if (_haveReceivedSettingsFrame)
         {
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-settings
-            throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamMultipleSettingsFrames, Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamMultipleSettingsFrames, Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
 
         _haveReceivedSettingsFrame = true;
@@ -367,7 +367,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                 // HTTP/2 settings are reserved.
                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4.1-5
                 var message = CoreStrings.FormatHttp3ErrorControlStreamReservedSetting("0x" + id.ToString("X", CultureInfo.InvariantCulture));
-                throw new Http3ConnectionErrorException(message, Http3ErrorCode.SettingsError);
+                throw new Http3ConnectionErrorException(message, Http3ErrorCode.SettingsError, ConnectionEndReason.InvalidSettings);
             case (long)Http3SettingType.QPackMaxTableCapacity:
             case (long)Http3SettingType.MaxFieldSectionSize:
             case (long)Http3SettingType.QPackBlockedStreams:
@@ -387,7 +387,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         EnsureSettingsFrame(Http3FrameType.GoAway);
 
         // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
-        _context.Connection.StopProcessingNextRequest(serverInitiated: false);
+        _context.Connection.StopProcessingNextRequest(serverInitiated: false, ConnectionEndReason.ClientGoAway);
         _context.ConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-goaway
@@ -431,7 +431,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         if (!_haveReceivedSettingsFrame)
         {
             var message = CoreStrings.FormatHttp3ErrorControlStreamFrameReceivedBeforeSettings(Http3Formatting.ToFormattedType(frameType));
-            throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings);
+            throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings, ConnectionEndReason.InvalidSettings);
         }
     }
 

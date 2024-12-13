@@ -20,7 +20,7 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    public async Task HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
@@ -38,7 +38,7 @@ public class HeartbeatTests : LoggedTest
             {
                 sw = Stopwatch.StartNew();
             }
-            else
+            else if (heartbeatCallCount <= 5)
             {
                 var split = sw.Elapsed;
                 splits.Add(split);
@@ -46,6 +46,12 @@ public class HeartbeatTests : LoggedTest
                 Logger.LogInformation($"Heartbeat split: {split.TotalMilliseconds}ms");
 
                 sw.Restart();
+            }
+            else
+            {
+                // If shutdown takes too long there could be more OnHeartbeat calls, but that shouldn't fail the test,
+                // so we ignore them. See https://github.com/dotnet/aspnetcore/issues/55297
+                Logger.LogInformation("Extra OnHeartbeat call().");
             }
 
             if (heartbeatCallCount == 5)
@@ -170,7 +176,7 @@ public class HeartbeatTests : LoggedTest
 
         heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
-        Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "HeartbeatSlow");
     }
 
     [Fact]

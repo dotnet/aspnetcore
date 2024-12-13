@@ -77,7 +77,7 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
         Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
@@ -115,7 +115,7 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
 
@@ -154,7 +154,7 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -188,7 +188,7 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -219,8 +219,8 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
-        Assert.Empty(httpResponse.Headers.ContentRange);
+        var body = await streamReader.ReadToEndAsync();
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -250,7 +250,7 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(byteArray.Length);
         Assert.Equal(lastModified.ToString("R"), httpResponse.Headers.LastModified);
         Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
@@ -287,11 +287,11 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
-        Assert.Empty(httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Empty(body);
     }
 
@@ -321,12 +321,12 @@ public abstract class FileContentResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
         Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
-        Assert.Empty(httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Empty(body);
     }
 

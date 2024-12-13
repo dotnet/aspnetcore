@@ -88,10 +88,10 @@ private:
 
     ~FORWARDER_CONNECTION()
     {
-        if (m_hConnection != NULL)
+        if (m_hConnection != nullptr)
         {
             WinHttpCloseHandle(m_hConnection);
-            m_hConnection = NULL;
+            m_hConnection = nullptr;
         }
     }
 

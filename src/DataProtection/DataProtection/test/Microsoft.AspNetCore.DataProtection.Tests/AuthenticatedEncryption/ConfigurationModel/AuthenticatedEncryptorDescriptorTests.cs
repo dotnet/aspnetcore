@@ -101,8 +101,8 @@ public class AuthenticatedEncryptorDescriptorTests
         Assert.Equal(plaintext, roundTripPlaintext);
     }
 
-    public static TheoryData CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
-        => new TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>>
+    public static TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>> CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
+        => new()
         {
                 { EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },
                 { EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },

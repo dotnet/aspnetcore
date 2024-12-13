@@ -10,7 +10,6 @@
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Azure.Identity" /> <!-- Direct dependency to fix CG -->
   </ItemGroup>
 
 </Project>

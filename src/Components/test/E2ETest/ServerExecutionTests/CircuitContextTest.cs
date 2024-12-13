@@ -22,28 +22,39 @@ public class CircuitContextTest : ServerTestBase<BasicTestAppServerSiteFixture<S
     {
     }
 
-    protected override void InitializeAsyncCore()
-    {
-        Navigate(ServerPathBase, noReload: false);
-        Browser.MountTestComponent<CircuitContextComponent>();
-        Browser.Equal("Circuit Context", () => Browser.Exists(By.TagName("h1")).Text);
-    }
-
     [Fact]
     public void ComponentMethods_HaveCircuitContext()
     {
-        Browser.Click(By.Id("trigger-click-event-button"));
+        Navigate(ServerPathBase);
+        Browser.MountTestComponent<CircuitContextComponent>();
+        TestCircuitContextCore(Browser);
+    }
 
-        Browser.True(() => HasCircuitContext("SetParametersAsync"));
-        Browser.True(() => HasCircuitContext("OnInitializedAsync"));
-        Browser.True(() => HasCircuitContext("OnParametersSetAsync"));
-        Browser.True(() => HasCircuitContext("OnAfterRenderAsync"));
-        Browser.True(() => HasCircuitContext("InvokeDotNet"));
-        Browser.True(() => HasCircuitContext("OnClickEvent"));
+    [Fact]
+    public void ComponentMethods_HaveCircuitContext_OnInitialPageLoad()
+    {
+        // https://github.com/dotnet/aspnetcore/issues/57481
+        Navigate($"{ServerPathBase}?initial-component-type={typeof(CircuitContextComponent).AssemblyQualifiedName}");
+        TestCircuitContextCore(Browser);
+    }
+
+    // Internal for reuse in Blazor Web tests
+    internal static void TestCircuitContextCore(IWebDriver browser)
+    {
+        browser.Equal("Circuit Context", () => browser.Exists(By.TagName("h1")).Text);
+
+        browser.Click(By.Id("trigger-click-event-button"));
+
+        browser.True(() => HasCircuitContext("SetParametersAsync"));
+        browser.True(() => HasCircuitContext("OnInitializedAsync"));
+        browser.True(() => HasCircuitContext("OnParametersSetAsync"));
+        browser.True(() => HasCircuitContext("OnAfterRenderAsync"));
+        browser.True(() => HasCircuitContext("InvokeDotNet"));
+        browser.True(() => HasCircuitContext("OnClickEvent"));
 
         bool HasCircuitContext(string eventName)
         {
-            var resultText = Browser.FindElement(By.Id($"circuit-context-result-{eventName}")).Text;
+            var resultText = browser.FindElement(By.Id($"circuit-context-result-{eventName}")).Text;
             var result = bool.Parse(resultText);
             return result;
         }

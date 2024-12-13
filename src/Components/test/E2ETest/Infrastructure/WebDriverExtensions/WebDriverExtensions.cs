@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest;
 
 internal static class WebDriverExtensions
 {
-    public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl, bool noReload)
+    public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl)
     {
         var absoluteUrl = new Uri(baseUri, relativeUrl);
 

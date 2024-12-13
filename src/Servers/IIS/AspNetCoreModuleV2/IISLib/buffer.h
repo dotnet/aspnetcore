@@ -6,9 +6,6 @@
 #include <crtdbg.h>
 #include <CodeAnalysis/Warnings.h>
 
-#pragma warning( push )
-#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
-
 //
 // BUFFER_T class shouldn't be used directly. Use BUFFER specialization class instead.
 // The only BUFFER_T partners are STRU and STRA classes.
@@ -69,7 +66,7 @@ public:
 
     --*/
     {
-        _ASSERTE( NULL != pbInit );
+        _ASSERTE(nullptr != pbInit );
         _ASSERTE( cbInit > 0 );
     }
 
@@ -77,9 +74,9 @@ public:
     {
         if( IsHeapAllocated() )
         {
-            _ASSERTE( NULL != m_pBuffer );
+            _ASSERTE( nullptr != m_pBuffer );
             HeapFree( GetProcessHeap(), 0, m_pBuffer );
-            m_pBuffer = NULL;
+            m_pBuffer = nullptr;
             m_cbBuffer = 0;
             m_fHeapAllocated = false;
         }
@@ -131,7 +128,7 @@ public:
 
     --*/
     {
-        PVOID pNewMem;
+        PVOID pNewMem = nullptr;
 
         if ( cbNewSize <= m_cbBuffer )
         {
@@ -155,7 +152,7 @@ public:
             pNewMem = HeapAlloc( GetProcessHeap(), dwHeapAllocFlags, cbNewSize );
         }
 
-        if( pNewMem == NULL )
+        if( pNewMem == nullptr )
         {
             SetLastError( ERROR_NOT_ENOUGH_MEMORY );
             return false;
@@ -259,7 +256,7 @@ C_ASSERT( sizeof(VOID*) <= sizeof(ULONGLONG) );
 //  bytes. If the buffer overflows then a heap buffer will be allocated.
 //
 #define STACK_BUFFER( _name, _size )    \
-    ULONGLONG   __aqw##_name[ ( ( (_size) + sizeof(ULONGLONG) - 1 ) / sizeof(ULONGLONG) ) ]; \
+    ULONGLONG   __aqw##_name[ ( ( (_size) + sizeof(ULONGLONG) - 1 ) / sizeof(ULONGLONG) ) ]{}; \
     BUFFER      _name( (BYTE*)__aqw##_name, sizeof(__aqw##_name) )
 
 //
@@ -272,5 +269,3 @@ C_ASSERT( sizeof(VOID*) <= sizeof(ULONGLONG) );
 
 #define INLINE_BUFFER_INIT( _name )     \
     _name( (BYTE*)__aqw##_name, sizeof( __aqw##_name ) )
-
-#pragma warning( pop )

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
-            dep:ProviderKey="$(var.BundleProviderKey)">
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
             <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
@@ -12,6 +11,11 @@
                                                     LocalizationFile="1033\thm.wxl"/>
             <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
+
+        <!-- Search references for upgrade policy keys -->
+        <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeyExistsSearch"/>
+        <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
 
         <!-- Ensure upgrades from 3.0.0 preview 1 and 2 (Preview 3 was not shipped). Conditioned for the 3.0.0 family. Hosting bundle simships x86/x64 so there's
              a single set of upgrade codes. -->

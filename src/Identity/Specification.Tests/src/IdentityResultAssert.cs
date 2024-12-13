@@ -69,7 +69,7 @@ public static class IdentityResultAssert
         }
         else
         {
-            Assert.False(true, "No logger registered");
+            Assert.Fail("No logger registered");
         }
     }
 }

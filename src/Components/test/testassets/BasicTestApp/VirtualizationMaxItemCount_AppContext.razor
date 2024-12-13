@@ -1,0 +1,41 @@
+﻿@implements IDisposable
+<p>
+    This is a variation of the VirtualizationMaxItemCount test case in which the max count is set using AppContext.
+    This E2E test exists only to verify back-compatibility.
+</p>
+
+<div id="virtualize-scroll-area" style="height: 600px; overflow-y: scroll; outline: 1px solid red; background: #eee;">
+    @* In .NET 8 and earlier, the E2E test uses an AppContext.SetData call to set MaxItemCount *@
+    @* In .NET 9 onwards, it's a Virtualize component parameter *@
+    <Virtualize ItemsProvider="GetItems" ItemSize="30">
+        <div class="my-item" @key="context" style="height: 30px; outline: 1px solid #ccc">
+            Id: @context.Id; Name: @context.Name
+        </div>
+    </Virtualize>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // This relies on Xunit's default behavior of running tests in the same collection sequentially,
+        // not in parallel. From .NET 9 onwards this can be removed in favour of a Virtualize parameter.
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 10);
+    }
+
+    private async ValueTask<ItemsProviderResult<MyThing>> GetItems(ItemsProviderRequest request)
+    {
+        const int numThings = 100000;
+
+        await Task.Delay(100);
+        return new ItemsProviderResult<MyThing>(
+            Enumerable.Range(request.StartIndex, request.Count).Select(i => new MyThing(i, $"Thing {i}")),
+            numThings);
+    }
+
+    record MyThing(int Id, string Name);
+
+    public void Dispose()
+    {
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
+    }
+}

@@ -42,7 +42,6 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
-    <Reference Include="Azure.Identity" /> <!-- Direct dependency to fix CG -->
   </ItemGroup>
 
   <ItemGroup>

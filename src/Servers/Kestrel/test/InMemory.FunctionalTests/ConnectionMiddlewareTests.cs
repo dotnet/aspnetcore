@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -150,10 +152,13 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
     [MemberData(nameof(EchoAppRequestDelegates))]
     public async Task ImmediateFinAfterThrowingClosesGracefully(RequestDelegate requestDelegate)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         listenOptions.Use(next => context => throw new InvalidOperationException());
 
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
         {
@@ -164,6 +169,11 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(typeof(InvalidOperationException).FullName, m.Tags[KestrelMetrics.ErrorTypeAttributeName]);
+        });
     }
 
     [Theory]

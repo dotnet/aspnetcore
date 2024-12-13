@@ -611,7 +611,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, message.Result, _payloadSerializerOptions);
+                    SerializeObject(writer, message.Result);
                 }
             }
         }
@@ -633,7 +633,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         }
         else
         {
-            JsonSerializer.Serialize(writer, message.Item, _payloadSerializerOptions);
+            SerializeObject(writer, message.Item);
         }
     }
 
@@ -691,7 +691,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             }
             else
             {
-                JsonSerializer.Serialize(writer, argument, _payloadSerializerOptions);
+                SerializeObject(writer, argument);
             }
         }
         writer.WriteEndArray();
@@ -827,10 +827,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return BindType(ref reader, type);
     }
 
-    private object? BindType(ref Utf8JsonReader reader, Type type)
-    {
-        return JsonSerializer.Deserialize(ref reader, type, _payloadSerializerOptions);
-    }
+    private object? BindType(ref Utf8JsonReader reader, Type type) => DeserializeObject(ref reader, type);
 
     private object?[] BindTypes(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes)
     {
@@ -913,6 +910,15 @@ public sealed class JsonHubProtocol : IHubProtocol
 
         return message;
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed .NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+    private void SerializeObject(Utf8JsonWriter writer, object? value) => JsonSerializer.Serialize(writer, value, _payloadSerializerOptions);
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "See SerializeObject Justification above.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+    private object? DeserializeObject(ref Utf8JsonReader reader, Type type) => JsonSerializer.Deserialize(ref reader, type, _payloadSerializerOptions);
 
     internal static JsonSerializerOptions CreateDefaultSerializerSettings()
     {
