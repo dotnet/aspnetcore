@@ -26,6 +26,7 @@
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" Link="Shared\Obsoletions.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />

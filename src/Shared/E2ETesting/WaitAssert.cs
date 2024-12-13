@@ -116,7 +116,7 @@ public static class WaitAssert
             // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
             TestRunFailed = true;
 
-            var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetAttribute("innerHTML");
+            var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetDomProperty("innerHTML");
 
             var fileId = $"{Guid.NewGuid():N}.png";
             var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);

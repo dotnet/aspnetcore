@@ -22,6 +22,7 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
