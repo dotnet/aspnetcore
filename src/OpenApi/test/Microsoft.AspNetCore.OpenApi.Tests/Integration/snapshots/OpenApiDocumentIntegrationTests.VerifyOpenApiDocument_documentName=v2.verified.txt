@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Sample | v2",
     "contact": {
@@ -28,12 +28,12 @@
                     "type": "string",
                     "externalDocs": {
                       "description": "Documentation for this OpenAPI schema",
-                      "url": "https://example.com/api/docs/schemas/string"
+                      "url": "https://example.com/api/docs/schemas/String"
                     }
                   },
                   "externalDocs": {
                     "description": "Documentation for this OpenAPI schema",
-                    "url": "https://example.com/api/docs/schemas/array"
+                    "url": "https://example.com/api/docs/schemas/Array"
                   }
                 }
               }
@@ -58,13 +58,8 @@
       }
     }
   },
-  "components": { },
   "tags": [
-    {
-      "name": "users"
-    },
-    {
-      "name": "Sample"
-    }
+    "users",
+    "Sample"
   ]
 }

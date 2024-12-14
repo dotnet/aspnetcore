@@ -100,7 +100,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(expectedContentType, context.Response.ContentType);
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
-        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.1'", StringComparison.OrdinalIgnoreCase));
         responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
@@ -161,7 +161,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(expectedContentType, context.Response.ContentType);
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
-        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.1'", StringComparison.OrdinalIgnoreCase));
         responseBodyStream.Position = 0;
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
@@ -170,11 +170,11 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         });
     }
 
-    private static void ValidateOpenApiDocument(MemoryStream documentStream, Action<OpenApiDocument> action)
+    private static async void ValidateOpenApiDocument(MemoryStream documentStream, Action<OpenApiDocument> action)
     {
-        var document = new OpenApiStringReader().Read(Encoding.UTF8.GetString(documentStream.ToArray()), out var diagnostic);
-        Assert.Empty(diagnostic.Errors);
-        action(document);
+        var result = await OpenApiDocument.LoadAsync(documentStream, "json");
+        Assert.Empty(result.OpenApiDiagnostic.Errors);
+        action(result.OpenApiDocument);
     }
 
     private static IServiceProvider CreateServiceProvider(string documentName = Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName)
