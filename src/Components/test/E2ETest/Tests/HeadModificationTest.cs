@@ -92,7 +92,7 @@ public class HeadModificationTest : ServerTestBase<ToggleExecutionModeServerFixt
 
         void AssertDescriptionEquals(string description)
         {
-            Browser.Equal(description, () => Browser.FindElement(By.Id("meta-description")).GetAttribute("content"));
+            Browser.Equal(description, () => Browser.FindElement(By.Id("meta-description")).GetDomAttribute("content"));
         }
     }
 

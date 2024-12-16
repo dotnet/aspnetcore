@@ -33,13 +33,25 @@
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.webassembly.js.map" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_MissingFrameworkStaticWebAssetCandidate
+        Include="@(_FrameworkStaticWebAssetCandidate)"
+        Condition="!EXISTS('%(Identity)')" />
+      <_FrameworkStaticWebAssetCandidate Remove="@(_MissingFrameworkStaticWebAssetCandidate)" />
+    </ItemGroup>
+
+    <Message
+      Importance="High"
+      Condition="'@(_MissingFrameworkStaticWebAssetCandidate->Count())' != '0'"
+      Text="Framework asset '%(_MissingFrameworkStaticWebAssetCandidate.Identity)' could not be found and won't be included in the project." />
+
     <PropertyGroup>
       <_FrameworkAssetsPath>$(IntermediateOutputPath)frameworkassets</_FrameworkAssetsPath>
     </PropertyGroup>
 
     <MakeDir
       Directories="$(_FrameworkAssetsPath)"
-      Condition="!Exists('$(_FrameworkAssetsPath)')" />
+      Condition="!EXISTS('$(_FrameworkAssetsPath)')" />
 
     <Copy
       SourceFiles="@(_FrameworkStaticWebAssetCandidate)"

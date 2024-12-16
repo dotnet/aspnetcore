@@ -29,21 +29,21 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public void FocusIsMoved_AfterInitialPageLoad_WhenNoElementHasFocus()
     {
         Navigate($"{ServerPathBase}/focus-on-navigate/static");
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("data-focus-on-navigate") is not null);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
     }
 
     [Fact]
     public void FocusIsPreserved_AfterInitialPageLoad_WhenAnyElementHasFocus()
     {
         Navigate($"{ServerPathBase}/focus-on-navigate/static-with-other-focused-element");
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("data-focus-on-load") is not null);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-load") is not null);
     }
 
     [Fact]
     public void FocusIsPreserved_AfterInitialPageLoad_WhenAutofocusedElementIsPresent()
     {
         Navigate($"{ServerPathBase}/focus-on-navigate/autofocus");
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("autofocus") is not null);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("autofocus") is not null);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         Navigate($"{ServerPathBase}/focus-on-navigate");
         Browser.Click(By.LinkText("Statically rendered"));
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("data-focus-on-navigate") is not null);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         Navigate($"{ServerPathBase}/focus-on-navigate");
         Browser.Click(By.LinkText("Form submission"));
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("id") == "value-to-submit");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "value-to-submit");
         Browser.FindElement(By.Id("value-to-submit")).ReplaceText("Some value");
         Browser.Click(By.Id("submit-button"));
         Browser.Equal("Some value", () => Browser.FindElement(By.Id("submitted-value")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("id") == "submit-button");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "submit-button");
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
         tcs.SetResult();
 
         Browser.Equal("Complete", () => Browser.FindElement(By.Id("streaming-status")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("data-focus-on-navigate") is not null);
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
     }
 
     [Fact]
@@ -101,11 +101,11 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.True(() => Browser.SwitchTo().ActiveElement().TagName == "body");
 
         Browser.Click(By.Id("focusable-input"));
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("id") == "focusable-input");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "focusable-input");
 
         tcs.SetResult();
 
         Browser.Equal("Complete", () => Browser.FindElement(By.Id("streaming-status")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetAttribute("id") == "focusable-input");
+        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "focusable-input");
     }
 }

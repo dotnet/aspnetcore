@@ -52,14 +52,12 @@ __UbuntuPackages+=" symlinks"
 __UbuntuPackages+=" libicu-dev"
 __UbuntuPackages+=" liblttng-ust-dev"
 __UbuntuPackages+=" libunwind8-dev"
-__UbuntuPackages+=" libnuma-dev"
 
 __AlpinePackages+=" gettext-dev"
 __AlpinePackages+=" icu-dev"
 __AlpinePackages+=" libunwind-dev"
 __AlpinePackages+=" lttng-ust-dev"
 __AlpinePackages+=" compiler-rt"
-__AlpinePackages+=" numactl-dev"
 
 # runtime libraries' dependencies
 __UbuntuPackages+=" libcurl4-openssl-dev"
@@ -73,8 +71,8 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="13.3-RELEASE"
-__FreeBSDPkg="1.17.0"
+__FreeBSDBase="13.4-RELEASE"
+__FreeBSDPkg="1.21.3"
 __FreeBSDABI="13"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
@@ -371,7 +369,7 @@ while :; do
             ;;
         freebsd14)
             __CodeName=freebsd
-            __FreeBSDBase="14.0-RELEASE"
+            __FreeBSDBase="14.2-RELEASE"
             __FreeBSDABI="14"
             __SkipUnmount=1
             ;;
@@ -424,13 +422,12 @@ case "$__AlpineVersion" in
         elif [[ "$__AlpineArch" == "riscv64" ]]; then
             __AlpineLlvmLibsLookup=1
             __AlpineVersion=edge # minimum version with APKINDEX.tar.gz (packages archive)
+        elif [[ -n "$__AlpineVersion" ]]; then
+            # use whichever alpine version is provided and select the latest toolchain libs
+            __AlpineLlvmLibsLookup=1
         else
             __AlpineVersion=3.13 # 3.13 to maximize compatibility
             __AlpinePackages+=" llvm10-libs"
-
-            if [[ "$__AlpineArch" == "armv7" ]]; then
-                __AlpinePackages="${__AlpinePackages//numactl-dev/}"
-            fi
         fi
 esac
 
@@ -442,11 +439,6 @@ fi
 
 if [[ "$__BuildArch" == "armel" ]]; then
     __LLDB_Package="lldb-3.5-dev"
-fi
-
-if [[ "$__CodeName" == "xenial" && "$__UbuntuArch" == "armhf" ]]; then
-    # libnuma-dev is not available on armhf for xenial
-    __UbuntuPackages="${__UbuntuPackages//libnuma-dev/}"
 fi
 
 __UbuntuPackages+=" ${__LLDB_Package:-}"
@@ -574,7 +566,7 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
         curl -SL "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
     fi
     echo "ABI = \"FreeBSD:${__FreeBSDABI}:${__FreeBSDMachineArch}\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > "${__RootfsDir}"/usr/local/etc/pkg.conf
-    echo "FreeBSD: { url: \"pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
+    echo "FreeBSD: { url: \"pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
     mkdir -p "$__RootfsDir"/tmp
     # get and build package manager
     if [[ "$__hasWget" == 1 ]]; then

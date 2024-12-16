@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-    <String Id="FT_AspNetCoreTargetingPackTitle">ASP.NET Core Targeting Pack</String>
-    <String Id="FT_AspNetCoreTargetingPackDescription">ASP.NET Core Targeting Pack</String>
-</WixLocalization>

@@ -1,0 +1,182 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+
+  <PropertyGroup>
+    <PlatformPackageType>TargetingPack</PlatformPackageType>
+    <SharedFrameworkName>Microsoft.AspNetCore.App</SharedFrameworkName>
+    <SharedFrameworkFriendlyName>Microsoft ASP.NET Core</SharedFrameworkFriendlyName>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageTags>aspnetcore;targeting-pack</PackageTags>
+    <RuntimePackProjectPath>$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj</RuntimePackProjectPath>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <ArchiveName>$(TargetingPackInstallerBaseName)</ArchiveName>
+    <InstallerName>$(TargetingPackInstallerBaseName)</InstallerName>
+    <GenerateInstallers>true</GenerateInstallers>
+    <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <VSInsertionShortComponentName>AspNetCore.TargetingPack</VSInsertionShortComponentName>
+
+    <IsPackable Condition="'$(OnlyPackPlatformSpecificPackages)' == 'true'">false</IsPackable>
+
+    <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <InstallerPackageDescription>$(SharedFxDescription)</InstallerPackageDescription>
+    <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
+    <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
+    <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
+    <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
+
+    <!-- TODO: Try to remove this disable property -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
+    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <LinuxPackageDependency Include="dotnet-targeting-pack-$(DotnetTargetingPackDependencyMajorMinorVersion)" Version="$(DotnetTargetingPackDependencyVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+
+    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <IgnoredDuplicateType Include="Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.Logging.LoggingBuilderExtensions" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Package overrides and platform manifest metadata. -->
+    <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
+    <!-- PackageOverrides.txt is written in GeneratePackageOverrides target unless servicing. -->
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' != 'true'">$(BaseIntermediateOutputPath)$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageOverridesFile Include="$(ReferencePackageOverridesPath)" />
+  </ItemGroup>
+
+  <!--
+    COMPAT: Remove the System.Security.Cryptography.Pkcs reference from the project.
+    We don't package System.Security.Cryptography.Pkcs into the reference pack for ASP.NET Core.
+  -->
+  <Target Name="_RemovePkcsReference" AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'System.Security.Cryptography.Pkcs'" />
+      <IgnoredReference Include="System.Security.Cryptography.Pkcs" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddAnalyzersToRefPack" BeforeTargets="GetFilesToPackage">
+    <ItemGroup>
+      <!-- Include analyzers from dotnet/runtime. Start with the non-Roslyn-versioned ones -->
+      <_TransportRoslynVersionedAnalyzers Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\$(AnalyzersPackagePath)\dotnet\roslyn*\**\*.*" />
+      <_TransportAnalyzers Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\$(AnalyzersPackagePath)**\*.*"
+                           Exclude="@(_TransportRoslynVersionedAnalyzers)" />
+      <FilesToPackage Include="@(_TransportAnalyzers)"
+                      ExcludeFromValidation="true"
+                      TargetPath="$(AnalyzersPackagePath)%(RecursiveDir)" />
+
+    </ItemGroup>
+
+    <!--
+      Strip off the roslyn*.* section of the path so we can package the analyzers without the roslyn subfolder.
+      Ref packs don't package multiple analyzers for different roslyn versions, so this version info is gratuitous.
+    -->
+    <PropertyGroup>
+      <RoslynVersionPattern>roslyn[0-9]+.[0-9]+\$([System.IO.Path]::DirectorySeparatorChar)</RoslynVersionPattern>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TransportRoslynVersionedAnalyzers Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\$(AnalyzersPackagePath)\dotnet\roslyn*\**\*.*" />
+      <_TransportRoslynVersionedAnalyzers UnversionedAnalyzerPath="$([System.Text.RegularExpressions.Regex]::Replace('%(RecursiveDir)', '$(RoslynVersionPattern)', ''))" />
+      <FilesToPackage Include="@(_TransportRoslynVersionedAnalyzers)"
+                      ExcludeFromValidation="true"
+                      TargetPath="$(AnalyzersPackagePath)dotnet/%(_TransportRoslynVersionedAnalyzers.UnversionedAnalyzerPath)" />
+    </ItemGroup>
+
+    <!-- Package the analyzers and other Roslyn components produced in this repo. -->
+    <ItemGroup>
+      <FilesToPackage Include="@(AspNetCoreAnalyzer)"
+                      ExcludeFromValidation="true"
+                      TargetPath="$(AnalyzersPackagePath)dotnet/cs/" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CreatePackageOverrides"
+          DependsOnTargets="ResolveReferences"
+          Condition="'$(IsServicingBuild)' != 'true'">
+    <ItemGroup>
+      <!-- Use package version for non-Runtime references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+          Condition="!Exists('$(RuntimeTransportReferenceDirectory)%(ReferencePath.NuGetPackageId).dll') AND
+            '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
+            '%(ReferencePath.NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
+            '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+
+      <!--
+        Use NETCore.App version for Runtime references.
+        This is the same as above except in "stabilized" version builds, where the transport package version
+        would be a non-shipping unstablized version, but the NETCore.App version is the shipping version.
+      -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')"
+      Condition="'%(ReferencePath.NuGetPackageId)' == 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
+                 '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+
+      <!-- Use shared framework version for project references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
+          Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
+    </ItemGroup>
+
+    <WriteLinesToFile
+        Lines="@(_AspNetCoreAppPackageOverrides)"
+        File="$(ReferencePackageOverridesPath)"
+        Overwrite="true" />
+  </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(TargetingPackLayoutRoot)" />
+  </Target>
+</Project>
