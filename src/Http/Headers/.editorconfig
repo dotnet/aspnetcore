@@ -1,1 +1,3 @@
+[*.cs]
+
 dotnet_diagnostic.CS0619.severity = warning
