@@ -63,29 +63,13 @@ public static class OpenApiServiceCollectionExtensions
         // as routing in ASP.NET Core is case-insensitive by default.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        AddOpenApiCore(services, lowercasedDocumentName);
+        services.AddOpenApiCore(services, lowercasedDocumentName);
         services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
         {
             options.DocumentName = lowercasedDocumentName;
             configureOptions(options);
         });
         return services;
-
-        // The reason this method is a local function is to prevent case-sensitive document names being passed into this method (from other methods) in the future.
-        static IServiceCollection AddOpenApiCore(IServiceCollection services, string documentName)
-        {
-            services.AddEndpointsApiExplorer();
-            services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-            services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
-            services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
-            // Required for build-time generation
-            services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
-            // Required to resolve document names for build-time generation
-            services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
-            // Required to support JSON serializations
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
-            return services;
-        }
     }
 
     /// <summary>
@@ -121,4 +105,19 @@ public static class OpenApiServiceCollectionExtensions
     /// </example>
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
+
+    static IServiceCollection AddOpenApiCore(IServiceCollection services, string documentName)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
+        services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
+        services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
+        // Required for build-time generation
+        services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
+        // Required to resolve document names for build-time generation
+        services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+        // Required to support JSON serializations
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
+        return services;
+    }
 }
