@@ -17,7 +17,7 @@
     <!-- Ensure individual warnings are shown when publishing -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <!-- But ignore the single warn files marked below to suppress their known warnings. -->
-    <NoWarn>$(NoWarn);IL2104</NoWarn>
+    <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
     {AdditionalProperties}
   </PropertyGroup>
 
