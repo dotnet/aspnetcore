@@ -63,7 +63,7 @@ public static class OpenApiServiceCollectionExtensions
         // as routing in ASP.NET Core is case-insensitive by default.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        services.AddOpenApiCore(services, lowercasedDocumentName);
+        services.AddOpenApiCore(lowercasedDocumentName);
         services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
         {
             options.DocumentName = lowercasedDocumentName;
@@ -106,7 +106,7 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
 
-    static IServiceCollection AddOpenApiCore(IServiceCollection services, string documentName)
+    private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
     {
         services.AddEndpointsApiExplorer();
         services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
