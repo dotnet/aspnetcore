@@ -66,7 +66,6 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
         private static void AppendYear(ref InplaceStringBuilder target, int year)
         {
             target.Append(GetAsciiChar(year / 1000));
@@ -74,10 +73,8 @@ namespace Microsoft.Net.Http.Headers
             target.Append(GetAsciiChar(year % 100 / 10));
             target.Append(GetAsciiChar(year % 10));
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
         private static void AppendTimeOfDay(ref InplaceStringBuilder target, TimeSpan timeOfDay)
         {
             AppendNumber(ref target, timeOfDay.Hours);
@@ -86,16 +83,13 @@ namespace Microsoft.Net.Http.Headers
             target.Append(Colon);
             AppendNumber(ref target, timeOfDay.Seconds);
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
         private static void AppendNumber(ref InplaceStringBuilder target, int number)
         {
             target.Append(GetAsciiChar(number / 10));
             target.Append(GetAsciiChar(number % 10));
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static char GetAsciiChar(int value)

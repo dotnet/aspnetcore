@@ -210,7 +210,6 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-#pragma warning disable 619
         private static void AppendSegment(ref InplaceStringBuilder builder, StringSegment name, StringSegment value)
         {
             builder.Append(SeparatorToken);
@@ -221,7 +220,6 @@ namespace Microsoft.Net.Http.Headers
                 builder.Append(value);
             }
         }
-#pragma warning restore 619
 
         /// <summary>
         /// Append string representation of this <see cref="SetCookieHeaderValue"/> to given
