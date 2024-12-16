@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x &lt;machineKey&gt; element.</Description>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnet;aspnetcore;dataprotection</PackageTags>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>net462</TargetFrameworks>
 
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -14,13 +14,13 @@
     <PackageId>Microsoft.AspNetCore.Mvc.Razor.ViewCompilation</PackageId>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net462'">
     <RuntimeIdentifiers>win7-x86;win7-x64</RuntimeIdentifiers>
     <PlatformTarget Condition="'$(Platform)'=='AnyCPU'">x86</PlatformTarget>
     <AssemblyName>$(AssemblyName)-$(PlatformTarget)</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\net461\win7-$(PlatformTarget)</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\net461\win7-$(PlatformTarget)</IntermediateOutputPath>
+    <OutputPath>bin\$(Configuration)\net462\win7-$(PlatformTarget)</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\net462\win7-$(PlatformTarget)</IntermediateOutputPath>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
@@ -41,13 +41,13 @@
     <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x64.exe" Certificate="MicrosoftSHA2" Visible="false" />
   </ItemGroup>
 
-  <Target Name="BuildX64" AfterTargets="AfterBuild" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
+  <Target Name="BuildX64" AfterTargets="AfterBuild" Condition="'$(TargetFramework)'=='net462' AND '$(PlatformTarget)'!='x64'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="Build"
       Properties="
         Configuration=$(Configuration);
-        TargetFramework=net461;
+        TargetFramework=net462;
         Platform=x64;" />
   </Target>
 
@@ -76,10 +76,10 @@
         TaskBinary=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll;
         TaskSymbol=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.pdb;
 
-        OutputExeX86=$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.exe;
-        OutputExeSymbolX86=$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.pdb;
-        OutputExeX64=$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.exe;
-        OutputExeSymbolX64=$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.pdb;
+        OutputExeX86=$(OutputPath)net462\win7-x86\$(AssemblyName)-x86.exe;
+        OutputExeSymbolX86=$(OutputPath)net462\win7-x86\$(AssemblyName)-x86.pdb;
+        OutputExeX64=$(OutputPath)net462\win7-x64\$(AssemblyName)-x64.exe;
+        OutputExeSymbolX64=$(OutputPath)net462\win7-x64\$(AssemblyName)-x64.pdb;
       </NuspecProperties>
     </PropertyGroup>
   </Target>

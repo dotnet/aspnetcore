@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
+    <TargetFramework>net462</TargetFramework>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net462'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
