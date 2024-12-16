@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var processingTask = connection.StartRequestProcessing(_application);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             connectionContext.Transport.Input.OnWriterCompleted(
                 (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
                 connection);
@@ -83,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             connectionContext.Transport.Output.OnReaderCompleted(
                 (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
                 connection);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await CancellationTokenAsTask(lifetimeFeature.ConnectionClosed);
 
