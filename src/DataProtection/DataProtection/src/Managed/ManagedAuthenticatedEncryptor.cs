@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -152,12 +153,15 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         return retVal;
     }
 
-    private KeyedHashAlgorithm CreateValidationAlgorithm(byte[] key)
+    private KeyedHashAlgorithm CreateValidationAlgorithm(byte[]? key = null)
     {
         var retVal = _validationAlgorithmFactory();
         CryptoUtil.Assert(retVal != null, "retVal != null");
 
-        retVal.Key = key;
+        if (key is not null)
+        {
+            retVal.Key = key;
+        }
         return retVal;
     }
 
@@ -250,7 +254,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     var ciphertext = protectedPayload.Array.AsSpan().Slice(ciphertextOffset, macOffset - ciphertextOffset);
                     var iv = protectedPayload.Array.AsSpan().Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
-                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
+                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv); // symmetricAlgorithm is created with CBC mode
 #else
                     var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
                     Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
@@ -294,24 +298,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
         try
         {
-            var outputStream = new MemoryStream();
-
-            // Step 1: Generate a random key modifier and IV for this operation.
-            // Both will be equal to the block size of the block cipher algorithm.
-
-            var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
-            var iv = _genRandom.GenRandom(_symmetricAlgorithmBlockSizeInBytes);
-
-            // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
-
-            outputStream.Write(keyModifier, 0, keyModifier.Length);
-            outputStream.Write(iv, 0, iv.Length);
-
-            // At this point, outputStream := { keyModifier || IV }.
-
-            // Step 3: Decrypt the KDK, and use it to generate new encryption and HMAC keys.
-            // We pin all unencrypted keys to limit their exposure via GC relocation.
-
             var decryptedKdk = new byte[_keyDerivationKey.Length];
             var encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
             var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
@@ -324,46 +310,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             {
                 try
                 {
-                    _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
-                        kdk: decryptedKdk,
-                        label: additionalAuthenticatedData,
-                        contextHeader: _contextHeader,
-                        context: new ArraySegment<byte>(keyModifier),
-                        prfFactory: _kdkPrfFactory,
-                        output: new ArraySegment<byte>(derivedKeysBuffer));
-
-                    Buffer.BlockCopy(derivedKeysBuffer, 0, encryptionSubkey, 0, encryptionSubkey.Length);
-                    Buffer.BlockCopy(derivedKeysBuffer, encryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
-
-                    // Step 4: Perform the encryption operation.
-
-                    using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
-                    using (var cryptoTransform = symmetricAlgorithm.CreateEncryptor(encryptionSubkey, iv))
-                    using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
-                    {
-                        cryptoStream.Write(plaintext.Array!, plaintext.Offset, plaintext.Count);
-                        cryptoStream.FlushFinalBlock();
-
-                        // At this point, outputStream := { keyModifier || IV || ciphertext }
-
-                        // Step 5: Calculate the digest over the IV and ciphertext.
-                        // We don't need to calculate the digest over the key modifier since that
-                        // value has already been mixed into the KDF used to generate the MAC key.
-
-                        using (var validationAlgorithm = CreateValidationAlgorithm(validationSubkey))
-                        {
-                            // As an optimization, avoid duplicating the underlying buffer
-                            var underlyingBuffer = outputStream.GetBuffer();
-
-                            var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
-                            outputStream.Write(mac, 0, mac.Length);
-
-                            // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) }
-                            // And we're done!
-                            return outputStream.ToArray();
-                        }
-                    }
+                    return EncryptImpl(plaintext, additionalAuthenticatedData.AsSpan(), decryptedKdk, encryptionSubkey, validationSubkey, derivedKeysBuffer);
                 }
                 finally
                 {
@@ -381,4 +328,135 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             throw Error.CryptCommon_GenericError(ex);
         }
     }
+
+#if NET10_0_OR_GREATER
+    private byte[] EncryptImpl(
+        ArraySegment<byte> plaintextArraySegment,
+        ReadOnlySpan<byte> additionalAuthenticatedData,
+        byte[] decryptedKdk,
+        byte[] encryptionSubkey,
+        byte[] validationSubkey,
+        byte[] derivedKeysBuffer)
+    {
+        var plainText = plaintextArraySegment.AsSpan();
+
+        // Step 4: Perform the encryption operation.
+
+        using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: encryptionSubkey);
+        using var validationAlgorithm = CreateValidationAlgorithm(key: null!); // we dont care now, because we are only interested in the hash size property
+
+        var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainText.Length);
+        var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
+        var ivLength = _symmetricAlgorithmBlockSizeInBytes;
+        var macLength = validationAlgorithm.HashSize * 8;
+
+        // allocating an array of a specific required length:
+        var outputArray = new byte[keyModifierLength + ivLength + cipherTextLength + macLength];
+        var outputSpan = outputArray.AsSpan();
+
+        // Step 1: Generate a random key modifier and IV for this operation.
+        // Both will be equal to the block size of the block cipher algorithm.
+        // note: we are generating it right into the result array
+        _genRandom.GenRandom(outputSpan.Slice(start: 0, length: keyModifierLength));
+        _genRandom.GenRandom(outputSpan.Slice(start: keyModifierLength, length: ivLength));
+
+        var keyModifier = outputSpan.Slice(start: 0, length: keyModifierLength);
+        var iv = outputSpan.Slice(start: keyModifierLength, length: ivLength);
+
+        _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+            kdk: decryptedKdk,
+            label: additionalAuthenticatedData,
+            contextHeader: _contextHeader,
+            contextData: keyModifier,
+            prfFactory: _kdkPrfFactory,
+            output: new ArraySegment<byte>(derivedKeysBuffer));
+
+        Buffer.BlockCopy(derivedKeysBuffer, 0, encryptionSubkey, 0, encryptionSubkey.Length);
+        Buffer.BlockCopy(derivedKeysBuffer, encryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
+
+        // encrypting plaintext into the target array directly
+        symmetricAlgorithm.EncryptCbc(plainText, iv, outputSpan.Slice(start: KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes, length: cipherTextLength));
+
+        // At this point, outputStream := { keyModifier || IV || ciphertext }
+
+        // Step 5: Calculate the digest over the IV and ciphertext.
+        // We don't need to calculate the digest over the key modifier since that
+        // value has already been mixed into the KDF used to generate the MAC key.
+
+        validationAlgorithm.Key = validationSubkey; // crucial: finally set the key
+        validationAlgorithm.TryComputeHash(source: outputSpan, destination: outputSpan.Slice(start: keyModifierLength, length: ivLength + cipherTextLength), bytesWritten: out _);
+
+        // At this point, outputArray := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) }
+        // And we're done!
+
+        return outputArray;
+    }
+#else
+    private byte[] EncryptImpl(
+        ArraySegment<byte> plaintext,
+        ReadOnlySpan<byte> additionalAuthenticatedData,
+        byte[] decryptedKdk,
+        byte[] encryptionSubkey,
+        byte[] validationSubkey,
+        byte[] derivedKeysBuffer)
+    {
+        var outputStream = new MemoryStream();
+
+        // Step 1: Generate a random key modifier and IV for this operation.
+        // Both will be equal to the block size of the block cipher algorithm.
+
+        var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+        var iv = _genRandom.GenRandom(_symmetricAlgorithmBlockSizeInBytes);
+
+        // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
+
+        outputStream.Write(keyModifier, 0, keyModifier.Length);
+        outputStream.Write(iv, 0, iv.Length);
+
+        // At this point, outputStream := { keyModifier || IV }.
+        // Step 3: Decrypt the KDK, and use it to generate new encryption and HMAC keys.
+        // We pin all unencrypted keys to limit their exposure via GC relocation.
+        _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+            kdk: decryptedKdk,
+            label: additionalAuthenticatedData,
+            contextHeader: _contextHeader,
+            contextData: new ArraySegment<byte>(keyModifier),
+            prfFactory: _kdkPrfFactory,
+            output: new ArraySegment<byte>(derivedKeysBuffer));
+
+        Buffer.BlockCopy(derivedKeysBuffer, 0, encryptionSubkey, 0, encryptionSubkey.Length);
+        Buffer.BlockCopy(derivedKeysBuffer, encryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
+
+        // Step 4: Perform the encryption operation.
+
+        using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
+        using (var cryptoTransform = symmetricAlgorithm.CreateEncryptor(encryptionSubkey, iv))
+        using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
+        {
+            cryptoStream.Write(plaintext.Array!, plaintext.Offset, plaintext.Count);
+            cryptoStream.FlushFinalBlock();
+
+            // At this point, outputStream := { keyModifier || IV || ciphertext }
+
+            // Step 5: Calculate the digest over the IV and ciphertext.
+            // We don't need to calculate the digest over the key modifier since that
+            // value has already been mixed into the KDF used to generate the MAC key.
+
+            using (var validationAlgorithm = CreateValidationAlgorithm(validationSubkey))
+            {
+                // As an optimization, avoid duplicating the underlying buffer
+                var underlyingBuffer = outputStream.GetBuffer();
+
+                var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
+                outputStream.Write(mac, 0, mac.Length);
+
+                // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) }
+                // And we're done!
+                return outputStream.ToArray();
+            }
+        }
+    }
+#endif
 }
