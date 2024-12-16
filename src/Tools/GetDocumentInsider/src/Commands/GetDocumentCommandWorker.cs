@@ -277,7 +277,10 @@ internal sealed class GetDocumentCommandWorker
         var found = false;
         Directory.CreateDirectory(_context.OutputDirectory);
         var filePathList = new List<string>();
-        foreach (var documentName in documentNames)
+        var targetDocumentNames = string.IsNullOrEmpty(_context.DocumentName)
+            ? documentNames
+            : [_context.DocumentName];
+        foreach (var documentName in targetDocumentNames)
         {
             var filePath = GetDocument(
                 documentName,
@@ -338,7 +341,7 @@ internal sealed class GetDocumentCommandWorker
                     {
                         _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
                     }
-                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_1];
                 }
             }
             using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
