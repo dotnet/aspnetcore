@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             get
             {
-#if NET461
+#if NET462
                 return false;
 #elif NETSTANDARD2_0
                 return true;

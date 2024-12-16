@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET461
+#if NET462
 // Per https://github.com/dotnet/corefx/issues/5045, HttpClientHandler.UseDefaultCredentials does not work correctly in CoreFx.
 // We'll require the desktop HttpClient to run these tests.
 

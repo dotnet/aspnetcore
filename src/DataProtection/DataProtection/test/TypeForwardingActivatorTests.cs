@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.DataProtection
         [MemberData(nameof(AssemblyVersions))]
         public void CreateInstance_ForwardsAcrossVersionChanges(Version version)
         {
-#if NET461
+#if NET462
             // run this test in an appdomain without testhost's custom assembly resolution hooks
             var setupInfo = new AppDomainSetup
             {

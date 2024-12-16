@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
-#if NET461
+#if NET462
     // ClientWebSocket does not support WebSockets on these platforms and OS. Kestrel does support it.
     [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
 #elif NETCOREAPP2_1

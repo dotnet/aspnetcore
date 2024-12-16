@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 #if NETCOREAPP2_1
             ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NETSTANDARD1_4", actualParams, errors, htmlEncoded);
 #elif NET461
-            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET451", actualParams, errors, htmlEncoded);
+            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET461", actualParams, errors, htmlEncoded);
 #else
 #error Invalid target framework.
 #endif
