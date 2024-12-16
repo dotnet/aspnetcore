@@ -40,7 +40,7 @@
     <!-- See https://github.com/dotnet/aspnetcore/issues/52006 for more details. -->
     <None Include="build\*.targets">
       <Pack>true</Pack>
-      <PackagePath>build;buildTransitive</PackagePath>
+      <PackagePath>build\$(DefaultNetCoreTargetFramework);buildTransitive\$(DefaultNetCoreTargetFramework)</PackagePath>
     </None>
   </ItemGroup>
 </Project>
