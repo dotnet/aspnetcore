@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>HTTP header parser implementations.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591;CS0619</NoWarn>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>http</PackageTags>
