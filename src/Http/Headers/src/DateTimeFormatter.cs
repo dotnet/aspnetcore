@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
@@ -37,7 +38,7 @@ namespace Microsoft.Net.Http.Headers
             var universal = dateTime.UtcDateTime;
 
             var length = quoted ? QuotedRfc1123DateLength : Rfc1123DateLength;
-            var target = new InplaceStringBuilder(length);
+            var target = new StringBuilder(length);
 
             if (quoted)
             {
@@ -66,19 +67,16 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
-        private static void AppendYear(ref InplaceStringBuilder target, int year)
+        private static void AppendYear(ref StringBuilder target, int year)
         {
             target.Append(GetAsciiChar(year / 1000));
             target.Append(GetAsciiChar(year % 1000 / 100));
             target.Append(GetAsciiChar(year % 100 / 10));
             target.Append(GetAsciiChar(year % 10));
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
-        private static void AppendTimeOfDay(ref InplaceStringBuilder target, TimeSpan timeOfDay)
+        private static void AppendTimeOfDay(ref StringBuilder target, TimeSpan timeOfDay)
         {
             AppendNumber(ref target, timeOfDay.Hours);
             target.Append(Colon);
@@ -86,16 +84,13 @@ namespace Microsoft.Net.Http.Headers
             target.Append(Colon);
             AppendNumber(ref target, timeOfDay.Seconds);
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 619
-        private static void AppendNumber(ref InplaceStringBuilder target, int number)
+        private static void AppendNumber(ref StringBuilder target, int number)
         {
             target.Append(GetAsciiChar(number / 10));
             target.Append(GetAsciiChar(number % 10));
         }
-#pragma warning restore 619
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static char GetAsciiChar(int value)

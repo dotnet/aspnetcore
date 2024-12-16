@@ -166,7 +166,7 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            var sb = new InplaceStringBuilder(length);
+            var sb = new StringBuilder(length);
 
             sb.Append(_name);
             sb.Append(EqualsToken);
@@ -210,8 +210,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-#pragma warning disable 619
-        private static void AppendSegment(ref InplaceStringBuilder builder, StringSegment name, StringSegment value)
+        private static void AppendSegment(ref StringBuilder builder, StringSegment name, StringSegment value)
         {
             builder.Append(SeparatorToken);
             builder.Append(name);
@@ -221,7 +220,6 @@ namespace Microsoft.Net.Http.Headers
                 builder.Append(value);
             }
         }
-#pragma warning restore 619
 
         /// <summary>
         /// Append string representation of this <see cref="SetCookieHeaderValue"/> to given
