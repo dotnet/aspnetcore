@@ -264,9 +264,9 @@
     <MicrosoftCodeAnalysisCSharpVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
-    <MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>1.1.2-beta1.24121.1</MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>
-    <MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>1.1.2-beta1.24121.1</MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>
-    <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2-beta1.24121.1</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
+    <MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>
+    <MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>
+    <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
