@@ -216,24 +216,12 @@ internal sealed class CreateCommand
             optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(", ", claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}]{Environment.NewLine}";
         }
 
-        var appsettingsFile = "appsettings.Development.json";
+        var appsettingsFile = DevJwtCliHelpers.DefaultAppSettingsFile;
         if (appsettingsFileOption.HasValue())
         {
-            appsettingsFile = appsettingsFileOption.Value();
-            if (!appsettingsFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            {
-                reporter.Error(Resources.CreateCommand_InvalidAppsettingsFile_Error);
-                isValid = false;
-            }
-            else if (!File.Exists(Path.Combine(Path.GetDirectoryName(project), appsettingsFile)))
-            {
-                reporter.Error(Resources.FormatCreateCommand_AppsettingsFileNotFound_Error(Path.GetDirectoryName(project)));
-                isValid = false;
-            }
-            else
-            {
-                optionsString += appsettingsFileOption.HasValue() ? $"{Resources.JwtPrint_appsettingsFile}: {appsettingsFile}{Environment.NewLine}" : string.Empty;
-            }
+            isValid = DevJwtCliHelpers.GetAppSettingsFile(project, appsettingsFileOption.Value(), reporter, out appsettingsFile);
+
+            optionsString += appsettingsFileOption.HasValue() ? $"{Resources.JwtPrint_appsettingsFile}: {appsettingsFile}{Environment.NewLine}" : string.Empty;
         }
 
         return (

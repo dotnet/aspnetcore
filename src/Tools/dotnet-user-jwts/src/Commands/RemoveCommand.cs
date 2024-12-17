@@ -36,20 +36,9 @@ internal sealed class RemoveCommand
                     return 1;
                 }
 
-                var appsettingsFile = "appsettings.Development.json";
-                if (appsettingsFileOption.HasValue())
+                if (!DevJwtCliHelpers.GetAppSettingsFile(project, appsettingsFileOption.Value(), cmd.Reporter, out var appsettingsFile))
                 {
-                    appsettingsFile = appsettingsFileOption.Value();
-                    if (!appsettingsFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                    {
-                        cmd.Reporter.Error(Resources.RemoveCommand_InvalidAppsettingsFile_Error);
-                        return 1;
-                    }
-                    else if (!File.Exists(Path.Combine(Path.GetDirectoryName(project), appsettingsFile)))
-                    {
-                        cmd.Reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.GetDirectoryName(project)));
-                        return 1;
-                    }
+                    return 1;
                 }
 
                 return Execute(cmd.Reporter, project, userSecretsId, idArgument.Value, appsettingsFile);
