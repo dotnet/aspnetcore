@@ -17,6 +17,7 @@
     <UsagePattern IdentityGlob="System.Composition.Hosting/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.Runtime/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/6.0.*" />
     <UsagePattern IdentityGlob="System.Formats.Asn1/8.0.1" />
 
