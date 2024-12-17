@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers;
 
@@ -383,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return test.RunAsync();
     }
 
-    private sealed class AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, XUnitVerifier>
+    private sealed class AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, DefaultVerifier>
     {
         public AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest(ImmutableArray<MetadataReference> metadataReferences)
         {

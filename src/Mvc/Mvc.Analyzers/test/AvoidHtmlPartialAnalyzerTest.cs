@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers;
 
@@ -422,7 +421,7 @@ namespace AspNetCore
         return test.RunAsync();
     }
 
-    internal sealed class AvoidHtmlPartialCSharpAnalyzerTest : CSharpAnalyzerTest<AvoidHtmlPartialAnalyzer, XUnitVerifier>
+    internal sealed class AvoidHtmlPartialCSharpAnalyzerTest : CSharpAnalyzerTest<AvoidHtmlPartialAnalyzer, DefaultVerifier>
     {
         public AvoidHtmlPartialCSharpAnalyzerTest(ImmutableArray<MetadataReference> metadataReferences)
         {
