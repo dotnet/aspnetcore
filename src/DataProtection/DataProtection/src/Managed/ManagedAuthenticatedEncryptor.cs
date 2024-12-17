@@ -194,7 +194,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
             }
 
-            ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array!, keyModifierOffset, ivOffset - keyModifierOffset);
+            ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan().Slice(keyModifierOffset, ivOffset - keyModifierOffset);
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
             // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -202,12 +202,10 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             var decryptedKdk = new byte[_keyDerivationKey.Length];
             var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
             var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
-            var derivedKeysBuffer = new byte[checked(decryptionSubkey.Length + validationSubkey.Length)];
 
             fixed (byte* __unused__1 = decryptedKdk)
             fixed (byte* __unused__2 = decryptionSubkey)
             fixed (byte* __unused__3 = validationSubkey)
-            fixed (byte* __unused__4 = derivedKeysBuffer)
             {
                 try
                 {
@@ -218,10 +216,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         contextHeader: _contextHeader,
                         contextData: keyModifier,
                         prfFactory: _kdkPrfFactory,
-                        output: new ArraySegment<byte>(derivedKeysBuffer));
-
-                    derivedKeysBuffer.AsSpan().Slice(start: 0, length: decryptionSubkey.Length).CopyTo(decryptionSubkey);
-                    derivedKeysBuffer.AsSpan().Slice(start: decryptionSubkey.Length, length: validationSubkey.Length).CopyTo(validationSubkey);
+                        operationSubKey: decryptionSubkey,
+                        validationSubKey: validationSubkey);
 
                     // Step 3: Calculate the correct MAC for this payload.
                     // correctHash := MAC(IV || ciphertext)
@@ -255,7 +251,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     return symmetricAlgorithm.DecryptCbc(ciphertext, iv); // symmetricAlgorithm is created with CBC mode
 #else
                     var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
-                    Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
+                    protectedPayload.Array.AsSpan().Slice(ivOffset, iv.Length).CopyTo(iv);
 
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))    
@@ -273,7 +269,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
                     Array.Clear(decryptionSubkey, 0, decryptionSubkey.Length);
                     Array.Clear(validationSubkey, 0, validationSubkey.Length);
-                    Array.Clear(derivedKeysBuffer, 0, derivedKeysBuffer.Length);
                 }
             }
         }
