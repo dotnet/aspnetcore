@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Managed;
@@ -72,6 +73,8 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         {
             // See SP800-108, Sec. 5.1 for the format of the input to the PRF routine.
             var prfInput = new byte[checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */)];
+            //var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
+            //var prfInput = ArrayPool<byte>.Shared.Rent(prfInputLength);
 
             // Copy [L]_2 to prfInput since it's stable over all iterations
             uint outputSizeInBits = (uint)checked((int)outputCount * 8);
@@ -95,7 +98,13 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 prfInput[3] = (byte)(i);
 
                 // Run the PRF and copy the results to the output buffer
+#if NET10_0_OR_GREATER
+                var prfOutput = ArrayPool<byte>.Shared.Rent(prfOutputSizeInBytes);
+                prf.TryComputeHash(prfInput, prfOutput, out _);
+#else
                 var prfOutput = prf.ComputeHash(prfInput);
+#endif
+
                 CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
                 var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
 
@@ -117,7 +126,11 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                     validationSubKeyIndex += leftOverBytes;
                 }
 
+#if NET10_0_OR_GREATER
+                ArrayPool<byte>.Shared.Return(prfOutput, clearArray: true); // contains key material, so delete it
+#else
                 Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
+#endif
                 outputCount -= numBytesToCopyThisIteration;
             }
         }
