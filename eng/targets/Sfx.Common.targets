@@ -42,7 +42,7 @@
     <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
   </ItemGroup>
 
-  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)')">
-    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
+    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
   </PropertyGroup>
 </Project>
