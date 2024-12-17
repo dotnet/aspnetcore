@@ -23,7 +23,7 @@ public class KeyManagementOptions
     /// <summary>
     /// Initializes a new instance of <see cref="KeyManagementOptions"/>.
     /// </summary>
-    public KeyManagementOptions()   
+    public KeyManagementOptions()
     {
     }
 
