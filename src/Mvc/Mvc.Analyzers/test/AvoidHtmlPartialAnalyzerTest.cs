@@ -412,7 +412,7 @@ namespace AspNetCore
 
     private static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new AvoidHtmlPartialCSharpAnalzyerTest(TestReferences.MetadataReferences)
+        var test = new AvoidHtmlPartialCSharpAnalyzerTest(TestReferences.MetadataReferences)
         {
             TestCode = source,
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
@@ -422,9 +422,9 @@ namespace AspNetCore
         return test.RunAsync();
     }
 
-    internal sealed class AvoidHtmlPartialCSharpAnalzyerTest : CSharpAnalyzerTest<AvoidHtmlPartialAnalyzer, XUnitVerifier>
+    internal sealed class AvoidHtmlPartialCSharpAnalyzerTest : CSharpAnalyzerTest<AvoidHtmlPartialAnalyzer, XUnitVerifier>
     {
-        public AvoidHtmlPartialCSharpAnalzyerTest(ImmutableArray<MetadataReference> metadataReferences)
+        public AvoidHtmlPartialCSharpAnalyzerTest(ImmutableArray<MetadataReference> metadataReferences)
         {
             TestState.AdditionalReferences.AddRange(metadataReferences);
         }

@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
 
     private static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new AttributesShouldNotBeAppliedToPageModelCSharpAnalzyerTest(TestReferences.MetadataReferences)
+        var test = new AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest(TestReferences.MetadataReferences)
         {
             TestCode = source,
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
@@ -383,9 +383,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return test.RunAsync();
     }
 
-    private sealed class AttributesShouldNotBeAppliedToPageModelCSharpAnalzyerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, XUnitVerifier>
+    private sealed class AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, XUnitVerifier>
     {
-        public AttributesShouldNotBeAppliedToPageModelCSharpAnalzyerTest(ImmutableArray<MetadataReference> metadataReferences)
+        public AttributesShouldNotBeAppliedToPageModelCSharpAnalyzerTest(ImmutableArray<MetadataReference> metadataReferences)
         {
             TestState.AdditionalReferences.AddRange(metadataReferences);
         }

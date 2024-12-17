@@ -58,7 +58,7 @@ namespace AspNetCore
         {
             WriteLiteral(""\r\n"");
             WriteLiteral(""\r\n"");
-  
+
     Action sometMethod = {|#0:() =>
     {
 
@@ -151,7 +151,7 @@ namespace AspNetCore
         {
             WriteLiteral(""\r\n"");
             WriteLiteral(""\r\n"");
-  
+
     Func<Task> sometMethod = {|#0:() =>
     {
 
@@ -243,13 +243,13 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral(""\r\n"");
-  
+
     SometMethod();
 
             WriteLiteral(""\r\n"");
         }
         #pragma warning restore 1998
-            
+
     {|#0:void SometMethod()
     {
 
@@ -336,7 +336,7 @@ namespace AspNetCore
         {
             WriteLiteral(""\r\n"");
             WriteLiteral(""\r\n"");
-  
+
     TestDelegate sometMethod = {|#0:delegate ()
     {
 
@@ -368,7 +368,7 @@ namespace AspNetCore
             WriteLiteral(""\r\n"");
         }
         #pragma warning restore 1998
-            
+
     delegate void TestDelegate();
 
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
@@ -430,7 +430,7 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral(""\r\n"");
-  
+
     {|#0:void SometMethod()
     {
 
@@ -520,13 +520,13 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral(""\r\n"");
-  
+
     await SometMethod();
 
             WriteLiteral(""\r\n"");
         }
         #pragma warning restore 1998
-            
+
     async Task SometMethod()
     {
 
@@ -611,7 +611,7 @@ namespace AspNetCore
         {
             WriteLiteral(""\r\n"");
             WriteLiteral(""\r\n"");
-  
+
     TestDelegate sometMethod = async delegate ()
     {
 
@@ -643,7 +643,7 @@ namespace AspNetCore
             WriteLiteral(""\r\n"");
         }
         #pragma warning restore 1998
-            
+
     delegate Task TestDelegate();
 
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
@@ -707,7 +707,7 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral(""\r\n"");
-  
+
     async Task SometMethod()
     {
 
@@ -794,13 +794,13 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral(""\r\n"");
-  
+
     SometMethod();
 
             WriteLiteral(""\r\n"");
         }
         #pragma warning restore 1998
-            
+
     {|#0:void SometMethod()
     {
 
@@ -898,7 +898,7 @@ namespace AspNetCore
 
     private static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new TagHelpersInCodeBlocksCSharpAnalzyerTest(TestReferences.MetadataReferences)
+        var test = new TagHelpersInCodeBlocksCSharpAnalyzerTest(TestReferences.MetadataReferences)
         {
             TestCode = source,
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
@@ -908,9 +908,9 @@ namespace AspNetCore
         return test.RunAsync();
     }
 
-    private sealed class TagHelpersInCodeBlocksCSharpAnalzyerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, XUnitVerifier>
+    private sealed class TagHelpersInCodeBlocksCSharpAnalyzerTest : CSharpAnalyzerTest<AttributesShouldNotBeAppliedToPageModelAnalyzer, XUnitVerifier>
     {
-        public TagHelpersInCodeBlocksCSharpAnalzyerTest(ImmutableArray<MetadataReference> metadataReferences)
+        public TagHelpersInCodeBlocksCSharpAnalyzerTest(ImmutableArray<MetadataReference> metadataReferences)
         {
             TestState.AdditionalReferences.AddRange(metadataReferences);
         }
