@@ -23,7 +23,7 @@ public class KeyManagementOptions
     /// <summary>
     /// Initializes a new instance of <see cref="KeyManagementOptions"/>.
     /// </summary>
-    public KeyManagementOptions()
+    public KeyManagementOptions()   
     {
     }
 
@@ -111,7 +111,7 @@ public class KeyManagementOptions
     /// <remarks>
     /// Settable for testing.
     /// </remarks>
-    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200.0);
+    internal TimeSpan DefaultKeyResolverRetryDelay { get; set; } = TimeSpan.FromMilliseconds(200);
 
     /// <summary>
     /// Controls the lifetime (number of days before expiration)

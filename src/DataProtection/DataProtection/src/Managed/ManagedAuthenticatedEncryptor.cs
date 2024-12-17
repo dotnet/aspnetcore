@@ -168,8 +168,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         protectedPayload.Validate();
         additionalAuthenticatedData.Validate();
 
-        var protectedPayloadSpan = protectedPayload.AsSpan();
-
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
         if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
         {
@@ -194,7 +192,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
             }
 
-            ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan().Slice(keyModifierOffset, ivOffset - keyModifierOffset);
+            ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan(keyModifierOffset, ivOffset - keyModifierOffset);
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
             // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -245,8 +243,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
 
                     // note: here protectedPayload.Array is taken without an offset (cant use AsSpan() on ArraySegment)
-                    var ciphertext = protectedPayload.Array.AsSpan().Slice(ciphertextOffset, macOffset - ciphertextOffset);
-                    var iv = protectedPayload.Array.AsSpan().Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
+                    var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
+                    var iv = protectedPayload.Array.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
                     return symmetricAlgorithm.DecryptCbc(ciphertext, iv); // symmetricAlgorithm is created with CBC mode
 #else

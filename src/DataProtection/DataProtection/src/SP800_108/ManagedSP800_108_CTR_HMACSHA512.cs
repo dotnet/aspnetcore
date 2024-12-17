@@ -116,13 +116,13 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 if (operationSubKeyIndex < operationSubKey.Length) // meaning we need to write to operationSubKey
                 {
                     var destination = operationSubKey.Slice(operationSubKeyIndex, bytesToWrite);
-                    prfOutput.AsSpan().Slice(0, bytesToWrite).CopyTo(destination);
+                    prfOutput.AsSpan(0, bytesToWrite).CopyTo(destination);
                     operationSubKeyIndex += bytesToWrite;
                 }
                 if (operationSubKeyIndex == operationSubKey.Length && leftOverBytes != 0) // we have filled the operationSubKey. It's time for the validationSubKey
                 {
                     var destination = validationSubKey.Slice(validationSubKeyIndex, leftOverBytes);
-                    prfOutput.AsSpan().Slice(bytesToWrite, leftOverBytes).CopyTo(destination);
+                    prfOutput.AsSpan(bytesToWrite, leftOverBytes).CopyTo(destination);
                     validationSubKeyIndex += leftOverBytes;
                 }
 
@@ -136,6 +136,10 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         }
     }
 
+    /// <remarks>
+    /// Probably, you would want to use similar method <see cref="DeriveKeys(byte[], ReadOnlySpan{byte}, ReadOnlySpan{byte}, ReadOnlySpan{byte}, Func{byte[], HashAlgorithm}, Span{byte}, Span{byte})"/>.
+    /// It is more efficient allowing to skip an allocation of `combinedContext` and writing directly into passed Spans
+    /// </remarks>
     public static void DeriveKeysWithContextHeader(byte[] kdk, ArraySegment<byte> label, byte[] contextHeader, ArraySegment<byte> context, Func<byte[], HashAlgorithm> prfFactory, ArraySegment<byte> output)
     {
         var combinedContext = new byte[checked(contextHeader.Length + context.Count)];
