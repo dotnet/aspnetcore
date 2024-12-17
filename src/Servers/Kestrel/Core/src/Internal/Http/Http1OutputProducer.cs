@@ -162,7 +162,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // unsentBytes should never be over 64KB in the default configuration.
                     _timeoutControl.StartTimingWrite((int)Math.Min(unsentBytes, int.MaxValue));
+#pragma warning disable CS0618 // Type or member is obsolete
                     _pipeWriter.OnReaderCompleted((ex, state) => ((ITimeoutControl)state).StopTimingWrite(), _timeoutControl);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
         }

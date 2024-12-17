@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NET461
+#elif NET462
 #else
 #error Target frameworks need to be updated
 #endif

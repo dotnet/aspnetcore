@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
@@ -616,7 +617,7 @@ namespace Microsoft.Net.Http.Headers
         {
             input = RemoveQuotes(input);
 
-            // First pass to calculate the size of the InplaceStringBuilder
+            // First pass to calculate the size of the StringBuilder
             var backSlashCount = CountBackslashesForDecodingQuotedString(input);
 
             if (backSlashCount == 0)
@@ -624,7 +625,7 @@ namespace Microsoft.Net.Http.Headers
                 return input;
             }
 
-            var stringBuilder = new InplaceStringBuilder(input.Length - backSlashCount);
+            var stringBuilder = new StringBuilder(input.Length - backSlashCount);
 
             for (var i = 0; i < input.Length; i++)
             {
@@ -687,7 +688,7 @@ namespace Microsoft.Net.Http.Headers
             // By calling this, we know that the string requires quotes around it to be a valid token.
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
-            var stringBuilder = new InplaceStringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
+            var stringBuilder = new StringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
             stringBuilder.Append('\"');
 
             for (var i = 0; i < input.Length; i++)

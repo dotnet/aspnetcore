@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
     }
 }
-#elif NET461
+#elif NET462
 #else
 #error Target framework needs to be updated
 #endif

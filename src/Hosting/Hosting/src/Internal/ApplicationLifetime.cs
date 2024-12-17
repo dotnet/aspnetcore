@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
     public class ApplicationLifetime : IApplicationLifetime, Extensions.Hosting.IApplicationLifetime
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();

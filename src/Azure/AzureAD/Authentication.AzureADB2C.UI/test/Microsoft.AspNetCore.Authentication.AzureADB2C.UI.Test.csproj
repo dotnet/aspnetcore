@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Authentication.AzureADB2C.UI</RootNamespace>
   </PropertyGroup>
 

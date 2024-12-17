@@ -51,7 +51,6 @@
     <ProjectToExclude Include="
                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
                       $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
-                      $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
@@ -95,7 +94,6 @@
                           $(RepositoryRoot)src\Servers\**\*.pkgproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
-                          $(RepositoryRoot)src\Tools\**\*.*proj;
                           $(RepositoryRoot)src\Middleware\**\*.*proj;
                           $(RepositoryRoot)src\Razor\**\*.*proj;
                           $(RepositoryRoot)src\Mvc\**\*.*proj;

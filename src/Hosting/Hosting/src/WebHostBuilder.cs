@@ -264,8 +264,10 @@ namespace Microsoft.AspNetCore.Hosting
 
             var services = new ServiceCollection();
             services.AddSingleton(_options);
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddSingleton<IHostingEnvironment>(_hostingEnvironment);
             services.AddSingleton<Extensions.Hosting.IHostingEnvironment>(_hostingEnvironment);
+#pragma warning restore CS0618 // Type or member is obsolete
             services.AddSingleton(_context);
 
             var builder = new ConfigurationBuilder()

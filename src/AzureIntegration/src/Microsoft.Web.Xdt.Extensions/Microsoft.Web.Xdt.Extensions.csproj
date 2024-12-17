@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>xdt</PackageTags>
   </PropertyGroup>

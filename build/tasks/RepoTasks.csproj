@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.1</TargetFramework>
-    <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net462</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
