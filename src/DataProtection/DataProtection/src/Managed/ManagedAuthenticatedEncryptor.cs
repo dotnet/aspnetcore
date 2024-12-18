@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.SP800_108;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
@@ -195,8 +196,10 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan(keyModifierOffset, ivOffset - keyModifierOffset);
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
-            // We pin all unencrypted keys to limit their exposure via GC relocation.
 
+            // The best optimization is to stackalloc. If the size is too big, we would want to rent from the pool,
+            // but we can't due to the HashAlgorithm, ValidationAlgorithm and SymmetricAlgorithm requiring a byte[] instead of a Span<byte>
+            // in the constructor / Key property.
             var decryptedKdk = new byte[_keyDerivationKey.Length];
             var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
             var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
@@ -219,16 +222,44 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
                     // Step 3: Calculate the correct MAC for this payload.
                     // correctHash := MAC(IV || ciphertext)
+                    checked
+                    {
+                        eofOffset = protectedPayload.Offset + protectedPayload.Count;
+                        macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
+                    }
+#if NET10_0_OR_GREATER
+                    using var hashAlgorithm = CreateValidationAlgorithm(validationSubkey);
+                    var hashSize = hashAlgorithm.GetDigestSizeInBytes();
+
+                    byte[]? correctHashLease = null;
+                    Span<byte> correctHash = hashSize <= 128
+                        ? stackalloc byte[hashSize]
+                        : (correctHashLease = DataProtectionPool.Rent(hashSize)).AsSpan(0, hashSize);
+                    try
+                    {
+                        var hashSource = protectedPayload.Array!.AsSpan(ivOffset, macOffset - ivOffset);
+                        hashAlgorithm.TryComputeHash(hashSource, correctHash, out _);
+
+                        // Step 4: Validate the MAC provided as part of the payload.
+                        var payloadMacPart = protectedPayload.Array!.AsSpan(macOffset, eofOffset - macOffset);
+                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, payloadMacPart))
+                        {
+                            throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
+                        }
+                    }
+                    finally
+                    {
+                        if (correctHashLease is not null)
+                        {
+                            // it was not cleaned in previous implementation (var correctHash = new byte[])
+                            DataProtectionPool.Return(correctHashLease, clearArray: false);
+                        }
+                    }
+#else
                     byte[] correctHash;
 
                     using (var hashAlgorithm = CreateValidationAlgorithm(validationSubkey))
                     {
-                        checked
-                        {
-                            eofOffset = protectedPayload.Offset + protectedPayload.Count;
-                            macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
-                        }
-
                         correctHash = hashAlgorithm.ComputeHash(protectedPayload.Array!, ivOffset, macOffset - ivOffset);
                     }
 
@@ -237,12 +268,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     {
                         throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                     }
+#endif
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
 #if NET10_0_OR_GREATER
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
 
-                    // note: here protectedPayload.Array is taken without an offset (cant use AsSpan() on ArraySegment)
+                    // note: here protectedPayload.Array is taken without an offset (can't use AsSpan() on ArraySegment)
                     var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
                     var iv = protectedPayload.Array.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
