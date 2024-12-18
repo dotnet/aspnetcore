@@ -27,6 +27,9 @@ public static class AuthorizationServiceCollectionExtensions
         // aren't included by default.
         services.AddOptions();
 
+        services.AddMetrics();
+
+        services.TryAdd(ServiceDescriptor.Singleton<AuthorizationMetrics, AuthorizationMetrics>());
         services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
         services.TryAdd(ServiceDescriptor.Transient<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>());
         services.TryAdd(ServiceDescriptor.Transient<IAuthorizationHandlerProvider, DefaultAuthorizationHandlerProvider>());

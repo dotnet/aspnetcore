@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Authorization;
 public class DefaultAuthorizationService : IAuthorizationService
 {
     private readonly AuthorizationOptions _options;
+    private readonly AuthorizationMetrics? _metrics;
     private readonly IAuthorizationHandlerContextFactory _contextFactory;
     private readonly IAuthorizationHandlerProvider _handlers;
     private readonly IAuthorizationEvaluator _evaluator;
@@ -32,7 +34,35 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="contextFactory">The <see cref="IAuthorizationHandlerContextFactory"/> used to create the context to handle the authorization.</param>
     /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorization was successful.</param>
     /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>
-    public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IAuthorizationHandlerProvider handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationHandlerContextFactory contextFactory, IAuthorizationEvaluator evaluator, IOptions<AuthorizationOptions> options)
+    public DefaultAuthorizationService(
+        IAuthorizationPolicyProvider policyProvider,
+        IAuthorizationHandlerProvider handlers,
+        ILogger<DefaultAuthorizationService> logger,
+        IAuthorizationHandlerContextFactory contextFactory,
+        IAuthorizationEvaluator evaluator,
+        IOptions<AuthorizationOptions> options)
+        : this(policyProvider, handlers, logger, contextFactory, evaluator, options, services: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="DefaultAuthorizationService"/>.
+    /// </summary>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> used to provide policies.</param>
+    /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
+    /// <param name="logger">The logger used to log messages, warnings and errors.</param>
+    /// <param name="contextFactory">The <see cref="IAuthorizationHandlerContextFactory"/> used to create the context to handle the authorization.</param>
+    /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorization was successful.</param>
+    /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/> used to provide other services.</param>
+    public DefaultAuthorizationService(
+        IAuthorizationPolicyProvider policyProvider,
+        IAuthorizationHandlerProvider handlers,
+        ILogger<DefaultAuthorizationService> logger,
+        IAuthorizationHandlerContextFactory contextFactory,
+        IAuthorizationEvaluator evaluator,
+        IOptions<AuthorizationOptions> options,
+        IServiceProvider? services)
     {
         ArgumentNullThrowHelper.ThrowIfNull(options);
         ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
@@ -47,6 +77,7 @@ public class DefaultAuthorizationService : IAuthorizationService
         _logger = logger;
         _evaluator = evaluator;
         _contextFactory = contextFactory;
+        _metrics = services?.GetService<AuthorizationMetrics>();
     }
 
     /// <summary>
@@ -59,32 +90,8 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// A flag indicating whether authorization has succeeded.
     /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
-    public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
-    {
-        ArgumentNullThrowHelper.ThrowIfNull(requirements);
-
-        var authContext = _contextFactory.CreateContext(requirements, user, resource);
-        var handlers = await _handlers.GetHandlersAsync(authContext).ConfigureAwait(false);
-        foreach (var handler in handlers)
-        {
-            await handler.HandleAsync(authContext).ConfigureAwait(false);
-            if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
-            {
-                break;
-            }
-        }
-
-        var result = _evaluator.Evaluate(authContext);
-        if (result.Succeeded)
-        {
-            _logger.UserAuthorizationSucceeded();
-        }
-        else
-        {
-            _logger.UserAuthorizationFailed(result.Failure);
-        }
-        return result;
-    }
+    public virtual Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
+        => AuthorizeCoreAsync(user, resource, requirements, policyName: null);
 
     /// <summary>
     /// Checks if a user meets a specific authorization policy.
@@ -105,6 +112,38 @@ public class DefaultAuthorizationService : IAuthorizationService
         {
             throw new InvalidOperationException($"No policy found: {policyName}.");
         }
-        return await this.AuthorizeAsync(user, resource, policy).ConfigureAwait(false);
+
+        return await AuthorizeCoreAsync(user, resource, policy.Requirements, policyName).ConfigureAwait(false);
+    }
+
+    private async Task<AuthorizationResult> AuthorizeCoreAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements, string? policyName)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(requirements);
+
+        var authContext = _contextFactory.CreateContext(requirements, user, resource);
+        var handlers = await _handlers.GetHandlersAsync(authContext).ConfigureAwait(false);
+        foreach (var handler in handlers)
+        {
+            await handler.HandleAsync(authContext).ConfigureAwait(false);
+            if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
+            {
+                break;
+            }
+        }
+
+        var result = _evaluator.Evaluate(authContext);
+
+        _metrics?.AuthorizedRequest(policyName, result);
+
+        if (result.Succeeded)
+        {
+            _logger.UserAuthorizationSucceeded();
+        }
+        else
+        {
+            _logger.UserAuthorizationFailed(result.Failure);
+        }
+
+        return result;
     }
 }
