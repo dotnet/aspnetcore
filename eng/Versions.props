@@ -117,6 +117,7 @@
     <SystemDiagnosticsDiagnosticSourceVersion>10.0.0-alpha.1.24617.3</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>10.0.0-alpha.1.24617.3</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>10.0.0-alpha.1.24617.3</SystemDirectoryServicesProtocolsVersion>
+    <SystemFormatsAsn1Version>10.0.0-alpha.1.24617.3</SystemFormatsAsn1Version>
     <SystemIOPipelinesVersion>10.0.0-alpha.1.24617.3</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>10.0.0-alpha.1.24617.3</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>10.0.0-alpha.1.24617.3</SystemNetHttpWinHttpHandlerVersion>
@@ -208,7 +209,6 @@
     <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.3.20215.2</MicrosoftExtensionsDiagnosticAdapterVersion>
     <!-- Build tool dependencies -->
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
-    <SystemFormatsAsn1Version>10.0.0-alpha.1.24617.3</SystemFormatsAsn1Version>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
