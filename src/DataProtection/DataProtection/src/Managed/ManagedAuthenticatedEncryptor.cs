@@ -251,7 +251,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     {
                         if (correctHashLease is not null)
                         {
-                            // it was not cleaned in previous implementation (var correctHash = new byte[])
+                            // it was not cleaned in previous (netFx) implementation (var correctHash = new byte[])
                             DataProtectionPool.Return(correctHashLease, clearArray: false);
                         }
                     }
