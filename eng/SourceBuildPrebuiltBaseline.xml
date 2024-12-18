@@ -19,7 +19,7 @@
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/6.0.*" />
-    <UsagePattern IdentityGlob="System.Formats.Asn1/8.0.1" />
+    <UsagePattern IdentityGlob="System.Formats.Asn1/8.0.*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
@@ -45,9 +45,6 @@
     <!-- Transitive dependency of Roslyn dependencies. -->
     <UsagePattern IdentityGlob="System.Text.Json/8.0.0*" />
     <UsagePattern IdentityGlob="System.Text.Encodings.Web/8.0.0*" />
-
-    <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
-    <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
   </IgnorePatterns>
 
   <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
