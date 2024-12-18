@@ -325,10 +325,10 @@
     <value>No JWT with ID '{0}' found.</value>
   </data>
   <data name="RemoveCommand_InvalidAppsettingsFile_Error" xml:space="preserve">
-    <value>Invalid Appsettings file extension. Ensure file extension is .json.</value>
+    <value>The specified appsettings file is invalid. Please provide a valid JSON file.</value>
   </data>
   <data name="RemoveCommand_AppsettingsFileNotFound_Error" xml:space="preserve">
-    <value>Could not find Appsettings file in '{0}'. Check the filename and that the file exists.</value>
+    <value>Could not find Appsettings file '{0}'. Check the filename and that the file exists.</value>
   </data>
   <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
     <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>

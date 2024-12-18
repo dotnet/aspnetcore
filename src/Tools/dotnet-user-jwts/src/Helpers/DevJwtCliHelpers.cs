@@ -57,7 +57,7 @@ internal static class DevJwtCliHelpers
             }
             else if (!File.Exists(Path.Combine(Path.GetDirectoryName(projectPath), appsettingsFile)))
             {
-                reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.GetDirectoryName(projectPath)));
+                reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.Combine(Path.GetDirectoryName(projectPath), appsettingsFile)));
                 return false;
             }
         }
