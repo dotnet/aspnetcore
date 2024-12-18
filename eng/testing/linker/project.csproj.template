@@ -16,6 +16,8 @@
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
     <!-- Ensure individual warnings are shown when publishing -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <!-- But ignore the single warn files marked below to suppress their known warnings. -->
+    <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
     {AdditionalProperties}
   </PropertyGroup>
 
@@ -26,5 +28,20 @@
   <ItemGroup>
     {AdditionalProjectReferences}
   </ItemGroup>
+
+  <!-- Single warn the following assemblies, which have known warnings, so the warnings can be suppressed for now.
+  Remove this (and the above NoWarn IL2104) once  https://github.com/microsoft/OpenAPI.NET/issues/1875 is addressed. -->
+  <Target Name="ConfigureTrimming"
+          BeforeTargets="PrepareForILLink">
+    <ItemGroup>
+      <IlcArg Include="--singlewarnassembly:Microsoft.OpenApi" />
+    </ItemGroup>
+    <ItemGroup>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'Microsoft.OpenApi'">
+        <IsTrimmable>true</IsTrimmable>
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+    </ItemGroup>
+  </Target>
 
 </Project>
