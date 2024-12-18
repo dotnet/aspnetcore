@@ -19,7 +19,6 @@
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/6.0.*" />
-    <UsagePattern IdentityGlob="System.Formats.Asn1/8.0.*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
