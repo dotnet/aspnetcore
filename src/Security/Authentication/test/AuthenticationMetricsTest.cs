@@ -1,0 +1,216 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Moq;
+
+namespace Microsoft.AspNetCore.Authentication;
+
+public class AuthenticationMetricsTest
+{
+    [Fact]
+    public async Task Authenticate_Success()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.AuthenticateAsync()).Returns(Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "custom"))));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+
+        // Act
+        await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("success", (string)measurement.Tags["aspnetcore.authentication.result"]);
+    }
+
+    [Fact]
+    public async Task Authenticate_Failure()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.AuthenticateAsync()).Returns(Task.FromResult(AuthenticateResult.Fail("Authentication failed")));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+
+        // Act
+        await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authentication.result"]);
+    }
+
+    [Fact]
+    public async Task Authenticate_NoResult()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.AuthenticateAsync()).Returns(Task.FromResult(AuthenticateResult.NoResult()));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+
+        // Act
+        await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("none", (string)measurement.Tags["aspnetcore.authentication.result"]);
+    }
+
+    [Fact]
+    public async Task Challenge()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(Mock.Of<IAuthenticationHandler>(), meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var challengesCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.challenges");
+
+        // Act
+        await authenticationService.ChallengeAsync(httpContext, scheme: "custom", properties: null);
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(challengesCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+    }
+
+    [Fact]
+    public async Task Forbid()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(Mock.Of<IAuthenticationHandler>(), meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var forbidsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.forbids");
+
+        // Act
+        await authenticationService.ForbidAsync(httpContext, scheme: "custom", properties: null);
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(forbidsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+    }
+
+    [Fact]
+    public async Task SignIn()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(Mock.Of<IAuthenticationSignInHandler>(), meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var signInsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_ins");
+
+        // Act
+        await authenticationService.SignInAsync(httpContext, scheme: "custom", new ClaimsPrincipal(), properties: null);
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(signInsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+    }
+
+    [Fact]
+    public async Task SignOut()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var meterFactory = new TestMeterFactory();
+        var authenticationService = CreateAuthenticationService(Mock.Of<IAuthenticationSignOutHandler>(), meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var signOutsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_outs");
+
+        // Act
+        await authenticationService.SignOutAsync(httpContext, scheme: "custom", properties: null);
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(signOutsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+    }
+
+    private static AuthenticationService CreateAuthenticationService(IAuthenticationHandler authenticationHandler, TestMeterFactory meterFactory)
+    {
+        var authenticationHandlerProvider = new Mock<IAuthenticationHandlerProvider>();
+        authenticationHandlerProvider.Setup(p => p.GetHandlerAsync(It.IsAny<HttpContext>(), "custom")).Returns(Task.FromResult(authenticationHandler));
+
+        var claimsTransform = new Mock<IClaimsTransformation>();
+        claimsTransform.Setup(t => t.TransformAsync(It.IsAny<ClaimsPrincipal>())).Returns((ClaimsPrincipal p) => Task.FromResult(p));
+
+        var options = Options.Create(new AuthenticationOptions
+        {
+            DefaultSignInScheme = "custom",
+            RequireAuthenticatedSignIn = false,
+        });
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(new AuthenticationMetrics(meterFactory));
+        var services = serviceCollection.BuildServiceProvider();
+
+        var authenticationService = new AuthenticationService(
+            Mock.Of<IAuthenticationSchemeProvider>(),
+            authenticationHandlerProvider.Object,
+            claimsTransform.Object,
+            options,
+            services);
+
+        return authenticationService;
+    }
+}
