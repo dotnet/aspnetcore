@@ -1,9 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -120,5 +126,42 @@ public class CacheServiceExtensionsTests
         Assert.IsAssignableFrom<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
 
         loggerFactory.Verify();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddStackExchangeRedisCache_HybridCacheDetected(bool hybridCacheActive)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        services.AddLogging();
+
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
+        if (hybridCacheActive)
+        {
+            services.TryAddSingleton<HybridCache>(new DummyHybridCache());
+        }
+
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsAssignableFrom<RedisCache>(provider.GetRequiredService<IDistributedCache>());
+        Assert.Equal(hybridCacheActive, cache.HybridCacheActive);
+    }
+
+    sealed class DummyHybridCache : HybridCache
+    {
+        public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions options = null, IEnumerable<string> tags = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public override ValueTask RemoveAsync(string key, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public override ValueTask RemoveByTagAsync(string tag, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions options = null, IEnumerable<string> tags = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
     }
 }
