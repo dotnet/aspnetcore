@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -16,6 +17,7 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnec
 {
     private readonly SocketTransportOptions _options;
     private readonly ILoggerFactory _logger;
+    private readonly IMeterFactory _meterFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SocketTransportFactory"/> class.
@@ -24,19 +26,26 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnec
     /// <param name="loggerFactory">The logger factory.</param>
     public SocketTransportFactory(
         IOptions<SocketTransportOptions> options,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory) : this(options, loggerFactory, new DummyMeterFactory())
+    { }
+
+    public SocketTransportFactory(
+        IOptions<SocketTransportOptions> options,
+        ILoggerFactory loggerFactory,
+        IMeterFactory meterFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
         _logger = loggerFactory;
+        _meterFactory = meterFactory;
     }
 
     /// <inheritdoc />
     public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
-        var transport = new SocketConnectionListener(endpoint, _options, _logger);
+        var transport = new SocketConnectionListener(endpoint, _options, _logger, _meterFactory);
         transport.Bind();
         return new ValueTask<IConnectionListener>(transport);
     }
@@ -51,5 +60,12 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnec
             FileHandleEndPoint _ => true,
             _ => false
         };
+    }
+
+    private sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
     }
 }

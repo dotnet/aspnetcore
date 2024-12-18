@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -166,5 +167,5 @@ public class SocketTransportOptions
         return listenSocket;
     }
 
-    internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
+    internal Func<IMeterFactory, MemoryPool<byte>> MemoryPoolFactory { get; set; } = PinnedBlockMemoryPoolFactory.Create;
 }

@@ -12,6 +12,7 @@ internal static class Http2CatIServiceCollectionExtensions
 {
     public static IServiceCollection UseHttp2Cat(this IServiceCollection services, Action<Http2CatOptions> configureOptions)
     {
+        services.AddMetrics();
         services.AddSingleton<IConnectionFactory, SocketConnectionFactory>();
         services.AddHostedService<Http2CatHostedService>();
         services.Configure(configureOptions);

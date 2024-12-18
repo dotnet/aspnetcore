@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -22,13 +23,14 @@ internal sealed class SocketConnectionListener : IConnectionListener
     internal SocketConnectionListener(
         EndPoint endpoint,
         SocketTransportOptions options,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IMeterFactory meterFactory)
     {
         EndPoint = endpoint;
         _options = options;
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
         _logger = logger;
-        _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
+        _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options, meterFactory), logger);
     }
 
     internal void Bind()
