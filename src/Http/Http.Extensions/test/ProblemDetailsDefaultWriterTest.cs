@@ -494,6 +494,7 @@ public partial class DefaultProblemDetailsWriterTest
                 Assert.Equal("traceId", extension.Key);
                 Assert.Equal(expectedTraceId, extension.Value.ToString());
             });
+
     }
 
     [Fact]
@@ -502,6 +503,10 @@ public partial class DefaultProblemDetailsWriterTest
         // Arrange
         var options = new JsonOptions();
         options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(CustomProblemDetailsContext.Default, ProblemDetailsJsonContext.Default);
+
+        var mockNamingPolicy = new Mock<JsonNamingPolicy>();
+        mockNamingPolicy.Setup(policy => policy.ConvertName("traceId")).Returns("custom_traceId");
+        options.SerializerOptions.PropertyNamingPolicy = mockNamingPolicy.Object;
 
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
@@ -517,10 +522,10 @@ public partial class DefaultProblemDetailsWriterTest
             ProblemDetails = expectedProblem
         };
 
-        //Act
+        // Act
         await writer.WriteAsync(problemDetailsContext);
 
-        //Assert
+        // Assert
         stream.Position = 0;
 
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, options.SerializerOptions);
@@ -537,7 +542,7 @@ public partial class DefaultProblemDetailsWriterTest
             },
             (extension) =>
             {
-                Assert.Equal("traceId", extension.Key);
+                Assert.Equal("custom_traceId", extension.Key); // Updated to reflect the custom naming policy
                 Assert.Equal(expectedTraceId, extension.Value.ToString());
             });
     }
@@ -668,6 +673,146 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         Assert.False(result);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Respects_CustomNamingPolicy_ForTraceId()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
+
+        var mockNamingPolicy = new Mock<JsonNamingPolicy>();
+        mockNamingPolicy.Setup(policy => policy.ConvertName("traceId")).Returns("custom_traceId");
+
+        var serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = mockNamingPolicy.Object };
+        SetSerializerOptions(writer, serializerOptions);
+
+        var expectedProblem = new ProblemDetails()
+        {
+            Status = StatusCodes.Status500InternalServerError
+        };
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        // Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        // Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, serializerOptions);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["custom_traceId"].ToString());
+        Assert.DoesNotContain("traceId", problemDetails.Extensions.Keys);
+    }
+
+    [Fact]
+    public async Task WriteAsync_FallsBack_WhenNamingPolicyReturnsNull()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
+
+        var mockNamingPolicy = new Mock<JsonNamingPolicy>();
+        mockNamingPolicy.Setup(policy => policy.ConvertName("traceId")).Returns((string)null);
+
+        var serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = mockNamingPolicy.Object };
+        SetSerializerOptions(writer, serializerOptions);
+
+        var expectedProblem = new ProblemDetails()
+        {
+            Status = StatusCodes.Status500InternalServerError
+        };
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        // Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        // Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, serializerOptions);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
+    }
+
+    [Fact]
+    public async Task WriteAsync_Respects_CustomNamingPolicy_ForValidationProblemDetails()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
+
+        var mockNamingPolicy = new Mock<JsonNamingPolicy>();
+        mockNamingPolicy.Setup(policy => policy.ConvertName("traceId")).Returns("custom_traceId");
+
+        var serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = mockNamingPolicy.Object };
+        SetSerializerOptions(writer, serializerOptions);
+
+        var expectedProblem = new ValidationProblemDetails()
+        {
+            Errors = new Dictionary<string, string[]> { { "sample", new[] { "error-message" } } }
+        };
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        // Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        // Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ValidationProblemDetails>(stream, serializerOptions);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["custom_traceId"].ToString());
+        Assert.DoesNotContain("traceId", problemDetails.Extensions.Keys);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Uses_DefaultTraceIdKey_WhenNoNamingPolicy()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
+
+        var expectedProblem = new ProblemDetails()
+        {
+            Status = StatusCodes.Status500InternalServerError
+        };
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        // Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        // Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 
     private static HttpContext CreateContext(
