@@ -16,4 +16,8 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+  </ItemGroup>
+
 </Project>
