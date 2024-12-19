@@ -60,7 +60,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.RouteValues.Add("documentName", "v1");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -90,7 +90,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         var responseBodyStream = new MemoryStream();
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -122,7 +122,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.RouteValues.Add("documentName", "v2");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;
@@ -131,6 +131,30 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
         Assert.Equal("No OpenAPI document with the name 'v2' was found.", Encoding.UTF8.GetString(responseBodyStream.ToArray()));
+    }
+
+    [Theory]
+    [InlineData("CaseSensitive", "casesensitive")]
+    [InlineData("casesensitive", "CaseSensitive")]
+    public async Task MapOpenApi_ReturnsDocumentWhenPathIsCaseSensitive(string registeredDocumentName, string requestedDocumentName)
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider(registeredDocumentName);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapOpenApi("/openapi/{documentName}.json");
+        var context = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        context.Response.Body = responseBodyStream;
+        context.RequestServices = serviceProvider;
+        context.Request.RouteValues.Add("documentName", requestedDocumentName);
+        var endpoint = builder.DataSources.First().Endpoints[0];
+
+        // Act
+        var requestDelegate = endpoint.RequestDelegate;
+        await requestDelegate(context);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
     }
 
     [Theory]
@@ -151,7 +175,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         context.Response.Body = responseBodyStream;
         context.RequestServices = serviceProvider;
         context.Request.QueryString = new QueryString($"?documentName={documentName}");
-        var endpoint = builder.DataSources.First().Endpoints.First();
+        var endpoint = builder.DataSources.First().Endpoints[0];
 
         // Act
         var requestDelegate = endpoint.RequestDelegate;

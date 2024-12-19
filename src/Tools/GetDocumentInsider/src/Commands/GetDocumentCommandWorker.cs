@@ -254,17 +254,23 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        // If an explicit document name is provided, then generate only that document.
+        // Get document names
         var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
             return false;
         }
 
-        if (!string.IsNullOrEmpty(_context.DocumentName) && !documentNames.Contains(_context.DocumentName))
+        // If an explicit document name is provided, then generate only that document.
+        if (!string.IsNullOrEmpty(_context.DocumentName))
         {
-            _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
-            return false;
+            if (!documentNames.Contains(_context.DocumentName))
+            {
+                _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
+                return false;
+            }
+
+            documentNames = [_context.DocumentName];
         }
 
         if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))

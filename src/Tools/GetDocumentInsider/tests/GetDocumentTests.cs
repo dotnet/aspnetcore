@@ -116,6 +116,13 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
+        var expectedDocumentPath = Path.Combine(outputPath.FullName, "Sample_internal.json");
+
+        // There should only be one document when document name is specified
+        var documentNames = Directory.GetFiles(outputPath.FullName).Where(documentName => documentName.EndsWith(".json", StringComparison.Ordinal)).ToList();
+        Assert.Single(documentNames);
+        Assert.Contains(expectedDocumentPath, documentNames);
+
         var result = OpenApiDocument.Load(File.OpenRead(Path.Combine(outputPath.FullName, "Sample_internal.json")), "json");
         // TODO: https://github.com/microsoft/OpenAPI.NET/issues/1991
         // Assert.Empty(result.OpenApiDiagnostic.Errors);

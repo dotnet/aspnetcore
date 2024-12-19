@@ -56,13 +56,13 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
 
         // Prerendered output can't use JSInterop
         Browser.Equal("No value yet", () => Browser.Exists(By.Id("val-get-by-interop")).Text);
-        Browser.Equal(string.Empty, () => Browser.Exists(By.Id("val-set-by-interop")).GetAttribute("value"));
+        Browser.Equal(string.Empty, () => Browser.Exists(By.Id("val-set-by-interop")).GetDomProperty("value"));
 
         BeginInteractivity();
 
         // Once connected, we can
         Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-get-by-interop")).Text);
-        Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-set-by-interop")).GetAttribute("value"));
+        Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-set-by-interop")).GetDomProperty("value"));
     }
 
     [Fact]

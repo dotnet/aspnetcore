@@ -1,18 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
-*REMOVED*Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
-*REMOVED*Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
-*REMOVED*override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!, System.Threading.Tasks.Task!>?
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.set -> void
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.get -> string?
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.set -> void
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.get -> bool
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.set -> void
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
-override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
-static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!

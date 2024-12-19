@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
@@ -189,5 +190,30 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Null(document.Paths["/api/content-type"].Operations[OperationType.Get].Parameters);
             Assert.Null(document.Paths["/api/content-type-lower"].Operations[OperationType.Get].Parameters);
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_ToleratesCustomBindingSource()
+    {
+        var action = CreateActionDescriptor(nameof(ActionWithCustomBinder));
+
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = document.Paths["/custom-binding"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("model", parameter.Name);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
+        });
+    }
+
+    [Route("/custom-binding")]
+    private void ActionWithCustomBinder([ModelBinder(BinderType = typeof(CustomBinder))] Todo model) { }
+
+    public class CustomBinder : IModelBinder
+    {
+        public Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

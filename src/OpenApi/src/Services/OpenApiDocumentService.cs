@@ -417,7 +417,7 @@ internal sealed class OpenApiDocumentService(
                     "Query" => ParameterLocation.Query,
                     "Header" => ParameterLocation.Header,
                     "Path" => ParameterLocation.Path,
-                    _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
+                    _ => ParameterLocation.Query
                 },
                 Required = IsRequired(parameter),
                 Schema = await _componentService.GetOrCreateSchemaAsync(document, GetTargetType(description, parameter), scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),

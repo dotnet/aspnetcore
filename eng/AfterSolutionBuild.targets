@@ -1,12 +1,12 @@
 <Project>
 
+  <Import Project="Common.props" />
   <Import Project="tools\RepoTasks\RepoTasks.tasks" />
   <Import Project="SharedFramework.External.props" />
   <Import Project="SharedFramework.Local.props" />
 
   <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
-  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack"
-      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
+  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack" Condition="'$(BuildManaged)' == 'true'">
     <ItemGroup>
       <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
                     Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />

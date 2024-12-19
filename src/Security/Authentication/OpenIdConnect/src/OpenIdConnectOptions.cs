@@ -410,7 +410,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public bool UseSecurityTokenValidator { get; set; }
 
     /// <summary>
-    /// Controls wether the handler should push authorization parameters on the
+    /// Controls whether the handler should push authorization parameters on the
     /// backchannel before redirecting to the identity provider. See <see
     /// href="https://tools.ietf.org/html/9126"/>.
     /// </summary>

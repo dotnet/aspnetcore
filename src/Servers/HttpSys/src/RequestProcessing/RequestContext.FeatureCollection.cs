@@ -592,6 +592,7 @@ internal partial class RequestContext :
 
     SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
 
     int ITlsHandshakeFeature.CipherStrength => Request.CipherStrength;
@@ -603,6 +604,7 @@ internal partial class RequestContext :
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
     string ITlsHandshakeFeature.HostName => Request.SniHostName;
 

@@ -91,8 +91,23 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is RangeAttribute rangeAttribute)
             {
-                schema[OpenApiSchemaKeywords.MinimumKeyword] = decimal.Parse(rangeAttribute.Minimum.ToString()!, CultureInfo.InvariantCulture);
-                schema[OpenApiSchemaKeywords.MaximumKeyword] = decimal.Parse(rangeAttribute.Maximum.ToString()!, CultureInfo.InvariantCulture);
+                // Use InvariantCulture if explicitly requested or if the range has been set via the
+                // RangeAttribute(double, double) or RangeAttribute(int, int) constructors.
+                var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double || rangeAttribute.Maximum is int
+                    ? CultureInfo.InvariantCulture
+                    : CultureInfo.CurrentCulture;
+
+                var minString = rangeAttribute.Minimum.ToString();
+                var maxString = rangeAttribute.Maximum.ToString();
+
+                if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var minDecimal))
+                {
+                    schema[OpenApiSchemaKeywords.MinimumKeyword] = minDecimal;
+                }
+                if (decimal.TryParse(maxString, NumberStyles.Any, targetCulture, out var maxDecimal))
+                {
+                    schema[OpenApiSchemaKeywords.MaximumKeyword] = maxDecimal;
+                }
             }
             else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
             {

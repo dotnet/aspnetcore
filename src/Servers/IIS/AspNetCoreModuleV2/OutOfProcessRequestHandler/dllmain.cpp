@@ -28,7 +28,7 @@ InitializeGlobalConfiguration(
     IHttpServer * pServer
 )
 {
-    HKEY hKey;
+    HKEY hKey{};
     BOOL fLocked = FALSE;
 
     if (!g_fGlobalInitialize)
@@ -58,9 +58,9 @@ InitializeGlobalConfiguration(
             KEY_READ,
             &hKey) == NO_ERROR)
         {
-            DWORD dwType;
-            DWORD dwData;
-            DWORD cbData;
+            DWORD dwType = 0;
+            DWORD dwData = 0;
+            DWORD cbData = 0;
 
             cbData = sizeof(dwData);
             if ((RegQueryValueEx(hKey,

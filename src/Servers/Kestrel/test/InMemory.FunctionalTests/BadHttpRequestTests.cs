@@ -153,9 +153,12 @@ public class BadHttpRequestTests : LoggedTest
     }
 
     [Theory]
-    [InlineData("Host: www.foo.comConnection: keep-alive")] // Corrupted - missing line-break
-    [InlineData("Host: www.notfoo.com")] // Syntactically correct but not matching
-    public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget(string hostHeader)
+    [InlineData("http://www.foo.com", "Host: www.foo.comConnection: keep-alive", "www.foo.com")] // Corrupted - missing line-break
+    [InlineData("http://www.foo.com/", "Host: www.notfoo.com", "www.foo.com")] // Syntactically correct but not matching
+    [InlineData("http://www.foo.com:80", "Host: www.notfoo.com", "www.foo.com")] // Explicit default port in request string
+    [InlineData("http://www.foo.com:5129", "Host: www.foo.com", "www.foo.com:5129")] // Non-default port in request string
+    [InlineData("http://www.foo.com:5129", "Host: www.foo.com:5128", "www.foo.com:5129")] // Different port in host header
+    public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget(string requestString, string hostHeader, string expectedHost)
     {
         var testMeterFactory = new TestMeterFactory();
         using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
@@ -175,13 +178,13 @@ public class BadHttpRequestTests : LoggedTest
         {
             using (var client = server.CreateConnection())
             {
-                await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\n{hostHeader}\r\n\r\n");
+                await client.SendAll($"GET {requestString} HTTP/1.1\r\n{hostHeader}\r\n\r\n");
 
                 await client.Receive("HTTP/1.1 200 OK");
             }
         }
 
-        Assert.Equal("www.foo.com:80", receivedHost);
+        Assert.Equal(expectedHost, receivedHost);
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }

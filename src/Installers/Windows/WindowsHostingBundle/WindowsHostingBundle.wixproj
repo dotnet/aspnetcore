@@ -61,10 +61,6 @@
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\HostOptions\HostOptions.wixproj">
       <Name>HostOptions</Name>
       <Project>20248cd1-c5aa-4f42-ad88-bc260d64deea</Project>
@@ -131,6 +127,7 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePath)</DefineConstants>
   </PropertyGroup>
 
   <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">

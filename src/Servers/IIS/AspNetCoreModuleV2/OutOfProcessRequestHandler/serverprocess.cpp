@@ -102,8 +102,8 @@ SERVER_PROCESS::GetRandomPort
 
     std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
 
-    BOOL fPortInUse;
-    DWORD dwActualProcessId; // Ignored, but required for the function call.
+    BOOL fPortInUse = FALSE;
+    DWORD dwActualProcessId = 0; // Ignored, but required for the function call.
     constexpr int maxRetries = 10;
     for (int retry = 0; retry < maxRetries; ++retry)
     {
@@ -165,7 +165,7 @@ SERVER_PROCESS::SetupListenPort(
         }
     }
 
-    WCHAR buffer[15];
+    WCHAR buffer[15]{};
     if (FAILED_LOG(hr = GetRandomPort(&m_dwPort)))
     {
         goto Finished;
@@ -251,10 +251,10 @@ SERVER_PROCESS::SetupAppToken(
 )
 {
     HRESULT     hr = S_OK;
-    UUID        logUuid;
+    UUID        logUuid{};
     PSTR        pszLogUuid = nullptr;
     BOOL        fRpcStringAllocd = FALSE;
-    RPC_STATUS  rpcStatus;
+    RPC_STATUS  rpcStatus = 0;
     STRU        strAppToken;
     ENVIRONMENT_VAR_ENTRY*  pEntry = nullptr;
 
@@ -991,8 +991,8 @@ SERVER_PROCESS::SetupStdHandles(
 )
 {
     HRESULT                 hr = S_OK;
-    SYSTEMTIME              systemTime;
-    SECURITY_ATTRIBUTES     saAttr = { 0 };
+    SYSTEMTIME              systemTime{};
+    SECURITY_ATTRIBUTES     saAttr{};
 
     STRU                    struPath;
 
