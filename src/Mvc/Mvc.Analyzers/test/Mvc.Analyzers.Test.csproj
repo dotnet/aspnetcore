@@ -16,7 +16,7 @@
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
   </ItemGroup>
 
 </Project>

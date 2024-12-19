@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.Verifiers;

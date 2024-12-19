@@ -206,6 +206,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>040cbe276907174316e2cc07b35814b3069874a6</Sha>
     </Dependency>
+    <Dependency Name="System.Formats.Asn1" Version="10.0.0-alpha.1.24617.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>040cbe276907174316e2cc07b35814b3069874a6</Sha>
+    </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="10.0.0-alpha.1.24617.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>040cbe276907174316e2cc07b35814b3069874a6</Sha>
