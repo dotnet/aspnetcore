@@ -9,6 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal;
+
+/// <summary>
+/// Used for pooling secret data (e.g. Protect()/Unprotect() flow).
+/// Main goal is not to intersect with the <see cref="ArrayPool{T}.Shared"/>
+/// </summary>
 internal static class DataProtectionPool
 {
     private static readonly ArrayPool<byte> _pool = ArrayPool<byte>.Create();

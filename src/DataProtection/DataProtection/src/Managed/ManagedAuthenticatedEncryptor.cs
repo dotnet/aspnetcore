@@ -197,9 +197,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
 
-            // The best optimization is to stackalloc. If the size is too big, we would want to rent from the pool,
-            // but we can't due to the HashAlgorithm, ValidationAlgorithm and SymmetricAlgorithm requiring a byte[] instead of a Span<byte>
-            // in the constructor / Key property.
 #if NET10_0_OR_GREATER
             byte[]? decryptedKdkLease = null;
             Span<byte> decryptedKdk = _keyDerivationKey.Length <= 128
@@ -209,6 +206,11 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             var decryptedKdk = new byte[_keyDerivationKey.Length];
 #endif
 
+            // The best optimization is to stackalloc. If the size is too big, we would want to rent from the pool,
+            // but we can't due to the ValidationAlgorithm and SymmetricAlgorithm requiring a byte[] instead of a Span<byte>
+            // in the constructor / Key property.
+            // Also .Rent() returns an array of approximately the same size (for input 24 it will be 32 in example)
+            // but in this code we need to slice it (again it will be Span<byte>) which is not compatible with APIS
             var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
             var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
 
