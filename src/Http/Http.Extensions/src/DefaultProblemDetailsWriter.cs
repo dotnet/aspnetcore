@@ -56,7 +56,8 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
 
         var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
-        var tradeIdKeyName = _serializerOptions.PropertyNamingPolicy.ConvertName("traceId");
+
+        var traceIdKeyName = _serializerOptions.PropertyNamingPolicy?.ConvertName("traceId") ?? "traceId";
         context.ProblemDetails.Extensions[traceIdKeyName] = traceId;
 
         _options.CustomizeProblemDetails?.Invoke(context);
@@ -64,8 +65,8 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         var problemDetailsType = context.ProblemDetails.GetType();
 
         return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                        context.ProblemDetails,
-                         _serializerOptions.GetTypeInfo(problemDetailsType),
-                        contentType: "application/problem+json"));
+            context.ProblemDetails,
+            _serializerOptions.GetTypeInfo(problemDetailsType),
+            contentType: "application/problem+json"));
     }
 }
