@@ -81,7 +81,7 @@
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
       <!-- Workaround https://github.com/dotnet/sdk/pull/45487: The .NET SDK requires the crossgen2 host runtime identifier to be in the runtime pack runtime identifiers list. -->
-      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
@@ -109,7 +109,7 @@
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
       <Crossgen2PackVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
-      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
+      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
     </KnownCrossgen2Pack>
 
     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
