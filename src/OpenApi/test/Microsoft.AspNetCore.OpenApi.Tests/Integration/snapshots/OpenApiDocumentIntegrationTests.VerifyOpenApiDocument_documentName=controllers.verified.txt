@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Sample | controllers",
     "version": "1.0.0"
@@ -66,11 +66,9 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "minLength": 5,
                     "type": "string"
                   },
                   "Description": {
-                    "minLength": 5,
                     "type": "string"
                   },
                   "IsCompleted": {
@@ -90,10 +88,7 @@
       }
     }
   },
-  "components": { },
   "tags": [
-    {
-      "name": "Test"
-    }
+    "Test"
   ]
 }
