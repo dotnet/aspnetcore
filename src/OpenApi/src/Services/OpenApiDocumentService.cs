@@ -88,7 +88,7 @@ internal sealed class OpenApiDocumentService(
         document.Workspace.RegisterComponents(document);
         if (document.Components?.Schemas is not null)
         {
-            document.Components.Schemas = document.Components.Schemas.OrderBy(schema => schema.Key).ToDictionary();
+            document.Components.Schemas = new SortedDictionary<string, OpenApiSchema>(document.Components.Schemas);
         }
         return document;
     }

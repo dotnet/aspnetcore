@@ -70,7 +70,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal( schemaType, parameter.Schema.Type);
+            Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
             Assert.False(parameter.Schema.Nullable);
         });
