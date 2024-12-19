@@ -66,7 +66,9 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
             return true;
         }
 
-        return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
+        // We have "QueueName" and "QueueName.Open" queues for internal and public builds
+        // If we want to skip the test in the public queue, we want to skip it in the internal queue, and vice versa
+        return Queues.ToLowerInvariant().Split(';').Any(q => q.Equals(targetQueue) || q.StartsWith(targetQueue) || targetQueue.StartsWith(q));
     }
 
     public static bool OnHelix() => HelixHelper.OnHelix();
