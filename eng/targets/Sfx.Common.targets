@@ -36,4 +36,13 @@
       <PublishReadyToRunPgoFiles Include="%(MIBCPackage.PackagePath)/**/*.mibc" />
     </ItemGroup>
   </Target>
+
+  <!-- We need to reference the live RID graph to get a graph with any additionally supported RIDs for this build. -->
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
+    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+  </PropertyGroup>
 </Project>
