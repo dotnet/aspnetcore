@@ -79,24 +79,36 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         get => Value;
         set
         {
-            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
-            if (hasChanged)
-            {
-                _parsingFailed = false;
+            // Synchronous fallback for backwards compatibility (published API).
+            // Await SetCurrentValueAsync() instead to ensure proper async behavior.
+            _ = SetCurrentValueAsync(value);
+        }
+    }
 
-                // If we don't do this, then when the user edits from A to B, we'd:
-                // - Do a render that changes back to A
-                // - Then send the updated value to the parent, which sends the B back to this component
-                // - Do another render that changes it to B again
-                // The unnecessary reversion from B to A can cause selection to be lost while typing
-                // A better solution would be somehow forcing the parent component's render to occur first,
-                // but that would involve a complex change in the renderer to keep the render queue sorted
-                // by component depth or similar.
-                Value = value;
+    /// <summary>
+    /// Sets current value of the input.
+    /// </summary>
+    /// <param name="value">Value to be set.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    protected async Task SetCurrentValueAsync(TValue? value)
+    {
+        var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
+        if (hasChanged)
+        {
+            _parsingFailed = false;
 
-                _ = ValueChanged.InvokeAsync(Value);
-                EditContext?.NotifyFieldChanged(FieldIdentifier);
-            }
+            // If we don't do this, then when the user edits from A to B, we'd:
+            // - Do a render that changes back to A
+            // - Then send the updated value to the parent, which sends the B back to this component
+            // - Do another render that changes it to B again
+            // The unnecessary reversion from B to A can cause selection to be lost while typing
+            // A better solution would be somehow forcing the parent component's render to occur first,
+            // but that would involve a complex change in the renderer to keep the render queue sorted
+            // by component depth or similar.
+            Value = value;
+
+            await ValueChanged.InvokeAsync(Value);
+            EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
     }
 
@@ -113,43 +125,55 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
         set
         {
-            _incomingValueBeforeParsing = value;
-            _parsingValidationMessages?.Clear();
+            // Synchronous fallback for backwards compatibility (published API).
+            // Await SetCurrentValueAsStringAsync() instead to ensure proper async behavior.
+            _ = SetCurrentValueAsStringAsync(value);
+        }
+    }
 
-            if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
-            {
-                // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
-                // Then all subclasses get nullable support almost automatically (they just have to
-                // not reject Nullable<T> based on the type itself).
-                _parsingFailed = false;
-                CurrentValue = default!;
-            }
-            else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
-            {
-                _parsingFailed = false;
-                CurrentValue = parsedValue!;
-            }
-            else
-            {
-                _parsingFailed = true;
+    /// <summary>
+    /// Sets current value of the input, represented as a string.
+    /// </summary>
+    /// <param name="value">Value to be set.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    protected async Task SetCurrentValueAsStringAsync(string? value)
+    {
+        _incomingValueBeforeParsing = value;
+        _parsingValidationMessages?.Clear();
 
-                // EditContext may be null if the input is not a child component of EditForm.
-                if (EditContext is not null)
-                {
-                    _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
-                    _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
+        if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
+        {
+            // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
+            // Then all subclasses get nullable support almost automatically (they just have to
+            // not reject Nullable<T> based on the type itself).
+            _parsingFailed = false;
+            await SetCurrentValueAsync(default!);
+        }
+        else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
+        {
+            _parsingFailed = false;
+            await SetCurrentValueAsync(parsedValue!);
+        }
+        else
+        {
+            _parsingFailed = true;
 
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
-                }
-            }
-
-            // We can skip the validation notification if we were previously valid and still are
-            if (_parsingFailed || _previousParsingAttemptFailed)
+            // EditContext may be null if the input is not a child component of EditForm.
+            if (EditContext is not null)
             {
-                EditContext?.NotifyValidationStateChanged();
-                _previousParsingAttemptFailed = _parsingFailed;
+                _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
+                _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
+
+                // Since we're not writing to CurrentValue, we'll need to notify about modification from here
+                EditContext.NotifyFieldChanged(FieldIdentifier);
             }
+        }
+
+        // We can skip the validation notification if we were previously valid and still are
+        if (_parsingFailed || _previousParsingAttemptFailed)
+        {
+            EditContext?.NotifyValidationStateChanged();
+            _previousParsingAttemptFailed = _parsingFailed;
         }
     }
 
