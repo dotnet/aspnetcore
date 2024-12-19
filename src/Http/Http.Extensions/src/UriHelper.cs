@@ -203,7 +203,7 @@ public static class UriHelper
     /// suitable only for display.</returns>
     public static string GetDisplayUrl(this HttpRequest request)
     {
-        return string.Concat((ReadOnlySpan<string?>)[request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
+        return string.Concat([request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
     }
 
     /// <summary>
