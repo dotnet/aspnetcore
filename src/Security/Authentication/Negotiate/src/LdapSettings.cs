@@ -16,6 +16,14 @@ public class LdapSettings
     /// This is mainly used on Linux.
     /// </summary>
     public bool EnableLdapClaimResolution { get; set; }
+    
+    /// <summary>
+    /// Configure whether the SID claims should be resolved when 
+    /// EnableLdapClaimResolution is true and the LDAP connection 
+    /// is used to resolve claims.
+    /// This is mainly used on Linux.
+    /// </summary>
+    public bool EnableLdapSIDClaimResolution { get; set; }
 
     /// <summary>
     /// The domain to use for the LDAP connection. This is a mandatory setting.
