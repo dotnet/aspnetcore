@@ -57,6 +57,9 @@ internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
             {
                 form = await httpContext.Request.ReadFormAsync();
             }
+            catch (BadHttpRequestException) {
+                throw;
+            }
             catch (InvalidDataException ex)
             {
                 // ReadFormAsync can throw InvalidDataException if the form content is malformed.
