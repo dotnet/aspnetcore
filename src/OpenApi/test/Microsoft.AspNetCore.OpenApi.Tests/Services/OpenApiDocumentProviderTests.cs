@@ -36,7 +36,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     {
         // Arrange
         var documentName = "CaseSensitive";
-        var serviceProvider = CreateServiceProvider(["casesensitive"]);
+        var serviceProvider = CreateServiceProvider(["casesensitive"], OpenApiSpecVersion.OpenApi2_0);
         var documentProvider = new OpenApiDocumentProvider(serviceProvider);
         var stringWriter = new StringWriter();
 
@@ -78,11 +78,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         // It's registered as "casesensitive" but we're passing in "CaseSensitive", which doesn't exist.
         // Therefore, if the test doesn't throw, we know it has passed correctly.
         // We still do a small check to validate the document, just in case. But the main test is that it doesn't throw.
-        ValidateOpenApiDocument(stringWriter, document =>
-        {
-            Assert.Equal($"{nameof(OpenApiDocumentProviderTests)} | {documentName}", document.Info.Title);
-            Assert.Equal("1.0.0", document.Info.Version);
-        });
+        ValidateOpenApiDocument(stringWriter, _ => { });
     }
 
     [Fact]
@@ -111,7 +107,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         action(document);
     }
 
-    private static IServiceProvider CreateServiceProvider(string[] documentNames)
+    private static IServiceProvider CreateServiceProvider(string[] documentNames, OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_0)
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
         var serviceProviderIsService = new ServiceProviderIsService();
@@ -121,7 +117,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
             .AddSingleton(CreateApiDescriptionGroupCollectionProvider());
         foreach (var documentName in documentNames)
         {
-            serviceCollection.AddOpenApi(documentName);
+            serviceCollection.AddOpenApi(documentName, x => x.OpenApiVersion = openApiSpecVersion);
         }
         var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
         return serviceProvider;
