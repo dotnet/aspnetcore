@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -336,28 +337,36 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int CipherStrength { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public HashAlgorithmType HashAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int HashStrength { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int KeyExchangeStrength { get; private set; }
 
     private void GetTlsHandshakeResults()
     {
         var handshake = RequestContext.GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
         HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         var sni = RequestContext.GetClientSni();
         SniHostName = sni.Hostname.ToString();

@@ -13,6 +13,7 @@
     <InstallerName>$(TargetingPackInstallerBaseName)</InstallerName>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <VSInsertionShortComponentName>AspNetCore.TargetingPack</VSInsertionShortComponentName>
 
     <IsPackable Condition="'$(OnlyPackPlatformSpecificPackages)' == 'true'">false</IsPackable>
 
@@ -22,6 +23,7 @@
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetTargetingPackDependencyVersion>
@@ -32,15 +34,17 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
-    <PackageReference Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(DotNetBuildSourceOnly)' != 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
     <LinuxPackageDependency Include="dotnet-targeting-pack-$(DotnetTargetingPackDependencyMajorMinorVersion)" Version="$(DotnetTargetingPackDependencyVersion)" />
   </ItemGroup>
 

@@ -24,11 +24,13 @@
     <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
     <GenerateInstallers>true</GenerateInstallers>
     <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <VSInsertionShortComponentName>AspNetCore.SharedFramework</VSInsertionShortComponentName>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <InstallerPackageDescription>$(SharedFxDescription)</InstallerPackageDescription>
     <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
     <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
     <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetRuntimeDependencyVersion>
@@ -42,10 +44,12 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildInstallers)' == 'true'">
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,7 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Condition="('$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64') and '$(DotNetBuildSourceOnly)' != 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
     <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
   </ItemGroup>
 
@@ -71,7 +75,7 @@
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) "
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) AND '$(MSBuildRestoreSessionId)' == ''"
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <OutputItemType>NativeRuntimeAsset</OutputItemType>

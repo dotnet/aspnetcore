@@ -172,6 +172,17 @@
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
   </Target>
 
+  <!--
+    Remove the implicit package reference for Microsoft.AspNetCore.App.Internal.Assets.
+    Projects within the repo will consume framework assets by importing
+    Microsoft.AspNetCore.App.Internal.Assets.targets directly
+  -->
+  <Target Name="_RemoveAspNetCoreAppInternalAssetsReference" AfterTargets="ProcessFrameworkReferences">
+    <ItemGroup>
+      <PackageReference Remove="Microsoft.AspNetCore.App.Internal.Assets" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="eng\Workarounds.targets" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />

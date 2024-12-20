@@ -113,7 +113,14 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
-        var document = new OpenApiStreamReader().Read(File.OpenRead(Path.Combine(outputPath.FullName, "Sample_internal.json")), out var diagnostic);
+        var expectedDocumentPath = Path.Combine(outputPath.FullName, "Sample_internal.json");
+
+        // There should only be one document when document name is specified
+        var documentNames = Directory.GetFiles(outputPath.FullName).Where(documentName => documentName.EndsWith(".json", StringComparison.Ordinal)).ToList();
+        Assert.Single(documentNames);
+        Assert.Contains(expectedDocumentPath, documentNames);
+
+        var document = new OpenApiStreamReader().Read(File.OpenRead(Path.Combine(outputPath.FullName, expectedDocumentPath)), out var diagnostic);
         Assert.Empty(diagnostic.Errors);
         Assert.Equal(OpenApiSpecVersion.OpenApi3_0, diagnostic.SpecificationVersion);
         // Document name in the title gives us a clue that the correct document was actually resolved
