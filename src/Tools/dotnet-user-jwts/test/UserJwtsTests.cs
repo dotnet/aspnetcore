@@ -683,11 +683,12 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     {
         var projectPath = fixture.CreateProject();
         Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
 
         var app = new Program(_console);
         app.Run(["create", "--appsettings-file", "appsettings.DoesNotExist.json"]);
 
-        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
     }
 
     [Fact]
@@ -707,11 +708,12 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     {
         var projectPath = fixture.CreateProject();
         Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
 
         var app = new Program(_console);
         app.Run(["remove", "some-id", "--appsettings-file", "appsettings.DoesNotExist.json"]);
 
-        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
     }
 
     [Fact]
@@ -731,11 +733,12 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     {
         var projectPath = fixture.CreateProject();
         Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
 
         var app = new Program(_console);
         app.Run(["clear", "--appsettings-file", "appsettings.DoesNotExist.json"]);
 
-        Assert.Contains($"Could not find Appsettings file in '{Directory.GetCurrentDirectory()}'. Check the filename and that the file exists.", _console.GetOutput());
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
     }
 
     [Fact]
@@ -804,7 +807,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         var app = new Program(_console);
         app.Run(new[] { "create", "--project", targetPath, "--appsettings-file", "appsettings.Local.json" });
         
-        Assert.DoesNotContain($"Could not find Appsettings file in '{projectPath}'. Check the filename and that the file exists.", _console.GetOutput());
+        Assert.DoesNotContain($"Could not find Appsettings file '{projectPath}'. Check the filename and that the file exists.", _console.GetOutput());
         Assert.Contains("New JWT saved", _console.GetOutput());
     }
 
