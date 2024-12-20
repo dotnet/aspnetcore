@@ -31,6 +31,60 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GenerateAsync_ShouldRetrieveOptionsInACaseInsensitiveManner()
+    {
+        // Arrange
+        var documentName = "CaseSensitive";
+        var serviceProvider = CreateServiceProvider(["casesensitive"]);
+        var documentProvider = new OpenApiDocumentProvider(serviceProvider);
+        var stringWriter = new StringWriter();
+
+        // Act
+        await documentProvider.GenerateAsync(documentName, stringWriter);
+
+        // Assert
+        var document = stringWriter.ToString();
+
+        // When we generate an OpenAPI document, we use an OptionsMonitor to retrieve OpenAPI options which are stored with a key equal the requested document name.
+        // This key is case-sensitive. If the document doesn't exist, the options monitor return a default instance, in which the OpenAPI version is set to v3.
+        // This could cause bugs! You'd get your document, but depending on the casing you used in the document name you passed to the function, you'll receive different OpenAPI document versions.
+        // We want to prevent this from happening. Therefore:
+        // By setting up a v2 document on the "casesensitive" route and requesting it on "CaseSensitive",
+        // we can test that the we've configured the options monitor to retrieve the options in a case-insensitive manner.
+        // If it is case-sensitive, it would return a default instance with OpenAPI version v3, which would cause this test to fail!
+        // However, if it would return the v2 instance, which was configured on the lowercase - case-insensitive - documentname, the test would pass!
+        Assert.StartsWith("{\n  \"swagger\": \"2.0\"", document);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_ShouldRetrieveOpenApiDocumentServiceWithACaseInsensitiveKey()
+    {
+        // Arrange
+        var documentName = "CaseSensitive";
+        var serviceProvider = CreateServiceProvider(["casesensitive"]);
+        var documentProvider = new OpenApiDocumentProvider(serviceProvider);
+        var stringWriter = new StringWriter();
+
+        // Act
+        await documentProvider.GenerateAsync(documentName, stringWriter, OpenApiSpecVersion.OpenApi3_0);
+
+        // Assert
+
+        // If the Document Service is retrieved with a non-existent (case-sensitive) key, it would throw:
+        // https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.serviceproviderkeyedserviceextensions.getrequiredkeyedservice?view=net-9.0-pp
+
+        // In this test's case, we're testing that the document service is retrieved with a case-insensitive key.
+        // It's registered as "casesensitive" but we're passing in "CaseSensitive", which doesn't exist.
+        // Therefore, if the test doesn't throw, we know it has passed correctly.
+        // We still do a small check to validate the document, just in case. But the main test is that it doesn't throw.
+        ValidateOpenApiDocument(stringWriter, document =>
+        {
+            Assert.Equal($"{nameof(OpenApiDocumentProviderTests)} | {documentName}", document.Info.Title);
+            Assert.Equal("1.0.0", document.Info.Version);
+        });
+    }
+
+    [Fact]
     public void GetDocumentNames_ReturnsAllRegisteredDocumentName()
     {
         // Arrange
