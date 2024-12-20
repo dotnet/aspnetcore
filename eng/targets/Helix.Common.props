@@ -17,7 +17,7 @@
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
   </ItemGroup>
-<!--  -->
+
   <!--
     Usually do not need to check $(_UseHelixOpenQueues), $(RunQuarantinedTests) or $(IsWindowsOnlyTest).
     $(_UseHelixOpenQueues) handling in helix.proj and Helix.targets is sufficient. We have no quarantined queues
