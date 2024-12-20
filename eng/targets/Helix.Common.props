@@ -3,7 +3,7 @@
   <PropertyGroup>
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine317>
-    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
+    <HelixQueueDebian11>(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
     <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8</HelixQueueArmDebian12>
@@ -17,7 +17,7 @@
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
   </ItemGroup>
-
+<!--  -->
   <!--
     Usually do not need to check $(_UseHelixOpenQueues), $(RunQuarantinedTests) or $(IsWindowsOnlyTest).
     $(_UseHelixOpenQueues) handling in helix.proj and Helix.targets is sufficient. We have no quarantined queues
