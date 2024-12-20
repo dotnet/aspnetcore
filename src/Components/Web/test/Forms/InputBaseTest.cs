@@ -290,7 +290,7 @@ public class InputBaseTest
         rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
         // Act
-        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("1991/11/20");
 
         // Assert
         var receivedParsedValue = valueChangedArgs.Single();
@@ -320,14 +320,14 @@ public class InputBaseTest
         rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
         // Act/Assert 1: Transition to invalid
-        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("1991/11/40");
         Assert.Empty(valueChangedArgs);
         Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(1, numValidationStateChanges);
 
         // Act/Assert 2: Transition to valid
-        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("1991/11/20");
         var receivedParsedValue = valueChangedArgs.Single();
         Assert.Equal(1991, receivedParsedValue.Year);
         Assert.Equal(11, receivedParsedValue.Month);
@@ -351,7 +351,7 @@ public class InputBaseTest
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act + Assert 1 (Precondition): The test needs a validation message to be removed later.
-        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("1991/11/40");
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
 
         // Act: Dispose the input component
@@ -562,7 +562,7 @@ public class InputBaseTest
             throw new NotImplementedException();
         }
 
-        public async Task SetCurrentValueAsStringAsync(string value)
+        public async Task InvokeCurrentValueAsStringSetterAsync(string value)
         {
             // This is equivalent to the subclass writing to CurrentValueAsString
             // (e.g., from @bind), except to simplify the test code there's an InvokeAsync

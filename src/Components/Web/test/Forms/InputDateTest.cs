@@ -23,7 +23,7 @@ public class InputDateTest
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
-        await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("invalidDate");
 
         // Assert
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
@@ -56,7 +56,7 @@ public class InputDateTest
 
     private class TestInputDateComponent : InputDate<DateTime>
     {
-        public async Task SetCurrentValueAsStringAsync(string value)
+        public async Task InvokeCurrentValueAsStringSetterAsync(string value)
         {
             // This is equivalent to the subclass writing to CurrentValueAsString
             // (e.g., from @bind), except to simplify the test code there's an InvokeAsync
