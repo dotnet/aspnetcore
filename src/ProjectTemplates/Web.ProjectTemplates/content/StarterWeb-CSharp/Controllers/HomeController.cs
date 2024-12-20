@@ -20,24 +20,19 @@ namespace Company.WebApplication1.Controllers;
 #if (OrganizationalAuth)
 [Authorize]
 #endif
-public class HomeController : Controller
-{
-    private readonly ILogger<HomeController> _logger;
-
 #if (GenerateApi)
-    private readonly IDownstreamApi _downstreamApi;
-
-    public HomeController(ILogger<HomeController> logger,
-                            IDownstreamApi downstreamApi)
-    {
-            _logger = logger;
-        _downstreamApi = downstreamApi;
-    }
-
+public class HomeController(IDownstreamApi downstreamApi) : Controller
+#elseif (GenerateGraph)
+public class HomeController(GraphServiceClient graphServiceClient) : Controller
+#else
+public class HomeController : Controller
+#endif
+{
+#if (GenerateApi)
     [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
     public async Task<IActionResult> Index()
     {
-        using var response = await _downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+        using var response = await downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -51,29 +46,15 @@ public class HomeController : Controller
         return View();
     }
 #elseif (GenerateGraph)
-    private readonly GraphServiceClient _graphServiceClient;
-
-    public HomeController(ILogger<HomeController> logger,
-                        GraphServiceClient graphServiceClient)
-    {
-            _logger = logger;
-        _graphServiceClient = graphServiceClient;
-    }
-
     [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
     public async Task<IActionResult> Index()
     {
-        var user = await _graphServiceClient.Me.GetAsync();
+        var user = await graphServiceClient.Me.GetAsync();
         ViewData["ApiResult"] = user?.DisplayName;
 
         return View();
     }
 #else
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
     public IActionResult Index()
     {
         return View();

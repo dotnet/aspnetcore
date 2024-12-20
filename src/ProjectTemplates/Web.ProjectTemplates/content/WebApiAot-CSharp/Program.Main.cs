@@ -15,7 +15,8 @@ public class Program
 
         var app = builder.Build();
 
-        var sampleTodos = new Todo[] {
+        var sampleTodos = new Todo[]
+        {
             new(1, "Walk the dog"),
             new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
             new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
