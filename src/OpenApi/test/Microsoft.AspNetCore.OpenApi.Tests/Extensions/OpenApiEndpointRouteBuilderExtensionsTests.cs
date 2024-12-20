@@ -181,12 +181,14 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
-        // When we receive an OpenAPI document, we use an OptionsMonitor to retrieve named options that equal the requested document name.
-        // This is case-sensitive. If the document doesn't exist, the options monitor return a default instance, in which the OpenAPI version is set to v3.
+        // When we receive an OpenAPI document, we use an OptionsMonitor to retrieve OpenAPI options which are stored with a key equal the requested document name.
+        // This key is case-sensitive. If the document doesn't exist, the options monitor return a default instance, in which the OpenAPI version is set to v3.
+        // This could cause bugs! You'd get your document, but depending on the casing you used in the document name you passed to the function, you'll receive different OpenAPI document versions.
+        // We want to prevent this from happening. Therefore:
         // By setting up a v2 document on the "casesensitive" route and requesting it on "CaseSensitive",
         // we can test that the we've configured the options monitor to retrieve the options in a case-insensitive manner.
         // If it is case-sensitive, it would return a default instance with OpenAPI version v3, which would cause this test to fail!
-        // However, if it would return the v2 instance, the test would pass!
+        // However, if it would return the v2 instance, which was configured on the lowercase - case-insensitive - documentname, the test would pass!
         // For more info, see OpenApiEndpointRouteBuilderExtensions.cs
         Assert.StartsWith("{\n  \"swagger\": \"2.0\"", responseString);
     }
