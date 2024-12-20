@@ -106,6 +106,7 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
 
+    /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
     /// <param name="documentName">Please ensure this is lowercased to prevent case-sensitive routing issues</param>
     /// <remarks>See https://github.com/dotnet/aspnetcore/issues/59175 for more information around the routing issue mentioned above</remarks>
     private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
