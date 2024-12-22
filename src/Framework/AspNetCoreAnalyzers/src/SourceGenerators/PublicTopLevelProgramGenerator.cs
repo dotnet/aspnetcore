@@ -20,11 +20,10 @@ public partial class Program { }
         var internalGeneratedProgramClass = context.CompilationProvider
             .Select(static (compilation, cancellationToken) =>
             {
-                var entryPoint = compilation.GetEntryPoint(cancellationToken);
-                return entryPoint is
+                // Get the entry point associated with the compilation, this maps to the Main method definition
+                // Get the containing symbol of the entry point, this maps to the Program class
+                return compilation.GetEntryPoint(cancellationToken)?.ContainingSymbol is
                     {
-                        // Get the entry point associated with the compilation, this maps to the Main method definition
-                        // Get the containing symbol of the entry point, this maps to the Program class
                         // If the discovered `Program` type is not a class then its not
                         // generated and has been defined in source, so we can skip it
                         // If the program class is already public, we don't need to generate anything.
