@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "10.0.100-alpha.1.24616.1"
+    "version": "10.0.100-alpha.1.24623.3"
   },
   "tools": {
-    "dotnet": "10.0.100-alpha.1.24616.1",
+    "dotnet": "10.0.100-alpha.1.24623.3",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
