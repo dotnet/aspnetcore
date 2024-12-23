@@ -18,9 +18,12 @@ internal static class EndpointParameterEmitter
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
-        var assigningCode = endpointParameter.Source is EndpointParameterSource.Header
-            ? $"httpContext.Request.Headers[\"{endpointParameter.LookupName}\"]"
-            : $"httpContext.Request.Query[\"{endpointParameter.LookupName}\"]";
+        var assigningCode = (endpointParameter.Source, endpointParameter.IsArray) switch
+        {
+            (EndpointParameterSource.Header, true) => $"httpContext.Request.Headers.GetCommaSeparatedValues(\"{endpointParameter.LookupName}\")",
+            (EndpointParameterSource.Header, false) => $"httpContext.Request.Headers[\"{endpointParameter.LookupName}\"]",
+            _ => $"httpContext.Request.Query[\"{endpointParameter.LookupName}\"]"
+        };
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
