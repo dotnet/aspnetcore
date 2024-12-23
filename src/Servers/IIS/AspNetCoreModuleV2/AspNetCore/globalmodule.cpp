@@ -45,16 +45,15 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
 
     // If we're already cleaned up just return.
     // If user has opted out of the new shutdown behavior ignore this call as we never registered for it before
-    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown()
-        /*|| m_pApplicationManager->GetAppHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS*/)
-        /*!m_pApplicationManager->IsSameApplication(pProvider->GetApplication()->GetApplicationId()))*/
+    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown())
     {
         return GL_NOTIFICATION_CONTINUE;
     }
 
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
-    if (!g_fInShutdown && !m_shutdown.joinable())
+    if (!g_fInShutdown && !m_shutdown.joinable()
+        /*&& (m_pApplicationManager->IsIISExpress() || !m_pApplicationManager->HasReceivedRequest())*/)
     {
         // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
         // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
@@ -94,6 +93,10 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
         {
             m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
         }
+    }
+    else
+    {
+        LOG_INFOF(L"Ignoring configuration change", pwszChangePath);
     }
 
     // Return processing to the pipeline.

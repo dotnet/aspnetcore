@@ -36,7 +36,8 @@ public:
                             m_pApplicationInfoHash(NULL),
                             m_fDebugInitialize(FALSE),
                             m_pHttpServer(pHttpServer),
-                            m_handlerResolver(hModule, pHttpServer)
+                            m_handlerResolver(hModule, pHttpServer),
+                            m_hasStarted(false)
     {
         InitializeSRWLock(&m_srwLock);
     }
@@ -67,6 +68,16 @@ public:
         return m_handlerResolver.IsSameApplication(application);
     }
 
+    bool IsIISExpress() const
+    {
+        return m_pHttpServer.IsCommandLineLaunch();
+    }
+
+    bool HasReceivedRequest() const
+    {
+        return m_hasStarted;
+    }
+
 private:
 
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;
@@ -74,4 +85,5 @@ private:
     BOOL                        m_fDebugInitialize;
     IHttpServer                &m_pHttpServer;
     HandlerResolver             m_handlerResolver;
+    bool                        m_hasStarted;
 };

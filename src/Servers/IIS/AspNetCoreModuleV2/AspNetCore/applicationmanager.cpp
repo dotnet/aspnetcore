@@ -22,6 +22,10 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     _Out_ std::shared_ptr<APPLICATION_INFO>& ppApplicationInfo
 )
 {
+    // GetOrCreateApplicationInfo is called from proxymodule when a request is received.
+    // Set this value to indicate that a request has been received so we can disable shutdown logic in OnGlobalApplicationStop
+    m_hasStarted = true;
+
     auto &pApplication = *pHttpContext.GetApplication();
 
     // The configuration path is unique for each application and is used for the
