@@ -25,6 +25,12 @@ internal sealed class MultipartBoundary
         _expectLeadingCrlf = true;
     }
 
+    // Lets us throw a more specific error from MultipartReaderStream when reading any preamble data.
+    public bool BeforeFirstBoundary()
+    {
+        return !_expectLeadingCrlf;
+    }
+
     // Return either "--{boundary}" or "\r\n--{boundary}" depending on if we're looking for the end of a section
     public ReadOnlySpan<byte> BoundaryBytes => _boundaryBytes.AsSpan(_expectLeadingCrlf ? 0 : 2);
 
