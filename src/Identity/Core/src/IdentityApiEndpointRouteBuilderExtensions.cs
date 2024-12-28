@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Text;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -394,26 +396,63 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 throw new NotSupportedException("No email confirmation endpoint was registered!");
             }
 
+            var clientOptions = userManager.Options.Client;
+
             var code = isChange
                 ? await userManager.GenerateChangeEmailTokenAsync(user, email)
                 : await userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
             var userId = await userManager.GetUserIdAsync(user);
-            var routeValues = new RouteValueDictionary()
-            {
-                ["userId"] = userId,
-                ["code"] = code,
-            };
 
-            if (isChange)
+            string confirmEmailUrl;
+
+            // If ClientOptions are configured, use them to build the URL
+            if (clientOptions is not null)
             {
+                if (string.IsNullOrEmpty(clientOptions.BaseUrl)
+                    || string.IsNullOrEmpty(clientOptions.EmailconfirmationRoute))
+                {
+                    throw new InvalidOperationException("Client options are not correctly configured.");
+                }
+
+                var uriBuilder = new UriBuilder(clientOptions.BaseUrl)
+                {
+                    Path = clientOptions.EmailconfirmationRoute
+                };
+
+                var queryParams = HttpUtility.ParseQueryString(uriBuilder.Query);
+
+                queryParams["userId"] = userId;
+                queryParams["code"] = code;
+
                 // This is validated by the /confirmEmail endpoint on change.
-                routeValues.Add("changedEmail", email);
-            }
+                if (isChange)
+                {
+                    queryParams["changedEmail"] = HttpUtility.UrlEncode(email);
+                }
 
-            var confirmEmailUrl = linkGenerator.GetUriByName(context, confirmEmailEndpointName, routeValues)
-                ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
+                uriBuilder.Query = queryParams.ToString();
+
+                confirmEmailUrl = uriBuilder.ToString();
+            }
+            else
+            {
+                var routeValues = new RouteValueDictionary()
+                {
+                    ["userId"] = userId,
+                    ["code"] = code,
+                };
+
+                if (isChange)
+                {
+                    // This is validated by the /confirmEmail endpoint on change.
+                    routeValues.Add("changedEmail", email);
+                }
+
+                confirmEmailUrl = linkGenerator.GetUriByName(context, confirmEmailEndpointName, routeValues)
+                    ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
+            }
 
             await emailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(confirmEmailUrl));
         }
