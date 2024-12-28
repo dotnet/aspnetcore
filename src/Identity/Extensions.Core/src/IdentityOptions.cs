@@ -63,4 +63,12 @@ public class IdentityOptions
     /// The <see cref="StoreOptions"/> for the identity system.
     /// </value>
     public StoreOptions Stores { get; set; } = new StoreOptions();
+
+    /// <summary>
+    /// Gets or sets the <see cref="ClientOptions"/> for the identity system.
+    /// </summary>
+    /// <value>
+    /// The <see cref="ClientOptions"/> for the identity system.
+    /// </value>
+    public ClientOptions? Client { get; set; }
 }

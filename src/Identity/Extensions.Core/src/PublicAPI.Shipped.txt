@@ -17,6 +17,14 @@ Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.UserIdClaimType.get -> strin
 Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.UserIdClaimType.set -> void
 Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.UserNameClaimType.get -> string!
 Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.UserNameClaimType.set -> void
+Microsoft.AspNetCore.Identity.ClientOptions
+Microsoft.AspNetCore.Identity.ClientOptions.ClientOptions() -> void
+Microsoft.AspNetCore.Identity.ClientOptions.BaseUrl.get -> string?
+Microsoft.AspNetCore.Identity.ClientOptions.BaseUrl.set -> void
+Microsoft.AspNetCore.Identity.ClientOptions.EmailconfirmationRoute.get -> string?
+Microsoft.AspNetCore.Identity.ClientOptions.EmailconfirmationRoute.set -> void
+Microsoft.AspNetCore.Identity.ClientOptions.DeveloperDefinedAddOns.get -> System.Collections.Generic.IDictionary<string!, object!>?
+Microsoft.AspNetCore.Identity.ClientOptions.DeveloperDefinedAddOns.set -> void
 Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector
 Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector.DefaultPersonalDataProtector(Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing! keyRing, Microsoft.AspNetCore.Identity.ILookupProtector! protector) -> void
 Microsoft.AspNetCore.Identity.DefaultUserConfirmation<TUser>
@@ -53,6 +61,8 @@ Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.get -> Microsoft.AspNetCore
 Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.set -> void
 Microsoft.AspNetCore.Identity.IdentityOptions.User.get -> Microsoft.AspNetCore.Identity.UserOptions!
 Microsoft.AspNetCore.Identity.IdentityOptions.User.set -> void
+Microsoft.AspNetCore.Identity.IdentityOptions.Client.get -> Microsoft.AspNetCore.Identity.ClientOptions?
+Microsoft.AspNetCore.Identity.IdentityOptions.Client.set -> void
 Microsoft.AspNetCore.Identity.IdentityResult
 Microsoft.AspNetCore.Identity.IdentityResult.Errors.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IdentityError!>!
 Microsoft.AspNetCore.Identity.IdentityResult.IdentityResult() -> void
