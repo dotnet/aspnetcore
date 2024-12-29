@@ -10,6 +10,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -32,6 +33,7 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     [Theory]
     [InlineData("server")]
     [InlineData("webassembly")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57766")]
     public void CanUseAntiforgeryAfterInitialRender(string target)
     {
         Navigate($"{ServerPathBase}/{target}-antiforgery-form");
