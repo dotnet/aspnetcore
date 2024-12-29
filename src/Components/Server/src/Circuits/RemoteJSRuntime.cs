@@ -153,7 +153,7 @@ internal partial class RemoteJSRuntime : JSRuntime
     protected override async Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
         var cancelableStreamReference = new CancelableDotNetStreamReference(dotNetStreamReference);
-        if (_pendingDotNetToJSStreams.TryAdd(streamId, cancelableStreamReference))
+        if (!_pendingDotNetToJSStreams.TryAdd(streamId, cancelableStreamReference))
         {
             throw new ArgumentException($"The stream {streamId} is already pending.");
         }
