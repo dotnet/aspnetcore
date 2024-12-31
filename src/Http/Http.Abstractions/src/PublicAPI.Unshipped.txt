@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?

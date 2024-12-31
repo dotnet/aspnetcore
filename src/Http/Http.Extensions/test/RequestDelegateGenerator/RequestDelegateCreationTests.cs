@@ -605,7 +605,7 @@ app.MapPost("/", (HttpContext context,
     public async Task RequestDelegateGeneratesCompilableCodeForServiceInNamespaceHttp()
     {
         var source = """
-app.MapGet("/hello", ([FromServices] ExampleService e) => e.Act("To be or not to be…"));
+app.MapGet("/hello", ([FromServices] global::Http.ExampleService e) => e.Act("To be or not to be…"));
 """;
         var (results, compilation) = await RunGeneratorAsync(source);
 
