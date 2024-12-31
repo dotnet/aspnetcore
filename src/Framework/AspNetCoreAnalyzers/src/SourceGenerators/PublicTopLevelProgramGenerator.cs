@@ -20,12 +20,13 @@ public partial class Program { }
         var internalGeneratedProgramClass = context.CompilationProvider.Select(static (compilation, cancellationToken) =>
             // Get the entry point associated with the compilation, this maps to the Main method definition
             // Get the containing symbol of the entry point, this maps to the Program class
-            compilation.GetEntryPoint(cancellationToken)?.ContainingSymbol is
+            compilation.GetEntryPoint(cancellationToken)?.ContainingSymbol is INamedTypeSymbol
                 {
                     // If the discovered `Program` type is not a class then its not
                     // generated and has been defined in source, so we can skip it
                     // If the program class is already public, we don't need to generate anything.
-                    ContainingSymbol: { DeclaredAccessibility: Accessibility.Public, TypeKind: TypeKind.Class },
+                    DeclaredAccessibility: Accessibility.Public,
+                    TypeKind: TypeKind.Class,
                     // If there are multiple partial declarations, then do nothing since we don't want
                     // to trample on visibility explicitly set by the user
                     DeclaringSyntaxReferences: { Length: 1 } declaringSyntaxReferences
