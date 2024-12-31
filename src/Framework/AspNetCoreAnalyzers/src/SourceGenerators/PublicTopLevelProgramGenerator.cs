@@ -32,7 +32,7 @@ public partial class Program { }
                     DeclaringSyntaxReferences: { Length: 1 } declaringSyntaxReferences
                 } &&
             // If the `Program` class is already declared in user code, we don't need to generate anything.
-            declaringSyntaxReferences.Single() is not ClassDeclarationSyntax
+            declaringSyntaxReferences.Single().GetSyntax(cancellationToken) is not ClassDeclarationSyntax
         );
 
         context.RegisterSourceOutput(internalGeneratedProgramClass, (context, result) =>
