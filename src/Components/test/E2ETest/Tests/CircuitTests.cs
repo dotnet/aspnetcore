@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -48,6 +49,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
         // Clicking the button again will trigger a server disconnect
+        Browser.ExecuteJavaScript("arguments[0].scrollIntoView(true);", targetButton);
         targetButton.Click();
 
         AssertLogContains("Connection disconnected.");
@@ -70,6 +72,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
         // Clicking it again causes the circuit to disconnect
+        Browser.ExecuteJavaScript("arguments[0].scrollIntoView(true);", targetButton);
         targetButton.Click();
         AssertLogContains("Connection disconnected.");
     }
