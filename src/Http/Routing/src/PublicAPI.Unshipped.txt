@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ValidationConventionBuilderExtensions
+Microsoft.AspNetCore.Routing.RouteGroupBuilder.RouteGroupBuilder(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! outerEndpointRouteBuilder) -> void
+static Microsoft.AspNetCore.Builder.ValidationConventionBuilderExtensions.WithValidation(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!

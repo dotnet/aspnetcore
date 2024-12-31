@@ -77,7 +77,8 @@ public static class RouteHandlerServices
 
         return endpoints
               .GetOrAddRouteEndpointDataSource()
-              .AddRouteHandler(RoutePatternFactory.Parse(pattern),
+              .AddRouteHandler(endpoints,
+                               RoutePatternFactory.Parse(pattern),
                                handler,
                                httpMethods,
                                isFallback: false,

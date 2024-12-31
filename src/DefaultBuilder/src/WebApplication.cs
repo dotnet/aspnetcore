@@ -27,15 +27,16 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
 
     private readonly IHost _host;
-    private readonly List<EndpointDataSource> _dataSources = new();
+    private RouteGroupBuilder _globalRouteGroup;
 
     internal WebApplication(IHost host)
     {
         _host = host;
+        _globalRouteGroup = new RouteGroupBuilder(this);
         ApplicationBuilder = new ApplicationBuilder(host.Services, ServerFeatures);
         Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName ?? nameof(WebApplication));
 
-        Properties[GlobalEndpointRouteBuilderKey] = this;
+        Properties[GlobalEndpointRouteBuilderKey] = _globalRouteGroup;
     }
 
     /// <summary>
@@ -80,12 +81,17 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     internal IDictionary<string, object?> Properties => ApplicationBuilder.Properties;
     IDictionary<string, object?> IApplicationBuilder.Properties => Properties;
 
-    internal ICollection<EndpointDataSource> DataSources => _dataSources;
+    internal ICollection<EndpointDataSource> DataSources => ((IEndpointRouteBuilder)(_globalRouteGroup ??= new RouteGroupBuilder(this))).DataSources;
     ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => DataSources;
 
     internal ApplicationBuilder ApplicationBuilder { get; }
 
     IServiceProvider IEndpointRouteBuilder.ServiceProvider => Services;
+
+    /// <summary>
+    /// Gets the <see cref="IEndpointConventionBuilder"/> for the application.
+    /// </summary>
+    public IEndpointConventionBuilder Conventions => _globalRouteGroup;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplication"/> class with preconfigured defaults.

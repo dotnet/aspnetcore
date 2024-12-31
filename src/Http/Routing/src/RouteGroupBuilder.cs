@@ -22,13 +22,25 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
 
     private readonly List<EndpointDataSource> _dataSources = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
+    internal List<Action<EndpointBuilder>> Conventions => _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
+    internal List<Action<EndpointBuilder>> FinallyConventions => _finallyConventions;
 
     internal RouteGroupBuilder(IEndpointRouteBuilder outerEndpointRouteBuilder, RoutePattern partialPrefix)
     {
         _outerEndpointRouteBuilder = outerEndpointRouteBuilder;
         _partialPrefix = partialPrefix;
         _outerEndpointRouteBuilder.DataSources.Add(new GroupEndpointDataSource(this));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RouteGroupBuilder"/> class.
+    /// </summary>
+    /// <param name="outerEndpointRouteBuilder">The parent <see cref="IEndpointRouteBuilder" /> associated with the group.</param>
+    public RouteGroupBuilder(IEndpointRouteBuilder outerEndpointRouteBuilder)
+    {
+        _outerEndpointRouteBuilder = outerEndpointRouteBuilder;
+        _partialPrefix = RoutePatternFactory.Parse(string.Empty);
     }
 
     IServiceProvider IEndpointRouteBuilder.ServiceProvider => _outerEndpointRouteBuilder.ServiceProvider;

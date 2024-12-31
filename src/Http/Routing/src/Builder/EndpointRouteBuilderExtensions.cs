@@ -436,7 +436,7 @@ public static class EndpointRouteBuilderExtensions
 
         return endpoints
             .GetOrAddRouteEndpointDataSource()
-            .AddRouteHandler(pattern, handler, httpMethods, isFallback, RequestDelegateFactory.InferMetadata, RequestDelegateFactory.Create, handler.Method);
+            .AddRouteHandler(endpoints, pattern, handler, httpMethods, isFallback, RequestDelegateFactory.InferMetadata, RequestDelegateFactory.Create, handler.Method);
     }
 
     internal static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)

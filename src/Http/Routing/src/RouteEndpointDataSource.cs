@@ -51,6 +51,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     }
 
     public RouteHandlerBuilder AddRouteHandler(
+        IEndpointRouteBuilder endpointRouteBuilder,
         RoutePattern pattern,
         Delegate routeHandler,
         IEnumerable<string>? httpMethods,
@@ -61,6 +62,14 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+        // TODO(Hack): Figure out a better way to propagate global conventions down.
+        if (endpointRouteBuilder is IApplicationBuilder builder &&
+            builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var obj) &&
+            obj is RouteGroupBuilder routeGroupBuilder)
+        {
+            conventions.AddRange(routeGroupBuilder.Conventions);
+            finallyConventions.AddRange(routeGroupBuilder.FinallyConventions);
+        }
 
         var routeAttributes = RouteAttributes.RouteHandler;
         if (isFallback)
