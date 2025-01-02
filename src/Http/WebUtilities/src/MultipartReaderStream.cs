@@ -145,9 +145,19 @@ internal sealed class MultipartReaderStream : Stream
         if (_observedLength < _position)
         {
             _observedLength = _position;
-            if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
+            if (LengthLimit.HasValue &&
+                LengthLimit.GetValueOrDefault() is var lengthLimit &&
+                _observedLength > lengthLimit)
             {
-                throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
+                // If we hit the limit before the first boundary then we're using the header length limit, not the body length limit.
+                if (_boundary.BeforeFirstBoundary())
+                {
+                    throw new InvalidDataException($"Multipart header length limit {lengthLimit} exceeded. Too much data before the first boundary.");
+                }
+                else
+                {
+                    throw new InvalidDataException($"Multipart body length limit {lengthLimit} exceeded.");
+                }
             }
         }
         return read;
