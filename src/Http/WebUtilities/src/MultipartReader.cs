@@ -56,7 +56,7 @@ public class MultipartReader
         }
         _stream = new BufferedReadStream(stream, bufferSize);
         boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
-        _boundary = new MultipartBoundary(boundary, false);
+        _boundary = new MultipartBoundary(boundary);
     }
 
     /// <summary>
@@ -83,12 +83,9 @@ public class MultipartReader
     /// <returns></returns>
     public async Task<MultipartSection?> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
     {
-        if (_currentStream == null)
-        {
-            // Only occurs on first call
-            // This stream will drain any preamble data and remove the first boundary marker.
-            _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = HeadersLengthLimit };
-        }
+        // Only occurs on first call
+        // This stream will drain any preamble data and remove the first boundary marker.
+        _currentStream ??= new MultipartReaderStream(_stream, _boundary) { LengthLimit = HeadersLengthLimit };
 
         // Drain the prior section.
         await _currentStream.DrainAsync(cancellationToken);
