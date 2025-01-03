@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -197,9 +198,36 @@ internal sealed class OpenApiDocumentService(
         if (hostEnvironment.IsDevelopment() &&
             server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
         {
-            return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
+            var openApiServers = new List<OpenApiServer>();
+            foreach (var address in addresses)
+            {
+                if (IsAddressAnyIpAddress(address))
+                {
+                    // When we listen to any IP address, we should use the root as url.
+                    // So that the clients consuming the generated OpenAPI document can use the same address
+                    // to make requests.
+                    openApiServers.Add(new OpenApiServer { Url = "/" });
+                }
+                else
+                {
+                    openApiServers.Add(new OpenApiServer { Url = address });
+                }
+            }
+            return openApiServers;
         }
         return [];
+
+        // Determines if the given address is an ANY IP address like 0.0.0.0 or {::}
+        static bool IsAddressAnyIpAddress(string address)
+        {
+            if (Uri.TryCreate(address, UriKind.Absolute, out var uri) &&
+                IPAddress.TryParse(uri.Host, out var ipAddress) &&
+                (ipAddress == IPAddress.Any || ipAddress == IPAddress.IPv6Any))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
     /// <summary>
