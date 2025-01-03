@@ -52,10 +52,12 @@ public static class EditContextDataAnnotationsExtensions
 
     private static event Action? OnClearCache;
 
+#pragma warning disable IDE0051 // Remove unused private members
     private static void ClearCache(Type[]? _)
     {
         OnClearCache?.Invoke();
     }
+#pragma warning restore IDE0051 // Remove unused private members
 
     private sealed class DataAnnotationsEventSubscriptions : IDisposable
     {
