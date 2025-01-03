@@ -907,6 +907,102 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputTextValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = appElement.FindElement(By.Id("inputtext"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SendKeys("123\t");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputTextAreaValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = appElement.FindElement(By.Id("inputtextarea"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SendKeys("123\t");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputCheckboxValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = appElement.FindElement(By.Id("inputcheckbox"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.Click();
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputDateValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = appElement.FindElement(By.Id("inputdate"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SendKeys("02\t");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputNumberValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = appElement.FindElement(By.Id("inputnumber"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SendKeys("123\t");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputRadioGroupValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var tuesday = appElement.FindElement(By.Id("inputradiogroup-tuesday"));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        tuesday.Click();
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputSelectValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = new SelectElement(appElement.FindElement(By.Id("inputselect")));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SelectByValue("Wednesday");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
+    public void InputSelectMultipleValueChangedExceptionDispatched()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithFailingValueChangedHandler>();
+        var input = new SelectElement(appElement.FindElement(By.Id("inputselectmultiple")));
+
+        // Observe that the exception in the value changed handler is dispatched to the error boundary
+        input.SelectByValue("Wednesday");
+
+        Browser.Exists(By.Id("errorcontent"));
+    }
+
+    [Fact]
     public void InputWithCustomParserPreservesInvalidValueWhenParsingFails()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();

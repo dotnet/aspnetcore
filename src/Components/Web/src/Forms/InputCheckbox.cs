@@ -42,7 +42,7 @@ public class InputCheckbox : InputBase<bool>
         // It sends the "on" value when the checkbox is checked, and nothing otherwise.
         builder.AddAttribute(6, "value", bool.TrueString);
 
-        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CurrentValue = __value, CurrentValue));
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<bool>(this, SetCurrentValueAsync, CurrentValue));
         builder.SetUpdatesAttributeName("checked");
         builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();
