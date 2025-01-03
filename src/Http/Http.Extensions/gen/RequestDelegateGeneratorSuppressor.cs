@@ -60,9 +60,9 @@ public sealed class RequestDelegateGeneratorSuppressor : DiagnosticSuppressor
                 _ => null,
             };
 
-            if (node is null ||
-                !node.TryGetMapMethodName(out var method) ||
-                !InvocationOperationExtensions.KnownMethods.Contains(method))
+            if (node is null
+                || !node.TryGetMapMethodName(out var method)
+                || !InvocationOperationExtensions.KnownMethods.Contains(method))
             {
                 continue;
             }
