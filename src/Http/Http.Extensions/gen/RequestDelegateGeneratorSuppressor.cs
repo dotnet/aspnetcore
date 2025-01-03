@@ -46,8 +46,21 @@ public sealed class RequestDelegateGeneratorSuppressor : DiagnosticSuppressor
                 ? diagnostic.AdditionalLocations[0]
                 : diagnostic.Location;
 
-            if (location.SourceTree is not { } sourceTree
-                || sourceTree.GetRoot().FindNode(location.SourceSpan) is not InvocationExpressionSyntax node
+            if (location.SourceTree is not { } sourceTree)
+            {
+                continue;
+            }
+
+            // The trim analyzer changed from warning on the InvocationExpression to the MemberAccessExpression in https://github.com/dotnet/runtime/pull/110086.
+            // To account for this, we need to check if the location is an InvocationExpression or a child of an InvocationExpression.
+            var node = sourceTree.GetRoot().FindNode(location.SourceSpan) switch
+            {
+                InvocationExpressionSyntax s => s,
+                { Parent: InvocationExpressionSyntax s } => s,
+                _ => null,
+            };
+
+            if (node is null
                 || !node.TryGetMapMethodName(out var method)
                 || !InvocationOperationExtensions.KnownMethods.Contains(method))
             {
