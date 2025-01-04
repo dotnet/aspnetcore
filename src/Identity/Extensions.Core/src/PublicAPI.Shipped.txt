@@ -53,6 +53,36 @@ Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.get -> Microsoft.AspNetCore
 Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.set -> void
 Microsoft.AspNetCore.Identity.IdentityOptions.User.get -> Microsoft.AspNetCore.Identity.UserOptions!
 Microsoft.AspNetCore.Identity.IdentityOptions.User.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiOptions
+Microsoft.AspNetCore.Identity.IdentityApiOptions.IdentityApiOptions() -> void
+Microsoft.AspNetCore.Identity.IdentityApiOptions.Tag.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiOptions.Tag.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiOptions.GroupName.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiOptions.GroupName.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiOptions.ManageGroupName.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiOptions.ManageGroupName.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiOptions.Endpoints.get -> Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions!
+Microsoft.AspNetCore.Identity.IdentityApiOptions.Endpoints.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.IdentityApiEndpointsOptions() -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Register.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Register.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Login.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Login.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Refresh.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Refresh.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ConfirmEmail.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ConfirmEmail.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ResendConfirmationEmail.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ResendConfirmationEmail.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ForgotPassword.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ForgotPassword.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ResetPassword.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.ResetPassword.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.TwoFactorAuth.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.TwoFactorAuth.set -> void
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Info.get -> string!
+Microsoft.AspNetCore.Identity.IdentityApiEndpointsOptions.Info.set -> void
 Microsoft.AspNetCore.Identity.IdentityResult
 Microsoft.AspNetCore.Identity.IdentityResult.Errors.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IdentityError!>!
 Microsoft.AspNetCore.Identity.IdentityResult.IdentityResult() -> void
