@@ -53,6 +53,8 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
     private long _firstErrorTimeTicks;
     private long _previousErrorTimeTicks;
 
+    internal bool HybridCacheActive { get; set; }
+
     // StackExchange.Redis will also be trying to reconnect internally,
     // so limit how often we recreate the ConnectionMultiplexer instance
     // in an attempt to reconnect
@@ -375,6 +377,11 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         {
             connection.AddLibraryNameSuffix("aspnet");
             connection.AddLibraryNameSuffix("DC");
+
+            if (HybridCacheActive)
+            {
+                connection.AddLibraryNameSuffix("HC");
+            }
         }
         catch (Exception ex)
         {
