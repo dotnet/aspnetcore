@@ -444,6 +444,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 
         builder.MapGet("/list", () => new List<int> { 1, 2, 3, 4 });
         builder.MapGet("/single", () => 1);
+        builder.MapGet("/dictionary", () => new Dictionary<string, int> {{ "key", 1 }});
 
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
@@ -469,7 +470,13 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             getOperation = path.Operations[OperationType.Get];
             responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
             Assert.Equal("modified-number-format", responseSchema.Format);
-        });
+
+            // Assert that the schema represent dictionary values has been modified
+            path = document.Paths["/dictionary"];
+            getOperation = path.Operations[OperationType.Get];
+            responseSchema = getOperation.Responses["200"].Content["application/json"].Schema.GetEffective(document);
+            Assert.Equal("modified-number-format", responseSchema.AdditionalProperties.Format);
+		});
     }
 
     [Fact]
