@@ -30,10 +30,12 @@ public static class OpenApiEndpointRouteBuilderExtensions
         var options = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
         return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApiConstants.DefaultDocumentName) =>
             {
-                // We need to retrieve the document name in a case-insensitive manner
-                // to support case-insensitive document name resolution.
-                // Keyed Services are case-sensitive by default, which doesn't work well for document names in ASP.NET Core
-                // as routing in ASP.NET Core is case-insensitive by default.
+                // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
+                // The document service is registered with a key equal to the document name, but in lowercase.
+                // The GetRequiredKeyedService() method is case-sensitive, which doesn't work well for OpenAPI document names here,
+                // as the document name is also used as the route to retrieve the document, so we need to ensure this is lowercased to achieve consistency with ASP.NET Core routing.
+                // The same goes for the document options below, which is also case-sensitive, and thus we need to pass in a case-insensitive document name.
+                // See OpenApiServiceCollectionExtensions.cs for more info.
                 var lowercasedDocumentName = documentName.ToLowerInvariant();
 
                 // It would be ideal to use the `HttpResponseStreamWriter` to
@@ -50,7 +52,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 else
                 {
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.RequestAborted);
-                    var documentOptions = options.Get(documentName);
+                    var documentOptions = options.Get(lowercasedDocumentName);
                     using var output = MemoryBufferWriter.Get();
                     using var writer = Utf8BufferTextWriter.Get(output);
                     try
