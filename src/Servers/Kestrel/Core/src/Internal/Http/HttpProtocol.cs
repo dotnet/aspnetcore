@@ -999,7 +999,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         var responseHeaders = CreateResponseHeaders(appCompleted);
 
-        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted);
+        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted, canWriteBody: _canWriteResponseBody);
     }
 
     private void VerifyInitializeState(int firstWriteByteCount)
@@ -1645,7 +1645,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 if (data.Length == 0)
                 {
-                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false, canWriteBody: _canWriteResponseBody);
                     return Output.FlushAsync(cancellationToken);
                 }
 
@@ -1659,7 +1659,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
         else
         {
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false, canWriteBody: _canWriteResponseBody);
             HandleNonBodyResponseWrite();
             return Output.FlushAsync(cancellationToken);
         }

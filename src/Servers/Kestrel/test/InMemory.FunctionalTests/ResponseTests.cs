@@ -1495,6 +1495,44 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeFlush()
+    {
+        var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            var span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+            await flushed.Task;
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "");
+
+                flushed.SetResult();
+            }
+        }
+    }
+
+    [Fact]
     public async Task ZeroLengthWritesFlushHeaders()
     {
         var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

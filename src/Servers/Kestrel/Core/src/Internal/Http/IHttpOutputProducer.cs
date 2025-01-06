@@ -13,7 +13,7 @@ internal interface IHttpOutputProducer
     ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
     ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken);
     ValueTask<FlushResult> Write100ContinueAsync();
-    void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted);
+    void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted, bool canWriteBody);
     // This takes ReadOnlySpan instead of ReadOnlyMemory because it always synchronously copies data before flushing.
     ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
     // Test hook

@@ -153,7 +153,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     {
         lock (_dataWriterLock)
         {
-            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
+            // canWriteBody is hardcoded to true as we don't have chunked bodies in HTTP/3 and so writing headers is not affected by canWriteBody
+            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false, canWriteBody: true);
 
             return WriteDataToPipeAsync(data, cancellationToken);
         }
@@ -375,7 +376,8 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
+    // canWriteBody is ignored as we don't have chunked bodies in HTTP/3 and so writing headers is not affected by canWriteBody
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted, bool canWriteBody)
     {
         // appCompleted flag is not used here. The write FIN is sent via the transport and not via the frame.
         // Headers are written to buffer and flushed with a FIN when Http3FrameWriter.CompleteAsync is called
