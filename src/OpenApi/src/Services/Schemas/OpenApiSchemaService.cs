@@ -212,7 +212,13 @@ internal sealed class OpenApiSchemaService(
                 }
             }
         }
-    }
+
+        if (schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } && jsonTypeInfo.ElementType is not null) 
+		{
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
+            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+	}
 
     private JsonNode CreateSchema(OpenApiSchemaKey key)
         => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
