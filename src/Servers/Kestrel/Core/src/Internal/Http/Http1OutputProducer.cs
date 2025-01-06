@@ -40,6 +40,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private bool _aborted;
     private long _unflushedBytes;
     private int _currentMemoryPrefixBytes;
+    private bool _canWriteBody = true;
 
     private readonly ConcurrentPipeWriter _pipeWriter;
     private IMemoryOwner<byte>? _fakeMemoryOwner;
@@ -121,7 +122,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (!_writeStreamSuffixCalled)
             {
-                if (_autoChunk)
+                if (_autoChunk && _canWriteBody)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                     result = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
@@ -344,13 +345,15 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 return;
             }
 
+            _canWriteBody = canWriteBody;
+
             var buffer = _pipeWriter;
             var writer = new BufferWriter<PipeWriter>(buffer);
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk, canWriteBody);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
         }
     }
 
-    private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool canWriteBody)
+    private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
     {
         writer.Write(HttpVersion11Bytes);
         var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
@@ -361,19 +364,19 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         writer.Commit();
 
         _autoChunk = autoChunk;
-        WriteDataWrittenBeforeHeaders(ref writer, canWriteBody);
+        WriteDataWrittenBeforeHeaders(ref writer);
         _unflushedBytes += writer.BytesCommitted;
 
         _startCalled = true;
     }
 
-    private void WriteDataWrittenBeforeHeaders(ref BufferWriter<PipeWriter> writer, bool canWriteBody)
+    private void WriteDataWrittenBeforeHeaders(ref BufferWriter<PipeWriter> writer)
     {
         if (_completedSegments != null)
         {
             foreach (var segment in _completedSegments)
             {
-                if (canWriteBody)
+                if (_canWriteBody)
                 {
                     if (_autoChunk)
                     {
@@ -394,7 +397,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         if (!_currentSegment.IsEmpty)
         {
-            if (canWriteBody)
+            if (_canWriteBody)
             {
                 var segment = _currentSegment.Slice(0, _position);
 
@@ -511,8 +514,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Uses same BufferWriter to write response headers and response
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
-            // canWriteBody hardcoded to true as we already check if a body is allowed before calling this method
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk, canWriteBody: true);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
 
             return WriteAsyncInternal(ref writer, buffer, cancellationToken);
         }
@@ -532,8 +534,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Uses same BufferWriter to write response headers and chunk
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
-            // canWriteBody hardcoded to true as we already check if a body is allowed before calling this method
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk, canWriteBody: true);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
 
             CommitChunkInternal(ref writer, buffer);
 
