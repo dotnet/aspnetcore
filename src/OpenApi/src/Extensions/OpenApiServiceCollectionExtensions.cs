@@ -57,10 +57,16 @@ public static class OpenApiServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.AddOpenApiCore(documentName);
-        services.Configure<OpenApiOptions>(documentName, options =>
+        // We need to store the document name in a case-insensitive manner
+        // to support case-insensitive document name resolution.
+        // Keyed Services are case-sensitive by default, which doesn't work well for document names in ASP.NET Core
+        // as routing in ASP.NET Core is case-insensitive by default.
+        var lowercasedDocumentName = documentName.ToLowerInvariant();
+
+        services.AddOpenApiCore(lowercasedDocumentName);
+        services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
         {
-            options.DocumentName = documentName;
+            options.DocumentName = lowercasedDocumentName;
             configureOptions(options);
         });
         return services;

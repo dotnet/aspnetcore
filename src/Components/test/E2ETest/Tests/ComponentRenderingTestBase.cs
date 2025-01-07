@@ -51,7 +51,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     {
         var appElement = Browser.MountTestComponent<DataDashComponent>();
         var element = appElement.FindElement(By.Id("cool_beans"));
-        Assert.Equal("17", element.GetAttribute("data-tab"));
+        Assert.Equal("17", element.GetDomAttribute("data-tab"));
         Assert.Equal("17", element.Text);
     }
 
@@ -61,8 +61,8 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var appElement = Browser.MountTestComponent<RedTextComponent>();
         var styledElement = appElement.FindElement(By.TagName("h1"));
         Assert.Equal("Hello, world!", styledElement.Text);
-        Assert.Equal("color: red;", styledElement.GetAttribute("style"));
-        Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
+        Assert.Equal("color: red;", styledElement.GetDomAttribute("style"));
+        Assert.Equal("somevalue", styledElement.GetDomAttribute("customattribute"));
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             li => Assert.Equal("b", li.Text));
 
         // Textbox contains typed text
-        Assert.Equal("ab", inputElement.GetAttribute("value"));
+        Assert.Equal("ab", inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -155,8 +155,8 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
         var styledElement = appElement.FindElement(By.CssSelector("fieldset > h1"));
         Assert.Equal("Hello, world!", styledElement.Text);
-        Assert.Equal("color: red;", styledElement.GetAttribute("style"));
-        Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
+        Assert.Equal("color: red;", styledElement.GetDomAttribute("style"));
+        Assert.Equal("somevalue", styledElement.GetDomAttribute("customattribute"));
     }
 
     // Verifies we can render HTML content as a single block
@@ -165,7 +165,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     {
         var appElement = Browser.MountTestComponent<HtmlBlockChildContent>();
         Assert.Equal("<p>Some-Static-Text</p>",
-            appElement.FindElement(By.Id("foo")).GetAttribute("innerHTML"));
+            appElement.FindElement(By.Id("foo")).GetDomProperty("innerHTML"));
     }
 
     // Verifies we can rewite more complex HTML content into blocks
@@ -175,16 +175,16 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var appElement = Browser.MountTestComponent<HtmlMixedChildContent>();
 
         var one = appElement.FindElement(By.Id("one"));
-        Assert.Equal("<p>Some-Static-Text</p>", one.GetAttribute("innerHTML"));
+        Assert.Equal("<p>Some-Static-Text</p>", one.GetDomProperty("innerHTML"));
 
         var two = appElement.FindElement(By.Id("two"));
-        Assert.Equal("<span>More-Static-Text</span>", two.GetAttribute("innerHTML"));
+        Assert.Equal("<span>More-Static-Text</span>", two.GetDomProperty("innerHTML"));
 
         var three = appElement.FindElement(By.Id("three"));
-        Assert.Equal("Some-Dynamic-Text", three.GetAttribute("innerHTML"));
+        Assert.Equal("Some-Dynamic-Text", three.GetDomProperty("innerHTML"));
 
         var four = appElement.FindElement(By.Id("four"));
-        Assert.Equal("But this is static", four.GetAttribute("innerHTML"));
+        Assert.Equal("But this is static", four.GetDomProperty("innerHTML"));
     }
 
     // Verifies we can rewrite HTML blocks with encoded HTML
@@ -194,16 +194,16 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var appElement = Browser.MountTestComponent<HtmlEncodedChildContent>();
 
         var one = appElement.FindElement(By.Id("one"));
-        Assert.Equal("<p>Some-Static-Text</p>", one.GetAttribute("innerHTML"));
+        Assert.Equal("<p>Some-Static-Text</p>", one.GetDomProperty("innerHTML"));
 
         var two = appElement.FindElement(By.Id("two"));
-        Assert.Equal("&lt;span&gt;More-Static-Text&lt;/span&gt;", two.GetAttribute("innerHTML"));
+        Assert.Equal("&lt;span&gt;More-Static-Text&lt;/span&gt;", two.GetDomProperty("innerHTML"));
 
         var three = appElement.FindElement(By.Id("three"));
-        Assert.Equal("Some-Dynamic-Text", three.GetAttribute("innerHTML"));
+        Assert.Equal("Some-Dynamic-Text", three.GetDomProperty("innerHTML"));
 
         var four = appElement.FindElement(By.Id("four"));
-        Assert.Equal("But this is static", four.GetAttribute("innerHTML"));
+        Assert.Equal("But this is static", four.GetDomProperty("innerHTML"));
     }
 
     [Fact]
@@ -363,12 +363,12 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var inputElement = appElement.FindElement(By.Id("capturedElement"));
         var buttonElement = appElement.FindElement(By.TagName("button"));
 
-        Assert.Equal(string.Empty, inputElement.GetAttribute("value"));
+        Assert.Equal(string.Empty, inputElement.GetDomProperty("value"));
 
         buttonElement.Click();
-        Browser.Equal("Clicks: 1", () => inputElement.GetAttribute("value"));
+        Browser.Equal("Clicks: 1", () => inputElement.GetDomProperty("value"));
         buttonElement.Click();
-        Browser.Equal("Clicks: 2", () => inputElement.GetAttribute("value"));
+        Browser.Equal("Clicks: 2", () => inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -399,7 +399,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.True(pageYOffsetAfter > pageYOffsetBefore);
 
         // A local helper that gets the ID of the focused element.
-        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id");
 
         // A local helper that gets window.PageYOffset
         int getPageYOffset() => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset"), CultureInfo.InvariantCulture);
@@ -424,7 +424,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("focus-circle", getFocusedElementId);
 
         // A local helper that gets the ID of the focused element.
-        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id");
     }
 
     [Fact]
@@ -453,7 +453,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal(pageYOffsetBefore, pageYOffsetAfter);
 
         // A local helper that gets the ID of the focused element.
-        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id");
 
         // A local helper that gets window.PageYOffset
         int getPageYOffset() => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset"), CultureInfo.InvariantCulture);
@@ -474,7 +474,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
         appElement.FindElement(By.Id(triggerButton)).Click();
         Browser.Equal("True", () => didReceiveFocusLabel.Text);
-        Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
+        Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("id"));
 
         // As well as actually focusing and triggering the onfocusin event, we should not be seeing any errors
         var log = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
@@ -499,11 +499,11 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         // Re-add it; observe it starts empty again
         checkbox.Click();
         var inputElement = appElement.FindElement(By.Id("capturedElement"));
-        Assert.Equal(string.Empty, inputElement.GetAttribute("value"));
+        Assert.Equal(string.Empty, inputElement.GetDomProperty("value"));
 
         // See that the capture variable was automatically updated to reference the new instance
         buttonElement.Click();
-        Browser.Equal("Clicks: 1", () => inputElement.GetAttribute("value"));
+        Browser.Equal("Clicks: 1", () => inputElement.GetDomProperty("value"));
     }
 
     [Fact]
@@ -541,7 +541,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     public void CanUseJsInteropForRefElementsDuringOnAfterRender()
     {
         var appElement = Browser.MountTestComponent<AfterRenderInteropComponent>();
-        Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetAttribute("value"));
+        Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetDomProperty("value"));
     }
 
     [Fact]
@@ -665,7 +665,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     {
         var appElement = Browser.MountTestComponent<InteropOnInitializationComponent>();
         Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-get-by-interop")).Text);
-        Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetDomProperty("value"));
     }
 
     [Fact]
@@ -677,15 +677,15 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Exists(selector);
 
         var element = appElement.FindElement(selector);
-        Assert.Equal(string.Empty, element.GetAttribute("bool")); // attribute is present
-        Assert.Equal("middle-value", element.GetAttribute("string"));
-        Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+        Assert.Equal(string.Empty, element.GetDomAttribute("bool")); // attribute is present
+        Assert.Equal("middle-value", element.GetDomAttribute("string"));
+        Assert.Equal("unmatched-value", element.GetDomAttribute("unmatched"));
 
         selector = By.CssSelector("#duplicate-on-element-override > div");
         element = appElement.FindElement(selector);
-        Assert.Null(element.GetAttribute("bool")); // attribute is not present
-        Assert.Equal("other-text", element.GetAttribute("string"));
-        Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+        Assert.Null(element.GetDomAttribute("bool")); // attribute is not present
+        Assert.Equal("other-text", element.GetDomAttribute("string"));
+        Assert.Equal("unmatched-value", element.GetDomAttribute("unmatched"));
     }
 
     [Fact]
