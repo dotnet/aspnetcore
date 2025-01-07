@@ -36,4 +36,15 @@ public class AdditionalAuthenticatedDataTemplateTests
         var actualBytesInBase64 = Convert.ToBase64String(actualBytes);
         Assert.Equal(expectedBytesInBase64, actualBytesInBase64);
     }
+
+    [Fact]
+    public void AdditionalAuthenticatedDataTemplateBuildAadTemplateBytes_ThrowsOnIllegalUtf8Text()
+    {
+        Assert.Throws<EncoderFallbackException>(() =>
+        {
+            var actualBytes = KeyRingBasedDataProtector.AdditionalAuthenticatedDataTemplate.BuildAadTemplateBytes([
+                "😀"[0] + "X",
+            ]);
+        });
+    }
 }

@@ -368,8 +368,9 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             int totalPurposeLen = 4 + keySize + 4;
 
             int[]? lease = null;
-            Span<int> purposeLengthsPool = purposes.Length <= 32 ? stackalloc int[purposes.Length] : (lease = ArrayPool<int>.Shared.Rent(purposes.Length)).AsSpan(0, purposes.Length);
-            for (int i = 0; i < purposes.Length; i++)
+            var targetLength = purposes.Length;
+            Span<int> purposeLengthsPool = targetLength <= 32 ? stackalloc int[targetLength] : (lease = ArrayPool<int>.Shared.Rent(targetLength)).AsSpan(0, targetLength);
+            for (int i = 0; i < targetLength; i++)
             {
                 string purpose = purposes[i];
 
@@ -387,10 +388,10 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
             // index 4: key (skipped for now, will be populated in `GetAadForKey()`)
             // index 4 + keySize: purposeCount
-            BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), purposes.Length);
+            BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), targetLength);
 
-            int index = 4 + keySize + 4; // starting from first purpose
-            for (int i = 0; i < purposes.Length; i++)
+            int index = 4 /* MAGIC_HEADER_V0 */ + keySize + 4 /* purposeLength */; // starting from first purpose
+            for (int i = 0; i < targetLength; i++)
             {
                 string purpose = purposes[i];
 
