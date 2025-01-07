@@ -493,7 +493,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Push if endpoint is in disco
                 if (!string.IsNullOrEmpty(parEndpoint))
                 {
-                    await PushAuthorizationRequest(message, properties);
+                    await PushAuthorizationRequest(message, properties, parEndpoint);
                 }
 
                 break;
@@ -508,14 +508,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 break;
             case PushedAuthorizationBehavior.Require:
                 // Fail if required in options but unavailable in disco
-                var endpointIsConfigured = !string.IsNullOrEmpty(parEndpoint);
-                if (!endpointIsConfigured)
+                if (string.IsNullOrEmpty(parEndpoint))
                 {
                     throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
                 }
 
                 // Otherwise push
-                await PushAuthorizationRequest(message, properties);
+                await PushAuthorizationRequest(message, properties, parEndpoint);
                 break;
         }
 
@@ -550,8 +549,10 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
     }
 
-    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint)
     {
+        ArgumentException.ThrowIfNullOrEmpty(parEndpoint);
+
         // Build context and run event
         var parRequest = authorizeRequest.Clone();
         var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
@@ -579,20 +580,15 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             Logger.PushAuthorizationSkippedPush();
             return;
         }
+
         // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
-        else if (context.HandledPush)
+        if (context.HandledPush)
         {
             Logger.PushAuthorizationHandledPush();
             requestUri = context.RequestUri;
         }
         else
         {
-            var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
-            if (string.IsNullOrEmpty(parEndpoint))
-            {
-                new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
-            }
-
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
