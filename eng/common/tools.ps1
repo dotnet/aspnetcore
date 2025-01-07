@@ -320,7 +320,7 @@ function InstallDotNet([string] $dotnetRoot,
   $variations += @($installParameters)
 
   $dotnetBuilds = $installParameters.Clone()
-  $dotnetbuilds.AzureFeed = "https://dotnetbuilds.azureedge.net/public"
+  $dotnetbuilds.AzureFeed = "https://ci.dot.net/public"
   $variations += @($dotnetBuilds)
 
   if ($runtimeSourceFeed) {
