@@ -573,6 +573,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
     private class LocationContainer
     {
+
         public LocationDto Location { get; set; }
     }
 
@@ -598,5 +599,5 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         public int Id { get; set; }
         public required ParentObject Parent { get; set; }
     }
-#nullable restore
 }
+#nullable restore

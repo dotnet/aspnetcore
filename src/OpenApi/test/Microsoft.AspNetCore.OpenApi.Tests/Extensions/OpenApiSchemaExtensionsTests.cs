@@ -219,7 +219,6 @@ public class OpenApiSchemaExtensionsTests
 
         modifiedSchema = originalSchema.Clone();
         modifiedSchema.Reference = new OpenApiReference { Id = "Another Id", Type = ReferenceType.Schema };
-        modifiedSchema.Annotations = new Dictionary<string, object> { ["x-schema-id"] = "another value" };
         Assert.False(OpenApiSchemaComparer.Instance.Equals(originalSchema, modifiedSchema));
         Assert.True(propertyNames.Remove(nameof(OpenApiSchema.Reference)));
 
