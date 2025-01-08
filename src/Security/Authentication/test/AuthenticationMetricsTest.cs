@@ -4,7 +4,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Moq;
@@ -25,7 +24,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -35,9 +34,10 @@ public class AuthenticationMetricsTest
         Assert.Null(meter.Version);
 
         var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
-        Assert.Equal(1, measurement.Value);
+        Assert.True(measurement.Value > 0);
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
         Assert.Equal("success", (string)measurement.Tags["aspnetcore.authentication.result"]);
+        Assert.False(measurement.Tags.ContainsKey("error.type"));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -62,9 +62,10 @@ public class AuthenticationMetricsTest
         Assert.Null(meter.Version);
 
         var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
-        Assert.Equal(1, measurement.Value);
+        Assert.True(measurement.Value > 0);
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
         Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authentication.result"]);
+        Assert.False(measurement.Tags.ContainsKey("error.type"));
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticated_requests");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -89,9 +90,38 @@ public class AuthenticationMetricsTest
         Assert.Null(meter.Version);
 
         var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
-        Assert.Equal(1, measurement.Value);
+        Assert.True(measurement.Value > 0);
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
         Assert.Equal("none", (string)measurement.Tags["aspnetcore.authentication.result"]);
+        Assert.False(measurement.Tags.ContainsKey("error.type"));
+    }
+
+    [Fact]
+    public async Task Authenticate_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.AuthenticateAsync()).Throws(new InvalidOperationException("An error occurred during authentication"));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.AuthenticateAsync(httpContext, scheme: "custom"));
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authenticationRequestsCollector.GetMeasurementSnapshot());
+        Assert.True(measurement.Value > 0);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authentication.result"));
     }
 
     [Fact]
@@ -118,6 +148,33 @@ public class AuthenticationMetricsTest
     }
 
     [Fact]
+    public async Task Challenge_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.ChallengeAsync(It.IsAny<AuthenticationProperties>())).Throws(new InvalidOperationException("An error occurred during challenge"));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var challengesCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.challenges");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ChallengeAsync(httpContext, scheme: "custom", properties: null));
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(challengesCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+    }
+
+    [Fact]
     public async Task Forbid()
     {
         // Arrange
@@ -138,6 +195,33 @@ public class AuthenticationMetricsTest
         var measurement = Assert.Single(forbidsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+    }
+
+    [Fact]
+    public async Task Forbid_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationHandler>();
+        authenticationHandler.Setup(h => h.ForbidAsync(It.IsAny<AuthenticationProperties>())).Throws(new InvalidOperationException("An error occurred during forbid"));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var forbidsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.forbids");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ForbidAsync(httpContext, scheme: "custom", properties: null));
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(forbidsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
     }
 
     [Fact]
@@ -164,6 +248,33 @@ public class AuthenticationMetricsTest
     }
 
     [Fact]
+    public async Task SignIn_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationSignInHandler>();
+        authenticationHandler.Setup(h => h.SignInAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>())).Throws(new InvalidOperationException("An error occurred during sign in"));
+
+        var meterFactory = new TestMeterFactory();
+        var httpContext = new DefaultHttpContext();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var signInsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_ins");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignInAsync(httpContext, scheme: "custom", new ClaimsPrincipal(), properties: null));
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(signInsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+    }
+
+    [Fact]
     public async Task SignOut()
     {
         // Arrange
@@ -186,7 +297,34 @@ public class AuthenticationMetricsTest
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
     }
 
-    private static AuthenticationService CreateAuthenticationService(IAuthenticationHandler authenticationHandler, TestMeterFactory meterFactory)
+    [Fact]
+    public async Task SignOut_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var authenticationHandler = new Mock<IAuthenticationSignOutHandler>();
+        authenticationHandler.Setup(h => h.SignOutAsync(It.IsAny<AuthenticationProperties>())).Throws(new InvalidOperationException("An error occurred during sign out"));
+
+        var httpContext = new DefaultHttpContext();
+        var meterFactory = new TestMeterFactory();
+        var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var signOutsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_outs");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignOutAsync(httpContext, scheme: "custom", properties: null));
+
+        // Assert
+        Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(signOutsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+    }
+
+    private static AuthenticationServiceImpl CreateAuthenticationService(IAuthenticationHandler authenticationHandler, TestMeterFactory meterFactory)
     {
         var authenticationHandlerProvider = new Mock<IAuthenticationHandlerProvider>();
         authenticationHandlerProvider.Setup(p => p.GetHandlerAsync(It.IsAny<HttpContext>(), "custom")).Returns(Task.FromResult(authenticationHandler));
@@ -200,16 +338,13 @@ public class AuthenticationMetricsTest
             RequireAuthenticatedSignIn = false,
         });
 
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(new AuthenticationMetrics(meterFactory));
-        var services = serviceCollection.BuildServiceProvider();
-
-        var authenticationService = new AuthenticationService(
+        var metrics = new AuthenticationMetrics(meterFactory);
+        var authenticationService = new AuthenticationServiceImpl(
             Mock.Of<IAuthenticationSchemeProvider>(),
             authenticationHandlerProvider.Object,
             claimsTransform.Object,
             options,
-            services);
+            metrics);
 
         return authenticationService;
     }

@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication;
 
@@ -11,7 +13,7 @@ internal sealed class AuthenticationMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Authentication";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _authenticatedRequestCount;
+    private readonly Histogram<double> _authenticatedRequestDuration;
     private readonly Counter<long> _challengeCount;
     private readonly Counter<long> _forbidCount;
     private readonly Counter<long> _signInCount;
@@ -21,10 +23,11 @@ internal sealed class AuthenticationMetrics : IDisposable
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authenticatedRequestCount = _meter.CreateCounter<long>(
-            "aspnetcore.authentication.authenticated_requests",
+        _authenticatedRequestDuration = _meter.CreateHistogram<double>(
+            "aspnetcore.authentication.request.duration",
             unit: "{request}",
-            description: "The total number of authenticated requests");
+            description: "The total number of requests for which authentication was attempted",
+            advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _challengeCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.challenges",
@@ -47,55 +50,200 @@ internal sealed class AuthenticationMetrics : IDisposable
             description: "The total number of times a scheme is signed out");
     }
 
-    public void AuthenticatedRequest(string scheme, AuthenticateResult result)
+    public void AuthenticatedRequestSucceeded(string? scheme, AuthenticateResult result, long startTimestamp, long currentTimestamp)
     {
-        if (_authenticatedRequestCount.Enabled)
+        if (_authenticatedRequestDuration.Enabled)
         {
-            var resultTagValue = result switch
-            {
-                { Succeeded: true } => "success",
-                { Failure: not null } => "failure",
-                { None: true } => "none",
-                _ => throw new UnreachableException($"Could not determine the result state of the {nameof(AuthenticateResult)}"),
-            };
-
-            _authenticatedRequestCount.Add(1, [
-                new("aspnetcore.authentication.scheme", scheme),
-                new("aspnetcore.authentication.result", resultTagValue),
-            ]);
+            AuthenticatedRequestSucceededCore(scheme, result, startTimestamp, currentTimestamp);
         }
     }
 
-    public void Challenge(string scheme)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AuthenticatedRequestSucceededCore(string? scheme, AuthenticateResult result, long startTimestamp, long currentTimestamp)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+
+        var resultTagValue = result switch
+        {
+            { None: true } => "none",
+            { Succeeded: true } => "success",
+            { Failure: not null } => "failure",
+            _ => "_OTHER", // _OTHER is commonly used fallback for an extra or unexpected value. Shouldn't reach here.
+        };
+        tags.Add("aspnetcore.authentication.result", resultTagValue);
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+        _authenticatedRequestDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void AuthenticatedRequestFailed(string? scheme, Exception exception, long startTimestamp, long currentTimestamp)
+    {
+        if (_authenticatedRequestDuration.Enabled)
+        {
+            AuthenticatedRequestFailedCore(scheme, exception, startTimestamp, currentTimestamp);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AuthenticatedRequestFailedCore(string? scheme, Exception exception, long startTimestamp, long currentTimestamp)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        AddErrorTag(ref tags, exception);
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+        _authenticatedRequestDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void ChallengeSucceeded(string? scheme)
     {
         if (_challengeCount.Enabled)
         {
-            _challengeCount.Add(1, [new("aspnetcore.authentication.scheme", scheme)]);
+            ChallengeSucceededCore(scheme);
         }
     }
 
-    public void Forbid(string scheme)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ChallengeSucceededCore(string? scheme)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+
+        _challengeCount.Add(1, tags);
+    }
+
+    public void ChallengeFailed(string? scheme, Exception exception)
+    {
+        if (_challengeCount.Enabled)
+        {
+            ChallengeFailedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ChallengeFailedCore(string? scheme, Exception exception)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        AddErrorTag(ref tags, exception);
+
+        _challengeCount.Add(1, tags);
+    }
+
+    public void ForbidSucceeded(string? scheme)
     {
         if (_forbidCount.Enabled)
         {
-            _forbidCount.Add(1, [new("aspnetcore.authentication.scheme", scheme)]);
+            ForbidSucceededCore(scheme);
         }
     }
 
-    public void SignIn(string scheme)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ForbidSucceededCore(string? scheme)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        _forbidCount.Add(1, tags);
+    }
+
+    public void ForbidFailed(string? scheme, Exception exception)
+    {
+        if (_forbidCount.Enabled)
+        {
+            ForbidFailedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ForbidFailedCore(string? scheme, Exception exception)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        AddErrorTag(ref tags, exception);
+
+        _forbidCount.Add(1, tags);
+    }
+
+    public void SignInSucceeded(string? scheme)
     {
         if (_signInCount.Enabled)
         {
-            _signInCount.Add(1, [new("aspnetcore.authentication.scheme", scheme)]);
+            SignInSucceededCore(scheme);
         }
     }
 
-    public void SignOut(string scheme)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignInSucceededCore(string? scheme)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        _signInCount.Add(1, tags);
+    }
+
+    public void SignInFailed(string? scheme, Exception exception)
+    {
+        if (_signInCount.Enabled)
+        {
+            SignInFailedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignInFailedCore(string? scheme, Exception exception)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        AddErrorTag(ref tags, exception);
+
+        _signInCount.Add(1, tags);
+    }
+
+    public void SignOutSucceeded(string? scheme)
     {
         if (_signOutCount.Enabled)
         {
-            _signOutCount.Add(1, [new("aspnetcore.authentication.scheme", scheme)]);
+            SignOutSucceededCore(scheme);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignOutSucceededCore(string? scheme)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        _signOutCount.Add(1, tags);
+    }
+
+    public void SignOutFailed(string? scheme, Exception exception)
+    {
+        if (_signOutCount.Enabled)
+        {
+            SignOutFailedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignOutFailedCore(string? scheme, Exception exception)
+    {
+        var tags = new TagList();
+        TryAddSchemeTag(ref tags, scheme);
+        AddErrorTag(ref tags, exception);
+
+        _signOutCount.Add(1, tags);
+    }
+
+    private static void TryAddSchemeTag(ref TagList tags, string? scheme)
+    {
+        if (scheme is not null)
+        {
+            tags.Add("aspnetcore.authentication.scheme", scheme);
+        }
+    }
+
+    private static void AddErrorTag(ref TagList tags, Exception exception)
+    {
+        tags.Add("error.type", exception.GetType().FullName);
     }
 
     public void Dispose()
