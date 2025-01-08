@@ -9,11 +9,14 @@
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
     <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
     <Reference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
+
+    <PackageReference Include="System.Text.Json" Version="$(AnalyzersSystemTextJsonVersion)" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.CodeFixes" />

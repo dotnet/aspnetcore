@@ -200,6 +200,7 @@
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
     <!-- Manually updated version from 6.0.0 to address CVE-2021-43877 -->
     <RepoTasksSystemSecurityCryptographyXmlVersion>6.0.1</RepoTasksSystemSecurityCryptographyXmlVersion>
+    <AnalyzersSystemTextJsonVersion>8.0.5</AnalyzersSystemTextJsonVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
