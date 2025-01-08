@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
