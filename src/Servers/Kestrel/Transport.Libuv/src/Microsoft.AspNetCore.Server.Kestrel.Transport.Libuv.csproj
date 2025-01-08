@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Libuv" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
