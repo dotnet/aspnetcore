@@ -89,10 +89,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var transportInputTcs = new TaskCompletionSource<object>();
             var transportOutputTcs = new TaskCompletionSource<object>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
             connection.Transport.Input.OnWriterCompleted((_, __) => transportInputTcs.TrySetResult(null), null);
             connection.Transport.Output.OnReaderCompleted((_, __) => transportOutputTcs.TrySetResult(null), null);
             connection.Application.Input.OnWriterCompleted((_, __) => applicationInputTcs.TrySetResult(null), null);
             connection.Application.Output.OnReaderCompleted((_, __) => applicationOutputTcs.TrySetResult(null), null);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             try
             {
@@ -294,11 +296,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             connection.Application.Output.OnReaderCompleted((error, state) =>
             {
                 tcs.TrySetResult(null);
             },
             null);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             appLifetime.StopApplication();
 

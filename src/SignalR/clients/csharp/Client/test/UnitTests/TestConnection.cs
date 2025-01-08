@@ -53,11 +53,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application = pair.Application;
             Transport = pair.Transport;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Application.Input.OnWriterCompleted((ex, _) =>
             {
                 Application.Output.Complete();
             }, 
             null);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public Task DisposeAsync() => DisposeCoreAsync();
