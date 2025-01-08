@@ -21,17 +21,6 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_WebListener(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
@@ -45,24 +34,6 @@ namespace ServerComparison.FunctionalTests
         {
             return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
         }
-
-        [Theory]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_Kestrel(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
-        [ConditionalTheory(Skip = "Nginx tests are broken in PR checks: https://github.com/aspnet/AspNetCore-Internal/issues/1525")]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_Nginx(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
 
         private async Task HelloWorld(ServerType serverType,
             RuntimeFlavor runtimeFlavor,
