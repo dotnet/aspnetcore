@@ -5,10 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.Internal;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.Tests.Internal;
 
-public class Int7BitEncodingUtils
+public class Int7BitEncodingUtilsTests
 {
     [Theory]
     [InlineData(0, 1)]

@@ -7,7 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.DataProtection.Internal;
+namespace Microsoft.AspNetCore.Shared;
+
 internal static class Int7BitEncodingUtils
 {
     public static int Measure7BitEncodedUIntLength(this int value)
@@ -18,12 +19,12 @@ internal static class Int7BitEncodingUtils
 #if NET10_0_OR_GREATER
         return ((31 - System.Numerics.BitOperations.LeadingZeroCount(value | 1)) / 7) + 1;
 #else
-            int count = 1;
-            while ((value >>= 7) != 0)
-            {
-                count++;
-            }
-            return count;
+        int count = 1;
+        while ((value >>= 7) != 0)
+        {
+            count++;
+        }
+        return count;
 #endif
     }
 
