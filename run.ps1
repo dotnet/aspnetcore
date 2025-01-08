@@ -72,7 +72,7 @@ Example config file:
 {
   "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
   "channel": "master",
-  "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
+  "toolsSource": "https://dotnetbuilds.blob.core.windows.net/buildtools"
 }
 ```
 #>
@@ -222,7 +222,7 @@ if (!$DotNetHome) {
 
 if (!$LockFile) { $LockFile = Join-Path $Path 'korebuild-lock.txt' }
 if (!$Channel) { $Channel = 'master' }
-if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
+if (!$ToolsSource) { $ToolsSource = 'https://dotnetbuilds.blob.core.windows.net/buildtools' }
 
 [string[]] $ProdConArgs = @()
 

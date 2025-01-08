@@ -24,7 +24,7 @@ param(
     [string]$GitAuthorName = $null,
     [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @(),
-    [string]$ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools',
+    [string]$ToolsSource = 'https://dotnetbuilds.blob.core.windows.net/buildtools',
     [switch]$NoCommit,
     [switch]$Force
 )

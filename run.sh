@@ -280,7 +280,7 @@ prodcon_args[${#prodcon_args[*]}]="-p:DotNetAssetRootAccessTokenSuffix=${PB_ACCE
 
 [ -z "$lockfile_path" ] && lockfile_path="$repo_path/korebuild-lock.txt"
 [ -z "$channel" ] && channel='master'
-[ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
+[ -z "$tools_source" ] && tools_source='https://dotnetbuilds.blob.core.windows.net/buildtools'
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
