@@ -3,9 +3,9 @@
   <PropertyGroup>
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine317>
-    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
-    <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
-    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
+    <HelixQueueDebian12>(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64</HelixQueueDebian12>
+    <HelixQueueFedora40>(Fedora.40.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40-helix</HelixQueueFedora40>
+    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8</HelixQueueArmDebian12>
 
     <!-- Do not attempt to override global property. -->
@@ -43,8 +43,8 @@
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine317)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueDebian12)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueFedora40)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
 
