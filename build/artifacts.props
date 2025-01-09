@@ -16,11 +16,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-ef" Category="ship" />
-    <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
-    <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
-    <PackageArtifact Include="dotnet-watch" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
@@ -57,7 +53,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" AllMetapackage="true" AppMetapackage="true" Category="ship" />
