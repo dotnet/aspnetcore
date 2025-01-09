@@ -14,7 +14,9 @@ namespace SimpleApp
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+#pragma warning disable CS0619 // Type or member is obsolete
             loggerFactory.AddConsole();
+#pragma warning restore CS0619 // Type or member is obsolete
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
