@@ -1067,7 +1067,7 @@ public class DotNetDispatcherTest
         [JSInvokable("StaticGenericMethod")] public static string StaticGenericMethod<TValue>(TValue input) => input.ToString();
         [JSInvokable("InstanceGenericMethod")] public string GenericMethod<TValue>(TValue input) => input.ToString();
     }
-
+   
     public class TestJSRuntime : JSInProcessRuntime
     {
         private TaskCompletionSource _nextInvocationTcs = new TaskCompletionSource();
