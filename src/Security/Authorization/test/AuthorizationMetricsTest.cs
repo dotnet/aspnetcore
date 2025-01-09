@@ -19,7 +19,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("Permission", "CanViewPage")]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.authorized_requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
 
         // Act
         await authorizationService.AuthorizeAsync(user, "Basic");
@@ -43,7 +43,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([])); // Will fail due to missing required claim
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.authorized_requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
 
         // Act
         await authorizationService.AuthorizeAsync(user, "Basic");
@@ -59,6 +59,31 @@ public class AuthorizationMetricsTest
     }
 
     [Fact]
+    public async Task Authorize_WithPolicyName_PolicyNotFound()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var authorizationService = BuildAuthorizationService(meterFactory);
+        var meter = meterFactory.Meters.Single();
+        var user = new ClaimsPrincipal(new ClaimsIdentity([])); // Will fail due to missing required claim
+
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => authorizationService.AuthorizeAsync(user, "UnknownPolicy"));
+
+        // Assert
+        Assert.Equal(AuthorizationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("UnknownPolicy", (string)measurement.Tags["aspnetcore.authorization.policy"]);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
+    }
+
+    [Fact]
     public async Task Authorize_WithoutPolicyName_Success()
     {
         // Arrange
@@ -70,7 +95,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.authorized_requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
 
         // Act
         await authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
@@ -81,8 +106,8 @@ public class AuthorizationMetricsTest
 
         var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
-        Assert.Null(measurement.Tags["aspnetcore.authorization.policy"]);
         Assert.Equal("success", (string)measurement.Tags["aspnetcore.authorization.result"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
     }
 
     [Fact]
@@ -94,7 +119,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.authorized_requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
 
         // Act
         await authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
@@ -105,8 +130,37 @@ public class AuthorizationMetricsTest
 
         var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
-        Assert.Null(measurement.Tags["aspnetcore.authorization.policy"]);
         Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authorization.result"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
+    }
+
+    [Fact]
+    public async Task Authorize_WithoutPolicyName_ExceptionThrownInHandler()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var authorizationService = BuildAuthorizationService(meterFactory, services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new AlwaysThrowHandler());
+        });
+        var meter = meterFactory.Meters.Single();
+        var user = new ClaimsPrincipal(new ClaimsIdentity([]));
+
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement()));
+
+        // Assert
+        Assert.Equal("An error occurred in the authorization handler", ex.Message);
+        Assert.Equal(AuthorizationMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
     }
 
     private static IAuthorizationService BuildAuthorizationService(TestMeterFactory meterFactory, Action<IServiceCollection> setupServices = null)
@@ -131,6 +185,14 @@ public class AuthorizationMetricsTest
             }
 
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class AlwaysThrowHandler : AuthorizationHandler<TestRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TestRequirement requirement)
+        {
+            throw new InvalidOperationException("An error occurred in the authorization handler");
         }
     }
 

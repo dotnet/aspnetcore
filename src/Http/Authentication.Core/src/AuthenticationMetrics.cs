@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication;
 
-internal sealed class AuthenticationMetrics : IDisposable
+internal sealed class AuthenticationMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.Authentication";
 
@@ -244,10 +244,5 @@ internal sealed class AuthenticationMetrics : IDisposable
     private static void AddErrorTag(ref TagList tags, Exception exception)
     {
         tags.Add("error.type", exception.GetType().FullName);
-    }
-
-    public void Dispose()
-    {
-        _meter.Dispose();
     }
 }

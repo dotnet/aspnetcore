@@ -111,9 +111,10 @@ public class AuthenticationMetricsTest
         using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.AuthenticateAsync(httpContext, scheme: "custom"));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.AuthenticateAsync(httpContext, scheme: "custom"));
 
         // Assert
+        Assert.Equal("An error occurred during authentication", ex.Message);
         Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
@@ -162,9 +163,10 @@ public class AuthenticationMetricsTest
         using var challengesCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.challenges");
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ChallengeAsync(httpContext, scheme: "custom", properties: null));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ChallengeAsync(httpContext, scheme: "custom", properties: null));
 
         // Assert
+        Assert.Equal("An error occurred during challenge", ex.Message);
         Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
@@ -212,9 +214,10 @@ public class AuthenticationMetricsTest
         using var forbidsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.forbids");
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ForbidAsync(httpContext, scheme: "custom", properties: null));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.ForbidAsync(httpContext, scheme: "custom", properties: null));
 
         // Assert
+        Assert.Equal("An error occurred during forbid", ex.Message);
         Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
@@ -262,9 +265,10 @@ public class AuthenticationMetricsTest
         using var signInsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_ins");
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignInAsync(httpContext, scheme: "custom", new ClaimsPrincipal(), properties: null));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignInAsync(httpContext, scheme: "custom", new ClaimsPrincipal(), properties: null));
 
         // Assert
+        Assert.Equal("An error occurred during sign in", ex.Message);
         Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
@@ -312,9 +316,10 @@ public class AuthenticationMetricsTest
         using var signOutsCollector = new MetricCollector<long>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.sign_outs");
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignOutAsync(httpContext, scheme: "custom", properties: null));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.SignOutAsync(httpContext, scheme: "custom", properties: null));
 
         // Assert
+        Assert.Equal("An error occurred during sign out", ex.Message);
         Assert.Equal(AuthenticationMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
