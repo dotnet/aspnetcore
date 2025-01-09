@@ -14,7 +14,12 @@ namespace FunctionalTests
             var host = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
-                    factory.AddConsole(options => options.IncludeScopes = true);
+                    factory.AddSimpleConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "[HH:mm:ss] ";
+                        options.UseUtcTimestamp = true;
+                    });
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                     factory.AddDebug();
                 })

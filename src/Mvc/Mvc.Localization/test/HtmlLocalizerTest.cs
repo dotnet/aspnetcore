@@ -207,12 +207,12 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void HtmlLocalizer_WithCulture_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var stringLocalizer = new TestStringLocalizer();
+            var stringLocalizer = new TestStringLocalizer(new CultureInfo("fr"));
 
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-            var actualLocalizedHtmlString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+            var actualLocalizedHtmlString = htmlLocalizer["John"];
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedHtmlString.Value);
