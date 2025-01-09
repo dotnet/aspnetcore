@@ -11,7 +11,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
-    <TaskDirNet46>$(MSBuildProjectDirectory)\bin\Release\net46\tasks\net46\</TaskDirNet46>
+    <TaskDirNet46>$(MSBuildProjectDirectory)\bin\Release\netstandard2.0\tasks\net46\</TaskDirNet46>
     <TaskDirNetStandard>$(MSBuildProjectDirectory)\bin\Release\netstandard2.0\tasks\netstandard2.0\</TaskDirNetStandard>
   </PropertyGroup>
 
