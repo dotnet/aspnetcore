@@ -26,28 +26,28 @@ internal sealed class AuthenticationMetrics
         _authenticatedRequestDuration = _meter.CreateHistogram<double>(
             "aspnetcore.authentication.request.duration",
             unit: "{request}",
-            description: "The total number of requests for which authentication was attempted",
+            description: "The total number of requests for which authentication was attempted.",
             advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _challengeCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.challenges",
             unit: "{request}",
-            description: "The total number of times a scheme is challenged");
+            description: "The total number of times a scheme is challenged.");
 
         _forbidCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.forbids",
             unit: "{request}",
-            description: "The total number of times an authenticated user attempts to access a resource they are not permitted to access");
+            description: "The total number of times an authenticated user attempts to access a resource they are not permitted to access.");
 
         _signInCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_ins",
             unit: "{request}",
-            description: "The total number of times a principal is signed in");
+            description: "The total number of times a principal is signed in.");
 
         _signOutCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_outs",
             unit: "{request}",
-            description: "The total number of times a scheme is signed out");
+            description: "The total number of times a scheme is signed out.");
     }
 
     public void AuthenticatedRequestSucceeded(string? scheme, AuthenticateResult result, long startTimestamp, long currentTimestamp)

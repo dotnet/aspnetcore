@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,22 +27,22 @@ internal sealed class AuthorizationMetrics
         _authorizedRequestCount = _meter.CreateCounter<long>(
             "aspnetcore.authorization.requests",
             unit: "{request}",
-            description: "The total number of requests for which authorization was attempted");
+            description: "The total number of requests for which authorization was attempted.");
     }
 
-    public void AuthorizedRequestSucceeded(string? policyName, AuthorizationResult result)
+    public void AuthorizedRequestSucceeded(ClaimsPrincipal user, string? policyName, AuthorizationResult result)
     {
         if (_authorizedRequestCount.Enabled)
         {
-            AuthorizedRequestSucceededCore(policyName, result);
+            AuthorizedRequestSucceededCore(user, policyName, result);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AuthorizedRequestSucceededCore(string? policyName, AuthorizationResult result)
+    private void AuthorizedRequestSucceededCore(ClaimsPrincipal user, string? policyName, AuthorizationResult result)
     {
         var tags = new TagList();
-        TryAddPolicyTag(ref tags, policyName);
+        AddAuthorizationTags(ref tags, user, policyName);
 
         var resultTagValue = result.Succeeded ? "success" : "failure";
         tags.Add("aspnetcore.authorization.result", resultTagValue);
@@ -49,27 +50,29 @@ internal sealed class AuthorizationMetrics
         _authorizedRequestCount.Add(1, tags);
     }
 
-    public void AuthorizedRequestFailed(string? policyName, Exception exception)
+    public void AuthorizedRequestFailed(ClaimsPrincipal user, string? policyName, Exception exception)
     {
         if (_authorizedRequestCount.Enabled)
         {
-            AuthorizedRequestFailedCore(policyName, exception);
+            AuthorizedRequestFailedCore(user, policyName, exception);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AuthorizedRequestFailedCore(string? policyName, Exception exception)
+    private void AuthorizedRequestFailedCore(ClaimsPrincipal user, string? policyName, Exception exception)
     {
         var tags = new TagList();
-        TryAddPolicyTag(ref tags, policyName);
+        AddAuthorizationTags(ref tags, user, policyName);
 
         tags.Add("error.type", exception.GetType().FullName);
 
         _authorizedRequestCount.Add(1, tags);
     }
 
-    private static void TryAddPolicyTag(ref TagList tags, string? policyName)
+    private static void AddAuthorizationTags(ref TagList tags, ClaimsPrincipal user, string? policyName)
     {
+        tags.Add("user.is_authenticated", user.Identity?.IsAuthenticated ?? false);
+
         if (policyName is not null)
         {
             tags.Add("aspnetcore.authorization.policy", policyName);
