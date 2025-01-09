@@ -477,4 +477,127 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal(ReferenceType.Link, responseSchema.Reference.Type);
         });
     }
+
+    [Fact]
+    public async Task SupportsNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (LocationContainer item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("LocationContainer", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested LocationDto
+            var locationContainerSchema = requestSchema.GetEffective(document);
+            Assert.Equal("LocationDto", locationContainerSchema.Properties["location"].Reference.Id);
+
+            // Assert that $ref is used for nested AddressDto
+            var locationSchema = locationContainerSchema.Properties["location"].GetEffective(document);
+            Assert.Equal("AddressDto", locationSchema.Properties["address"].Reference.Id);
+
+            // Assert that $ref is used for related LocationDto
+            var addressSchema = locationSchema.Properties["address"].GetEffective(document);
+            Assert.Equal("LocationDto", addressSchema.Properties["relatedLocation"].Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsListNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (ParentObject item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ParentObject", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested Children
+            var parentSchema = requestSchema.GetEffective(document);
+            Assert.Equal("ChildObject", parentSchema.Properties["children"].Items.Reference.Id);
+
+            // Assert that $ref is used for nested Parent
+            var childSchema = parentSchema.Properties["children"].Items.GetEffective(document);
+            Assert.Equal("ParentObject", childSchema.Properties["parent"].Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsMultiplePropertiesWithSameType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Root item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Root", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested Item1
+            var rootSchema = requestSchema.GetEffective(document);
+            Assert.Equal("Item", rootSchema.Properties["item1"].Reference.Id);
+
+            // Assert that $ref is used for nested Item2
+            Assert.Equal("Item", rootSchema.Properties["item2"].Reference.Id);
+        });
+    }
+
+    private class Root
+    {
+        public Item Item1 { get; set; } = null!;
+        public Item Item2 { get; set; } = null!;
+    }
+
+    private class Item
+    {
+        public string[] Name { get; set; } = null!;
+        public int value { get; set; }
+    }
+
+    private class LocationContainer
+    {
+
+        public LocationDto Location { get; set; }
+    }
+
+    private class LocationDto
+    {
+        public AddressDto Address { get; set; }
+    }
+
+    private class AddressDto
+    {
+        public LocationDto RelatedLocation { get; set; }
+    }
+
+#nullable enable
+    private class ParentObject
+    {
+        public int Id { get; set; }
+        public List<ChildObject> Children { get; set; } = [];
+    }
+
+    private class ChildObject
+    {
+        public int Id { get; set; }
+        public required ParentObject Parent { get; set; }
+    }
 }
+#nullable restore
