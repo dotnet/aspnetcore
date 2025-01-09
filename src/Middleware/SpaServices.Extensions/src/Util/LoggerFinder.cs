@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.AspNetCore.SpaServices.Util
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.SpaServices.Util
             var loggerFactory = appBuilder.ApplicationServices.GetService<ILoggerFactory>();
             var logger = loggerFactory != null
                 ? loggerFactory.CreateLogger(logCategoryName)
-                : new ConsoleLogger(logCategoryName, null, false);
+                : NullLogger.Instance;
             return logger;
         }
     }

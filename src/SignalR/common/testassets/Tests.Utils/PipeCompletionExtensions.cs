@@ -10,6 +10,7 @@ namespace System.IO.Pipelines
         public static Task WaitForWriterToComplete(this PipeReader reader)
         {
             var tcs = new TaskCompletionSource<object>();
+#pragma warning disable CS0618 // Type or member is obsolete
             reader.OnWriterCompleted((ex, state) =>
             {
                 if (ex != null)
@@ -21,12 +22,14 @@ namespace System.IO.Pipelines
                     ((TaskCompletionSource<object>)state).TrySetResult(null);
                 }
             }, tcs);
+#pragma warning restore CS0618 // Type or member is obsolete
             return tcs.Task;
         }
 
         public static Task WaitForReaderToComplete(this PipeWriter writer)
         {
             var tcs = new TaskCompletionSource<object>();
+#pragma warning disable CS0618 // Type or member is obsolete
             writer.OnReaderCompleted((ex, state) =>
             {
                 if (ex != null)
@@ -38,6 +41,7 @@ namespace System.IO.Pipelines
                     ((TaskCompletionSource<object>)state).TrySetResult(null);
                 }
             }, tcs);
+#pragma warning restore CS0618 // Type or member is obsolete
             return tcs.Task;
         }
     }

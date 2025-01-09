@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Logging;
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Debug.Assert(!string.IsNullOrEmpty(viewEnginePath));
             Debug.Assert(viewEnginePath.StartsWith("/", StringComparison.Ordinal));
 
-            var builder = new InplaceStringBuilder(1 + areaName.Length + viewEnginePath.Length);
+            var builder = new StringBuilder(1 + areaName.Length + viewEnginePath.Length);
             builder.Append('/');
             builder.Append(areaName);
             builder.Append(viewEnginePath);

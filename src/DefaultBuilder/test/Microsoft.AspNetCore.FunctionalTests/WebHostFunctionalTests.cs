@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Tests
             using (StartLog(out var loggerFactory, applicationName))
             {
                 var logger = loggerFactory.CreateLogger(nameof(WebHost.Start));
-                var deploymentParameters = new DeploymentParameters(Path.Combine(_testSitesPath, applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64);
+                var deploymentParameters = new DeploymentParameters(Path.Combine(_testSitesPath, applicationName), ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64);
 
                 if (setTestEnvVars)
                 {

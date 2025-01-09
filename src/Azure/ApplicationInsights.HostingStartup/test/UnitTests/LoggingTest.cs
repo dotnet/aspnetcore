@@ -89,7 +89,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             {
                 var logger = loggerFactory.CreateLogger(nameof(JavaScriptSnippetTest));
                 var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel,
-                    RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                    RuntimeFlavor.Clr, RuntimeArchitecture.x64)
                 {
                     ApplicationBaseUriHint = "http://localhost:0",
                     PublishApplicationBeforeDeployment = true,

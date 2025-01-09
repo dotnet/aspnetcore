@@ -80,7 +80,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // There's no way to to register multiple service types per definition. See https://github.com/aspnet/DependencyInjection/issues/360
             _applicationServiceCollection.AddSingleton(sp =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 return sp.GetRequiredService<IApplicationLifetime>() as Extensions.Hosting.IApplicationLifetime;
+#pragma warning restore CS0618 // Type or member is obsolete
             });
             _applicationServiceCollection.AddSingleton<HostedServiceExecutor>();
         }

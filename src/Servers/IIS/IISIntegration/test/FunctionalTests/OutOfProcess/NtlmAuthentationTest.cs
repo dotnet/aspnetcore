@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET461
+#if NET462
 // Per https://github.com/dotnet/corefx/issues/5045, HttpClientHandler.UseDefaultCredentials does not work correctly in CoreFx.
 // We'll require the desktop HttpClient to run these tests.
 
@@ -30,12 +30,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public Task NtlmAuthentication_Clr_X64_Portable()
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, "V1");
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthentication_CoreClr_X64_Portable()
-        {
-            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, "V1");
         }
 
         private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)

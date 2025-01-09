@@ -291,7 +291,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
                     // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
+#pragma warning disable CS0618 // Type or member is obsolete
                     testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
+#pragma warning restore CS0618 // Type or member is obsolete
                     connection.Closed += (e) =>
                     {
                         connectionClosed.TrySetResult(null);

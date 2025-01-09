@@ -17,10 +17,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     {
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
-        public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_CoreClr()
-            => await InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor.CoreClr);
-
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]

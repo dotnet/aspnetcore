@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
     public class Pbkdf2Tests
     {
 
-#if NET461
+#if NET462
 #elif NETCOREAPP2_1
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF. We only use 5 iterations so

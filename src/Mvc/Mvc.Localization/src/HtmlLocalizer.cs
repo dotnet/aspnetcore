@@ -84,16 +84,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
             _localizer.GetAllStrings(includeParentCultures);
 
-        /// <inheritdoc />
-        public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            return new HtmlLocalizer(_localizer.WithCulture(culture));
-        }
 
         /// <summary>
         /// Creates a new <see cref="LocalizedHtmlString"/> for a <see cref="LocalizedString"/>.

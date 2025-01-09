@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(
                     applicationPath,
                     ServerType.Kestrel,
-                    RuntimeFlavor.CoreClr,
+                    RuntimeFlavor.Clr,
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",

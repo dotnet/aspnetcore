@@ -13,6 +13,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging.Console;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.NodeServices
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             NodeInstanceOutputLogger = loggerFactory != null
                 ? loggerFactory.CreateLogger(LogCategoryName)
-                : new ConsoleLogger(LogCategoryName, null, false);
+                : NullLogger.Instance;
 
             // By default, we use this package's built-in out-of-process-via-HTTP hosting/transport
             this.UseHttpHosting();

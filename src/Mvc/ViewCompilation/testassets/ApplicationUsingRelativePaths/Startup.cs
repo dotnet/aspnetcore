@@ -12,9 +12,9 @@ namespace ApplicationUsingRelativePaths
             services.AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, ILoggingBuilder builder)
         {
-            loggerFactory.AddConsole();
+            builder.AddConsole();
             app.UseMvcWithDefaultRoute();
         }
     }
