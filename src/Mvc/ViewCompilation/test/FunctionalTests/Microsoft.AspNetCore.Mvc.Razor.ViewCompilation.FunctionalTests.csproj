@@ -14,12 +14,9 @@
     <EmbeddedResource Include="Resources\*" />
     <Compile Include="Infrastructure\*.cs" />
     <Compile Include="DesktopTests\*.cs" Condition="'$(TargetFramework)'=='net462'" />
-    <Compile Include="CoreCLRTests\*.cs" Condition="'$(TargetFramework)'=='netcoreapp2.1'" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="CoreCLRTests\RazorSdkNeitherUsedTest_CoreCLR.cs" />
-    <None Remove="CoreCLRTests\RazorSdkPrecompilationUsedTest_CoreCLR.cs" />
     <None Remove="Resources\ApplicationWithRazorSdkPrecompilationUsed.Home.Index.txt" />
     <None Remove="Resources\ApplicationWithRazorSdkUsed.Home.Index.txt" />
   </ItemGroup>

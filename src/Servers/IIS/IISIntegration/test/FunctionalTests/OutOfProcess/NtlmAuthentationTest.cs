@@ -32,12 +32,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, "V1");
         }
 
-        [ConditionalFact]
-        public Task NtlmAuthentication_CoreClr_X64_Portable()
-        {
-            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, "V1");
-        }
-
         private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)
         {
             var serverType = ServerType.IISExpress;

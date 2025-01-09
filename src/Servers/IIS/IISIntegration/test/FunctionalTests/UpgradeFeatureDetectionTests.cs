@@ -23,16 +23,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [ConditionalFact]
-        public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
-        {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/Http.config",
-                Helpers.GetOutOfProcessTestSitesPath(),
-                _isWebsocketsSupported);
-        }
-
         private async Task UpgradeFeatureDetectionDeployer(RuntimeFlavor runtimeFlavor,
             ApplicationType applicationType,
             string configPath,

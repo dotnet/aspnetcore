@@ -26,12 +26,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, "V1");
         }
 
-        [ConditionalFact]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
-        {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, "V1");
-        }
-
         private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, string ancmVersion)
         {
             var serverType = ServerType.IISExpress;

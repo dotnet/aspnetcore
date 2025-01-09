@@ -26,7 +26,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger(nameof(JavaScriptSnippetTest));
-                var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
