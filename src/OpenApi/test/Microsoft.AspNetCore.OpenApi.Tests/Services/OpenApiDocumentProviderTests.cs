@@ -70,6 +70,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         await documentProvider.GenerateAsync(documentName, stringWriter, OpenApiSpecVersion.OpenApi3_0);
 
         // Assert
+        var document = stringWriter.ToString();
 
         // If the Document Service is retrieved with a non-existent (case-sensitive) key, it would throw:
         // https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.serviceproviderkeyedserviceextensions.getrequiredkeyedservice?view=net-9.0-pp
@@ -79,6 +80,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         // Therefore, if the test doesn't throw, we know it has passed correctly.
         // We still do a small check to validate the document, just in case. But the main test is that it doesn't throw.
         ValidateOpenApiDocument(stringWriter, _ => { });
+        Assert.StartsWith("{\n  \"openapi\": \"3.0.1\"", document);
     }
 
     [Fact]

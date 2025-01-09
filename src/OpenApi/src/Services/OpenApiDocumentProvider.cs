@@ -25,11 +25,7 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// <param name="writer">A text writer associated with the document to write to.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer)
     {
-        // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
-        // The options are registered with a key equal to the document name, but in lowercase.
-        // The options monitor's Get() method is case-sensitive, which doesn't work well for OpenAPI document names here,
-        // as the document name is also used as the route to retrieve the document, so we need to ensure this is lowercased to achieve consistency with ASP.NET Core routing.
-        // See OpenApiServiceCollectionExtensions.cs for more info.
+        // See OpenApiServiceCollectionExtensions.cs to learn why we lowercase the document name
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
