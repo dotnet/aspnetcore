@@ -14,9 +14,9 @@ namespace ApplicationWithConfigureStartup
             ConfigureMvc(builder);
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, ILoggingBuilder builder)
         {
-            loggerFactory.AddConsole();
+            builder.AddConsole();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
