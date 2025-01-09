@@ -14,6 +14,12 @@ plugins {
     id 'maven-publish'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 allprojects {
     apply plugin: "java-library"
     apply plugin: "com.diffplug.spotless"

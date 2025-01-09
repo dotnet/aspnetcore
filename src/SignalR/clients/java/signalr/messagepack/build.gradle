@@ -7,6 +7,9 @@ group 'com.microsoft.signalr.messagepack'
 
 java
 {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
     withJavadocJar()
     withSourcesJar()
 }
