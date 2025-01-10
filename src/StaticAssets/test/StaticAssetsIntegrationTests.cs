@@ -989,6 +989,33 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
     }
 
+    // 14.35.2 Range Retrieval Requests
+    // The presence of a Range header in an unconditional GET modifies
+    // what is returned if the GET is otherwise successful. In other
+    // words, the response carries a status code of 206 (Partial
+    // Content) instead of 200 (OK).
+    [Fact]
+    public async Task RangeGivesMatchingRange()
+    {
+        var client = await CreateClient();
+
+        var req1 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req1.Headers.Range = new RangeHeaderValue(0, 4);
+        var res1 = await client.SendAsync(req1);
+
+        var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req2.Headers.Range = new RangeHeaderValue(7, 11);
+        var res2 = await client.SendAsync(req2);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res1.StatusCode);
+        Assert.Equal("Hello", await res1.Content.ReadAsStringAsync());
+        Assert.Equal(5, res1.Content.Headers.ContentLength);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res2.StatusCode);
+        Assert.Equal("World", await res2.Content.ReadAsStringAsync());
+        Assert.Equal(5, res2.Content.Headers.ContentLength);
+    }
+
     public static IEnumerable<object[]> SupportedMethods => new[]
     {
             new [] { HttpMethod.Get },
