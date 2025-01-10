@@ -573,7 +573,6 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
     private class LocationContainer
     {
-
         public LocationDto Location { get; set; }
     }
 
