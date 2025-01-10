@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
 
 public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -478,4 +479,216 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal(ReferenceType.Link, responseSchema.Reference.Type);
         });
     }
+
+    [Fact]
+    public async Task SupportsNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (LocationContainer item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("LocationContainer", requestSchema.Reference.Id);
+
+            // Assert that only expected schema references are generated
+            Assert.Equal(3, document.Components.Schemas.Count);
+            Assert.Collection(document.Components.Schemas.Keys,
+                key => Assert.Equal("AddressDto", key),
+                key => Assert.Equal("LocationContainer", key),
+                key => Assert.Equal("LocationDto", key));
+
+            // Assert that LocationContainer schema is serialized with correct refs
+            var writer = new StringWriter();
+            var openApiWriter = new OpenApiJsonWriter(writer);
+            document.Components.Schemas["LocationContainer"].SerializeAsV31(openApiWriter);
+            var serializedSchema = writer.ToString();
+            Assert.Equal("""
+            {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "$ref": "#/components/schemas/LocationDto"
+                    }
+                }
+            }
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+
+            writer = new StringWriter();
+            openApiWriter = new OpenApiJsonWriter(writer);
+            document.Components.Schemas["LocationDto"].SerializeAsV31(openApiWriter);
+            serializedSchema = writer.ToString();
+            Assert.Equal("""
+            {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "address": {
+                        "$ref": "#/components/schemas/AddressDto"
+                    }
+                }
+            }
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+
+            writer = new StringWriter();
+            openApiWriter = new OpenApiJsonWriter(writer);
+            document.Components.Schemas["AddressDto"].SerializeAsV31(openApiWriter);
+            serializedSchema = writer.ToString();
+            Assert.Equal("""
+            {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "relatedLocation": {
+                        "$ref": "#/components/schemas/LocationDto"
+                    }
+                }
+            }
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsListNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (ParentObject item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ParentObject", requestSchema.Reference.Id);
+
+            // Assert that only two schemas are generated
+            Assert.Equal(2, document.Components.Schemas.Count);
+            Assert.Collection(document.Components.Schemas.Keys,
+                key => Assert.Equal("ChildObject", key),
+                key => Assert.Equal("ParentObject", key));
+
+            // Assert that ParentObject schema is serialized with correct refs
+            var writer = new StringWriter();
+            var openApiWriter = new OpenApiJsonWriter(writer);
+            document.Components.Schemas["ParentObject"].SerializeAsV31(openApiWriter);
+            var serializedSchema = writer.ToString();
+            Assert.Equal("""
+            {
+                "type": "object",
+                "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/components/schemas/ChildObject"
+                    }
+                }
+                }
+            }
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+
+            writer = new StringWriter();
+            openApiWriter = new OpenApiJsonWriter(writer);
+            document.Components.Schemas["ChildObject"].SerializeAsV31(openApiWriter);
+            serializedSchema = writer.ToString();
+            Assert.Equal("""
+            {
+                "required": [
+                    "parent"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "parent": {
+                        "$ref": "#/components/schemas/ParentObject"
+                    }
+                }
+            }
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsMultiplePropertiesWithSameType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Root item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Root", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested Item1
+            Assert.Equal("Item", requestSchema.Properties["item1"].Reference.Id);
+
+            // Assert that $ref is used for nested Item2
+            Assert.Equal("Item", requestSchema.Properties["item2"].Reference.Id);
+        });
+    }
+
+    private class Root
+    {
+        public Item Item1 { get; set; } = null!;
+        public Item Item2 { get; set; } = null!;
+    }
+
+    private class Item
+    {
+        public string[] Name { get; set; } = null!;
+        public int value { get; set; }
+    }
+
+    private class LocationContainer
+    {
+
+        public LocationDto Location { get; set; }
+    }
+
+    private class LocationDto
+    {
+        public AddressDto Address { get; set; }
+    }
+
+    private class AddressDto
+    {
+        public LocationDto RelatedLocation { get; set; }
+    }
+
+#nullable enable
+    private class ParentObject
+    {
+        public int Id { get; set; }
+        public List<ChildObject> Children { get; set; } = [];
+    }
+
+    private class ChildObject
+    {
+        public int Id { get; set; }
+        public required ParentObject Parent { get; set; }
+    }
 }
+#nullable restore

@@ -30,7 +30,7 @@ internal sealed class OpenApiSchemaService(
     IOptions<JsonOptions> jsonOptions,
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
-    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new OpenApiJsonSchemaContext(new(jsonOptions.Value.SerializerOptions));
+    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
         // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
@@ -100,7 +100,7 @@ internal sealed class OpenApiSchemaService(
                 // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
                 if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
                 {
-                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = context.TypeInfo.GetSchemaReferenceId() };
+                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = createSchemaReferenceId(context.TypeInfo) };
                 }
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
@@ -294,6 +294,13 @@ internal sealed class OpenApiSchemaService(
                     await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
                 }
             }
+        }
+
+        if (schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } &&
+            jsonTypeInfo.ElementType is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
+            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
         }
     }
 

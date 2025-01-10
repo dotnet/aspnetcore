@@ -27,6 +27,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
                 : "snapshots")
+            .AutoVerify()
             .UseParameters(documentName);
     }
 
