@@ -3505,6 +3505,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     services.AddConnections();
 
+                    services.AddSingleton<TestConnectionHandler>();
+
                     // Since tests run in parallel, it's possible multiple servers will startup,
                     // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
@@ -3549,6 +3551,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 LoggerFactory);
 
             await connection.StartAsync();
+
+            await host.Services.GetRequiredService<TestConnectionHandler>().Started;
 
             var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
 
