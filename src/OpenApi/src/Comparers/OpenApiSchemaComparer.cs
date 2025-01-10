@@ -24,6 +24,15 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             return true;
         }
 
+        // If a local reference is present, we can't compare the schema directly
+        // and should instead use the schema ID as a type-check to assert if the schemas are
+        // equivalent.
+        if ((x.Reference != null && y.Reference == null)
+            || (x.Reference == null && y.Reference != null))
+        {
+            return SchemaIdEquals(x, y);
+        }
+
         // Compare property equality in an order that should help us find inequality faster
         return
             x.Type == y.Type &&
