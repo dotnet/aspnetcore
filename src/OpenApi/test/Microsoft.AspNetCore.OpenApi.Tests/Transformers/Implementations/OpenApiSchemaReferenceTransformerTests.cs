@@ -517,7 +517,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
                     }
                 }
             }
-            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+            """, serializedSchema, ignoreWhiteSpaceDifferences: true, ignoreLineEndingDifferences: true);
 
             writer = new StringWriter();
             openApiWriter = new OpenApiJsonWriter(writer);
@@ -535,7 +535,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
                     }
                 }
             }
-            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+            """, serializedSchema, ignoreAllWhiteSpace: true, ignoreLineEndingDifferences: true);
 
             writer = new StringWriter();
             openApiWriter = new OpenApiJsonWriter(writer);
@@ -553,7 +553,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
                     }
                 }
             }
-            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+            """, serializedSchema, ignoreAllWhiteSpace: true, ignoreLineEndingDifferences: true);
         });
     }
 
@@ -600,7 +600,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
                 }
                 }
             }
-            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+            """, serializedSchema, ignoreAllWhiteSpace: true, ignoreLineEndingDifferences: true);
 
             writer = new StringWriter();
             openApiWriter = new OpenApiJsonWriter(writer);
@@ -622,7 +622,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
                     }
                 }
             }
-            """, serializedSchema, ignoreWhiteSpaceDifferences: true);
+            """, serializedSchema, ignoreAllWhiteSpace: true, ignoreLineEndingDifferences: true);
         });
     }
 
