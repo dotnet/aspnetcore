@@ -115,7 +115,7 @@ public static class IdentityServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder, Action{IdentityApiOptions}?)"/>
     /// and configures authentication to support identity bearer tokens and cookies.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -125,7 +125,7 @@ public static class IdentityServiceCollectionExtensions
         => services.AddIdentityApiEndpoints<TUser>(_ => { });
 
     /// <summary>
-    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder, Action{IdentityApiOptions}?)"/>
     /// and configures authentication to support identity bearer tokens and cookies.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
