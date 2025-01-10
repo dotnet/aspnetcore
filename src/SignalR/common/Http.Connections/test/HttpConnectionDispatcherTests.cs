@@ -3505,8 +3505,6 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     services.AddConnections();
 
-                    services.AddSingleton<TestConnectionHandler>();
-
                     // Since tests run in parallel, it's possible multiple servers will startup,
                     // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
@@ -3527,7 +3525,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
                     {
-                        endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
+                        endpoints.MapConnectionHandler<EchoConnectionHandler>("/foo");
                     });
                 })
                 .UseUrls("http://127.0.0.1:0");
@@ -3552,7 +3550,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             await connection.StartAsync();
 
-            await host.Services.GetRequiredService<TestConnectionHandler>().Started;
+            // Easy way to make sure everything is set is to send and receive data over the connection
+            await connection.Transport.Output.WriteAsync(new byte[2]);
+            await connection.Transport.Input.ReadAsync();
 
             var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
 
@@ -3890,6 +3890,34 @@ public class TestConnectionHandler : ConnectionHandler
             try
             {
                 if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+            finally
+            {
+                connection.Transport.Input.AdvanceTo(result.Buffer.End);
+            }
+        }
+    }
+}
+
+public class EchoConnectionHandler : ConnectionHandler
+{
+    public override async Task OnConnectedAsync(ConnectionContext connection)
+    {
+        while (true)
+        {
+            var result = await connection.Transport.Input.ReadAsync();
+            var buffer = result.Buffer;
+
+            try
+            {
+                if (!buffer.IsEmpty)
+                {
+                    await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                }
+                else if (result.IsCompleted)
                 {
                     break;
                 }
