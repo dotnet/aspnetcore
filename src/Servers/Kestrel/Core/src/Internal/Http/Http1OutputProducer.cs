@@ -40,6 +40,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private bool _aborted;
     private long _unflushedBytes;
     private int _currentMemoryPrefixBytes;
+    private bool _canWriteBody = true;
 
     private readonly ConcurrentPipeWriter _pipeWriter;
     private IMemoryOwner<byte>? _fakeMemoryOwner;
@@ -121,7 +122,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (!_writeStreamSuffixCalled)
             {
-                if (_autoChunk)
+                if (_autoChunk && _canWriteBody)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                     result = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
@@ -333,7 +334,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         writer.Commit();
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete, bool canWriteBody)
     {
         lock (_contextLock)
         {
@@ -343,6 +344,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return;
             }
+
+            _canWriteBody = canWriteBody;
 
             var buffer = _pipeWriter;
             var writer = new BufferWriter<PipeWriter>(buffer);
@@ -373,14 +376,17 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             foreach (var segment in _completedSegments)
             {
-                if (_autoChunk)
+                if (_canWriteBody)
                 {
-                    CommitChunkInternal(ref writer, segment.Span);
-                }
-                else
-                {
-                    writer.Write(segment.Span);
-                    writer.Commit();
+                    if (_autoChunk)
+                    {
+                        CommitChunkInternal(ref writer, segment.Span);
+                    }
+                    else
+                    {
+                        writer.Write(segment.Span);
+                        writer.Commit();
+                    }
                 }
                 segment.Return();
             }
@@ -391,16 +397,19 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         if (!_currentSegment.IsEmpty)
         {
-            var segment = _currentSegment.Slice(0, _position);
+            if (_canWriteBody)
+            {
+                var segment = _currentSegment.Slice(0, _position);
 
-            if (_autoChunk)
-            {
-                CommitChunkInternal(ref writer, segment.Span);
-            }
-            else
-            {
-                writer.Write(segment.Span);
-                writer.Commit();
+                if (_autoChunk)
+                {
+                    CommitChunkInternal(ref writer, segment.Span);
+                }
+                else
+                {
+                    writer.Write(segment.Span);
+                    writer.Commit();
+                }
             }
 
             _position = 0;
