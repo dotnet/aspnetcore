@@ -408,7 +408,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // destination.UseEndpoints()
 
         // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
-        app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+        app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication.Properties[WebApplication.GlobalEndpointRouteBuilderKey]);
 
         // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
         if (_builtApplication.DataSources.Count > 0)

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- This is needed to support codepaths that use NullabilityInfoContext. -->
-    <Features>$(Features.Replace('nullablePublicOnly', '')</Features>
+    <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
@@ -18,9 +18,12 @@
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <Reference Include="Verify.XUnit" />
+    <Reference Include="Verify.SourceGenerators" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
+    <ProjectReference Include="..\gen\RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
+    <ProjectReference Include="..\gen\ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

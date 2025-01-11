@@ -327,6 +327,7 @@
     <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
     <SwashbuckleAspNetCoreVersion>6.6.2</SwashbuckleAspNetCoreVersion>
     <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
+    <VerifySourceGeneratorsVersion>2.2.0</VerifySourceGeneratorsVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
     <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
     <XunitVersion>2.9.2</XunitVersion>

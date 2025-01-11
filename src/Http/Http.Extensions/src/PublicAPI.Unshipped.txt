@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Http.DisableValidationAttribute
+Microsoft.AspNetCore.Http.DisableValidationAttribute.DisableValidationAttribute() -> void
+override Microsoft.AspNetCore.Http.DisableValidationAttribute.ToString() -> string!
