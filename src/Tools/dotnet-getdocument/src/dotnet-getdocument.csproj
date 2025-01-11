@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
-    <TargetFrameworks>netcoreapp2.1;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <UseAppHost>false</UseAppHost>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
