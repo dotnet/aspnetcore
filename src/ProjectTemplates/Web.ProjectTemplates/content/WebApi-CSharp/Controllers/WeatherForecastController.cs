@@ -26,25 +26,20 @@ namespace Company.WebApplication1.Controllers;
 #if (OrganizationalAuth || IndividualB2CAuth)
 [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
 #endif
+#if (GenerateApi)
+public class WeatherForecastController(IDownstreamApi downstreamApi) : ControllerBase
+#elseif (GenerateGraph)
+public class WeatherForecastController(GraphServiceClient graphServiceClient) : ControllerBase
+#else
 public class WeatherForecastController : ControllerBase
+#endif
 {
     private static readonly string[] Summaries =
     [
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     ];
 
-    private readonly ILogger<WeatherForecastController> _logger;
-
 #if (GenerateApi)
-    private readonly IDownstreamApi _downstreamApi;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger,
-                            IDownstreamApi downstreamApi)
-    {
-        _logger = logger;
-        _downstreamApi = downstreamApi;
-    }
-
 #if (EnableOpenAPI)
     [HttpGet(Name = "GetWeatherForecast")]
 #else
@@ -52,7 +47,7 @@ public class WeatherForecastController : ControllerBase
 #endif
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        using var response = await _downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+        using var response = await downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -74,15 +69,6 @@ public class WeatherForecastController : ControllerBase
     }
 
 #elseif (GenerateGraph)
-    private readonly GraphServiceClient _graphServiceClient;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger,
-                                        GraphServiceClient graphServiceClient)
-    {
-        _logger = logger;
-        _graphServiceClient = graphServiceClient;
-    }
-
 #if (EnableOpenAPI)
     [HttpGet(Name = "GetWeatherForecast")]
 #else
@@ -90,7 +76,7 @@ public class WeatherForecastController : ControllerBase
 #endif
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        var user = await _graphServiceClient.Me.GetAsync();
+        var user = await graphServiceClient.Me.GetAsync();
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
@@ -101,11 +87,6 @@ public class WeatherForecastController : ControllerBase
         .ToArray();
     }
 #else
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
-    }
-
 #if (EnableOpenAPI)
     [HttpGet(Name = "GetWeatherForecast")]
 #else
