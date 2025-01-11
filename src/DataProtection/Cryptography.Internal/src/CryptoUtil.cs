@@ -91,6 +91,21 @@ internal static unsafe class CryptoUtil
 #endif
     }
 
+#if NET10_0_OR_GREATER
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    public static bool TimeConstantBuffersAreEqual(ReadOnlySpan<byte> bufA, ReadOnlySpan<byte> bufB)
+    {
+        // Technically this is an early exit scenario, but it means that the caller did something bizarre.
+        // An error at the call site isn't usable for timing attacks.
+        Assert(bufA.Length == bufB.Length, "bufA.Length == bufB.Length");
+
+        unsafe
+        {
+            return CryptographicOperations.FixedTimeEquals(bufA, bufB);
+        }
+    }
+#endif
+
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
     public static bool TimeConstantBuffersAreEqual(byte[] bufA, int offsetA, int countA, byte[] bufB, int offsetB, int countB)
     {
