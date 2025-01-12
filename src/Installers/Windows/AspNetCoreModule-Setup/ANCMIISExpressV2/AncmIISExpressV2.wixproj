@@ -94,4 +94,8 @@
                       '$(PackageIconFullPath)' ^
                       '$(PackageLicenseExpression)' " />
   </Target>
+
+  <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64'">
+    <MSBuild Projects="..\Forwarders\build.proj" />
+  </Target>
 </Project>
