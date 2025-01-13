@@ -518,6 +518,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // If app code is running we know the stream has been created
         await appTcs.Task;
+        appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // Get the in progress stream
         var stream = _connection._streams[1];
 
@@ -542,6 +543,8 @@ public class Http2ConnectionTests : Http2TestBase
         // Add stream to Http2Connection._completedStreams inline with SetResult().
         appDelegateTcs = new TaskCompletionSource();
         await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await appTcs.Task;
 
         // New stream has been taken from the pool
         Assert.Equal(0, _connection.StreamPool.Count);
