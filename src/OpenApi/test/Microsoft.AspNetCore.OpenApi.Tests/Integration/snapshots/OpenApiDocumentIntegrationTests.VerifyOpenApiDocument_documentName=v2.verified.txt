@@ -15,7 +15,9 @@
     "/v2/users": {
       "get": {
         "tags": [
-          "users"
+          {
+            "name": "users"
+          }
         ],
         "responses": {
           "200": {
@@ -28,12 +30,12 @@
                     "type": "string",
                     "externalDocs": {
                       "description": "Documentation for this OpenAPI schema",
-                      "url": "https://example.com/api/docs/schemas/String"
+                      "url": "https://example.com/api/docs/schemas/string"
                     }
                   },
                   "externalDocs": {
                     "description": "Documentation for this OpenAPI schema",
-                    "url": "https://example.com/api/docs/schemas/Array"
+                    "url": "https://example.com/api/docs/schemas/array"
                   }
                 }
               }
@@ -43,7 +45,9 @@
       },
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "externalDocs": {
           "description": "Documentation for this OpenAPI endpoint",
@@ -59,7 +63,11 @@
     }
   },
   "tags": [
-    "users",
-    "Sample"
+    {
+      "name": "users"
+    },
+    {
+      "name": "Sample"
+    }
   ]
 }

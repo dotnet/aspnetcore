@@ -200,8 +200,8 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         documentStream.Position = 0;
         OpenApiReaderRegistry.RegisterReader(OpenApiConstants.Yaml, new OpenApiYamlReader());
         var result = await OpenApiDocument.LoadAsync(documentStream, format);
-        Assert.Empty(result.OpenApiDiagnostic.Errors);
-        action(result.OpenApiDocument);
+        Assert.Empty(result.Diagnostic.Errors);
+        action(result.Document);
     }
 
     private static IServiceProvider CreateServiceProvider(string documentName = Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName)

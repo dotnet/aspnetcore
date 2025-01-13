@@ -37,11 +37,12 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
-        var result = OpenApiDocument.Load(File.OpenRead(Path.Combine(outputPath.FullName, "Sample.json")), "json");
-        // TODO: https://github.com/microsoft/OpenAPI.NET/issues/1991
-        // Assert.Empty(result.OpenApiDiagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.OpenApiDiagnostic.SpecificationVersion);
-        Assert.Equal("GetDocumentSample | v1", result.OpenApiDocument.Info.Title);
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
+        // Assert.Empty(result.Diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
+        Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
     }
 
     [Fact]
@@ -63,11 +64,12 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
-        var result = OpenApiDocument.Load(File.OpenRead(Path.Combine(outputPath.FullName, "Sample.json")), "json");
-        // TODO: https://github.com/microsoft/OpenAPI.NET/issues/1991
-        // Assert.Empty(result.OpenApiDiagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi2_0, result.OpenApiDiagnostic.SpecificationVersion);
-        Assert.Equal("GetDocumentSample | v1", result.OpenApiDocument.Info.Title);
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
+        // Assert.Empty(result.Diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi2_0, result.Diagnostic.SpecificationVersion);
+        Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
     }
 
     [Fact]
@@ -90,11 +92,12 @@ public class GetDocumentTests(ITestOutputHelper output)
 
         // Assert that error was produced and files were generated with v3.
         Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.0.", _console.GetOutput());
-        var result = OpenApiDocument.Load(File.OpenRead(Path.Combine(outputPath.FullName, "Sample.json")), "json");
-        // TODO: https://github.com/microsoft/OpenAPI.NET/issues/1991
-        // Assert.Empty(result.OpenApiDiagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.OpenApiDiagnostic.SpecificationVersion);
-        Assert.Equal("GetDocumentSample | v1", result.OpenApiDocument.Info.Title);
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
+        // Assert.Empty(result.Diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
+        Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
     }
 
     [Fact]
@@ -123,12 +126,13 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.Single(documentNames);
         Assert.Contains(expectedDocumentPath, documentNames);
 
-        var result = OpenApiDocument.Load(File.OpenRead(Path.Combine(outputPath.FullName, "Sample_internal.json")), "json");
-        // TODO: https://github.com/microsoft/OpenAPI.NET/issues/1991
-        // Assert.Empty(result.OpenApiDiagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.OpenApiDiagnostic.SpecificationVersion);
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample_internal.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
+        // Assert.Empty(result.Diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
         // Document name in the title gives us a clue that the correct document was actually resolved
-        Assert.Equal("GetDocumentSample | internal", result.OpenApiDocument.Info.Title);
+        Assert.Equal("GetDocumentSample | internal", result.Document.Info.Title);
     }
 
     [Fact]

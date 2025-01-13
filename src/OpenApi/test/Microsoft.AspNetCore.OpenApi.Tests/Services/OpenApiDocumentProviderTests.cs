@@ -52,8 +52,8 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     private static void ValidateOpenApiDocument(StringWriter stringWriter, Action<OpenApiDocument> action)
     {
         var result = OpenApiDocument.Parse(stringWriter.ToString());
-        Assert.Empty(result.OpenApiDiagnostic.Errors);
-        action(result.OpenApiDocument);
+        Assert.Empty(result.Diagnostic.Errors);
+        action(result.Document);
     }
 
     private static IServiceProvider CreateServiceProvider(string[] documentNames)
