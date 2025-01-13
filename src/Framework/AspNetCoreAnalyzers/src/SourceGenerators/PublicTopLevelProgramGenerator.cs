@@ -25,7 +25,7 @@ public partial class Program { }
                     // If the discovered `Program` type is not a class then its not
                     // generated and has been defined in source, so we can skip it
                     // If the program class is already public, we don't need to generate anything.
-                    DeclaredAccessibility: Accessibility.Public,
+                    DeclaredAccessibility: not Accessibility.Public,
                     TypeKind: TypeKind.Class,
                     // If there are multiple partial declarations, then do nothing since we don't want
                     // to trample on visibility explicitly set by the user
