@@ -358,8 +358,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    // canWriteBody is ignored as we don't have chunked bodies in HTTP/2 and so writing headers is not affected by canWriteBody
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted, bool canWriteBody)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
     {
         lock (_dataWriterLock)
         {
@@ -557,8 +556,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     {
         lock (_dataWriterLock)
         {
-            // canWriteBody is hardcoded to true as we don't have chunked bodies in HTTP/2 and so writing headers is not affected by canWriteBody
-            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false, canWriteBody: true);
+            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
 
             return WriteDataToPipeAsync(data, cancellationToken);
         }

@@ -334,7 +334,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         writer.Commit();
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete, bool canWriteBody)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
     {
         lock (_contextLock)
         {
@@ -344,8 +344,6 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return;
             }
-
-            _canWriteBody = canWriteBody;
 
             var buffer = _pipeWriter;
             var writer = new BufferWriter<PipeWriter>(buffer);
@@ -544,6 +542,11 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
+    public void SetCanWriteBody(bool canWriteBody)
+    {
+        _canWriteBody = canWriteBody;
+    }
+
     public void Reset()
     {
         Debug.Assert(_currentSegmentOwner == null);
@@ -554,6 +557,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         _writeStreamSuffixCalled = false;
         _currentChunkMemoryUpdated = false;
         _startCalled = false;
+        _canWriteBody = true;
     }
 
     private ValueTask<FlushResult> WriteAsync(

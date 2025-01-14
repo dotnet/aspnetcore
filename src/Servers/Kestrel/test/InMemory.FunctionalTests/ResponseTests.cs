@@ -1593,6 +1593,51 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    // Rough attempt at checking that a non-body response doesn't affect future body responses
+    [Fact]
+    public async Task GetRequestAfterHeadRequestWorks()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            await httpContext.Response.BodyWriter.WriteAsync(new byte[] { 35, 35, 35 });
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                await connection.Send(
+                    "GET /a HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "3",
+                    "###",
+                    "0",
+                    "",
+                    "");
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
     [Fact]
     public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeAndAfterFlush()
     {

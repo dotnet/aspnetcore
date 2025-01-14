@@ -999,7 +999,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         var responseHeaders = CreateResponseHeaders(appCompleted);
 
-        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted, canWriteBody: _canWriteResponseBody);
+        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted);
     }
 
     private void VerifyInitializeState(int firstWriteByteCount)
@@ -1162,6 +1162,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         // Set whether response can have body
         _canWriteResponseBody = CanWriteResponseBody();
+        Output.SetCanWriteBody(_canWriteResponseBody);
 
         if (!_canWriteResponseBody && hasTransferEncoding)
         {
@@ -1645,7 +1646,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 if (data.Length == 0)
                 {
-                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false, canWriteBody: _canWriteResponseBody);
+                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
                     return Output.FlushAsync(cancellationToken);
                 }
 
@@ -1659,7 +1660,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
         else
         {
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false, canWriteBody: _canWriteResponseBody);
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
             HandleNonBodyResponseWrite();
             return Output.FlushAsync(cancellationToken);
         }
