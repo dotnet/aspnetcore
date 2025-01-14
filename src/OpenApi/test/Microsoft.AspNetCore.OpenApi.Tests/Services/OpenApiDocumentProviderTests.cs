@@ -80,7 +80,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         // Therefore, if the test doesn't throw, we know it has passed correctly.
         // We still do a small check to validate the document, just in case. But the main test is that it doesn't throw.
         ValidateOpenApiDocument(stringWriter, _ => { });
-        Assert.StartsWith("{\n  \"openapi\": \"3.0.1\"", document);
+        Assert.StartsWith("{\n  \"openapi\": \"3.0.4\"", document);
     }
 
     [Fact]
@@ -104,12 +104,12 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
 
     private static void ValidateOpenApiDocument(StringWriter stringWriter, Action<OpenApiDocument> action)
     {
-        var document = new OpenApiStringReader().Read(stringWriter.ToString(), out var diagnostic);
-        Assert.Empty(diagnostic.Errors);
-        action(document);
+        var result = OpenApiDocument.Parse(stringWriter.ToString());
+        Assert.Empty(result.Diagnostic.Errors);
+        action(result.Document);
     }
 
-    private static IServiceProvider CreateServiceProvider(string[] documentNames, OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_0)
+    private static IServiceProvider CreateServiceProvider(string[] documentNames, OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_1)
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
         var serviceProviderIsService = new ServiceProviderIsService();

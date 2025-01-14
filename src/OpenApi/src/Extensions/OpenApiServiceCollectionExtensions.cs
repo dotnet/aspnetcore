@@ -109,7 +109,6 @@ public static class OpenApiServiceCollectionExtensions
     {
         services.AddEndpointsApiExplorer();
         services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
