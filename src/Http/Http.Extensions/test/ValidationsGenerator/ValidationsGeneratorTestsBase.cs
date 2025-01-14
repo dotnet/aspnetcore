@@ -23,6 +23,10 @@ public class ValidationsGeneratorTestsBase
     private static readonly CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validations.Generated")]);
 
+    private static string GetAssemblyAttributes(string directory, string assemblyName) => $"""
+[assembly: Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute("{assemblyName}, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "", "{directory}", "0")]
+""";
+
     private static string CreateSourceText(string source) => $$"""
 {{source}}
 // Make Program class public for consumption
@@ -54,10 +58,15 @@ public partial class Program { }
                 MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(WebApplicationFactoryContentRootAttribute).Assembly.Location),
             ]);
         var generator = new ValidationsGenerator();
-        var inputCompilation = CSharpCompilation.Create($"ValidationsGeneratorSample-{Guid.NewGuid()}",
-            [CSharpSyntaxTree.ParseText(CreateSourceText(source), options: _parseOptions, path: "Program.cs")],
+        var assemblyName = $"ValidationsGeneratorSample-{Guid.NewGuid()}";
+        var inputCompilation = CSharpCompilation.Create(assemblyName,
+            [
+                CSharpSyntaxTree.ParseText(CreateSourceText(source), options: _parseOptions, path: "Program.cs"),
+                CSharpSyntaxTree.ParseText(GetAssemblyAttributes(AppContext.BaseDirectory, assemblyName), options: _parseOptions, path: "AssemblyAttributes.cs"),
+            ],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication, nullableContextOptions: NullableContextOptions.Enable));
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: _parseOptions);
