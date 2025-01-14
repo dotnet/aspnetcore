@@ -239,6 +239,7 @@
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.blob.core.windows.net/public/</PublicBaseURL>
     <InternalBaseURL>https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
     <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
+    <AddVersionToCrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' != ''">true</AddVersionToCrossArchitectureInstallerBasePath>
     <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(ArtifactsShippingPackagesDir)</CrossArchitectureInstallerBasePath>
   </PropertyGroup>
 

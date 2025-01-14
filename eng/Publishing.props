@@ -96,12 +96,13 @@
     </ItemGroup>
 
     <!-- Generate productVersion.txt file containing the product version. -->
-    <WriteLinesToFile File="%(ProductVersionFile.Identity)"
+    <WriteLinesToFile Condition="'$(DotNetBuildPass)' != '2'"
+                      File="%(ProductVersionFile.Identity)"
                       Lines="$(ProductVersion)"
                       Overwrite="true"
                       Encoding="ASCII" />
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '2'">
       <Artifact Include="@(ProductVersionFile)"
                 RelativeBlobPath="aspnetcore/Runtime/$(NonStableProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
