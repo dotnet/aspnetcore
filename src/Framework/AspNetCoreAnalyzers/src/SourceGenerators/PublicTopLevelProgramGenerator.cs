@@ -29,10 +29,10 @@ public partial class Program { }
                     TypeKind: TypeKind.Class,
                     // If there are multiple partial declarations, then do nothing since we don't want
                     // to trample on visibility explicitly set by the user
-                    DeclaringSyntaxReferences: { Length: 1 } declaringSyntaxReferences
+                    DeclaratingSyntaxReferences: [var singleSyntaxReference]
                 } &&
             // If the `Program` class is already declared in user code, we don't need to generate anything.
-            declaringSyntaxReferences.Single().GetSyntax(cancellationToken) is not ClassDeclarationSyntax
+            singleSyntaxReference.GetSyntax(cancellationToken) is not ClassDeclarationSyntax
         );
 
         context.RegisterSourceOutput(internalGeneratedProgramClass, (context, result) =>
