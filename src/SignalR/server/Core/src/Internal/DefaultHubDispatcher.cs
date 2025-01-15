@@ -424,11 +424,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         finally
                         {
                             activity?.Stop();
-
-                            if (Activity.Current != previousActivity)
-                            {
-                                Activity.Current = previousActivity;
-                            }
+                            ResetCurrentActivity(previousActivity);
 
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
@@ -589,10 +585,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         {
             activity?.Stop();
 
-            if (Activity.Current != previousActivity)
-            {
-                Activity.Current = previousActivity;
-            }
+            ResetCurrentActivity(previousActivity);
 
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
@@ -895,5 +888,19 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     {
         activity?.SetTag("error.type", ex.GetType().FullName);
         activity?.SetStatus(ActivityStatusCode.Error);
+    }
+
+    private static void ResetCurrentActivity(Activity? previousActivity)
+    {
+        if (Activity.Current == previousActivity)
+        {
+            return;
+        }
+
+        // Setting Activity.Current can throw (and catch) internally if the activity being set to has stopped.
+        // We optimistically check IsStopped but it's still a race condition when setting Current
+        Activity.Current = previousActivity is null || previousActivity.IsStopped
+            ? null
+            : previousActivity;
     }
 }

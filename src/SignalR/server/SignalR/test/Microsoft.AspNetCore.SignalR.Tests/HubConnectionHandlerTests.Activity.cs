@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -485,6 +486,144 @@ public partial class HubConnectionHandlerTests
                 AssertHubMethodActivity<MethodHub>(activity, parent: null, nameof(MethodHub.MethodThatThrows),
                     mockHttpRequestActivity, exceptionType: typeof(InvalidOperationException));
             }
+        }
+    }
+
+    [Fact]
+    public async Task StreamResponseHubMethodHttpActivityStopsWhileHubMethodIsRunning()
+    {
+        using (StartVerifiableLog())
+        {
+            var serverChannel = Channel.CreateUnbounded<Activity>();
+            var testSource = new ActivitySource("test_source");
+
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Provided by hosting layer normally
+                builder.AddSingleton(testSource);
+            }, LoggerFactory);
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
+                    || ReferenceEquals(activitySource, signalrSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var mockHttpRequestActivity = new Activity("HttpRequest");
+            mockHttpRequestActivity.Start();
+            Activity.Current = mockHttpRequestActivity;
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+            Mock<IInvocationBinder> invocationBinder = new Mock<IInvocationBinder>();
+            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(int));
+
+            using (var client = new TestClient(invocationBinder: invocationBinder.Object))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<StreamingHub>(connectActivity, mockHttpRequestActivity, nameof(StreamingHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+
+                var streamId = "stream_id";
+                _ = client.SendStreamInvocationAsync(nameof(StreamingHub.StreamEcho), new[] { streamId }, Array.Empty<object>()).DefaultTimeout();
+                var hubMethodActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+
+                Exception firstChanceEx = null;
+                var @delegate = new EventHandler<FirstChanceExceptionEventArgs>((o, e) =>
+                {
+                    firstChanceEx = e.Exception;
+                });
+                AppDomain.CurrentDomain.FirstChanceException += @delegate;
+
+                // Stop Http Activity before hub method completes
+                mockHttpRequestActivity.Stop();
+                // Complete hub method
+                await client.SendHubMessageAsync(CompletionMessage.Empty(streamId));
+                await client.ReadAsync();
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+
+                AppDomain.CurrentDomain.FirstChanceException -= @delegate;
+                Assert.Null(firstChanceEx);
+            }
+
+            var disconnectedActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<StreamingHub>(disconnectedActivity, mockHttpRequestActivity, nameof(StreamingHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
+        }
+    }
+
+    [Fact]
+    public async Task UploadStreamHubMethodHttpActivityStopsWhileHubMethodIsRunning()
+    {
+        using (StartVerifiableLog())
+        {
+            var serverChannel = Channel.CreateUnbounded<Activity>();
+            var testSource = new ActivitySource("test_source");
+
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Provided by hosting layer normally
+                builder.AddSingleton(testSource);
+            }, LoggerFactory);
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
+                    || ReferenceEquals(activitySource, signalrSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var mockHttpRequestActivity = new Activity("HttpRequest");
+            mockHttpRequestActivity.Start();
+            Activity.Current = mockHttpRequestActivity;
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            Mock<IInvocationBinder> invocationBinder = new Mock<IInvocationBinder>();
+            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(int));
+
+            using (var client = new TestClient(invocationBinder: invocationBinder.Object))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                AssertHubMethodActivity<MethodHub>(connectActivity, mockHttpRequestActivity, nameof(MethodHub.OnConnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnConnected);
+
+                var streamId = "stream_id";
+                _ = client.BeginUploadStreamAsync("1", nameof(MethodHub.StreamingConcat), new[] { streamId }, Array.Empty<object>()).DefaultTimeout();
+                var hubMethodActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+
+                Exception firstChanceEx = null;
+                var @delegate = new EventHandler<FirstChanceExceptionEventArgs>((o, e) =>
+                {
+                    firstChanceEx = e.Exception;
+                });
+                AppDomain.CurrentDomain.FirstChanceException += @delegate;
+
+                // Stop Http Activity before hub method completes
+                mockHttpRequestActivity.Stop();
+                // Complete hub method
+                await client.SendHubMessageAsync(CompletionMessage.Empty(streamId));
+                await client.ReadAsync();
+
+                client.Dispose();
+
+                await connectionHandlerTask;
+
+                AppDomain.CurrentDomain.FirstChanceException -= @delegate;
+                Assert.Null(firstChanceEx);
+            }
+
+            var disconnectedActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            AssertHubMethodActivity<MethodHub>(disconnectedActivity, mockHttpRequestActivity, nameof(MethodHub.OnDisconnectedAsync), linkedActivity: null, activityName: SignalRServerActivitySource.OnDisconnected);
         }
     }
 
