@@ -21,7 +21,7 @@ The process is visualized in the below diagram:
 
 ## Learnings and growth
 
-Over time the team will build up certain conventions and principles, that will be useful to establish for future API reviews too. To help with this, the [API Review Principles document](/APIReviewPrinciples.md) document will be used as the place to store such principles and conventions and make them persistent over time. Eventually, it will grow into a good knowledge base that will also help newcomers to learn and be better prepared with designing their APIs.
+Over time the team will build up certain conventions and principles, that will be useful to establish for future API reviews too. To help with this, the [API Review Principles document](/APIReviewPrinciples.md) document will be used to store such principles and conventions, making them persistent over time. Eventually, it will grow into a good knowledge base that will also help newcomers to learn and be better prepared with designing their APIs.
 
 ## What Makes an issue/PR "ready-for-review"?
 
