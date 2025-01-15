@@ -88,7 +88,10 @@
       <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />
       <_FilesToCopy Include="$(SharedFrameworkLayoutRoot)\**\*" />
 
-      <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
+      <_PrelimDestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
+      <_DestinationFiles Include="@(_PrelimDestinationFiles)" Condition="!$([MSBuild]::IsOSPlatform(`Windows`))" />
+      <!-- Prefix absolute destination paths with "\\?\" on Windows to avoid MSBuild MAX_PATH issues in VS. https://github.com/dotnet/msbuild/issues/53 -->
+      <_DestinationFiles Include="@(_PrelimDestinationFiles->'\\?\%(Identity)')" Condition="$([MSBuild]::IsOSPlatform(`Windows`))" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_FilesToCopy)"
@@ -96,8 +99,6 @@
           SkipUnchangedFiles="true" />
 
     <Message Importance="high" Text="Removed directory %(_CleanedUpDirectories.Identity)" />
-
-    <Message Importance="high" Text="Created directory %(_CreatedDirectories.Identity)" />
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.targets.in"
