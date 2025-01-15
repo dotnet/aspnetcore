@@ -8,5 +8,5 @@ We encourage you to refer to this document regularly and contribute to its evolu
 ## Principles
 - Principle 1
 
-## Convensions
+## Conventions
 - Convention 1
