@@ -4,7 +4,7 @@
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 
-namespace System.Collections.Generic;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal static class AsyncEnumerableExtensions
 {
