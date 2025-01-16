@@ -142,6 +142,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
                 Assert.Null(row.GetDomAttribute("class"));
             }
         }
+
         if (!isJulieRowFound)
         {
             Assert.Fail("No row found for Julie to highlight.");
