@@ -124,6 +124,33 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
+        if (Match == NavLinkMatch.All
+            && IsStrictlyPrefixIgnoringQueryAndFragment(currentUriAbsolute))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsStrictlyPrefixIgnoringQueryAndFragment(string currentUriAbsolute)
+    {
+        Debug.Assert(_hrefAbsolute != null);
+
+        return IsStrictlyPrefixedIgnoringSuffixAfterSymbol(currentUriAbsolute, '?')
+            || IsStrictlyPrefixedIgnoringSuffixAfterSymbol(currentUriAbsolute, '#');
+    }
+
+    private bool IsStrictlyPrefixedIgnoringSuffixAfterSymbol(string currentUriAbsolute, char symbol)
+    {
+        Debug.Assert(_hrefAbsolute != null);
+
+        var fragmentIndex = currentUriAbsolute.IndexOf(symbol);
+        if (fragmentIndex >= 0)
+        {
+            var prefix = currentUriAbsolute.Substring(0, fragmentIndex);
+            return IsStrictlyPrefixWithSeparator(currentUriAbsolute, prefix);
+        }
         return false;
     }
 
@@ -199,7 +226,7 @@ public class NavLink : ComponentBase, IDisposable
 
     private static bool IsUnreservedCharacter(char c)
     {
-        // Checks whether it is an unreserved character according to 
+        // Checks whether it is an unreserved character according to
         // https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
         // Those are characters that are allowed in a URI but do not have a reserved
         // purpose (e.g. they do not separate the components of the URI)
