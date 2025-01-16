@@ -105,7 +105,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>
-    /// Optionally defines a class to be applied to a rendered row.
+    /// Optional. A callback to be invoked for each rendered row to specify a CSS class.
     /// </summary>
     [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
