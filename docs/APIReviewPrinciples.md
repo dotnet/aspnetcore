@@ -6,7 +6,6 @@ The primary goal of this document is to provide a reference for our team and con
 
 We encourage you to refer to this document regularly and contribute to its evolution as we continue to refine our API review process. We also encourage you to follow the [.NET framework design guidelines](https://learn.microsoft.com/dotnet/standard/design-guidelines/) for more general guidance not specific to the dotnet/aspnetcore repository.
 
-
 ## Principles
 - Principle 1
 
