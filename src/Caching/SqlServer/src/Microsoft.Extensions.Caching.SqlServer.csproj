@@ -6,7 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <NoWarn>$(NoWarn);PKG0001</NoWarn>
+    <!-- Temporarily suppress APICompat CP1002 which warns on .NET Framework as it can't find load internal assemblies: SMDiagnostics.dll and System.ServiceModel.Internals.dll -->
+    <NoWarn>$(NoWarn);PKG0001;CP1002</NoWarn>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
