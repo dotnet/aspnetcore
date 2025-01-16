@@ -207,21 +207,21 @@ public class HostingEventSourceTests : LoggedTest
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("GET", "/");
 
-        await totalRequestValues.WaitForSumValueAsync(1);
+        await totalRequestValues.WaitForValueAsync(1);
         await currentRequestValues.WaitForValueAsync(1);
         await failedRequestValues.WaitForValueAsync(0);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumValueAsync(1);
+        await totalRequestValues.WaitForValueAsync(1);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(0);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("POST", "/");
 
-        await totalRequestValues.WaitForSumValueAsync(2);
+        await totalRequestValues.WaitForValueAsync(2);
         await currentRequestValues.WaitForValueAsync(1);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -230,7 +230,7 @@ public class HostingEventSourceTests : LoggedTest
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumValueAsync(2);
+        await totalRequestValues.WaitForValueAsync(2);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(1);
     }

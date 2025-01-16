@@ -69,7 +69,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var context1 = hostingApplication1.CreateContext(features1);
         var context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumValueAsync(2);
+        await totalRequestValues.WaitForValueAsync(2);
         await currentRequestValues.WaitForValueAsync(2);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -78,7 +78,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumValueAsync(2);
+        await totalRequestValues.WaitForValueAsync(2);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -100,7 +100,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         context1 = hostingApplication1.CreateContext(features1);
         context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumValueAsync(4);
+        await totalRequestValues.WaitForValueAsync(4);
         await currentRequestValues.WaitForValueAsync(2);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -112,7 +112,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumValueAsync(4);
+        await totalRequestValues.WaitForValueAsync(4);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(2);
 
