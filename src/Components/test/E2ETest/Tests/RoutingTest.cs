@@ -384,6 +384,34 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanOverrideNavLinkToIgnoreFragment()
+    {
+        SetUrlViaPushState("/layout-overridden");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with hash, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks(
+            "Override layout (matches all)",
+            "Override layout, no trailing slash (matches all)",
+            "Override layout with hash, no trailing slash");
+    }
+
+    [Fact]
+    public void CanOverrideNavLinkToIgnoreQuery()
+    {
+        SetUrlViaPushState("/layout-overridden");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with query, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks(
+            "Override layout (matches all)",
+            "Override layout, no trailing slash (matches all)",
+            "Override layout with query, no trailing slash");
+    }
+
+    [Fact]
     public void CanGoBackFromNotAComponent()
     {
         SetUrlViaPushState("/");

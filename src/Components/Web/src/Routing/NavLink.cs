@@ -106,7 +106,7 @@ public class NavLink : ComponentBase, IDisposable
         }
     }
 
-    private bool ShouldMatch(string currentUriAbsolute)
+    protected virtual bool ShouldMatch(string currentUriAbsolute)
     {
         if (_hrefAbsolute == null)
         {
@@ -124,33 +124,6 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
-        if (Match == NavLinkMatch.All
-            && IsStrictlyPrefixIgnoringQueryAndFragment(currentUriAbsolute))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool IsStrictlyPrefixIgnoringQueryAndFragment(string currentUriAbsolute)
-    {
-        Debug.Assert(_hrefAbsolute != null);
-
-        return IsStrictlyPrefixedIgnoringSuffixAfterSymbol(currentUriAbsolute, '?')
-            || IsStrictlyPrefixedIgnoringSuffixAfterSymbol(currentUriAbsolute, '#');
-    }
-
-    private bool IsStrictlyPrefixedIgnoringSuffixAfterSymbol(string currentUriAbsolute, char symbol)
-    {
-        Debug.Assert(_hrefAbsolute != null);
-
-        var fragmentIndex = currentUriAbsolute.IndexOf(symbol);
-        if (fragmentIndex >= 0)
-        {
-            var prefix = currentUriAbsolute.Substring(0, fragmentIndex);
-            return IsStrictlyPrefixWithSeparator(currentUriAbsolute, prefix);
-        }
         return false;
     }
 

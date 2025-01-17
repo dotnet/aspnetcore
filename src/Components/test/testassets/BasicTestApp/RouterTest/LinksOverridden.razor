@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+<style type="text/css">
+    a.active {
+        background-color: yellow;
+        font-weight: bold;
+    }
+</style>
+<ul>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden/" Match=NavLinkMatch.All>Override layout (matches all)</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden" Match=NavLinkMatch.All>Override layout, no trailing slash (matches all)</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden/?abc=123">Override layout with query</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden?abc=123">Override layout with query, no trailing slash</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden/#blah">Override layout with hash</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden#blah">Override layout with hash, no trailing slash</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden/Default.html">Override layout with extension</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/layout-overridden/Other">Override Other</NavLinkIgnoreQueryAndFragmentString></li>
+    <li><NavLinkIgnoreQueryAndFragmentString href="/subdir/Other" Match=NavLinkMatch.All>Override Other with base-relative URL (matches all)</NavLinkIgnoreQueryAndFragmentString></li>
+</ul>
