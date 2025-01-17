@@ -6,8 +6,6 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <!-- Temporarily suppress APICompat CP1002 which warns on .NET Framework as it can't find load internal assemblies: SMDiagnostics.dll and System.ServiceModel.Internals.dll -->
-    <NoWarn>$(NoWarn);CP1002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
