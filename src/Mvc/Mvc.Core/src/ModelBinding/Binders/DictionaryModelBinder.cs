@@ -142,7 +142,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         // Attempt to bind dictionary from a set of prefix[key]=value entries. Get the short and long keys first.
         var prefix = bindingContext.ModelName;
         var keys = enumerableValueProvider.GetKeysFromPrefix(prefix);
-        if (keys.Count == 0)
+        if (string.IsNullOrEmpty(prefix) || keys.Count == 0)
         {
             // No entries with the expected keys.
             if (bindingContext.IsTopLevelObject)
