@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Routing;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Reader;
 using System.Text;
 
 public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentServiceTestBase
@@ -67,7 +69,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-        ValidateOpenApiDocument(responseBodyStream, document =>
+        await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
         {
             Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
@@ -100,13 +102,13 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(expectedContentType, context.Response.ContentType);
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
-        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.1'", StringComparison.OrdinalIgnoreCase));
         responseBodyStream.Position = 0;
-        ValidateOpenApiDocument(responseBodyStream, document =>
+        await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
         {
             Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
-        });
+        }, isYaml ? "yaml" : "json");
     }
 
     [Fact]
@@ -156,6 +158,42 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task MapOpenApi_ShouldRetrieveOptionsInACaseInsensitiveManner()
+    {
+        // Arrange
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceProvider = CreateServiceProvider("casesensitive", OpenApiSpecVersion.OpenApi2_0);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapOpenApi("/openapi/{documentName}.json");
+        var context = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        context.Response.Body = responseBodyStream;
+        context.RequestServices = serviceProvider;
+        context.Request.RouteValues.Add("documentName", "CaseSensitive");
+        var endpoint = builder.DataSources.First().Endpoints[0];
+
+        // Act
+        var requestDelegate = endpoint.RequestDelegate;
+        await requestDelegate(context);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+        // When we receive an OpenAPI document, we use an OptionsMonitor to retrieve OpenAPI options which are stored with a key equal the requested document name.
+        // This key is case-sensitive. If the document doesn't exist, the options monitor return a default instance, in which the OpenAPI version is set to v3.
+        // This could cause bugs! You'd get your document, but depending on the casing you used in the document name you passed to the function, you'll receive different OpenAPI document versions.
+        // We want to prevent this from happening. Therefore:
+        // By setting up a v2 document on the "casesensitive" route and requesting it on "CaseSensitive",
+        // we can test that the we've configured the options monitor to retrieve the options in a case-insensitive manner.
+        // If it is case-sensitive, it would return a default instance with OpenAPI version v3, which would cause this test to fail!
+        // However, if it would return the v2 instance, which was configured on the lowercase - case-insensitive - documentname, the test would pass!
+        // For more info, see OpenApiEndpointRouteBuilderExtensions.cs
+        Assert.StartsWith("{\n  \"swagger\": \"2.0\"", responseString);
+    }
+
     [Theory]
     [InlineData("/openapi.json", "application/json;charset=utf-8", false)]
     [InlineData("/openapi.yaml", "text/plain+yaml;charset=utf-8", true)]
@@ -185,23 +223,25 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         Assert.Equal(expectedContentType, context.Response.ContentType);
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
-        Assert.Equal(isYaml, responseString.StartsWith("openapi: 3.0.1", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.1'", StringComparison.OrdinalIgnoreCase));
         responseBodyStream.Position = 0;
-        ValidateOpenApiDocument(responseBodyStream, document =>
+        await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
         {
             Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
-        });
+        }, isYaml ? "yaml" : "json");
     }
 
-    private static void ValidateOpenApiDocument(MemoryStream documentStream, Action<OpenApiDocument> action)
+    private static async Task ValidateOpenApiDocumentAsync(MemoryStream documentStream, Action<OpenApiDocument> action, string format = "json")
     {
-        var document = new OpenApiStringReader().Read(Encoding.UTF8.GetString(documentStream.ToArray()), out var diagnostic);
-        Assert.Empty(diagnostic.Errors);
-        action(document);
+        documentStream.Position = 0;
+        OpenApiReaderRegistry.RegisterReader(OpenApiConstants.Yaml, new OpenApiYamlReader());
+        var result = await OpenApiDocument.LoadAsync(documentStream, format);
+        Assert.Empty(result.Diagnostic.Errors);
+        action(result.Document);
     }
 
-    private static IServiceProvider CreateServiceProvider(string documentName = Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName)
+    private static IServiceProvider CreateServiceProvider(string documentName = Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName, OpenApiSpecVersion openApiSpecVersion = OpenApiSpecVersion.OpenApi3_1)
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
         var serviceProviderIsService = new ServiceProviderIsService();
@@ -210,7 +250,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
             .AddSingleton<IHostEnvironment>(hostEnvironment)
             .AddSingleton(CreateApiDescriptionGroupCollectionProvider())
             .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-            .AddOpenApi(documentName)
+            .AddOpenApi(documentName, x => x.OpenApiVersion = openApiSpecVersion)
             .BuildServiceProvider();
         return serviceProvider;
     }

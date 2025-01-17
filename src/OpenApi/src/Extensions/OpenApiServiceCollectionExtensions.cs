@@ -57,10 +57,9 @@ public static class OpenApiServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        // We need to store the document name in a case-insensitive manner
-        // to support case-insensitive document name resolution.
-        // Keyed Services are case-sensitive by default, which doesn't work well for document names in ASP.NET Core
-        // as routing in ASP.NET Core is case-insensitive by default.
+        // We need to register the document name in a case-insensitive manner to support case-insensitive document name resolution.
+        // The document name is used to store and retrieve keyed services and configuration options, which are all case-sensitive.
+        // To achieve parity with ASP.NET Core routing, which is case-insensitive, we need to ensure the document name is lowercased.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
         services.AddOpenApiCore(lowercasedDocumentName);
@@ -110,7 +109,6 @@ public static class OpenApiServiceCollectionExtensions
     {
         services.AddEndpointsApiExplorer();
         services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();

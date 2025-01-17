@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Windows.Win32;
@@ -123,7 +124,7 @@ internal sealed class Response
         if (string.IsNullOrWhiteSpace(reasonPhrase))
         {
             // If the user hasn't set this then it is generated on the fly if possible.
-            reasonPhrase = HttpReasonPhrase.Get(statusCode) ?? string.Empty;
+            reasonPhrase = ReasonPhrases.GetReasonPhrase(statusCode);
         }
         return reasonPhrase;
     }

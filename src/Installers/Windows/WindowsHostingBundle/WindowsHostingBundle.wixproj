@@ -99,18 +99,27 @@
     <BundleRegName>$(BundleNameFull)</BundleRegName>
   </PropertyGroup>
 
+  <!-- CrossArchitectureInstallerBasePath is a global property, so use a new property instead of modifying it -->
+  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' == 'true'">
+    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime', '$(SharedFxMsiVersion)'))</CrossArchitectureInstallerBasePathNormalized>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' != 'true'">
+    <CrossArchitectureInstallerBasePathNormalized>$(CrossArchitectureInstallerBasePath)</CrossArchitectureInstallerBasePathNormalized>
+  </PropertyGroup>
+
   <ItemGroup>
-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
       <TargetPlatform>arm64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
@@ -127,7 +136,7 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
-    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePath)</DefineConstants>
+    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePathNormalized)</DefineConstants>
   </PropertyGroup>
 
   <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">

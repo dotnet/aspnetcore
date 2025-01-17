@@ -59,7 +59,7 @@
 
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
-    <When Condition="'$(ProjectToBuild)' != ''">
+    <When Condition="'$(ProjectToBuild)' != '' and '$(DotNetBuildPass)' != '2'">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -67,6 +67,14 @@
           <RestoreInParallel Condition=" '%(Extension)' == '.nodeproj' ">false</RestoreInParallel>
           <!-- Also do not build in parallel w/in npm projects. -->
           <AdditionalProperties Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
+        </ProjectToBuild>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(DotNetBuildPass)' == '2'">
+      <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
+          <AdditionalProperties>Platform=x86</AdditionalProperties>
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
       </ItemGroup>
     </When>
@@ -253,10 +261,6 @@
         <!-- Build the ANCM msis -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
-      </ItemGroup>
-
-      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
       <ItemGroup>

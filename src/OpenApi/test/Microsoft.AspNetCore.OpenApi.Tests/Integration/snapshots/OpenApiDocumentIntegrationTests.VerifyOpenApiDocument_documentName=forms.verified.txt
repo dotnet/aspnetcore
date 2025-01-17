@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Sample | forms",
     "version": "1.0.0"
@@ -8,7 +8,9 @@
     "/forms/form-file": {
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "requestBody": {
           "content": {
@@ -38,7 +40,9 @@
     "/forms/form-files": {
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "requestBody": {
           "content": {
@@ -68,7 +72,9 @@
     "/forms/form-file-multiple": {
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "requestBody": {
           "content": {
@@ -112,7 +118,9 @@
     "/forms/form-todo": {
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "requestBody": {
           "content": {
@@ -139,7 +147,9 @@
     "/forms/forms-pocos-and-files": {
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "requestBody": {
           "content": {
