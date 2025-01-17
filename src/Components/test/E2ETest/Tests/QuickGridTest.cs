@@ -121,4 +121,31 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("somevalue", grid.GetDomAttribute("custom-attrib"));
         Assert.Contains("custom-class-attrib", grid.GetDomAttribute("class")?.Split(" "));
     }
+
+    [Fact]
+    public void RowClassApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var rows = grid.FindElements(By.CssSelector("tbody > tr"));
+
+        bool isJulieRowFound = false;
+        foreach (var row in rows)
+        {
+            var firstName = row.FindElement(By.CssSelector("td:nth-child(2)")).Text;
+            if (firstName == "Julie")
+            {
+                isJulieRowFound = true;
+                Assert.Equal("highlight", row.GetDomAttribute("class"));
+            }
+            else
+            {
+                Assert.Null(row.GetDomAttribute("class"));
+            }
+        }
+
+        if (!isJulieRowFound)
+        {
+            Assert.Fail("No row found for Julie to highlight.");
+        }
+    }
 }
