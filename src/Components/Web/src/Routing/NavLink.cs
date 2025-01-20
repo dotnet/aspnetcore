@@ -106,6 +106,11 @@ public class NavLink : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Determines whether the current URI should match the link.
+    /// </summary>
+    /// <param name="currentUriAbsolute">The absolute URI of the current location.</param>
+    /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
     protected virtual bool ShouldMatch(string currentUriAbsolute)
     {
         if (_hrefAbsolute == null)
