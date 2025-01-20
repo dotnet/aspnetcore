@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.WebApplication.Conventions.get -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!

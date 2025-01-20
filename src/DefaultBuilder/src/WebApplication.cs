@@ -27,15 +27,20 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
 
     private readonly IHost _host;
-    private readonly List<EndpointDataSource> _dataSources = new();
+    private readonly GlobalEndpointRouteBuilder _globalEndpointRouteBuilder;
+    private readonly RouteGroupBuilder _globalRouteGroupBuilder;
 
     internal WebApplication(IHost host)
     {
         _host = host;
+
+        _globalEndpointRouteBuilder = new(this);
+        _globalRouteGroupBuilder = _globalEndpointRouteBuilder.MapGroup(string.Empty);
+
         ApplicationBuilder = new ApplicationBuilder(host.Services, ServerFeatures);
         Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName ?? nameof(WebApplication));
 
-        Properties[GlobalEndpointRouteBuilderKey] = this;
+        Properties[GlobalEndpointRouteBuilderKey] = _globalEndpointRouteBuilder;
     }
 
     /// <summary>
@@ -80,8 +85,13 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     internal IDictionary<string, object?> Properties => ApplicationBuilder.Properties;
     IDictionary<string, object?> IApplicationBuilder.Properties => Properties;
 
-    internal ICollection<EndpointDataSource> DataSources => _dataSources;
+    internal ICollection<EndpointDataSource> DataSources => ((IEndpointRouteBuilder)_globalRouteGroupBuilder).DataSources;
     ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => DataSources;
+
+    /// <summary>
+    /// Gets the <see cref="IEndpointConventionBuilder"/> for the application.
+    /// </summary>
+    public IEndpointConventionBuilder Conventions => _globalRouteGroupBuilder;
 
     internal ApplicationBuilder ApplicationBuilder { get; }
 
@@ -306,5 +316,14 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
                 throw new NotSupportedException("Unable to get configured middleware.");
             }
         }
+    }
+
+    private sealed class GlobalEndpointRouteBuilder(WebApplication application) : IEndpointRouteBuilder
+    {
+        public IServiceProvider ServiceProvider => application.Services;
+
+        public ICollection<EndpointDataSource> DataSources { get; } = [];
+
+        public IApplicationBuilder CreateApplicationBuilder() => ((IApplicationBuilder)application).New();
     }
 }
