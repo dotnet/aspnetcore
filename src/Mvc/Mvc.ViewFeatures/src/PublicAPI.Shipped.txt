@@ -352,6 +352,7 @@
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo.ViewDataInfo(object container, System.Reflection.PropertyInfo propertyInfo, System.Func<object> valueAccessor) -> void
 ~override Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider.AddValidationAttributes(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer, System.Collections.Generic.IDictionary<string, string> attributes) -> void
 ~override Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper<TModel>.Contextualize(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> void
+~static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets(this Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder builder, string manifestPath = null) -> Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionaryExtensions.AddModelError<TModel>(this Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState, System.Linq.Expressions.Expression<System.Func<TModel, object>> expression, string errorMessage) -> void
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionaryExtensions.AddModelError<TModel>(this Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState, System.Linq.Expressions.Expression<System.Func<TModel, object>> expression, System.Exception exception, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata) -> void
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionaryExtensions.Remove<TModel>(this Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState, System.Linq.Expressions.Expression<System.Func<TModel, object>> expression) -> bool
@@ -595,6 +596,7 @@
 ~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.SessionStateTempDataProvider.SaveTempData(Microsoft.AspNetCore.Http.HttpContext context, System.Collections.Generic.IDictionary<string, object> values) -> void
 ~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider.AddAndTrackValidationAttributes(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer, string expression, System.Collections.Generic.IDictionary<string, string> attributes) -> void
 abstract Microsoft.AspNetCore.Mvc.RemoteAttributeBase.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> string!
+Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilderResourceCollectionExtensions
 Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute
 Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute.AutoValidateAntiforgeryTokenAttribute() -> void
 Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute.CreateInstance(System.IServiceProvider! serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!

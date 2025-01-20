@@ -65,4 +65,21 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase<For
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         Assert.Equal(expected, await response.Content.ReadAsStringAsync());
     }
+
+    // Regression test: https://github.com/dotnet/aspnetcore/issues/57895
+    [Fact]
+    public async Task CanSetHeaderWithAsyncEnumerable()
+    {
+        // Arrange
+        var expected = "[1]";
+
+        // Act
+        var response = await Client.GetAsync($"/SystemTextJsonOutputFormatter/{nameof(SystemTextJsonOutputFormatterController.AsyncEnumerable)}");
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expected, await response.Content.ReadAsStringAsync());
+        var headerValue = Assert.Single(response.Headers.GetValues("Test"));
+        Assert.Equal("t", headerValue);
+    }
 }

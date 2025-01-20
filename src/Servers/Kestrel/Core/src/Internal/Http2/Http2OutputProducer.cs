@@ -28,7 +28,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     private readonly MemoryPool<byte> _memoryPool;
     private readonly Http2Stream _stream;
-    private readonly object _dataWriterLock = new object();
+    private readonly Lock _dataWriterLock = new();
     private readonly Pipe _pipe;
     private readonly ConcurrentPipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
@@ -599,7 +599,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal void OnRequestProcessingEnded()
     {
-        var shouldCompleteStream = false;
+        bool shouldCompleteStream;
         lock (_dataWriterLock)
         {
             if (_requestProcessingComplete)
@@ -625,7 +625,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal ValueTask<FlushResult> CompleteResponseAsync()
     {
-        var shouldCompleteStream = false;
+        bool shouldCompleteStream;
         ValueTask<FlushResult> task = default;
 
         lock (_dataWriterLock)
@@ -705,8 +705,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     public bool TryUpdateStreamWindow(int bytes)
     {
-        var schedule = false;
-
+        bool schedule;
         lock (_dataWriterLock)
         {
             var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;

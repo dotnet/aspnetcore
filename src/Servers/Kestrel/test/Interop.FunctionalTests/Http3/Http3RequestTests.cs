@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
@@ -960,6 +961,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange
@@ -1143,6 +1145,137 @@ public class Http3RequestTests : LoggedTest
 
             // Assert
             await host.StopAsync().DefaultTimeout();
+        }
+    }
+
+    internal class MemoryPoolFeature : IMemoryPoolFeature
+    {
+        public MemoryPool<byte> MemoryPool { get; set; }
+    }
+
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http2)]
+    public async Task ApplicationWriteWhenConnectionClosesPreservesMemory(HttpProtocols protocol)
+    {
+        // Arrange
+        var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
+
+        var writingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancelTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            try
+            {
+                var requestBody = context.Request.Body;
+
+                await context.Response.BodyWriter.FlushAsync();
+
+                // Test relies on Htt2Stream/Http3Stream aborting the token after stopping Http2OutputProducer/Http3OutputProducer
+                // It's very fragile but it is sort of a best effort test anyways
+                // Additionally, Http2 schedules it's stopping, so doesn't directly do anything to the PipeWriter when calling stop on Http2OutputProducer
+                context.RequestAborted.Register(() =>
+                {
+                    cancelTcs.SetResult();
+                });
+
+                while (true)
+                {
+                    var memory = context.Response.BodyWriter.GetMemory();
+
+                    // Unblock client-side to close the connection
+                    writingTcs.TrySetResult();
+
+                    await cancelTcs.Task;
+
+                    // Verify memory is still rented from the memory pool after the producer has been stopped
+                    Assert.True(memoryPool.ContainsMemory(memory));
+
+                    context.Response.BodyWriter.Advance(memory.Length);
+                    var flushResult = await context.Response.BodyWriter.FlushAsync();
+
+                    if (flushResult.IsCanceled || flushResult.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+
+                completionTcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                writingTcs.TrySetException(ex);
+                // Exceptions annoyingly don't show up on the client side when doing E2E + cancellation testing
+                // so we need to use a TCS to observe any unexpected errors
+                completionTcs.TrySetException(ex);
+                throw;
+            }
+        }, protocol: protocol,
+        configureKestrel: o =>
+        {
+            o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+            {
+                listenOptions.Protocols = protocol;
+                listenOptions.UseHttps(TestResources.GetTestCertificate()).Use(@delegate =>
+                {
+                    // Connection middleware for Http/1.1 and Http/2
+                    return (context) =>
+                    {
+                        // Set the memory pool used by the connection so we can observe if memory from the PipeWriter is still rented from the pool
+                        context.Features.Set<IMemoryPoolFeature>(new MemoryPoolFeature() { MemoryPool = memoryPool });
+                        return @delegate(context);
+                    };
+                });
+
+                IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
+                multiplexedConnectionBuilder.Use(@delegate =>
+                {
+                    // Connection middleware for Http/3
+                    return (context) =>
+                    {
+                        // Set the memory pool used by the connection so we can observe if memory from the PipeWriter is still rented from the pool
+                        context.Features.Set<IMemoryPoolFeature>(new MemoryPoolFeature() { MemoryPool = memoryPool });
+                        return @delegate(context);
+                    };
+                });
+            });
+        });
+
+        var httpClientHandler = new HttpClientHandler();
+        httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+        using (var host = builder.Build())
+        using (var client = new HttpClient(httpClientHandler))
+        {
+            await host.StartAsync().DefaultTimeout();
+
+            var cts = new CancellationTokenSource();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+            request.Version = GetProtocol(protocol);
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            // Act
+            var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            Logger.LogInformation("Client waiting for headers.");
+            var response = await responseTask.DefaultTimeout();
+            await writingTcs.Task;
+
+            Logger.LogInformation("Client canceled request.");
+            response.Dispose();
+
+            // Assert
+            await host.StopAsync().DefaultTimeout();
+
+            await completionTcs.Task;
+
+            memoryPool.Dispose();
+
+            await memoryPool.WhenAllBlocksReturnedAsync(TimeSpan.FromSeconds(15));
         }
     }
 
@@ -1859,6 +1992,10 @@ public class Http3RequestTests : LoggedTest
         var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        // Wait 2.5 seconds in debug (local development) and 15 seconds in production (CI)
+        // Use half the default timeout to ensure the host shuts down before the test throws an error while waiting.
+        var shutdownTimeout = Microsoft.AspNetCore.InternalTesting.TaskExtensions.DefaultTimeoutTimeSpan / 2;
+
         var builder = CreateHostBuilder(async context =>
         {
             context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
@@ -1888,7 +2025,8 @@ public class Http3RequestTests : LoggedTest
                 listenOptions.Protocols = protocol;
                 listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
-        });
+        },
+        shutdownTimeout: shutdownTimeout);
 
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())
@@ -1928,17 +2066,21 @@ public class Http3RequestTests : LoggedTest
                 }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
             }
 
+            Logger.LogInformation("Getting read task");
             var readTask = await readAsyncTask.Task.DefaultTimeout();
 
             // Assert
+            Logger.LogInformation("Waiting for error from read task");
             var ex = await Assert.ThrowsAnyAsync<Exception>(() => readTask).DefaultTimeout();
-            while (ex.InnerException != null)
+
+            var rootException = ex;
+            while (rootException.InnerException != null)
             {
-                ex = ex.InnerException;
+                rootException = rootException.InnerException;
             }
 
-            Assert.IsType<ConnectionAbortedException>(ex);
-            Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", ex.Message);
+            Assert.IsType<ConnectionAbortedException>(rootException);
+            Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", rootException.Message);
 
             await requestAbortedTcs.Task.DefaultTimeout();
 
@@ -2058,8 +2200,8 @@ public class Http3RequestTests : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
-    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
+    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, TimeSpan? shutdownTimeout = null)
     {
-        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
+        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel, shutdownTimeout: shutdownTimeout);
     }
 }

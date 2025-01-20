@@ -12,13 +12,11 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
     <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
     <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
 
-    <Compile Include="..\..\..\Hybrid\src\Internal\RecyclableArrayBufferWriter.cs" LinkBase="Microsoft.Extensions.Caching.Hybrid" />
     <!--<Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />-->
 
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />

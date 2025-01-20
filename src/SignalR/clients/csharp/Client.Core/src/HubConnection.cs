@@ -1602,7 +1602,7 @@ public partial class HubConnection : IAsyncDisposable
         var timer = new TimerAwaitable(TickRate, TickRate);
         var timerTask = connectionState.TimerLoop(timer);
 
-        var uploadStreamSource = new CancellationTokenSource();
+        using var uploadStreamSource = new CancellationTokenSource();
         connectionState.UploadStreamToken = uploadStreamSource.Token;
         var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
 

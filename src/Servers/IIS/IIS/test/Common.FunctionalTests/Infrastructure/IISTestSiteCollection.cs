@@ -9,9 +9,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// This type just maps collection names to available fixtures
 /// </summary>
 [CollectionDefinition(Name)]
-public class IISTestSiteCollection : ICollectionFixture<IISTestSiteFixture>
+public class IISTestSiteCollectionInProc : ICollectionFixture<IISTestSiteFixture>
 {
-    public const string Name = nameof(IISTestSiteCollection);
+    public const string Name = nameof(IISTestSiteCollectionInProc);
+}
+
+[CollectionDefinition(Name)]
+public class IISTestSiteCollectionOutOfProc : ICollectionFixture<IISTestSiteFixture>
+{
+    public const string Name = nameof(IISTestSiteCollectionOutOfProc);
 }
 
 [CollectionDefinition(Name)]

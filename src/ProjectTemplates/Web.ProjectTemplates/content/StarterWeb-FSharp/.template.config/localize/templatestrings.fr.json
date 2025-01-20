@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP IIS Express dans launchSettings.json.",
   "symbols/iisHttpsPort/description": "Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si IndividualAuth ou OrganizationalAuth est utilisé).",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si Individual, IndividualB2C, SingleOrg ou MultiOrg ne sont pas utilisés pour --auth.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",

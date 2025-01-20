@@ -23,7 +23,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -38,9 +38,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert the schemas with the discriminator have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ShapeTriangle", out var triangleSchema));
             Assert.Contains(schema.Discriminator.PropertyName, triangleSchema.Properties.Keys);
-            Assert.Equal("triangle", ((OpenApiString)triangleSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("triangle", triangleSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             Assert.True(document.Components.Schemas.TryGetValue("ShapeSquare", out var squareSchema));
-            Assert.Equal("square", ((OpenApiString)squareSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("square", squareSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
         });
     }
 
@@ -60,7 +60,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -77,15 +77,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert schema with discriminator = 0 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithCity", out var citySchema));
             Assert.Contains(schema.Discriminator.PropertyName, citySchema.Properties.Keys);
-            Assert.Equal(0, ((OpenApiInteger)citySchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal(0, citySchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
             // Assert schema with discriminator = 1 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithTimeSeries", out var timeSeriesSchema));
             Assert.Contains(schema.Discriminator.PropertyName, timeSeriesSchema.Properties.Keys);
-            Assert.Equal(1, ((OpenApiInteger)timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal(1, timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
             // Assert schema with discriminator = 2 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithLocalNews", out var newsSchema));
             Assert.Contains(schema.Discriminator.PropertyName, newsSchema.Properties.Keys);
-            Assert.Equal(2, ((OpenApiInteger)newsSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal(2, newsSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<int>());
         });
     }
 
@@ -105,7 +105,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("discriminator", schema.Discriminator.PropertyName);
             Assert.Contains(schema.Discriminator.PropertyName, schema.Required);
@@ -120,11 +120,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert schema with discriminator = 0 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PersonStudent", out var citySchema));
             Assert.Contains(schema.Discriminator.PropertyName, citySchema.Properties.Keys);
-            Assert.Equal("student", ((OpenApiString)citySchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("student", citySchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             // Assert schema with discriminator = 1 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PersonTeacher", out var timeSeriesSchema));
             Assert.Contains(schema.Discriminator.PropertyName, timeSeriesSchema.Properties.Keys);
-            Assert.Equal("teacher", ((OpenApiString)timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("teacher", timeSeriesSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
         });
     }
 
@@ -144,7 +144,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings are not configured for this type since we
             // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
             // property associated with them.
@@ -156,11 +156,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert schema with discriminator = "paint" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ColorPaintColor", out var paintSchema));
             Assert.Contains("$type", paintSchema.Properties.Keys);
-            Assert.Equal("paint", ((OpenApiString)paintSchema.Properties["$type"].Enum.First()).Value);
+            Assert.Equal("paint", paintSchema.Properties["$type"].Enum.First().GetValue<string>());
             // Assert schema with discriminator = "fabric" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ColorFabricColor", out var fabricSchema));
             Assert.Contains("$type", fabricSchema.Properties.Keys);
-            Assert.Equal("fabric", ((OpenApiString)fabricSchema.Properties["$type"].Enum.First()).Value);
+            Assert.Equal("fabric", fabricSchema.Properties["$type"].Enum.First().GetValue<string>());
             // Assert that schema for `Color` has been inserted into the components without a discriminator
             Assert.True(document.Components.Schemas.TryGetValue("ColorBase", out var colorSchema));
             Assert.DoesNotContain("$type", colorSchema.Properties.Keys);
@@ -183,7 +183,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Collection(schema.Discriminator.Mapping,
@@ -208,15 +208,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert schema with discriminator = "dog" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PetDog", out var dogSchema));
             Assert.Contains(schema.Discriminator.PropertyName, dogSchema.Properties.Keys);
-            Assert.Equal("dog", ((OpenApiString)dogSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("dog", dogSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             // Assert schema with discriminator = "cat" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PetCat", out var catSchema));
             Assert.Contains(schema.Discriminator.PropertyName, catSchema.Properties.Keys);
-            Assert.Equal("cat", ((OpenApiString)catSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("cat", catSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             // Assert schema with discriminator = "cat" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PetPet", out var petSchema));
             Assert.Contains(schema.Discriminator.PropertyName, petSchema.Properties.Keys);
-            Assert.Equal("pet", ((OpenApiString)petSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("pet", petSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
         });
     }
 
@@ -236,7 +236,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert discriminator mappings are not configured for this type since we
             // can't meet OpenAPI's restrictions that derived types _always_ have a discriminator
             // property associated with them.
@@ -272,7 +272,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
             Assert.Equal("Employee", mediaType.Schema.Reference.Id);
-            var schema = mediaType.Schema.GetEffective(document);
+            var schema = mediaType.Schema;
             // Assert that discriminator mappings are configured correctly for type.
             Assert.Equal("$type", schema.Discriminator.PropertyName);
             Assert.Collection(schema.Discriminator.Mapping,
@@ -289,9 +289,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 schema => Assert.Equal("EmployeeEmployee", schema.Reference.Id));
             // Assert that schemas without discriminators have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("EmployeeManager", out var managerSchema));
-            Assert.Equal("manager", ((OpenApiString)managerSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("manager", managerSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             Assert.True(document.Components.Schemas.TryGetValue("EmployeeEmployee", out var employeeSchema));
-            Assert.Equal("employee", ((OpenApiString)employeeSchema.Properties[schema.Discriminator.PropertyName].Enum.First()).Value);
+            Assert.Equal("employee", employeeSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             // Assert that the schema has a correct self-reference to the base-type. This points to the schema that contains the discriminator.
             Assert.Equal("Employee", employeeSchema.Properties["manager"].Reference.Id);
         });

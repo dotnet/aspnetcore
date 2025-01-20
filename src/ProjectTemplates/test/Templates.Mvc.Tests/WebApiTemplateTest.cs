@@ -98,7 +98,7 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
-    [ConditionalTheory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/58957")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]

@@ -57,7 +57,7 @@ extends:
 
 Note: Multiple outputs are ONLY applicable to 1ES PT publishing (only usable when referencing `templates-official`).
 
-# Development notes
+## Development notes
 
 **Folder / file structure**
 

@@ -11,8 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Grab RuntimeList.xml because it's not placed in the .dotnet/ folder. -->
-    <None Include="$(ArtifactsObjDir)Microsoft.AspNetCore.App.Runtime\RuntimeList.xml"
+    <!--
+      Grab RuntimeList.xml because it's not placed in the .dotnet/ folder.
+      This depends on internal implementation details of the SharedFramework SDK and should be changed to use a supported mechanism
+      to discover the runtime list.
+    -->
+    <None Include="$(ArtifactsObjDir)aspnetcore-sfx\$(Configuration)\$(TargetRuntimeIdentifier)\RuntimeList.xml"
         CopyToOutputDirectory="PreserveNewest" />
 
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
@@ -77,7 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -85,12 +89,16 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Targets="ResolveTargetingPackContent">
-      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+        Targets="GetFilesToPackage">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackFiles" />
     </MSBuild>
 
     <ItemGroup>
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles)" Condition="$([System.String]::new('%(_TargetingPackFiles.Directory)').Contains('analyzers'))" />
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles->WithMetadataValue('OutputItemType','AspNetCoreAnalyzer'))" />
+      <_TargetingPackDependencies Include="@(_TargetingPackFiles->WithMetadataValue('Extension','.dll'))" Exclude="@(_AnalyzersInTargetingPack)" />
+
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
         <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>

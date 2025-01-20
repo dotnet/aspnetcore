@@ -19,6 +19,7 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
+  enableMicrobuildForMacAndLinux: false
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
@@ -127,18 +128,11 @@ jobs:
       - ${{ preStep }}
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-      - task: MicroBuildSigningPlugin@4
-        displayName: Install MicroBuild plugin
-        inputs:
-          signType: $(_SignType)
-          zipSources: false
-          feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-        env:
-          TeamName: $(_TeamName)
-          MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
+    - template: /eng/common/core-templates/steps/install-microbuild.yml
+      parameters:
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
-        condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@1
@@ -167,14 +161,12 @@ jobs:
   - ${{ each step in parameters.componentGovernanceSteps }}:
     - ${{ step }}
 
-  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: MicroBuildCleanup@1
-        displayName: Execute Microbuild cleanup tasks
-        condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/core-templates/steps/cleanup-microbuild.yml
+      parameters:
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
-        env:
-          TeamName: $(_TeamName)
 
   # Publish test results
   - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:

@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Sample | responses",
     "version": "1.0.0"
@@ -8,7 +8,9 @@
     "/responses/200-add-xml": {
       "get": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "responses": {
           "200": {
@@ -32,7 +34,9 @@
     "/responses/200-only-xml": {
       "get": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "responses": {
           "200": {
@@ -51,7 +55,9 @@
     "/responses/triangle": {
       "get": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "responses": {
           "200": {
@@ -70,7 +76,9 @@
     "/responses/shape": {
       "get": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "responses": {
           "200": {

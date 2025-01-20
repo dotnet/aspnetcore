@@ -92,8 +92,8 @@ public class IdentityUIPackageTest : LoggedTest
             "Identity/lib/jquery-validation/dist/additional-methods.min.js",
             "Identity/lib/jquery-validation/dist/jquery.validate.js",
             "Identity/lib/jquery-validation/dist/jquery.validate.min.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js",
+            "Identity/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js",
+            "Identity/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js",
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
     };
 
@@ -121,7 +121,7 @@ public class IdentityUIPackageTest : LoggedTest
         await project.RunDotNetEfCreateMigrationAsync("razorpages");
         project.AssertEmptyMigration("razorpages");
 
-        var versionValidator = "Bootstrap v5.1.0";
+        var versionValidator = "Bootstrap  v5.3.3";
         using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
             Assert.False(

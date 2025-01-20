@@ -87,7 +87,7 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
     });
 
     // Trim of trailing space.
-    return str.substr(0, str.length - 1);
+    return str.substring(0, str.length - 1);
 }
 
 // Also in signalr-protocol-msgpack/Utils.ts

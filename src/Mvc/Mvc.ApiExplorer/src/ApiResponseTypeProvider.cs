@@ -166,11 +166,14 @@ internal sealed class ApiResponseTypeProvider
 
                 var statusCode = metadataAttribute.StatusCode;
 
+                var description = metadataAttribute.Description;
+
                 var apiResponseType = new ApiResponseType
                 {
                     Type = metadataAttribute.Type,
                     StatusCode = statusCode,
                     IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
+                    Description = description
                 };
 
                 if (apiResponseType.Type == typeof(void))

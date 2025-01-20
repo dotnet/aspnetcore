@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+
+  <PropertyGroup>
+    <PlatformPackageType>RuntimePack</PlatformPackageType>
+    <SharedFrameworkName>Microsoft.AspNetCore.App</SharedFrameworkName>
+    <SharedFrameworkFriendlyName>Microsoft ASP.NET Core</SharedFrameworkFriendlyName>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageTags>aspnetcore;shared-framework</PackageTags>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <!-- System.Diagnostics.EventLog.Messages.dll has no file version -->
+    <PermitDllAndExeFilesLackingFileVersion>true</PermitDllAndExeFilesLackingFileVersion>
+    <!-- Target the latest runtime patch so the latest version is specified in runtimeconfig.json -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <RollForward>LatestPatch</RollForward>
+    <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6. -->
+    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le'">false</PublishReadyToRun>
+    <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
+    <!-- Don't use ReadyToRun when explicitly opted out -->
+    <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
+
+    <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
+    <GenerateInstallers>true</GenerateInstallers>
+    <ProductBrandPrefix>Microsoft ASP.NET Core</ProductBrandPrefix>
+    <VSInsertionShortComponentName>AspNetCore.SharedFramework</VSInsertionShortComponentName>
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <InstallerPackageDescription>$(SharedFxDescription)</InstallerPackageDescription>
+    <LicenseFile>$(RepoRoot)LICENSE.txt</LicenseFile>
+    <MajorVersion>$(AspNetCoreMajorVersion)</MajorVersion>
+    <MinorVersion>$(AspNetCoreMinorVersion)</MinorVersion>
+    <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
+    <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetRuntimeDependencyMajorMinorVersion>
+
+    <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
+    <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+
+    <!-- TODO: Try to remove this disable property -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
+    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
+      <IncludeAssets>Runtime;Native</IncludeAssets>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <IgnoredDuplicateType Include="Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.Logging.LoggingBuilderExtensions" />
+  </ItemGroup>
+
+  <!-- Add native dependencies to the package when required. -->
+  <PropertyGroup>
+    <NativePlatform>$(TargetArchitecture)</NativePlatform>
+    <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) AND '$(MSBuildRestoreSessionId)' == ''"
+        Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
+      <OutputItemType>NativeRuntimeAsset</OutputItemType>
+      <!-- C++ projects don't invoke GetTargetPath by default when building. -->
+      <Targets>Build;GetTargetPath</Targets>
+    </ProjectReference>
+
+    <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
+        Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
+  </ItemGroup>
+
+
+  <Target Name="_WarnAboutUnbuiltNativeDependencies"
+          BeforeTargets="Build"
+          Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
+              !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
+    <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
+  </Target>
+
+  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishToDisk"
+             Properties="OutputPath=$(SharedFrameworkLayoutRoot)" />
+  </Target>
+
+  <Target Name="ReturnProductVersion" Returns="$(Version)" />
+</Project>

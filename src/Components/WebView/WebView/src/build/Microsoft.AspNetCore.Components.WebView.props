@@ -1,5 +1,56 @@
 <Project>
   <PropertyGroup>
-    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>    
+    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>
+    <CompressionEnabled>false</CompressionEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorWebViewAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorWebViewAssets" DependsOnTargets="GenerateJSModuleManifestBuildStaticWebAssets">
+    <PropertyGroup>
+      <_WebViewAssetsBasePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\</_WebViewAssetsBasePath>
+      <_BlazorModulesFilePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\blazor.modules.json</_BlazorModulesFilePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_WebViewAssetCandidates Include="$(_WebViewAssetsBasePath)blazor.webview.js">
+        <RelativePath>_framework/blazor.webview.js</RelativePath>
+      </_WebViewAssetCandidates>
+      <_WebViewAssetCandidates Include="$(_BlazorModulesFilePath)" Condition="'@(_ExistingBuildJSModules)' == ''">
+        <RelativePath>_framework/blazor.modules.json</RelativePath>
+      </_WebViewAssetCandidates>
+
+      <_MissingWebViewAssetCandidates
+        Include="@(_WebViewAssetCandidates)"
+        Condition="!EXISTS('%(Identity)')" />
+      <_WebViewAssetCandidates Remove="@(_MissingWebViewAssetCandidates)" />
+    </ItemGroup>
+
+    <Message
+      Importance="High"
+      Condition="'@(_MissingWebViewAssetCandidates->Count())' != '0'"
+      Text="WebView asset '%(_MissingWebViewAssetCandidates.Identity)' could not be found and won't be included in the project." />
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_WebViewAssetCandidates)"
+      SourceId="$(PackageId)"
+      ContentRoot="$(_WebViewAssetsBasePath)"
+      SourceType="Discovered"
+      AssetKind="All"
+      AssetMode="All"
+      AssetRole="Primary"
+      FingerprintCandidates="true"
+      BasePath="/">
+      <Output TaskParameter="Assets" ItemName="_WebViewFrameworkStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_WebViewFrameworkStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
+

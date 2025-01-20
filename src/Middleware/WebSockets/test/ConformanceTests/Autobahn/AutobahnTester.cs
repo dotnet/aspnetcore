@@ -135,7 +135,7 @@ public class AutobahnTester : IDisposable
         {
             Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
             ApplicationType = ApplicationType.Portable,
-            TargetFramework = "Net9.0",
+            TargetFramework = "Net10.0",
             EnvironmentName = environment,
             SiteName = "HttpTestSite", // This is configured in the Http.config
             ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,

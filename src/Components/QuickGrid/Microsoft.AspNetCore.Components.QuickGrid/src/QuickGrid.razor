@@ -65,7 +65,8 @@
 
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex">
+        var rowClass = RowClass?.Invoke(item);
+        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@rowClass">
             @foreach (var col in _columns)
             {
                 <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>

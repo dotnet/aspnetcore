@@ -14,7 +14,7 @@ public sealed class UserJwtsTestFixture : IDisposable
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -79,6 +79,10 @@ public sealed class UserJwtsTestFixture : IDisposable
 
         File.WriteAllText(
             Path.Combine(projectPath.FullName, "appsettings.Development.json"),
+            "{}");
+
+        File.WriteAllText(
+            Path.Combine(projectPath.FullName, "appsettings.Local.json"),
             "{}");
 
         if (hasSecret)

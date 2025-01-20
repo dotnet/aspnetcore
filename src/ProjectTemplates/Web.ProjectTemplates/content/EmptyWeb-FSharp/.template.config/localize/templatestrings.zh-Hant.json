@@ -8,7 +8,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
   "symbols/iisHttpsPort/description": "launchSettings.json 中 IIS Express HTTPS 端點要使用的連接埠號碼。只有在未使用參數 no-https 時，才適用此選項 (如果使用 IndividualAuth 或 OrganizationalAuth，則會忽略 no-https)。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。只有當 Individual、IndividualB2C、SingleOrg 或 MultiOrg 未用於 --auth 時，才適用此選項。",
   "postActions/restore/description": "還原此專案所需的 NuGet 套件。",

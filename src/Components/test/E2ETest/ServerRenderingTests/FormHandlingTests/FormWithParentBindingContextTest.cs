@@ -8,7 +8,6 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -108,7 +107,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 var error = Assert.Single(errors);
                 Assert.Equal("Name is too long", error.Text);
-                Assert.Equal("John", Browser.FindElement(By.CssSelector("input[name='Parameter.FirstName']")).GetAttribute("value"));
+                Assert.Equal("John", Browser.FindElement(By.CssSelector("input[name='Parameter.FirstName']")).GetDomProperty("value"));
             },
         };
         DispatchToFormCore(dispatchToForm);
@@ -151,7 +150,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 var error = Assert.Single(errors);
                 Assert.Equal("The value 'abc' is not valid for 'Id'.", error.Text);
-                Assert.Equal("abc", Browser.FindElement(By.CssSelector("form[name=bind-integer] input[name=Id]")).GetAttribute("value"));
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("form[name=bind-integer] input[name=Id]")).GetDomProperty("value"));
             },
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -266,8 +265,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     {
                         Assert.Equal("The value 'invalid' is not valid for 'OtherParameter'.", error.Text);
                     });
-                Assert.Equal("abcd", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
-                Assert.Equal("invalid", Browser.FindElement(By.CssSelector("input[name=OtherParameter]")).GetAttribute("value"));
+                Assert.Equal("abcd", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetDomProperty("value"));
+                Assert.Equal("invalid", Browser.FindElement(By.CssSelector("input[name=OtherParameter]")).GetDomProperty("value"));
             },
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -295,7 +294,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     {
                         Assert.Equal("The value 'abc' is not valid for 'Parameter'.", error.Text);
                     });
-                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetDomProperty("value"));
             }
         };
         DispatchToFormCore(dispatchToForm);
@@ -332,7 +331,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -389,7 +388,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -440,7 +439,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -478,7 +477,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -513,7 +512,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -552,7 +551,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -596,7 +595,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -645,7 +644,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.NotEmpty(form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetDomAttribute("action"));
         }
     }
 
@@ -671,7 +670,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     {
                         Assert.Equal("The value 'abc' is not valid for 'Parameter'.", error.Text);
                     });
-                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetDomProperty("value"));
             }
         };
         DispatchToFormCore(dispatchToForm);
@@ -978,14 +977,14 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("send")).Click();
         Browser.Exists(By.Id("pass"));
 
-        Browser.Equal("StringViaExplicitPropertyName value", () => Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).GetAttribute("value"));
-        Browser.Equal("StringViaOverriddenName value", () => Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).GetAttribute("value"));
-        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).GetAttribute("value"));
-        Browser.Equal("StringViaExpression value", () => Browser.Exists(By.CssSelector("#StringViaExpression input")).GetAttribute("value"));
-        Browser.Equal("StringViaExpressionWithHandler value", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).GetAttribute("value"));
-        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).GetAttribute("value"));
-        Browser.Equal("PersonName value", () => Browser.Exists(By.CssSelector("#PersonName input")).GetAttribute("value"));
-        Browser.Equal("123", () => Browser.Exists(By.CssSelector("#PersonAge input")).GetAttribute("value"));
+        Browser.Equal("StringViaExplicitPropertyName value", () => Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).GetDomProperty("value"));
+        Browser.Equal("StringViaOverriddenName value", () => Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).GetDomProperty("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).GetDomProperty("value"));
+        Browser.Equal("StringViaExpression value", () => Browser.Exists(By.CssSelector("#StringViaExpression input")).GetDomProperty("value"));
+        Browser.Equal("StringViaExpressionWithHandler value", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).GetDomProperty("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).GetDomProperty("value"));
+        Browser.Equal("PersonName value", () => Browser.Exists(By.CssSelector("#PersonName input")).GetDomProperty("value"));
+        Browser.Equal("123", () => Browser.Exists(By.CssSelector("#PersonAge input")).GetDomProperty("value"));
     }
 
     [Fact]
@@ -1160,15 +1159,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         // Remember that the rendercount would be reset to zero since this is SSR, so
         // receiving 2 here shows we did render twice on this cycle
         Browser.Exists(By.Id("mutate-and-notify")).Click();
-        Browser.Equal("Abc Modified", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
-        Browser.Equal("Def Modified", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("Abc Modified", () => Browser.Exists(By.Id("simple-value")).GetDomProperty("value"));
+        Browser.Equal("Def Modified", () => Browser.Exists(By.Id("complex-value")).GetDomProperty("value"));
         Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
         Browser.Exists(By.Id("received-notification"));
 
         // Can perform a submit that replaces the received object entirely
         Browser.Exists(By.Id("clear-and-notify")).Click();
-        Browser.Equal("", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
-        Browser.Equal("", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("", () => Browser.Exists(By.Id("simple-value")).GetDomProperty("value"));
+        Browser.Equal("", () => Browser.Exists(By.Id("complex-value")).GetDomProperty("value"));
         Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
         Browser.Exists(By.Id("received-notification"));
     }
@@ -1251,7 +1250,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54447")]
     public void CanBindToFormWithFiles()
     {
         var profilePicture = TempFile.Create(_tempDirectory, "txt", "This is a profile picture.");
@@ -1497,14 +1495,14 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         // Submit the form
         Browser.FindElement(By.Id("some-text")).SendKeys("test string");
-        Browser.Equal("test string", () => Browser.FindElement(By.Id("some-text")).GetAttribute("value"));
+        Browser.Equal("test string", () => Browser.FindElement(By.Id("some-text")).GetDomProperty("value"));
         Browser.Exists(By.Id("submit-button")).Click();
 
         // Wait for the async/streaming process to complete. We know this happened
         // if the loading indicator says we're done, and the textbox was cleared
         // due to the refresh
         Browser.Equal("False", () => Browser.FindElement(By.Id("loading-indicator")).Text);
-        Browser.Equal("", () => Browser.FindElement(By.Id("some-text")).GetAttribute("value"));
+        Browser.Equal("", () => Browser.FindElement(By.Id("some-text")).GetDomProperty("value"));
 
         // Checking that the history entry was not pushed
         Browser.Navigate().Back();
@@ -1534,7 +1532,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         if (dispatch.ExpectedHandlerValue != null)
         {
             var handlerInput = form.FindElement(By.CssSelector("input[type=hidden][name=_handler]"));
-            Assert.Equal(dispatch.ExpectedHandlerValue, handlerInput.GetAttribute("value"));
+            Assert.Equal(dispatch.ExpectedHandlerValue, handlerInput.GetDomProperty("value"));
         }
 
         if (!dispatch.DispatchEvent)
@@ -1600,7 +1598,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 // Verify the same form element is still in the page
                 // We wouldn't be allowed to read the attribute if the element is stale
-                Assert.Equal("post", form.GetAttribute("method"));
+                Assert.Equal("post", form.GetDomAttribute("method"), ignoreCase: true);
             }
         }
     }

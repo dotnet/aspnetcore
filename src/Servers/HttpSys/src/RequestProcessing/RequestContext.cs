@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
@@ -101,7 +102,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         // Set the status code and reason phrase
         Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
-        Response.ReasonPhrase = HttpReasonPhrase.Get(StatusCodes.Status101SwitchingProtocols);
+        Response.ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
 
         Response.SendOpaqueUpgrade(); // TODO: Async
         Request.SwitchToOpaqueMode();
@@ -171,9 +172,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             _disconnectToken = new CancellationToken(canceled: true);
         }
         ForceCancelRequest();
-        Request.Dispose();
+        // Request and/or Response can be null (even though the property doesn't say it can)
+        // if the constructor throws (can happen for invalid path format)
+        Request?.Dispose();
         // Only Abort, Response.Dispose() tries a graceful flush
-        Response.Abort();
+        Response?.Abort();
     }
 
     private static void Abort(object? state)
@@ -192,15 +195,22 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         try
         {
+            // Shouldn't be able to get here when this is null, but just in case we'll noop
+            if (_requestId is null)
+            {
+                return;
+            }
+
             var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
-                Request.RequestId, default);
+                _requestId.Value, default);
 
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.
             // The only way to cancel now is with CancelIoEx.
             if (statusCode == ErrorCodes.ERROR_CONNECTION_INVALID)
             {
-                Response.CancelLastWrite();
+                // Can be null if processing the request threw and the response object was never created.
+                Response?.CancelLastWrite();
             }
         }
         catch (ObjectDisposedException)

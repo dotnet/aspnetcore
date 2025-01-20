@@ -40,7 +40,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private bool _streamClosed;
     private bool _serverAborted;
     private bool _clientAbort;
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
 
     public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
     {
