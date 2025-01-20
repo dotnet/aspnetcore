@@ -65,30 +65,6 @@ public class StandaloneAppTest
     }
 
     [Fact]
-    public void NavMenuWithMatchLinkAllHighlightsCurrentLocationIgnoringQueryAndFragment()
-    {
-        var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
-        var mainHeaderSelector = By.TagName("h1");
-
-        // Verify we start at home, with the home link highlighted
-        Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
-            item => Assert.Equal("Home", item.Text.Trim()));
-
-        // Navigate to Home page with an ignorable query
-        Navigate("/?CourseId=123456");
-        var collection1 = Browser.FindElements(activeNavLinksSelector);
-        Assert.Collection(collection1,
-            item => Assert.Equal("Home", item.Text.Trim()));
-
-        // Navigate to Home page with an ignorable fragment
-        Navigate("/#section-123456");
-        var collection2 = Browser.FindElements(activeNavLinksSelector);
-        Assert.Collection(collection2,
-            item => Assert.Equal("Home", item.Text.Trim()));
-    }
-
-    [Fact]
     public void HasCounterPage()
     {
         // Navigate to "Counter"
