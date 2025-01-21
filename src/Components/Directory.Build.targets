@@ -1,5 +1,5 @@
 ﻿<Project>
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' == 'true'">
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false'">
     <BlazorWebAssemblyJSPath
         Condition=" '$(Configuration)' == 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorWebAssemblyJSPath
