@@ -23,6 +23,7 @@
     <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(UseBlazorFrameworkDebugAssets)' == 'true'">
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js.map">
         <RelativePath>_framework/blazor.web.js.map</RelativePath>
+      </_FrameworkStaticWebAssetCandidate>
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.server.js.map">
         <RelativePath>_framework/blazor.server.js.map</RelativePath>
       </_FrameworkStaticWebAssetCandidate>
