@@ -49,7 +49,7 @@ public class HeadModificationPrerenderingTest : ServerTestBase<BasicTestAppServe
 
         // Check that head metadata can be changed after prerendering.
         Browser.Equal("Updated title 1", () => Browser.Title);
-        Browser.Equal("Updated description 1", () => Browser.FindElement(By.Id("meta-description")).GetAttribute("content"));
+        Browser.Equal("Updated description 1", () => Browser.FindElement(By.Id("meta-description")).GetDomAttribute("content"));
     }
 
     private void BeginInteractivity()

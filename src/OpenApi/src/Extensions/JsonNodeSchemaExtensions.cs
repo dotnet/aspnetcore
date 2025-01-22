@@ -27,26 +27,26 @@ internal static class JsonNodeSchemaExtensions
 {
     private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
     {
-        [typeof(bool)] = new() { Type = "boolean" },
-        [typeof(byte)] = new() { Type = "integer", Format = "uint8" },
-        [typeof(byte[])] = new() { Type = "string", Format = "byte" },
-        [typeof(int)] = new() { Type = "integer", Format = "int32" },
-        [typeof(uint)] = new() { Type = "integer", Format = "uint32" },
-        [typeof(long)] = new() { Type = "integer", Format = "int64" },
-        [typeof(ulong)] = new() { Type = "integer", Format = "uint64" },
-        [typeof(short)] = new() { Type = "integer", Format = "int16" },
-        [typeof(ushort)] = new() { Type = "integer", Format = "uint16" },
-        [typeof(float)] = new() { Type = "number", Format = "float" },
-        [typeof(double)] = new() { Type = "number", Format = "double" },
-        [typeof(decimal)] = new() { Type = "number", Format = "double" },
-        [typeof(DateTime)] = new() { Type = "string", Format = "date-time" },
-        [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
-        [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
-        [typeof(char)] = new() { Type = "string", Format = "char" },
-        [typeof(Uri)] = new() { Type = "string", Format = "uri" },
-        [typeof(string)] = new() { Type = "string" },
-        [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
-        [typeof(DateOnly)] = new() { Type = "string", Format = "date" },
+        [typeof(bool)] = new() { Type = JsonSchemaType.Boolean },
+        [typeof(byte)] = new() { Type = JsonSchemaType.Integer, Format = "uint8" },
+        [typeof(byte[])] = new() { Type = JsonSchemaType.String, Format = "byte" },
+        [typeof(int)] = new() { Type = JsonSchemaType.Integer, Format = "int32" },
+        [typeof(uint)] = new() { Type = JsonSchemaType.Integer, Format = "uint32" },
+        [typeof(long)] = new() { Type = JsonSchemaType.Integer, Format = "int64" },
+        [typeof(ulong)] = new() { Type = JsonSchemaType.Integer, Format = "uint64" },
+        [typeof(short)] = new() { Type = JsonSchemaType.Integer, Format = "int16" },
+        [typeof(ushort)] = new() { Type = JsonSchemaType.Integer, Format = "uint16" },
+        [typeof(float)] = new() { Type = JsonSchemaType.Number, Format = "float" },
+        [typeof(double)] = new() { Type = JsonSchemaType.Number, Format = "double" },
+        [typeof(decimal)] = new() { Type = JsonSchemaType.Number, Format = "double" },
+        [typeof(DateTime)] = new() { Type = JsonSchemaType.String, Format = "date-time" },
+        [typeof(DateTimeOffset)] = new() { Type = JsonSchemaType.String, Format = "date-time" },
+        [typeof(Guid)] = new() { Type = JsonSchemaType.String, Format = "uuid" },
+        [typeof(char)] = new() { Type = JsonSchemaType.String, Format = "char" },
+        [typeof(Uri)] = new() { Type = JsonSchemaType.String, Format = "uri" },
+        [typeof(string)] = new() { Type = JsonSchemaType.String },
+        [typeof(TimeOnly)] = new() { Type = JsonSchemaType.String, Format = "time" },
+        [typeof(DateOnly)] = new() { Type = JsonSchemaType.String, Format = "date" },
     };
 
     /// <summary>
@@ -86,7 +86,7 @@ internal static class JsonNodeSchemaExtensions
         {
             if (attribute is Base64StringAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
             }
             else if (attribute is RangeAttribute rangeAttribute)
@@ -131,7 +131,7 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is UrlAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "uri";
             }
             else if (attribute is StringLengthAttribute stringLengthAttribute)
@@ -192,7 +192,7 @@ internal static class JsonNodeSchemaExtensions
         if (_simpleTypeToOpenApiSchema.TryGetValue(underlyingType ?? type, out var openApiSchema))
         {
             schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
-            schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
+            schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type.ToString();
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
             schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
             schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
@@ -236,7 +236,7 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (constraint is RegexRouteConstraint regexRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
                 schema[OpenApiSchemaKeywords.PatternKeyword] = regexRouteConstraint.Constraint.ToString();
             }
@@ -247,32 +247,32 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (constraint is FloatRouteConstraint or DecimalRouteConstraint or DoubleRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Number.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is FloatRouteConstraint ? "float" : "double";
             }
             else if (constraint is LongRouteConstraint or IntRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Integer.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is LongRouteConstraint ? "int64" : "int32";
             }
             else if (constraint is GuidRouteConstraint or StringRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is GuidRouteConstraint ? "uuid" : null;
             }
             else if (constraint is BoolRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Boolean.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is AlphaRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is DateTimeRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "date-time";
             }
         }

@@ -182,9 +182,9 @@ public class HostingEventSourceTests : LoggedTest
         // Arrange
         var hostingEventSource = GetHostingEventSource();
 
+        // requests-per-second isn't tested because the value can't be reliably tested because of time
         using var eventListener = new TestCounterListener(LoggerFactory, hostingEventSource.Name,
         [
-            "requests-per-second",
             "total-requests",
             "current-requests",
             "failed-requests"
@@ -193,7 +193,6 @@ public class HostingEventSourceTests : LoggedTest
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
-        var rpsValues = eventListener.GetCounterValues("requests-per-second", timeoutTokenSource.Token).GetAsyncEnumerator();
         var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
         var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
         var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
@@ -209,7 +208,6 @@ public class HostingEventSourceTests : LoggedTest
         hostingEventSource.RequestStart("GET", "/");
 
         await totalRequestValues.WaitForSumValueAsync(1);
-        await rpsValues.WaitForValueAsync(1);
         await currentRequestValues.WaitForValueAsync(1);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -217,7 +215,6 @@ public class HostingEventSourceTests : LoggedTest
         hostingEventSource.RequestStop();
 
         await totalRequestValues.WaitForSumValueAsync(1);
-        await rpsValues.WaitForValueAsync(0);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -225,7 +222,6 @@ public class HostingEventSourceTests : LoggedTest
         hostingEventSource.RequestStart("POST", "/");
 
         await totalRequestValues.WaitForSumValueAsync(2);
-        await rpsValues.WaitForValueAsync(1);
         await currentRequestValues.WaitForValueAsync(1);
         await failedRequestValues.WaitForValueAsync(0);
 
@@ -235,7 +231,6 @@ public class HostingEventSourceTests : LoggedTest
         hostingEventSource.RequestStop();
 
         await totalRequestValues.WaitForSumValueAsync(2);
-        await rpsValues.WaitForValueAsync(0);
         await currentRequestValues.WaitForValueAsync(0);
         await failedRequestValues.WaitForValueAsync(1);
     }

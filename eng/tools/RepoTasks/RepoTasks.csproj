@@ -35,8 +35,8 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
-    <!-- Manually updated version from 6.0.0 to address CVE-2023-29331 -->
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(RepoTasksSystemSecurityCryptographyXmlVersion)" />
+    <!-- Manually updated version to address CVE-2024-38095 -->
+    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

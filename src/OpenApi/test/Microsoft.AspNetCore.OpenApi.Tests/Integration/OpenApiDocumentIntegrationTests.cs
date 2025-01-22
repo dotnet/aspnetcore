@@ -34,7 +34,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     {
         using var textWriter = new StringWriter(CultureInfo.InvariantCulture);
         var jsonWriter = new OpenApiJsonWriter(textWriter);
-        document.SerializeAsV3(jsonWriter);
+        document.SerializeAsV31(jsonWriter);
         return textWriter.ToString();
     }
 }

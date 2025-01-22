@@ -254,17 +254,23 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        // If an explicit document name is provided, then generate only that document.
+        // Get document names
         var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
             return false;
         }
 
-        if (!string.IsNullOrEmpty(_context.DocumentName) && !documentNames.Contains(_context.DocumentName))
+        // If an explicit document name is provided, then generate only that document.
+        if (!string.IsNullOrEmpty(_context.DocumentName))
         {
-            _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
-            return false;
+            if (!documentNames.Contains(_context.DocumentName))
+            {
+                _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
+                return false;
+            }
+
+            documentNames = [_context.DocumentName];
         }
 
         if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))
@@ -277,7 +283,10 @@ internal sealed class GetDocumentCommandWorker
         var found = false;
         Directory.CreateDirectory(_context.OutputDirectory);
         var filePathList = new List<string>();
-        foreach (var documentName in documentNames)
+        var targetDocumentNames = string.IsNullOrEmpty(_context.DocumentName)
+            ? documentNames
+            : [_context.DocumentName];
+        foreach (var documentName in targetDocumentNames)
         {
             var filePath = GetDocument(
                 documentName,
@@ -338,7 +347,7 @@ internal sealed class GetDocumentCommandWorker
                     {
                         _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
                     }
-                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_1];
                 }
             }
             using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);

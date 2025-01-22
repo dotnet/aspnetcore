@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Sample | v2",
     "contact": {
@@ -15,7 +15,9 @@
     "/v2/users": {
       "get": {
         "tags": [
-          "users"
+          {
+            "name": "users"
+          }
         ],
         "responses": {
           "200": {
@@ -43,7 +45,9 @@
       },
       "post": {
         "tags": [
-          "Sample"
+          {
+            "name": "Sample"
+          }
         ],
         "externalDocs": {
           "description": "Documentation for this OpenAPI endpoint",
@@ -58,7 +62,6 @@
       }
     }
   },
-  "components": { },
   "tags": [
     {
       "name": "users"

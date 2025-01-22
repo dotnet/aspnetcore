@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-    <Fragment>                           
+    <Fragment>
         <PackageGroup Id="PG_SHAREDFX_REDIST_BUNDLE">
             <RollbackBoundary Id="RB_SHAREDFX_REDIST_BUNDLE" />
 
             <!-- OPT_NO_SHAREDFX could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_arm64" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerarm64)"
+            <MsiPackage Id="SharedFxRedist_arm64" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerarm64)"
                         Name="$(var.SharedFxRedistInstallerarm64)"
                         Compressed="yes"
                         Vital="yes"
                         InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;)">
             </MsiPackage>
-            
+
             <!-- OPT_NO_SHAREDFX could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_x64" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerx64)"
+            <MsiPackage Id="SharedFxRedist_x64" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerx64)"
                         Name="$(var.SharedFxRedistInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
@@ -22,13 +22,13 @@
             </MsiPackage>
 
             <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
-            <MsiPackage Id="SharedFxRedist_x86" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerx86)"
+            <MsiPackage Id="SharedFxRedist_x86" SourceFile="$(var.CrossArchitectureInstallerBasePath)\$(var.SharedFxRedistInstallerx86)"
                         Name="$(var.SharedFxRedistInstallerx86)"
                         Compressed="yes"
                         Vital="yes"
                         InstallCondition="(NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)">
             </MsiPackage>
-            
+
         </PackageGroup>
     </Fragment>
 </Wix>
