@@ -23,7 +23,7 @@ internal static class OpenApiDocumentExtensions
         document.Components.Schemas[schemaId] = schema;
         document.Workspace ??= new();
         var location = document.BaseUri + "/components/schemas/" + schemaId;
-        document.Workspace.RegisterComponent(location, schema);
+        document.Workspace.RegisterComponentForDocument(document, schema, location);
         return new OpenApiSchemaReference(schemaId, document);
     }
 }

@@ -15,9 +15,7 @@
     "/v2/users": {
       "get": {
         "tags": [
-          {
-            "name": "users"
-          }
+          "users"
         ],
         "responses": {
           "200": {
@@ -45,9 +43,7 @@
       },
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "externalDocs": {
           "description": "Documentation for this OpenAPI endpoint",
