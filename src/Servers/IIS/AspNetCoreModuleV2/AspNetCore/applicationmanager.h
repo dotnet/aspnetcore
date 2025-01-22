@@ -63,11 +63,6 @@ public:
         return m_handlerResolver.GetHostingModel();
     }
 
-    bool IsSameApplication(PCWSTR application)
-    {
-        return m_handlerResolver.IsSameApplication(application);
-    }
-
     bool IsIISExpress() const
     {
         return m_pHttpServer.IsCommandLineLaunch();

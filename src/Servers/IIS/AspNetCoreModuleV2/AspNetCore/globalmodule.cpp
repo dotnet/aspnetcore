@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "globalmodule.h"
-#include <EventLog.h>
 
 extern BOOL         g_fInShutdown;
 
@@ -53,12 +52,16 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
     if (!g_fInShutdown && !m_shutdown.joinable()
-        /*&& (m_pApplicationManager->IsIISExpress() || !m_pApplicationManager->HasReceivedRequest())*/)
+        && (m_pApplicationManager->IsIISExpress() || !m_pApplicationManager->HasReceivedRequest()))
     {
         // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
         // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
         // so we should make sure to shutdown the server in those cases
         StartShutdown();
+    }
+    else
+    {
+        LOG_INFOF(L"Ignoring OnGlobalApplicationStop, OnGlobalStopListening should be called shortly.");
     }
 
     return GL_NOTIFICATION_CONTINUE;
@@ -84,19 +87,16 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
 
     // Test for an error.
     if (nullptr != pwszChangePath &&
-        _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
-        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
-    {
+        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") > 0 &&
         // Configuration change recycling behavior can be turned off via setting disallowRotationOnConfigChange=true on the handler settings section.
         // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
-        if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
-        {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
-        }
+        m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
+    {
+        m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
     }
     else
     {
-        LOG_INFOF(L"Ignoring configuration change", pwszChangePath);
+        LOG_INFOF(L"Ignoring configuration change for '%ls'", pwszChangePath);
     }
 
     // Return processing to the pipeline.
