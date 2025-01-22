@@ -386,7 +386,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void CanOverrideNavLinkToIgnoreFragment()
     {
-        SetUrlViaPushState("/layout-overridden");
+        SetUrlViaPushState("/layout-overridden/for-hash");
 
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Override layout with hash, no trailing slash")).Click();
