@@ -26,6 +26,7 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
+import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -91,10 +92,11 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   // so we do the same here.
   const initialCircuitOptions = resolveOptions(options?.circuit || {});
   options.circuit = initialCircuitOptions;
+  options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
   const initializersPromise = fetchAndInvokeInitializers(options, logger);
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
-  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options?.webAssembly || {}));
+  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
   registerAllComponentDescriptors(document);
   rootComponentManager.onDocumentUpdated();
