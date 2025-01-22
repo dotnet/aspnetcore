@@ -61,7 +61,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     }
     else
     {
-        LOG_INFOF(L"Ignoring OnGlobalApplicationStop, OnGlobalStopListening should be called shortly.");
+        LOG_INFO(L"Ignoring OnGlobalApplicationStop, OnGlobalStopListening should be called shortly.");
     }
 
     return GL_NOTIFICATION_CONTINUE;

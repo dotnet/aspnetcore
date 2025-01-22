@@ -58,11 +58,6 @@ public:
         return m_handlerResolver.GetShutdownDelay() == std::chrono::milliseconds::zero();
     }
 
-    APP_HOSTING_MODEL GetAppHostingModel()
-    {
-        return m_handlerResolver.GetHostingModel();
-    }
-
     bool IsIISExpress() const
     {
         return m_pHttpServer.IsCommandLineLaunch();

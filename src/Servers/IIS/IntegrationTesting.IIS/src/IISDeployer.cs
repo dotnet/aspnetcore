@@ -30,7 +30,8 @@ public class IISDeployer : IISDeployerBase
     private string _debugLogFile;
     private string _appPoolName;
     private bool _disposed;
-    private int _siteId = 5;
+    // Start at 2 since 1 is used by the our default site in Http.config
+    private int _siteId = 2;
 
     public Process HostProcess { get; set; }
 
@@ -310,7 +311,6 @@ public class IISDeployer : IISDeployerBase
         XDocument config;
         if (_applicationHostConfig is not null)
         {
-            //Debugger.Launch();
             config = XDocument.Parse(File.ReadAllText(_applicationHostConfig));
         }
         else
@@ -327,6 +327,7 @@ public class IISDeployer : IISDeployerBase
 
         config.Save(_applicationHostConfig);
 
+        // Don't need to setup the config redirection since the first site configured already did it for this config file
         if (multiSite)
         {
             return;
@@ -334,7 +335,6 @@ public class IISDeployer : IISDeployerBase
 
         RetryServerManagerAction(serverManager =>
         {
-            //Debugger.Launch();
             var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
             var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
 
@@ -540,7 +540,6 @@ public class IISDeployer : IISDeployerBase
         var configDump = new StringBuilder();
         using (var serverManager = new ServerManager())
         {
-            //Debugger.Launch();
             foreach (var site in serverManager.Sites)
             {
                 configDump.AppendLine(CultureInfo.InvariantCulture, $"Site Name:{site.Name} Id:{site.Id} State:{site.State}");
