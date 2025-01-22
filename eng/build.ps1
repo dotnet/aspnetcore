@@ -99,6 +99,9 @@ Additional feed that can be used when downloading .NET runtimes and SDKs
 .PARAMETER RuntimeSourceFeedKey
 Key for feed that can be used when downloading .NET runtimes and SDKs
 
+.PARAMETER RestoreConfigFile
+NuGet.config that should be passed to build commands (via /p:RestoreConfigFile)
+
 .EXAMPLE
 Building both native and managed projects.
 
@@ -196,6 +199,8 @@ param(
     [Alias('DotNetRuntimeSourceFeedKey')]
     [string]$RuntimeSourceFeedKey,
 
+    [string]$RestoreConfigFile
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -286,6 +291,12 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
     $MSBuildArguments += $runtimeFeedKeyArg
     $ToolsetBuildArguments += $runtimeFeedArg
     $ToolsetBuildArguments += $runtimeFeedKeyArg
+}
+
+if ($RestoreConfigFile) {
+    $restoreConfigFileArg = "/p:RestoreConfigFile=$RestoreConfigFile"
+    $MSBuildArguments += $restoreConfigFileArg
+    $ToolsetBuildArguments += $restoreConfigFileArg
 }
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.

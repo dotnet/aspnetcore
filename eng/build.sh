@@ -35,6 +35,7 @@ target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
+restore_config_file=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -87,6 +88,8 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
+    --restore-config-file             NuGet.config file to use when building the repository
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -242,6 +245,11 @@ while [[ $# -gt 0 ]]; do
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
             runtime_source_feed_key="${1:-}"
             ;;
+        -restore-config-file|-restoreconfigfile)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --restore-config-file" && __usage
+            restore_config_file="${1:-}"
+            ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
             ;;
@@ -328,6 +336,12 @@ if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
+fi
+
+if [ ! -z "$restore_config_file" ]; then
+    restoreConfigFileArg="/p:RestoreConfigFile=$restore_config_file"
+    msbuild_args[${#msbuild_args[*]}]=$restoreConfigFileArg
+    toolset_build_args[${#toolset_build_args[*]}]=$restoreConfigFileArg
 fi
 
 # Initialize global variables need to be set before the import of Arcade is imported
