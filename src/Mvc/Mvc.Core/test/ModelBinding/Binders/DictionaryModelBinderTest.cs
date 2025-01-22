@@ -98,6 +98,7 @@ public class DictionaryModelBinderTest
     {
         get
         {
+            var dictionaryWithNone = new Dictionary<string, string>();
             var dictionaryWithOne = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     { "one", "one" },
@@ -111,8 +112,8 @@ public class DictionaryModelBinderTest
 
             return new TheoryData<string, string, IDictionary<string, string>>
                 {
-                    { string.Empty, "[{0}]", dictionaryWithOne },
-                    { string.Empty, "[{0}]", dictionaryWithThree },
+                    { string.Empty, "[{0}]", dictionaryWithNone },
+                    { string.Empty, "[{0}]", dictionaryWithNone },
                     { "prefix", "prefix[{0}]", dictionaryWithOne },
                     { "prefix", "prefix[{0}]", dictionaryWithThree },
                     { "prefix.property", "prefix.property[{0}]", dictionaryWithOne },
@@ -148,10 +149,19 @@ public class DictionaryModelBinderTest
         await binder.BindModelAsync(bindingContext);
 
         // Assert
-        Assert.True(bindingContext.Result.IsModelSet);
+        if (!string.IsNullOrEmpty(modelName))
+        {
+            Assert.True(bindingContext.Result.IsModelSet);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
+            Assert.Equal(dictionary, resultDictionary);
+        }
+        else
+        {
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
+        }
 
-        var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
-        Assert.Equal(dictionary, resultDictionary);
+        
     }
 
     [Theory]
@@ -182,10 +192,17 @@ public class DictionaryModelBinderTest
         await binder.BindModelAsync(bindingContext);
 
         // Assert
-        Assert.True(bindingContext.Result.IsModelSet);
-
-        var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
-        Assert.Equal(dictionary, resultDictionary);
+        if (!string.IsNullOrEmpty(modelName))
+        {
+            Assert.True(bindingContext.Result.IsModelSet);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
+            Assert.Equal(dictionary, resultDictionary);
+        }
+        else
+        {
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
+        }
     }
 
     // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
@@ -403,10 +420,17 @@ public class DictionaryModelBinderTest
         await binder.BindModelAsync(bindingContext);
 
         // Assert
-        Assert.True(bindingContext.Result.IsModelSet);
-
-        var resultDictionary = Assert.IsAssignableFrom<SortedDictionary<string, string>>(bindingContext.Result.Model);
-        Assert.Equal(expectedDictionary, resultDictionary);
+        if (!string.IsNullOrEmpty(modelName))
+        {
+            Assert.True(bindingContext.Result.IsModelSet);
+            var resultDictionary = Assert.IsAssignableFrom<SortedDictionary<string, string>>(bindingContext.Result.Model);
+            Assert.Equal(dictionary, resultDictionary);
+        }
+        else
+        {
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
+        }
     }
 
     private IActionResult ActionWithDictionaryParameter(Dictionary<string, string> parameter) => null;
