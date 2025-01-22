@@ -206,7 +206,7 @@ public partial class OpenApiDocumentServiceTests
     }
 
     [Fact]
-    public async Task GetOpenApiOperation_EditingTagInOperationThrowsException()
+    public async Task GetOpenApiOperation_EditingTargetTagInOperationWorks()
     {
         // Arrange
         var builder = CreateBuilder();
