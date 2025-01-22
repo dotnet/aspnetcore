@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.JsonPatch.Converters;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch;
+namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 public class JsonPatchDocumentTest
 {
@@ -60,8 +59,8 @@ public class JsonPatchDocumentTest
         var patchDocument = new JsonPatchDocument();
         patchDocument.Copy("StringProperty", "AnotherStringProperty");
 
-        var serialized = JsonConvert.SerializeObject(patchDocument);
-        var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
+        var serialized = JsonSerializer.Serialize(patchDocument);
+        var deserialized = JsonSerializer.Deserialize<JsonPatchDocument<SimpleObject>>(serialized);
 
         // Act
         deserialized.ApplyTo(targetObject);
@@ -86,9 +85,9 @@ public class JsonPatchDocumentTest
         var patchDocUntyped = new JsonPatchDocument();
         patchDocUntyped.Copy("StringProperty", "AnotherStringProperty");
 
-        var serializedTyped = JsonConvert.SerializeObject(patchDocTyped);
-        var serializedUntyped = JsonConvert.SerializeObject(patchDocUntyped);
-        var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serializedTyped);
+        var serializedTyped = JsonSerializer.Serialize(patchDocTyped);
+        var serializedUntyped = JsonSerializer.Serialize(patchDocUntyped);
+        var deserialized = JsonSerializer.Deserialize<JsonPatchDocument>(serializedTyped);
 
         // Act
         deserialized.ApplyTo(targetObject);
@@ -118,10 +117,10 @@ public class JsonPatchDocumentTest
         patchDocument.Replace(o => o.IntegerValue, 12);
 
         // default: no envelope
-        var serialized = JsonConvert.SerializeObject(patchDocument);
+        var serialized = JsonSerializer.Serialize(patchDocument);
 
         // Act
-        var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
+        var deserialized = JsonSerializer.Deserialize<JsonPatchDocument<SimpleObject>>(serialized);
 
         // Assert
         Assert.IsType<JsonPatchDocument<SimpleObject>>(deserialized);
@@ -134,10 +133,10 @@ public class JsonPatchDocumentTest
         var serialized = "{\"Operations\": [{ \"op\": \"replace\", \"path\": \"/title\", \"value\": \"New Title\"}]}";
 
         // Act
-        var exception = Assert.Throws<JsonSerializationException>(() =>
+        var exception = Assert.Throws<JsonException>(() =>
         {
             var deserialized
-                = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
+                = JsonSerializer.Deserialize<JsonPatchDocument>(serialized);
         });
 
         // Assert
@@ -151,10 +150,12 @@ public class JsonPatchDocumentTest
         var serialized = "{\"Operations\": [{ \"op\": \"replace\", \"path\": \"/title\", \"value\": \"New Title\"}]}";
 
         // Act
-        var exception = Assert.Throws<JsonSerializationException>(() =>
+        var exception = Assert.Throws<JsonException>(() =>
         {
+            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            options.Converters.Add(new JsonConverterForJsonPatchDocumentOfT<SimpleObject>());
             var deserialized
-                = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
+                = JsonSerializer.Deserialize<JsonPatchDocument<SimpleObject>>(serialized, options);
         });
 
         // Assert
