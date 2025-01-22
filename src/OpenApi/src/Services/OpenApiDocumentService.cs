@@ -302,7 +302,7 @@ internal sealed class OpenApiDocumentService(
         => description.ActionDescriptor.AttributeRouteInfo?.Name ??
             description.ActionDescriptor.EndpointMetadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName;
 
-    private static List<OpenApiTagReference>? GetTags(ApiDescription description, OpenApiDocument document)
+    private static List<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
