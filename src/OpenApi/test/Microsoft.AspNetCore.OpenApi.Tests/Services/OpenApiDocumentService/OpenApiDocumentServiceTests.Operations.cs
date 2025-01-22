@@ -218,7 +218,7 @@ public partial class OpenApiDocumentServiceTests
         {
             foreach (var tag in operation.Tags)
             {
-                tag.Target.Name = "newTag"; // Should throw exception
+                tag.Target.Name = "newTag";
             }
             return Task.CompletedTask;
         });
