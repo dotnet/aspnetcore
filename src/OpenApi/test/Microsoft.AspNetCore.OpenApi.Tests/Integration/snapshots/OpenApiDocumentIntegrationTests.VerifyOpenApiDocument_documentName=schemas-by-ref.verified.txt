@@ -8,9 +8,7 @@
     "/schemas-by-ref/typed-results": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -29,9 +27,7 @@
     "/schemas-by-ref/multiple-results": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -60,9 +56,7 @@
     "/schemas-by-ref/iresult-no-produces": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -74,9 +68,7 @@
     "/schemas-by-ref/iresult-with-produces": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -95,9 +87,7 @@
     "/schemas-by-ref/primitives": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "parameters": [
           {
@@ -131,9 +121,7 @@
     "/schemas-by-ref/product": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -162,9 +150,7 @@
     "/schemas-by-ref/account": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -193,9 +179,7 @@
     "/schemas-by-ref/array-of-ints": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -229,9 +213,7 @@
     "/schemas-by-ref/list-of-ints": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -265,9 +247,7 @@
     "/schemas-by-ref/ienumerable-of-ints": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -287,9 +267,7 @@
     "/schemas-by-ref/dictionary-of-ints": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -312,9 +290,7 @@
     "/schemas-by-ref/frozen-dictionary-of-ints": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -337,9 +313,7 @@
     "/schemas-by-ref/shape": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -361,9 +335,7 @@
     "/schemas-by-ref/weatherforecastbase": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -385,9 +357,7 @@
     "/schemas-by-ref/person": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {

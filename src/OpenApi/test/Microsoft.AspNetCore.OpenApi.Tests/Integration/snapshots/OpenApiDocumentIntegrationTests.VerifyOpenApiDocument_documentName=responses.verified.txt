@@ -8,9 +8,7 @@
     "/responses/200-add-xml": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -34,9 +32,7 @@
     "/responses/200-only-xml": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -55,9 +51,7 @@
     "/responses/triangle": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {
@@ -76,9 +70,7 @@
     "/responses/shape": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "responses": {
           "200": {

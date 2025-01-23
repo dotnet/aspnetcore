@@ -8,9 +8,7 @@
     "/v1/array-of-guids": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "parameters": [
           {
@@ -55,9 +53,7 @@
     "/v1/todos": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "summary": "Creates a new todo item.",
         "parameters": [
@@ -90,9 +86,7 @@
     "/v1/todos/{id}": {
       "get": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "description": "Returns a specific todo item.",
         "parameters": [

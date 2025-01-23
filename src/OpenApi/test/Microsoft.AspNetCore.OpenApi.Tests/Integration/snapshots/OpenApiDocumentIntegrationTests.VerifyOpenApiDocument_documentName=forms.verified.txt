@@ -8,9 +8,7 @@
     "/forms/form-file": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -40,9 +38,7 @@
     "/forms/form-files": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -72,9 +68,7 @@
     "/forms/form-file-multiple": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -118,9 +112,7 @@
     "/forms/form-todo": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
@@ -147,9 +139,7 @@
     "/forms/forms-pocos-and-files": {
       "post": {
         "tags": [
-          {
-            "name": "Sample"
-          }
+          "Sample"
         ],
         "requestBody": {
           "content": {
