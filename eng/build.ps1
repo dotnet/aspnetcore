@@ -199,7 +199,7 @@ param(
     [Alias('DotNetRuntimeSourceFeedKey')]
     [string]$RuntimeSourceFeedKey,
 
-    [string]$RestoreConfigFile
+    [string]$RestoreConfigFile,
 
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
