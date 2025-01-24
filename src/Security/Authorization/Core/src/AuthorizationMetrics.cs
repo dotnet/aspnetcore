@@ -25,7 +25,7 @@ internal sealed class AuthorizationMetrics
         _meter = meterFactory.Create(MeterName);
 
         _authorizedRequestCount = _meter.CreateCounter<long>(
-            "aspnetcore.authorization.requests",
+            "aspnetcore.authorization.attempts",
             unit: "{request}",
             description: "The total number of requests for which authorization was attempted.");
     }

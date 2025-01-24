@@ -24,9 +24,9 @@ internal sealed class AuthenticationMetrics
         _meter = meterFactory.Create(MeterName);
 
         _authenticatedRequestDuration = _meter.CreateHistogram<double>(
-            "aspnetcore.authentication.request.duration",
-            unit: "{request}",
-            description: "The total number of requests for which authentication was attempted.",
+            "aspnetcore.authentication.authenticate.duration",
+            unit: "s",
+            description: "The authentication duration for a request.",
             advice: new() { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _challengeCount = _meter.CreateCounter<long>(
