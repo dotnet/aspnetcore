@@ -1,9 +1,11 @@
 {
   "sdk": {
-    "version": "9.0.101"
+    "version": "9.0.300-preview.0.25073.14",
+     "allowPrerelease": false,
+     "rollForward": "patch"
   },
   "tools": {
-    "dotnet": "9.0.101",
+    "dotnet": "9.0.300-preview.0.25073.14",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
