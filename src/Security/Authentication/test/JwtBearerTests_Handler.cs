@@ -957,6 +957,7 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     public void CanReadJwtBearerOptionsFromConfig()
     {
         var services = new ServiceCollection();
+        var key = "qPG6tDtfxFYZifHW3sEueQ==";
         var config = new ConfigurationBuilder().AddInMemoryCollection([
             new("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
             new("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts-2"),
@@ -965,6 +966,9 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
             new("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
             new("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
             new("Authentication:Schemes:Bearer:SaveToken", "True"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Value", key),
+            new("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
         ]).Build();
         services.AddSingleton<IConfiguration>(config);
 
@@ -987,6 +991,10 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         Assert.True(jwtBearerOptions.MapInboundClaims);
         Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateIssuer);
         Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateAudience);
+
+        var securityKey = Assert.Single(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys);
+        var symmetricKey = Assert.IsType<SymmetricSecurityKey>(securityKey);
+        Assert.Equal(key, Convert.ToBase64String(symmetricKey.Key));
     }
 
     [Fact]

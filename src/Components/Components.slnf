@@ -4,6 +4,7 @@
     "projects": [
       "src\\Analyzers\\Microsoft.AspNetCore.Analyzer.Testing\\src\\Microsoft.AspNetCore.Analyzer.Testing.csproj",
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
+      "src\\Assets\\Microsoft.AspNetCore.App.Internal.Assets.csproj",
       "src\\Components\\Analyzers\\src\\Microsoft.AspNetCore.Components.Analyzers.csproj",
       "src\\Components\\Analyzers\\test\\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",

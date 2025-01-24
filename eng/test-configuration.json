@@ -12,6 +12,8 @@
     {"testName": {"contains": "CheckNewShimIsUsed"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/57538
     {"testName": {"contains": "ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/57551
     {"testName": {"contains": "ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/57551
+    {"testName": {"contains": "PhoneFactorFailsAfterSecurityStampChangeTest"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/58231
+    {"testName": {"contains": "AbortSendsFinalGOAWAY"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/59358
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},

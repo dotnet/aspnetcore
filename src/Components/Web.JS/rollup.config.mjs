@@ -14,14 +14,10 @@ export default createBaseConfig({
   },
   dir: __dirname,
   updateConfig: (config, environment, _, input) => {
-    if (environment === 'development') {
-      if (input.includes("WebView")) {
-        config.output.sourcemap = 'inline';
-      } else {
-        config.output.sourcemap = true;
-      }
+    if (input.includes("WebView")) {
+      config.output.sourcemap = 'inline';
     } else {
-      config.output.sourcemap = false;
+      config.output.sourcemap = true;
     }
   }
 });

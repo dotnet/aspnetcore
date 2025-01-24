@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+
+  <PropertyGroup>
+    <PlatformPackageType>RuntimePack</PlatformPackageType>
+    <SharedFrameworkName>Microsoft.AspNetCore.App</SharedFrameworkName>
+    <SharedFrameworkFriendlyName>Microsoft ASP.NET Core</SharedFrameworkFriendlyName>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <!-- System.Diagnostics.EventLog.Messages.dll has no file version -->
+    <PermitDllAndExeFilesLackingFileVersion>true</PermitDllAndExeFilesLackingFileVersion>
+    <!-- Target the latest runtime patch so the latest version is specified in runtimeconfig.json -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <RollForward>LatestPatch</RollForward>
+    <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
+    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</PublishReadyToRun>
+    <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
+    <!-- Don't use ReadyToRun when explicitly opted out -->
+    <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
+    <!-- Build a composite R2R image -->
+    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+
+    <!-- HACK: We aren't self-contained but we need to say we are so the SDK lets us do composite R2R -->
+    <SelfContained>true</SelfContained>
+
+    <InstructionSetSupport Condition="'$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86'">+x86-x64-v3</InstructionSetSupport>
+    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(InstructionSetSupport)' != ''">$(PublishReadyToRunCrossgen2ExtraArgs);--instruction-set:$(InstructionSetSupport)</PublishReadyToRunCrossgen2ExtraArgs>
+
+    <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
+    <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+
+    <PartialCompositeAssemblyListPath>PartialCompositeAssemblyListPath.txt</PartialCompositeAssemblyListPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
+      <IncludeAssets>Runtime;Native</IncludeAssets>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <IgnoredDuplicateType Include="Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions" />
+    <IgnoredDuplicateType Include="Microsoft.Extensions.Logging.LoggingBuilderExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Temporary workaround tracked by https://github.com/dotnet/runtime/issues/84860 -->
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Configuration.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Configuration.Abstractions.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Configuration.Binder.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.DependencyInjection.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Logging.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Logging.Abstractions.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Logging.Console.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Logging.Configuration.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Options.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+    <PublishReadyToRunExclusions Include="Microsoft.Extensions.Primitives.dll" />
+  </ItemGroup>
+
+  <Target Name="_ComputePartialCompositeRoots" BeforeTargets="ResolveReadyToRunCompilers">
+    <!-- Read list of assemblies that should generate native code for the full assembly in the composite image. -->
+    <ReadLinesFromFile File="$(PartialCompositeAssemblyListPath)">
+      <Output TaskParameter="Lines" ItemName="PublishReadyToRunCompositeRoots" />
+    </ReadLinesFromFile>
+  </Target>
+
+  <!-- Add native dependencies to the package when required. -->
+  <PropertyGroup>
+    <NativePlatform>$(TargetArchitecture)</NativePlatform>
+    <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative)  AND '$(MSBuildRestoreSessionId)' == ''"
+        Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
+      <!-- A custom item group to be used in targets later.  -->
+      <OutputItemType>NativeRuntimeAsset</OutputItemType>
+      <!-- C++ projects don't invoke GetTargetPath by default when building. -->
+      <Targets>Build;GetTargetPath</Targets>
+    </ProjectReference>
+
+    <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
+        Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
+  </ItemGroup>
+
+
+  <Target Name="_WarnAboutUnbuiltNativeDependencies"
+          BeforeTargets="Build"
+          Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
+              !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
+    <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
+  </Target>
+</Project>

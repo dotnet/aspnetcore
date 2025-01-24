@@ -23,7 +23,7 @@
             elementToFocus.focus();
         }
     </script>
-    <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false" suppress-error="BL9992"></script>
     <script src="_content/TestContentPackage/counterInterop.js"></script>
     <script src="js/circuitContextTest.js"></script>
     <script>
@@ -43,9 +43,11 @@
             const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
             const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
+            const blockWebassemblySettings = sessionStorage.getItem('block-webassembly-settings') === 'true';
             sessionStorage.removeItem('suppress-enhanced-navigation');
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
+            sessionStorage.removeItem('block-webassembly-settings');
 
             let loadBootResourceUnblocked = null;
             if (blockLoadBootResource) {
@@ -66,6 +68,35 @@
 
             let maxParallelResourceDownloadCount = 0;
             let currentParallelResourceDownloadCount = 0;
+            let webAssemblySettings = {
+                loadBootResource: function (type, name, defaultUri, integrity) {
+                    switch (type) {
+                        case 'manifest':
+                        case 'dotnetjs':
+                        case 'dotnetwasm':
+                            // note this is resolved to absolute URL using document.baseURI
+                            return `WasmMinimal/_framework/${name}`;
+                        default:
+                            // The following allows us to arbitrarily delay the loading of WebAssembly resources.
+                            // This is useful for guaranteeing that auto mode components will fall back on
+                            // using Blazor server.
+                            currentParallelResourceDownloadCount++;
+                            return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
+                                method: "GET",
+                            }).then(async (response) => {
+                                if (currentParallelResourceDownloadCount > maxParallelResourceDownloadCount) {
+                                    maxParallelResourceDownloadCount = currentParallelResourceDownloadCount;
+                                    window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
+                                }
+                                currentParallelResourceDownloadCount--;
+                                await loadBootResourceUnblocked;
+                                return response;
+                            });
+                    }
+                },
+            };
+            if (blockWebassemblySettings)
+                webAssemblySettings = null;
 
             Blazor.start({
                 ssr: {
@@ -75,33 +106,7 @@
                     circuitInactivityTimeoutMs: 100,
                 },
                 enableClassicInitializers: enableClassicInitializers,
-                webAssembly: {
-                    loadBootResource: function (type, name, defaultUri, integrity) {
-                        switch (type) {
-                            case 'manifest':
-                            case 'dotnetjs':
-                            case 'dotnetwasm':
-                                // note this is resolved to absolute URL using document.baseURI
-                                return `WasmMinimal/_framework/${name}`;
-                            default:
-                                // The following allows us to arbitrarily delay the loading of WebAssembly resources.
-                                // This is useful for guaranteeing that auto mode components will fall back on
-                                // using Blazor server.
-                                currentParallelResourceDownloadCount++;
-                                return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
-                                    method: "GET",
-                                }).then(async (response) => {
-                                    if (currentParallelResourceDownloadCount > maxParallelResourceDownloadCount) {
-                                        maxParallelResourceDownloadCount = currentParallelResourceDownloadCount;
-                                        window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
-                                    }
-                                    currentParallelResourceDownloadCount--;
-                                    await loadBootResourceUnblocked;
-                                    return response;
-                                });
-                        }
-                    },
-                },
+                webAssembly: webAssemblySettings,
                 circuit: {
                     reconnectionOptions: {
                         // It's easier to test the reconnection logic if we wait a bit

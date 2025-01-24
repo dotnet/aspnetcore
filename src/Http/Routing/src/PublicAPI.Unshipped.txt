@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Routing.ContentEncodingMetadata
-Microsoft.AspNetCore.Routing.ContentEncodingMetadata.ContentEncodingMetadata(string! value, double quality) -> void
-Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Quality.get -> double
-Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Value.get -> string!
-static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesProblem<TBuilder>(this TBuilder builder, int statusCode, string? contentType = null) -> TBuilder
-static Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions.ProducesValidationProblem<TBuilder>(this TBuilder builder, int statusCode = 400, string? contentType = null) -> TBuilder
-static Microsoft.AspNetCore.Routing.RouteHandlerServices.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler, System.Collections.Generic.IEnumerable<string!>? httpMethods, System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult!>! populateMetadata, System.Func<System.Delegate!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions!, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult!>! createRequestDelegate, System.Reflection.MethodInfo! methodInfo) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!

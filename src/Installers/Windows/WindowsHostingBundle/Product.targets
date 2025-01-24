@@ -43,31 +43,31 @@
   <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
         <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
         <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
         <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
         <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
@@ -77,18 +77,12 @@
 
   <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
       Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-    <!--
-      Try various places to find the runtime. It's either released (use official version), public but
-      unreleased (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal).
-    -->
+    <PropertyGroup>
+      <_CurrentRemoteAsset>%(RemoteAsset.Identity)</_CurrentRemoteAsset>
+    </PropertyGroup>
     <ItemGroup>
       <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/Runtime/%(RemoteAsset.Identity)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/Runtime/%(RemoteAsset.Identity)"
-          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
+      <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)Runtime/$(_CurrentRemoteAsset)')" />
     </ItemGroup>
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "

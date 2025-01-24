@@ -312,6 +312,7 @@ override Microsoft.AspNetCore.Http.DefaultHttpContext.TraceIdentifier.set -> voi
 override Microsoft.AspNetCore.Http.DefaultHttpContext.User.get -> System.Security.Claims.ClaimsPrincipal!
 override Microsoft.AspNetCore.Http.DefaultHttpContext.User.set -> void
 override Microsoft.AspNetCore.Http.DefaultHttpContext.WebSockets.get -> Microsoft.AspNetCore.Http.WebSocketManager!
+override Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.ToString() -> string!
 static Microsoft.AspNetCore.Builder.RequestTimeoutsIApplicationBuilderExtensions.UseRequestTimeouts(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.DisableRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy! policy) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!

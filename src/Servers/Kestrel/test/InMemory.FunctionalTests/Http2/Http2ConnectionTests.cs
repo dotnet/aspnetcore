@@ -404,9 +404,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         // Add stream to Http2Connection._completedStreams inline with SetResult().
         var serverTcs = new TaskCompletionSource();
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
             await serverTcs.Task;
             await _echoApplication(context);
         });
@@ -415,6 +417,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
@@ -434,7 +438,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39477")]
     public async Task StreamPool_MultipleStreamsConcurrent_StreamsReturnedToPool()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -491,9 +494,12 @@ public class Http2ConnectionTests : Http2TestBase
         TaskCompletionSource appDelegateTcs = null;
         object persistedState = null;
         var requestCount = 0;
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
+
             requestCount++;
             var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
             if (persistentStateCollection.TryGetValue("Counter", out var value))
@@ -510,6 +516,9 @@ public class Http2ConnectionTests : Http2TestBase
         appDelegateTcs = new TaskCompletionSource();
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
+        appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // Get the in progress stream
         var stream = _connection._streams[1];
 
@@ -534,6 +543,8 @@ public class Http2ConnectionTests : Http2TestBase
         // Add stream to Http2Connection._completedStreams inline with SetResult().
         appDelegateTcs = new TaskCompletionSource();
         await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await appTcs.Task;
 
         // New stream has been taken from the pool
         Assert.Equal(0, _connection.StreamPool.Count);
@@ -565,9 +576,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         // Add (or don't add) stream to Http2Connection._completedStreams inline with SetResult().
         var serverTcs = new TaskCompletionSource();
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
             await serverTcs.Task.DefaultTimeout();
 
             await context.Response.WriteAsync("Content");
@@ -576,6 +589,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
@@ -4750,6 +4765,52 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.True(_helloWorldBytes.AsSpan(0, 6).SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
         Assert.True(_helloWorldBytes.AsSpan(6, 3).SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
         Assert.True(_helloWorldBytes.AsSpan(9, 3).SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
+    }
+
+    [Fact]
+    public async Task WINDOW_UPDATE_Received_OnStream_Resumed_WhenInitialWindowSizeNegativeMidStream()
+    {
+        const int windowSize = 3;
+        _clientSettings.InitialWindowSize = windowSize;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await InitializeConnectionAsync(async context =>
+        {
+            var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+            bodyControlFeature.AllowSynchronousIO = true;
+            await context.Response.Body.WriteAsync(new byte[windowSize - 1], 0, windowSize - 1);
+            await tcs.Task;
+            await context.Response.Body.WriteAsync(new byte[windowSize], 0, windowSize);
+        });
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        // Decrease window size after server has already sent the current window - 1 size of data
+        _clientSettings.InitialWindowSize = windowSize - 2;
+        await SendSettingsAsync();
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: windowSize - 1,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.SETTINGS,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 0);
+        tcs.SetResult();
+
+        // send window update to receive the next frame data
+        await SendWindowUpdateAsync(1, windowSize + 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: windowSize,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
     [Fact]

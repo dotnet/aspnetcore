@@ -12,7 +12,7 @@
                                        '$(PostBuildSign)' != 'true' and
                                        '$(DotNetBuildRepo)' != 'true'">false</EnableDefaultArtifacts>
 
-    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == '' and 
+    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == '' and
                                             ('$(OS)' == 'Windows_NT' or '$(DotNetBuildOrchestrator)' == 'true')">true</PublishInstallerBaseVersion>
     <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
@@ -31,18 +31,25 @@
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
 
     <!-- The following installers create checksums -->
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.deb" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.deb" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.rpm" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tar.gz" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.zip" UploadPathSegment="Runtime">
+      <!-- Exclude wixpack.zip files from checksum generation -->
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </_InstallersToPublish>
+
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" >
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime">
       <!-- Exclude wixpack.zip files from checksum generation -->
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </_InstallersToPublish>
 
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
+    <_InstallersToPublish Remove="$(ArtifactsDir)packages\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
     <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
 
     <Artifact Include="@(_InstallersToPublish)">
@@ -89,12 +96,13 @@
     </ItemGroup>
 
     <!-- Generate productVersion.txt file containing the product version. -->
-    <WriteLinesToFile File="%(ProductVersionFile.Identity)"
+    <WriteLinesToFile Condition="'$(DotNetBuildPass)' != '2'"
+                      File="%(ProductVersionFile.Identity)"
                       Lines="$(ProductVersion)"
                       Overwrite="true"
                       Encoding="ASCII" />
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '2'">
       <Artifact Include="@(ProductVersionFile)"
                 RelativeBlobPath="aspnetcore/Runtime/$(NonStableProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>

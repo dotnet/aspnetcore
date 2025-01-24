@@ -99,7 +99,7 @@ FILE_WATCHER::Create(
         (LPTHREAD_START_ROUTINE)ChangeNotificationThread,
         this,
         0,
-        NULL));
+        nullptr));
 
     if (pszDirectoryToMonitor == nullptr ||
         pszFileNameToMonitor == nullptr ||
@@ -128,7 +128,7 @@ FILE_WATCHER::Create(
         nullptr,
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-        NULL);
+        nullptr);
 
     RETURN_LAST_ERROR_IF(_hDirectory == INVALID_HANDLE_VALUE);
 
@@ -475,7 +475,7 @@ FILE_WATCHER::StopMonitor()
     LOG_INFO(L"Stopping file watching.");
 
     // Signal the file watcher thread to exit
-    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
+    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, nullptr);
     WaitForWatcherThreadExit();
 
     if (m_fShadowCopyEnabled)

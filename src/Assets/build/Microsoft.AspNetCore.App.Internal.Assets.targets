@@ -1,0 +1,72 @@
+<Project>
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorFrameworkStaticWebAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(BlazorFrameworkStaticWebAssetRoot)' == ''">$(MSBuildThisFileDirectory)..\_framework</BlazorFrameworkStaticWebAssetRoot>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(OutputType)' == 'Exe'">
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js">
+        <RelativePath>_framework/blazor.web.js</RelativePath>
+      </_FrameworkStaticWebAssetCandidate>
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.server.js">
+        <RelativePath>_framework/blazor.server.js</RelativePath>
+      </_FrameworkStaticWebAssetCandidate>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(UseBlazorFrameworkDebugAssets)' == 'true'">
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js.map">
+        <RelativePath>_framework/blazor.web.js.map</RelativePath>
+      </_FrameworkStaticWebAssetCandidate>
+      <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.server.js.map">
+        <RelativePath>_framework/blazor.server.js.map</RelativePath>
+      </_FrameworkStaticWebAssetCandidate>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_MissingFrameworkStaticWebAssetCandidate
+        Include="@(_FrameworkStaticWebAssetCandidate)"
+        Condition="!EXISTS('%(Identity)')" />
+      <_FrameworkStaticWebAssetCandidate Remove="@(_MissingFrameworkStaticWebAssetCandidate)" />
+    </ItemGroup>
+
+    <Message
+      Importance="High"
+      Condition="'@(_MissingFrameworkStaticWebAssetCandidate->Count())' != '0'"
+      Text="Framework asset '%(_MissingFrameworkStaticWebAssetCandidate.Identity)' could not be found and won't be included in the project." />
+
+    <DefineStaticWebAssets
+      Condition="'@(_FrameworkStaticWebAssetCandidate->Count())' != '0'"
+      CandidateAssets="@(_FrameworkStaticWebAssetCandidate)"
+      ContentRoot="$(BlazorFrameworkStaticWebAssetRoot)"
+      SourceId="$(PackageId)"
+      SourceType="Discovered"
+      AssetKind="All"
+      AssetMode="CurrentProject"
+      AssetRole="Primary"
+      FingerprintCandidates="true"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_FrameworkStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_FrameworkStaticWebAsset)' != ''"
+      CandidateAssets="@(_FrameworkStaticWebAsset)"
+      ExistingEndpoints=""
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_FrameworkStaticAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_FrameworkStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_FrameworkStaticAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

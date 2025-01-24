@@ -148,6 +148,43 @@ public class MultipartReaderTests
     }
 
     [Fact]
+    public async Task MultipartReader_HeadersLengthExceeded_LargePreamble()
+    {
+        var body = $"preamble {new string('a', 17000)}\r\n" +
+            "--9051914041544843365972754266\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
+        var stream = MakeStream(body);
+        var reader = new MultipartReader(Boundary, stream);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal("Multipart header length limit 16384 exceeded. Too much data before the first boundary.", exception.Message);
+    }
+
+    [Fact]
+    public async Task MultipartReader_HeadersLengthLimitSettable_LargePreamblePasses()
+    {
+        var body = $"preamble {new string('a', 100_000)}\r\n" +
+            "--9051914041544843365972754266\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
+        var stream = MakeStream(body);
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersLengthLimit = 200_000,
+        };
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+
+        var buffer = new MemoryStream();
+        await section.Body.CopyToAsync(buffer);
+        Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+    }
+
+    [Fact]
     public async Task MultipartReader_ReadSinglePartBodyWithTrailingWhitespace_Success()
     {
         var stream = MakeStream(OnePartBodyWithTrailingWhitespace);
@@ -388,5 +425,29 @@ public class MultipartReaderTests
 
         var section = await reader.ReadNextSectionAsync();
         Assert.NotNull(section);
+    }
+
+    [Fact]
+    public async Task SyncReadWithOffsetWorks()
+    {
+        var stream = MakeStream(OnePartBody);
+        var reader = new MultipartReader(Boundary, stream);
+        var buffer = new byte[5];
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Single(section.Headers);
+        Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
+
+        var read = section.Body.Read(buffer, 2, buffer.Length - 2);
+        Assert.Equal("\0\0tex", GetString(buffer, read + 2));
+
+        read = section.Body.Read(buffer, 1, buffer.Length - 1);
+        Assert.Equal("\0t de", GetString(buffer, read + 1));
+
+        read = section.Body.Read(buffer, 0, buffer.Length);
+        Assert.Equal("fault", GetString(buffer, read));
+
+        Assert.Null(await reader.ReadNextSectionAsync());
     }
 }

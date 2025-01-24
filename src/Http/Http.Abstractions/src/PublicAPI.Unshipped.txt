@@ -1,13 +1,4 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
-Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
-*REMOVED*Microsoft.AspNetCore.Http.HostString.Value.get -> string!
-Microsoft.AspNetCore.Http.HostString.Value.get -> string?
-Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void
-Microsoft.AspNetCore.Http.Metadata.IDisableHttpMetricsMetadata
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasBindAsync.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasTryParse.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.IsOptional.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.Name.get -> string!
-Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -> System.Reflection.ParameterInfo!
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?

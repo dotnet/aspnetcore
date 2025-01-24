@@ -27,6 +27,9 @@
         [switch] $NoHttps,
         [Parameter(Mandatory = $false)]
         [switch] $UseProgramMain,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Debug", "Release")]
+        [string] $Configuration = "Release",
         [Parameter(ValueFromRemainingArguments = $true)]
         [string[]] $Args
     )
@@ -82,4 +85,5 @@
         -TemplateArguments $templateArguments `
         -MainProjectRelativePath $mainProjectRelativePath `
         -TargetFramework $Framework `
+        -Configuration $Configuration `
         -Verbose:$VerbosePreference;

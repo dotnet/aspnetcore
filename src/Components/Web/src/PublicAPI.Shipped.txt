@@ -342,6 +342,8 @@ Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode() -> void
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode(bool prerender) -> void
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Prerender.get -> bool
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore.JSComponentConfigurationStore() -> void
@@ -352,6 +354,8 @@ Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Code.get -> string!
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Code.set -> void
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.CtrlKey.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.CtrlKey.set -> void
+Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
+Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Key.get -> string!
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Key.set -> void
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.KeyboardEventArgs() -> void
@@ -503,6 +507,8 @@ Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemSize.ge
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemSize.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemsProvider.get -> Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderDelegate<TItem>?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemsProvider.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.MaxItemCount.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.MaxItemCount.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OverscanCount.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OverscanCount.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Placeholder.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
@@ -558,8 +564,10 @@ override Microsoft.AspNetCore.Components.Forms.ValidationSummary.BuildRenderTree
 override Microsoft.AspNetCore.Components.Forms.ValidationSummary.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
+override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.RenderTree.WebRenderer.Dispose(bool disposing) -> void
+override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Routing.NavLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

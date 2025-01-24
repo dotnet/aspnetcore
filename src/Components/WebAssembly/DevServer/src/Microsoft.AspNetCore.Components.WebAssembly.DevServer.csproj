@@ -29,7 +29,7 @@
   <!--  We include this here to ensure that the shared framework is built before we leverage it when running
   the dev server. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

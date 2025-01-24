@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file or making other Source Build related changes, include @dotnet/source-build as a reviewer. -->
 <!-- See aka.ms/dotnet/prebuilts for guidance on what pre-builts are and how to eliminate them. -->
 
 <UsageData>
@@ -18,6 +18,7 @@
     <UsagePattern IdentityGlob="System.Composition.Runtime/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/5.0.*" />
+    <UsagePattern IdentityGlob="System.Security.Cryptography.Pkcs/6.0.*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
@@ -50,6 +51,7 @@
 
   <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->
   <Usages>
+    <Usage Id="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.2.24473.5"/>
     <Usage Id="Newtonsoft.Json" Version="13.0.1" />
     <Usage Id="System.Security.Cryptography.Xml" Version="6.0.0" />
   </Usages>

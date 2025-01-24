@@ -52,9 +52,9 @@
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
     <!--
-      Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+      Use the Microsoft.Internal.Runtime.AspNetCore.Transport transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
     -->
-    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+    <AdditionalDotNetPackage Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
 
@@ -118,14 +118,12 @@
     the current versions.
   -->
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Properties="ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
+        Targets="ReturnProductVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="SharedFxVersion" />
     </MSBuild>
 
     <PropertyGroup>
-      <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
       <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'TargetingPack.Layout', '$(Configuration)', '$(_AppRefSubPath)'))</_AppRefPath>
