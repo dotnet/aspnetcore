@@ -40,9 +40,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         using CancellationTokenSource timeoutTokenSource = new CancellationTokenSource(timeout);
         timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
-        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token);
+        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token);
+        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token);
 
         eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
@@ -69,18 +69,18 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var context1 = hostingApplication1.CreateContext(features1);
         var context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumValueAsync(2);
-        await currentRequestValues.WaitForValueAsync(2);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         Logger.LogInformation(nameof(HostingApplication.DisposeContext));
 
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumValueAsync(2);
-        await currentRequestValues.WaitForValueAsync(0);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
@@ -100,9 +100,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         context1 = hostingApplication1.CreateContext(features1);
         context2 = hostingApplication2.CreateContext(features2);
 
-        await totalRequestValues.WaitForSumValueAsync(4);
-        await currentRequestValues.WaitForValueAsync(2);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 4, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         context1.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context2.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -112,9 +112,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         hostingApplication1.DisposeContext(context1, null);
         hostingApplication2.DisposeContext(context2, null);
 
-        await totalRequestValues.WaitForSumValueAsync(4);
-        await currentRequestValues.WaitForValueAsync(0);
-        await failedRequestValues.WaitForValueAsync(2);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 4, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 2, Logger);
 
         Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
@@ -132,6 +132,11 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
+    }
+
+    private static async Task WaitForCounterValue(CounterValues values, double expectedValue, ILogger logger)
+    {
+        await values.Values.WaitForValueAsync(expectedValue, values.CounterName, logger);
     }
 
     [Fact]

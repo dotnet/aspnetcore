@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
@@ -55,7 +56,7 @@ public class ConcurrencyLimiterEventSourceTests : LoggedTest
 
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token);
 
         eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
@@ -66,20 +67,20 @@ public class ConcurrencyLimiterEventSourceTests : LoggedTest
         // Act
         eventSource.RequestRejected();
 
-        Assert.True(await UntilValueMatches(lengthValues, 0));
+        await WaitForCounterValue(lengthValues, expectedValue: 0, Logger);
         using (eventSource.QueueTimer())
         {
-            Assert.True(await UntilValueMatches(lengthValues, 1));
+            await WaitForCounterValue(lengthValues, expectedValue: 1, Logger);
 
             using (eventSource.QueueTimer())
             {
-                Assert.True(await UntilValueMatches(lengthValues, 2));
+                await WaitForCounterValue(lengthValues, expectedValue: 2, Logger);
             }
 
-            Assert.True(await UntilValueMatches(lengthValues, 1));
+            await WaitForCounterValue(lengthValues, expectedValue: 1, Logger);
         }
 
-        Assert.True(await UntilValueMatches(lengthValues, 0));
+        await WaitForCounterValue(lengthValues, expectedValue: 0, Logger);
     }
 
     [Fact]
@@ -96,7 +97,7 @@ public class ConcurrencyLimiterEventSourceTests : LoggedTest
 
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-        var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token);
 
         eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
@@ -105,17 +106,17 @@ public class ConcurrencyLimiterEventSourceTests : LoggedTest
             });
 
         // Act
-        Assert.True(await UntilValueMatches(durationValues, 0));
+        await WaitForCounterValue(durationValues, expectedValue: 0, Logger);
 
         using (eventSource.QueueTimer())
         {
-            Assert.True(await UntilValueMatches(durationValues, 0));
+            await WaitForCounterValue(durationValues, expectedValue: 0, Logger);
         }
 
         // check that something (anything!) has been written
-        while (await durationValues.MoveNextAsync())
+        while (await durationValues.Values.MoveNextAsync())
         {
-            if (durationValues.Current > 0)
+            if (durationValues.Values.Current > 0)
             {
                 return;
             }
@@ -124,17 +125,9 @@ public class ConcurrencyLimiterEventSourceTests : LoggedTest
         throw new TimeoutException();
     }
 
-    private async Task<bool> UntilValueMatches(IAsyncEnumerator<double> enumerator, int value)
+    private static async Task WaitForCounterValue(CounterValues values, double expectedValue, ILogger logger)
     {
-        while (await enumerator.MoveNextAsync())
-        {
-            if (enumerator.Current == value)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        await values.Values.WaitForValueAsync(expectedValue, values.CounterName, logger);
     }
 
     private static ConcurrencyLimiterEventSource GetConcurrencyLimiterEventSource()
