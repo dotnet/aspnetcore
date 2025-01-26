@@ -119,7 +119,6 @@
     <SystemDirectoryServicesProtocolsVersion>10.0.0-alpha.1.25071.14</SystemDirectoryServicesProtocolsVersion>
     <SystemFormatsAsn1Version>10.0.0-alpha.1.25071.14</SystemFormatsAsn1Version>
     <SystemIOPipelinesVersion>10.0.0-alpha.1.25071.14</SystemIOPipelinesVersion>
-    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
     <SystemNetHttpJsonVersion>10.0.0-alpha.1.25071.14</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>10.0.0-alpha.1.25071.14</SystemNetHttpWinHttpHandlerVersion>
     <SystemNetServerSentEventsVersion>10.0.0-alpha.1.25071.14</SystemNetServerSentEventsVersion>
@@ -219,6 +218,7 @@
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
     <SystemNetSocketsVersion>4.3.0</SystemNetSocketsVersion>
     <SystemPrivateUriVersion>4.3.2</SystemPrivateUriVersion>
     <SystemSecurityCryptographyX509CertificatesVersion>4.3.2</SystemSecurityCryptographyX509CertificatesVersion>
