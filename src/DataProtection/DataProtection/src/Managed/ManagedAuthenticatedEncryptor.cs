@@ -379,7 +379,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
                 // Step 4: Validate the MAC provided as part of the payload.
 
-                if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array!, macOffset, eofOffset - macOffset))
+                if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash.AsSpan(0, correctHash.Length), protectedPayload.Array!.AsSpan(macOffset, eofOffset - macOffset)))
                 {
                     throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                 }

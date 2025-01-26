@@ -119,6 +119,7 @@
     <SystemDirectoryServicesProtocolsVersion>10.0.0-alpha.1.25071.14</SystemDirectoryServicesProtocolsVersion>
     <SystemFormatsAsn1Version>10.0.0-alpha.1.25071.14</SystemFormatsAsn1Version>
     <SystemIOPipelinesVersion>10.0.0-alpha.1.25071.14</SystemIOPipelinesVersion>
+    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
     <SystemNetHttpJsonVersion>10.0.0-alpha.1.25071.14</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>10.0.0-alpha.1.25071.14</SystemNetHttpWinHttpHandlerVersion>
     <SystemNetServerSentEventsVersion>10.0.0-alpha.1.25071.14</SystemNetServerSentEventsVersion>

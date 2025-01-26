@@ -214,6 +214,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>abf8e94296b7842e4d8ba7c9791eaffaf63d2a09</Sha>
     </Dependency>
+    <Dependency Name="System.Memory" Version="4.6.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="10.0.0-alpha.1.25071.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>abf8e94296b7842e4d8ba7c9791eaffaf63d2a09</Sha>
