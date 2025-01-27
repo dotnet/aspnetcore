@@ -129,8 +129,18 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
+        string uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsolute);
+        if (Match == NavLinkMatch.All
+            && EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment))
+        {
+            return true;
+        }
+
         return false;
     }
+
+    private static string GetUriIgnoreQueryAndFragment(string uri) =>
+        new Uri(uri).GetLeftPart(UriPartial.Path);
 
     private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
     {
