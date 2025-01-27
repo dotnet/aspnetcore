@@ -29,8 +29,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     // probability of collision, and this is acceptable for the expected KDK lifetime.
     private const int KEY_MODIFIER_SIZE_IN_BYTES = 128 / 8;
 
-    private static readonly Func<byte[], HashAlgorithm> _kdkPrfFactory = key => new HMACSHA512(key); // currently hardcoded to SHA512
-
     private readonly byte[] _contextHeader;
     private readonly IManagedGenRandom _genRandom;
     private readonly Secret _keyDerivationKey;
@@ -104,9 +102,10 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
             kdk: EMPTY_ARRAY,
             label: EMPTY_ARRAY_SEGMENT,
-            context: EMPTY_ARRAY_SEGMENT,
-            prfFactory: _kdkPrfFactory,
-            output: new ArraySegment<byte>(tempKeys));
+            contextHeader: EMPTY_ARRAY_SEGMENT,
+            contextData: EMPTY_ARRAY_SEGMENT,
+            operationSubkey: tempKeys.AsSpan(0, _symmetricAlgorithmSubkeyLengthInBytes),
+            validationSubkey: tempKeys.AsSpan(_symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes));
 
         // At this point, tempKeys := { K_E || K_H }.
 
@@ -235,13 +234,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             try
             {
                 _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
-                ManagedSP800_108_CTR_HMACSHA512.DeriveKeysHMACSHA512(
+                ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                     kdk: decryptedKdk,
                     label: additionalAuthenticatedData,
                     contextHeader: _contextHeader,
                     contextData: keyModifier,
-                    operationSubKey: decryptionSubkey,
-                    validationSubKey: validationSubkey);
+                    operationSubkey: decryptionSubkey,
+                    validationSubkey: validationSubkey);
 
                 // Step 3: Calculate the correct MAC for this payload.
                 // correctHash := MAC(IV || ciphertext)
@@ -341,26 +340,22 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var decryptedKdk = new byte[_keyDerivationKey.Length];
         var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
         var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
-        var derivedKeysBuffer = new byte[checked(decryptionSubkey.Length + validationSubkey.Length)];
 
         fixed (byte* __unused__1 = decryptedKdk)
         fixed (byte* __unused__2 = decryptionSubkey)
         fixed (byte* __unused__3 = validationSubkey)
-        fixed (byte* __unused__4 = derivedKeysBuffer)
         {
             try
             {
                 _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+
+                ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                     kdk: decryptedKdk,
                     label: additionalAuthenticatedData,
                     contextHeader: _contextHeader,
-                    context: keyModifier,
-                    prfFactory: _kdkPrfFactory,
-                    output: new ArraySegment<byte>(derivedKeysBuffer));
-
-                Buffer.BlockCopy(derivedKeysBuffer, 0, decryptionSubkey, 0, decryptionSubkey.Length);
-                Buffer.BlockCopy(derivedKeysBuffer, decryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
+                    contextData: keyModifier,
+                    operationSubkey: decryptionSubkey.AsSpan(0, decryptionSubkey.Length),
+                    validationSubkey: validationSubkey.AsSpan(0, validationSubkey.Length));
 
                 // Step 3: Calculate the correct MAC for this payload.
                 // correctHash := MAC(IV || ciphertext)
@@ -406,7 +401,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
                 Array.Clear(decryptionSubkey, 0, decryptionSubkey.Length);
                 Array.Clear(validationSubkey, 0, validationSubkey.Length);
-                Array.Clear(derivedKeysBuffer, 0, derivedKeysBuffer.Length);
             }
         }
     }
@@ -465,13 +459,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 _genRandom.GenRandom(keyModifier);
 
                 _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
-                ManagedSP800_108_CTR_HMACSHA512.DeriveKeysHMACSHA512(
+                ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                     kdk: decryptedKdk,
                     label: additionalAuthenticatedData,
                     contextHeader: _contextHeader,
                     contextData: keyModifier,
-                    operationSubKey: encryptionSubkey,
-                    validationSubKey: validationSubkey);
+                    operationSubkey: encryptionSubkey,
+                    validationSubkey: validationSubkey);
 
                 // idea of optimization here is firstly get all the types preset
                 // for calculating length of the output array and allocating it.
@@ -557,29 +551,23 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var decryptedKdk = new byte[_keyDerivationKey.Length];
         var encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
         var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
-        var derivedKeysBuffer = new byte[checked(encryptionSubkey.Length + validationSubkey.Length)];
 
         fixed (byte* __unused__1 = decryptedKdk)
         fixed (byte* __unused__2 = encryptionSubkey)
         fixed (byte* __unused__3 = validationSubkey)
-        fixed (byte* __unused__4 = derivedKeysBuffer)
         {
             try
             {
                 _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+                ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                     kdk: decryptedKdk,
                     label: additionalAuthenticatedData,
                     contextHeader: _contextHeader,
-                    context: new ArraySegment<byte>(keyModifier),
-                    prfFactory: _kdkPrfFactory,
-                    output: new ArraySegment<byte>(derivedKeysBuffer));
-
-                Buffer.BlockCopy(derivedKeysBuffer, 0, encryptionSubkey, 0, encryptionSubkey.Length);
-                Buffer.BlockCopy(derivedKeysBuffer, encryptionSubkey.Length, validationSubkey, 0, validationSubkey.Length);
+                    contextData: keyModifier,
+                    operationSubkey: encryptionSubkey.AsSpan(0, encryptionSubkey.Length),
+                    validationSubkey: validationSubkey.AsSpan(0, validationSubkey.Length));
 
                 // Step 4: Perform the encryption operation.
-
                 using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
                 using (var cryptoTransform = symmetricAlgorithm.CreateEncryptor(encryptionSubkey, iv))
                 using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
@@ -613,7 +601,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
                 Array.Clear(encryptionSubkey, 0, encryptionSubkey.Length);
                 Array.Clear(validationSubkey, 0, validationSubkey.Length);
-                Array.Clear(derivedKeysBuffer, 0, derivedKeysBuffer.Length);
             }
         }
     }
