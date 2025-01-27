@@ -19,7 +19,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("Permission", "CanViewPage")], authenticationType: "someAuthentication"));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         await authorizationService.AuthorizeAsync(user, "Basic");
@@ -44,7 +44,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([])); // Will fail due to missing required claim
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         await authorizationService.AuthorizeAsync(user, "Basic");
@@ -69,7 +69,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([])); // Will fail due to missing required claim
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => authorizationService.AuthorizeAsync(user, "UnknownPolicy"));
@@ -98,7 +98,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         await authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
@@ -123,7 +123,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         await authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement());
@@ -151,7 +151,7 @@ public class AuthorizationMetricsTest
         var meter = meterFactory.Meters.Single();
         var user = new ClaimsPrincipal(new ClaimsIdentity([]));
 
-        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.requests");
+        using var authorizedRequestsCollector = new MetricCollector<long>(meterFactory, AuthorizationMetrics.MeterName, "aspnetcore.authorization.attempts");
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authorizationService.AuthorizeAsync(user, resource: null, new TestRequirement()));

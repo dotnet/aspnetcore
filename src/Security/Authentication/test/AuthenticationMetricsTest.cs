@@ -24,7 +24,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticate.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -52,7 +52,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticate.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -80,7 +80,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticate.duration");
 
         // Act
         await authenticationService.AuthenticateAsync(httpContext, scheme: "custom");
@@ -108,7 +108,7 @@ public class AuthenticationMetricsTest
         var authenticationService = CreateAuthenticationService(authenticationHandler.Object, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.request.duration");
+        using var authenticationRequestsCollector = new MetricCollector<double>(meterFactory, AuthenticationMetrics.MeterName, "aspnetcore.authentication.authenticate.duration");
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => authenticationService.AuthenticateAsync(httpContext, scheme: "custom"));
