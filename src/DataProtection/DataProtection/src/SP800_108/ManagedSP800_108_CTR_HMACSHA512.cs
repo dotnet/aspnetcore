@@ -57,10 +57,10 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
 
 #if NET10_0_OR_GREATER
-        byte[]? prfInputLease = null;
+        byte[]? prfInputArray = null;
         Span<byte> prfInput = prfInputLength <= 128
             ? stackalloc byte[prfInputLength]
-            : (prfInputLease = DataProtectionPool.Rent(prfInputLength)).AsSpan(0, prfInputLength);
+            : (prfInputArray = new byte[prfInputLength]);
 #else
         var prfInputArray = new byte[prfInputLength];
         var prfInput = prfInputArray.AsSpan();
@@ -97,7 +97,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
                 // not using stackalloc here, because we are in a loop
                 // and potentially can exhaust the stack memory: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2014
-                prfOutput = DataProtectionPool.Rent(prfOutputSizeInBytes);
+                prfOutput = new byte[prfOutputSizeInBytes];
                 HMACSHA512.TryHashData(kdk, prfInput, prfOutput, out _);
 #else
                 prfOutput = prf.ComputeHash(prfInputArray);
@@ -136,12 +136,12 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
             if (prfOutput is not null)
             {
-                DataProtectionPool.Return(prfOutput, clearArray: true); // contains key material, so delete it
+                Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
             }
 
-            if (prfInputLease is not null)
+            if (prfInputArray is not null)
             {
-                DataProtectionPool.Return(prfInputLease, clearArray: true); // contains key material, so delete it
+                Array.Clear(prfInputArray, 0, prfInputArray.Length); // contains key material, so delete it
             }
             else
             {
