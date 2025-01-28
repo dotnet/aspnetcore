@@ -218,7 +218,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>000000</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="10.0.0-alpha.1.25071.14">
+    <Dependency Name="System.Net.Http.Json" Version="10.0.0-preview.1.25077.19">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1da2ea4983bb5cc3d17a3806eebc435df4cd27dd</Sha>
     </Dependency>
