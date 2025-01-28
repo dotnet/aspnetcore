@@ -30,11 +30,11 @@ internal sealed class DefaultAuthorizationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.AuthorizedRequestFailed(user, policyName: null, ex);
+            metrics.AuthorizedRequestCompleted(user, policyName: null, result: null, ex);
             throw;
         }
 
-        metrics.AuthorizedRequestSucceeded(user, policyName: null, result);
+        metrics.AuthorizedRequestCompleted(user, policyName: null, result, exception: null);
         return result;
     }
 
@@ -52,11 +52,11 @@ internal sealed class DefaultAuthorizationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.AuthorizedRequestFailed(user, policyName, ex);
+            metrics.AuthorizedRequestCompleted(user, policyName, result: null, ex);
             throw;
         }
 
-        metrics.AuthorizedRequestSucceeded(user, policyName, result);
+        metrics.AuthorizedRequestCompleted(user, policyName, result, exception: null);
         return result;
     }
 }

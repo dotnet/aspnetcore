@@ -65,7 +65,7 @@ public class AuthenticationMetricsTest
         Assert.True(measurement.Value > 0);
         Assert.Equal("custom", (string)measurement.Tags["aspnetcore.authentication.scheme"]);
         Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authentication.result"]);
-        Assert.False(measurement.Tags.ContainsKey("error.type"));
+        Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationFailureException", (string)measurement.Tags["error.type"]);
     }
 
     [Fact]

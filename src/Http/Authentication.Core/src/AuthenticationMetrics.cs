@@ -50,195 +50,151 @@ internal sealed class AuthenticationMetrics
             description: "The total number of times a scheme is signed out.");
     }
 
-    public void AuthenticatedRequestSucceeded(string? scheme, AuthenticateResult result, long startTimestamp, long currentTimestamp)
+    public void AuthenticatedRequestCompleted(string? scheme, AuthenticateResult? result, Exception? exception, long startTimestamp, long currentTimestamp)
     {
         if (_authenticatedRequestDuration.Enabled)
         {
-            AuthenticatedRequestSucceededCore(scheme, result, startTimestamp, currentTimestamp);
+            AuthenticatedRequestCompletedCore(scheme, result, exception, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AuthenticatedRequestSucceededCore(string? scheme, AuthenticateResult result, long startTimestamp, long currentTimestamp)
+    private void AuthenticatedRequestCompletedCore(string? scheme, AuthenticateResult? result, Exception? exception, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
 
-        var resultTagValue = result switch
-        {
-            { None: true } => "none",
-            { Succeeded: true } => "success",
-            { Failure: not null } => "failure",
-            _ => "_OTHER", // _OTHER is commonly used fallback for an extra or unexpected value. Shouldn't reach here.
-        };
-        tags.Add("aspnetcore.authentication.result", resultTagValue);
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-        _authenticatedRequestDuration.Record(duration.TotalSeconds, tags);
-    }
-
-    public void AuthenticatedRequestFailed(string? scheme, Exception exception, long startTimestamp, long currentTimestamp)
-    {
-        if (_authenticatedRequestDuration.Enabled)
-        {
-            AuthenticatedRequestFailedCore(scheme, exception, startTimestamp, currentTimestamp);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AuthenticatedRequestFailedCore(string? scheme, Exception exception, long startTimestamp, long currentTimestamp)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        AddErrorTag(ref tags, exception);
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-        _authenticatedRequestDuration.Record(duration.TotalSeconds, tags);
-    }
-
-    public void ChallengeSucceeded(string? scheme)
-    {
-        if (_challengeCount.Enabled)
-        {
-            ChallengeSucceededCore(scheme);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ChallengeSucceededCore(string? scheme)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-
-        _challengeCount.Add(1, tags);
-    }
-
-    public void ChallengeFailed(string? scheme, Exception exception)
-    {
-        if (_challengeCount.Enabled)
-        {
-            ChallengeFailedCore(scheme, exception);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ChallengeFailedCore(string? scheme, Exception exception)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        AddErrorTag(ref tags, exception);
-
-        _challengeCount.Add(1, tags);
-    }
-
-    public void ForbidSucceeded(string? scheme)
-    {
-        if (_forbidCount.Enabled)
-        {
-            ForbidSucceededCore(scheme);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ForbidSucceededCore(string? scheme)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        _forbidCount.Add(1, tags);
-    }
-
-    public void ForbidFailed(string? scheme, Exception exception)
-    {
-        if (_forbidCount.Enabled)
-        {
-            ForbidFailedCore(scheme, exception);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ForbidFailedCore(string? scheme, Exception exception)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        AddErrorTag(ref tags, exception);
-
-        _forbidCount.Add(1, tags);
-    }
-
-    public void SignInSucceeded(string? scheme)
-    {
-        if (_signInCount.Enabled)
-        {
-            SignInSucceededCore(scheme);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SignInSucceededCore(string? scheme)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        _signInCount.Add(1, tags);
-    }
-
-    public void SignInFailed(string? scheme, Exception exception)
-    {
-        if (_signInCount.Enabled)
-        {
-            SignInFailedCore(scheme, exception);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SignInFailedCore(string? scheme, Exception exception)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        AddErrorTag(ref tags, exception);
-
-        _signInCount.Add(1, tags);
-    }
-
-    public void SignOutSucceeded(string? scheme)
-    {
-        if (_signOutCount.Enabled)
-        {
-            SignOutSucceededCore(scheme);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SignOutSucceededCore(string? scheme)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        _signOutCount.Add(1, tags);
-    }
-
-    public void SignOutFailed(string? scheme, Exception exception)
-    {
-        if (_signOutCount.Enabled)
-        {
-            SignOutFailedCore(scheme, exception);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SignOutFailedCore(string? scheme, Exception exception)
-    {
-        var tags = new TagList();
-        TryAddSchemeTag(ref tags, scheme);
-        AddErrorTag(ref tags, exception);
-
-        _signOutCount.Add(1, tags);
-    }
-
-    private static void TryAddSchemeTag(ref TagList tags, string? scheme)
-    {
         if (scheme is not null)
         {
-            tags.Add("aspnetcore.authentication.scheme", scheme);
+            AddSchemeTag(ref tags, scheme);
         }
+
+        if (result is not null)
+        {
+            tags.Add("aspnetcore.authentication.result", result switch
+            {
+                { None: true } => "none",
+                { Succeeded: true } => "success",
+                { Failure: not null } => "failure",
+                _ => "_OTHER", // _OTHER is commonly used fallback for an extra or unexpected value. Shouldn't reach here.
+            });
+        }
+
+        if (exception is not null)
+        {
+            AddErrorTag(ref tags, exception);
+        }
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+        _authenticatedRequestDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void ChallengeCompleted(string? scheme, Exception? exception)
+    {
+        if (_challengeCount.Enabled)
+        {
+            ChallengeCompletedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ChallengeCompletedCore(string? scheme, Exception? exception)
+    {
+        var tags = new TagList();
+
+        if (scheme is not null)
+        {
+            AddSchemeTag(ref tags, scheme);
+        }
+
+        if (exception is not null)
+        {
+            AddErrorTag(ref tags, exception);
+        }
+
+        _challengeCount.Add(1, tags);
+    }
+
+    public void ForbidCompleted(string? scheme, Exception? exception)
+    {
+        if (_forbidCount.Enabled)
+        {
+            ForbidCompletedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ForbidCompletedCore(string? scheme, Exception? exception)
+    {
+        var tags = new TagList();
+
+        if (scheme is not null)
+        {
+            AddSchemeTag(ref tags, scheme);
+        }
+
+        if (exception is not null)
+        {
+            AddErrorTag(ref tags, exception);
+        }
+
+        _forbidCount.Add(1, tags);
+    }
+
+    public void SignInCompleted(string? scheme, Exception? exception)
+    {
+        if (_signInCount.Enabled)
+        {
+            SignInCompletedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignInCompletedCore(string? scheme, Exception? exception)
+    {
+        var tags = new TagList();
+
+        if (scheme is not null)
+        {
+            AddSchemeTag(ref tags, scheme);
+        }
+
+        if (exception is not null)
+        {
+            AddErrorTag(ref tags, exception);
+        }
+
+        _signInCount.Add(1, tags);
+    }
+
+    public void SignOutCompleted(string? scheme, Exception? exception)
+    {
+        if (_signOutCount.Enabled)
+        {
+            SignOutCompletedCore(scheme, exception);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SignOutCompletedCore(string? scheme, Exception? exception)
+    {
+        var tags = new TagList();
+
+        if (scheme is not null)
+        {
+            AddSchemeTag(ref tags, scheme);
+        }
+
+        if (exception is not null)
+        {
+            AddErrorTag(ref tags, exception);
+        }
+
+        _signOutCount.Add(1, tags);
+    }
+
+    private static void AddSchemeTag(ref TagList tags, string scheme)
+    {
+        tags.Add("aspnetcore.authentication.scheme", scheme);
     }
 
     private static void AddErrorTag(ref TagList tags, Exception exception)

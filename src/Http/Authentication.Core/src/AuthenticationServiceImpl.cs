@@ -26,11 +26,11 @@ internal sealed class AuthenticationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.AuthenticatedRequestFailed(scheme, ex, startTimestamp, currentTimestamp: Stopwatch.GetTimestamp());
+            metrics.AuthenticatedRequestCompleted(scheme, result: null, ex, startTimestamp, currentTimestamp: Stopwatch.GetTimestamp());
             throw;
         }
 
-        metrics.AuthenticatedRequestSucceeded(scheme, result, startTimestamp, currentTimestamp: Stopwatch.GetTimestamp());
+        metrics.AuthenticatedRequestCompleted(scheme, result, exception: result.Failure, startTimestamp, currentTimestamp: Stopwatch.GetTimestamp());
         return result;
     }
 
@@ -42,11 +42,11 @@ internal sealed class AuthenticationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.ChallengeFailed(scheme, ex);
+            metrics.ChallengeCompleted(scheme, ex);
             throw;
         }
 
-        metrics.ChallengeSucceeded(scheme);
+        metrics.ChallengeCompleted(scheme, exception: null);
     }
 
     public override async Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
@@ -57,11 +57,11 @@ internal sealed class AuthenticationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.ForbidFailed(scheme, ex);
+            metrics.ForbidCompleted(scheme, ex);
             throw;
         }
 
-        metrics.ForbidSucceeded(scheme);
+        metrics.ForbidCompleted(scheme, exception: null);
     }
 
     public override async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
@@ -72,11 +72,11 @@ internal sealed class AuthenticationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.SignInFailed(scheme, ex);
+            metrics.SignInCompleted(scheme, ex);
             throw;
         }
 
-        metrics.SignInSucceeded(scheme);
+        metrics.SignInCompleted(scheme, exception: null);
     }
 
     public override async Task SignOutAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
@@ -87,10 +87,10 @@ internal sealed class AuthenticationServiceImpl(
         }
         catch (Exception ex)
         {
-            metrics.SignOutFailed(scheme, ex);
+            metrics.SignOutCompleted(scheme, ex);
             throw;
         }
 
-        metrics.SignOutSucceeded(scheme);
+        metrics.SignOutCompleted(scheme, exception: null);
     }
 }
