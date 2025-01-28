@@ -365,10 +365,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
         AssertHighlightedLinks(
-            "Default with hash, no trailing slash",
             "Default (matches all)",
             "Default with base-relative URL (matches all)",
-            "Default, no trailing slash (matches all)");
+            "Default, no trailing slash (matches all)",
+            "Default with hash, no trailing slash");
     }
 
     [Fact]
