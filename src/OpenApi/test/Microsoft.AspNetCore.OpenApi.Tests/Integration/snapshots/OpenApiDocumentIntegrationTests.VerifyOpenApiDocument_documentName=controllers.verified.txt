@@ -8,9 +8,7 @@
     "/getbyidandname/{id}/{name}": {
       "get": {
         "tags": [
-          {
-            "name": "Test"
-          }
+          "Test"
         ],
         "parameters": [
           {
@@ -59,9 +57,7 @@
     "/forms": {
       "post": {
         "tags": [
-          {
-            "name": "Test"
-          }
+          "Test"
         ],
         "requestBody": {
           "content": {

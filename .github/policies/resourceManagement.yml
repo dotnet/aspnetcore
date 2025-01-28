@@ -377,8 +377,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 10.0-preview1
+          milestone: 10.0-preview2
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/10.0-preview1
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 10.0-preview1
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-preview1 branch'
     - if:
       - payloadType: Issues
       - isAction:

@@ -193,9 +193,9 @@ public class HostingEventSourceTests : LoggedTest
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
-        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token);
+        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token);
+        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token);
 
         eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
@@ -207,32 +207,37 @@ public class HostingEventSourceTests : LoggedTest
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("GET", "/");
 
-        await totalRequestValues.WaitForSumValueAsync(1);
-        await currentRequestValues.WaitForValueAsync(1);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumValueAsync(1);
-        await currentRequestValues.WaitForValueAsync(0);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("POST", "/");
 
-        await totalRequestValues.WaitForSumValueAsync(2);
-        await currentRequestValues.WaitForValueAsync(1);
-        await failedRequestValues.WaitForValueAsync(0);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
         Logger.LogInformation(nameof(HostingEventSource.RequestFailed));
         hostingEventSource.RequestFailed();
         Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        await totalRequestValues.WaitForSumValueAsync(2);
-        await currentRequestValues.WaitForValueAsync(0);
-        await failedRequestValues.WaitForValueAsync(1);
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 1, Logger);
+    }
+
+    private static async Task WaitForCounterValue(CounterValues values, double expectedValue, ILogger logger)
+    {
+        await values.Values.WaitForValueAsync(expectedValue, values.CounterName, logger);
     }
 
     private static HostingEventSource GetHostingEventSource()
