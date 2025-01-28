@@ -98,7 +98,7 @@ internal static unsafe class CryptoUtil
         Assert(bufA.Length == bufB.Length, "countA == countB");
 
 #if NETCOREAPP
-        return TimeConstantBuffersAreEqual(bufA, bufB);
+        return CryptographicOperations.FixedTimeEquals(bufA, bufB);
 #else
         bool areEqual = true;
         for (int i = 0; i < bufA.Length; i++)
