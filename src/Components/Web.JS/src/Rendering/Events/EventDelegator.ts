@@ -3,7 +3,7 @@
 
 import { EventFieldInfo } from './EventFieldInfo';
 import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
-import { dispatchEvent } from '../WebRendererInteropMethods';
+import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -133,6 +133,11 @@ export class EventDelegator {
 
   private onGlobalEvent(evt: Event) {
     if (!(evt.target instanceof Element)) {
+      return;
+    }
+
+    if (!isRendererAttached(this.browserRendererId)) {
+      // when connection closed, it will detachWebRendererInterop, so we need to check if the renderer is still attached
       return;
     }
 
