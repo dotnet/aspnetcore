@@ -633,6 +633,25 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Retrieves the authentication provider associated with the current two-factor authentication login attempt.
+    /// </summary>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains:
+    /// - The login provider name as a string if two-factor info exists
+    /// - null if no two-factor authentication info is found
+    /// </returns>
+    public virtual async Task<string?> GetTwoFactorAuthenticationLoginProviderAsync()
+    {
+        var info = await RetrieveTwoFactorInfoAsync();
+        if (info == null)
+        {
+            return null;
+        }
+
+        return info.LoginProvider;
+    }
+
+    /// <summary>
     /// Signs in a user via a previously registered third party login, as an asynchronous operation.
     /// </summary>
     /// <param name="loginProvider">The login provider to use.</param>
