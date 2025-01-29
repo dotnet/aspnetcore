@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  update-jquery-validate:
+  update-selenium-and-playwright:
     runs-on: ubuntu-latest
 
     steps:
