@@ -223,7 +223,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(float value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatFloatValueCore(value, culture, format);
+    public static string FormatValue(float value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatFloatValueCore(value, culture, format);
 
     private static string FormatFloatValueCore(float value, CultureInfo? culture, string? format)
     {
@@ -261,7 +261,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(float? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture, format);
+    public static string? FormatValue(float? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture, format);
 
     private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture, string? format)
     {
@@ -309,7 +309,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(double value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture, format);
+    public static string? FormatValue(double value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture, format);
 
     private static string FormatDoubleValueCore(double value, CultureInfo? culture, string? format)
     {
@@ -347,7 +347,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(double? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture, format);
+    public static string? FormatValue(double? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture, format);
 
     private static string? FormatNullableDoubleValueCore(double? value, CultureInfo? culture)
     {
@@ -395,7 +395,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(decimal value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture, format);
+    public static string FormatValue(decimal value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture, format);
 
     private static string FormatDecimalValueCore(decimal value, CultureInfo? culture)
     {
@@ -433,7 +433,7 @@ public static class BindConverter
     /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(decimal? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture, format);
+    public static string? FormatValue(decimal? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture, format);
 
     private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture)
     {
@@ -481,7 +481,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(DateTime value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
+    public static string FormatValue(DateTime value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
 
     private static string FormatDateTimeValueCore(DateTime value, string? format, CultureInfo? culture)
     {
