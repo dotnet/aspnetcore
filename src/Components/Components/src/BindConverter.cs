@@ -212,10 +212,15 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(float value, CultureInfo? culture = null) => FormatFloatValueCore(value, culture);
+    public static string FormatValue(float value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatFloatValueCore(value, culture, format);
 
-    private static string FormatFloatValueCore(float value, CultureInfo? culture)
+    private static string FormatFloatValueCore(float value, CultureInfo? culture, string? format)
     {
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
         return value.ToString(culture ?? CultureInfo.CurrentCulture);
     }
 
@@ -228,13 +233,18 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(float? value, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture);
+    public static string? FormatValue(float? value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatNullableFloatValueCore(value, culture, format);
 
-    private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture)
+    private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture, string? format)
     {
         if (value == null)
         {
             return null;
+        }
+
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
