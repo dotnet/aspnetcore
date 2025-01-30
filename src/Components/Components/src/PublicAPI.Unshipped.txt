@@ -14,6 +14,12 @@ Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateS
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute.SupplyParameterFromPersistentComponentStateAttribute() -> void
 Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(decimal value, string! format, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(decimal? value, string! format, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double value, string! format, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double? value, string! format, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float value, string! format, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float? value, string! format, System.Globalization.CultureInfo? culture = null) -> string?
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
