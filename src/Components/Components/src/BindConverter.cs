@@ -1011,6 +1011,11 @@ public static class BindConverter
 
     private static bool ConvertToFloatCore(object? obj, CultureInfo? culture, out float value)
     {
+        return ConvertToFloatCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToFloatCore(object? obj, CultureInfo? culture, out float value)
+    {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
         {
@@ -1035,6 +1040,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableFloatCore(object? obj, CultureInfo? culture, out float? value)
+    {
+        return ConvertToNullableFloatCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableFloatCore(object? obj, CultureInfo? culture, string? format, out float? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1090,6 +1100,11 @@ public static class BindConverter
 
     private static bool ConvertToDoubleCore(object? obj, CultureInfo? culture, out double value)
     {
+        return ConvertToDoubleCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToDoubleCore(object? obj, CultureInfo? culture, string? format, out double value)
+    {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
         {
@@ -1114,6 +1129,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableDoubleCore(object? obj, CultureInfo? culture, out double? value)
+    {
+        return ConvertToNullableDoubleCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableDoubleCore(object? obj, CultureInfo? culture, string? format, out double? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1169,6 +1189,11 @@ public static class BindConverter
 
     private static bool ConvertToDecimalCore(object? obj, CultureInfo? culture, out decimal value)
     {
+        return ConvertToDecimalCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToDecimalCore(object? obj, CultureInfo? culture, string? format, out decimal value)
+    {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
         {
@@ -1187,6 +1212,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableDecimalCore(object? obj, CultureInfo? culture, out decimal? value)
+    {
+        return ConvertToNullableDecimalCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableDecimalCore(object? obj, CultureInfo? culture, string? format, out decimal? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
