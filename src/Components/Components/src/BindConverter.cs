@@ -329,7 +329,6 @@ public static class BindConverter
     /// <param name="value">The value to format.</param>
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
-    /// The <see cref="StringSyntaxAttribute.NumericFormat)"/> to use while formatting.
     /// </param>
     /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
