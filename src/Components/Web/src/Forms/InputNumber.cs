@@ -41,6 +41,11 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
 
     /// <summary>
+    /// Gets or sets the format to be used when displaying a number of types: <see cref="float"/> | <see cref="double"/> |  <see cref="decimal"/>.
+    /// </summary>
+    [Parameter] public string? Format { get; set; }
+
+    /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
     /// <para>
     /// May be <see langword="null"/> if accessed before the component is rendered.
@@ -102,13 +107,13 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
                 return BindConverter.FormatValue(@short, CultureInfo.InvariantCulture);
 
             case float @float:
-                return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture);
+                return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture, Format);
 
             case double @double:
-                return BindConverter.FormatValue(@double, CultureInfo.InvariantCulture);
+                return BindConverter.FormatValue(@double, CultureInfo.InvariantCulture, Format);
 
             case decimal @decimal:
-                return BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture);
+                return BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture, Format);
 
             default:
                 throw new InvalidOperationException($"Unsupported type {value.GetType()}");
