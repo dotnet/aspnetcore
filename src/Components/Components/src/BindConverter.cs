@@ -306,10 +306,15 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(decimal value, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture);
+    public static string FormatValue(decimal value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatDecimalValueCore(value, culture, format);
 
-    private static string FormatDecimalValueCore(decimal value, CultureInfo? culture)
+    private static string FormatDecimalValueCore(decimal value, CultureInfo? culture, string? format)
     {
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
         return value.ToString(culture ?? CultureInfo.CurrentCulture);
     }
 
@@ -319,16 +324,22 @@ public static class BindConverter
     /// <param name="value">The value to format.</param>
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// The <see cref="StringSyntaxAttribute.NumericFormat)"/> to use while formatting.
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(decimal? value, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture);
+    public static string? FormatValue(decimal? value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatNullableDecimalValueCore(value, culture, format);
 
-    private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture)
+    private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture, string? format)
     {
         if (value == null)
         {
             return null;
+        }
+
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
