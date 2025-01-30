@@ -481,7 +481,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(DateTime value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
+    public static string FormatValue(DateTime value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
 
     private static string FormatDateTimeValueCore(DateTime value, string? format, CultureInfo? culture)
     {

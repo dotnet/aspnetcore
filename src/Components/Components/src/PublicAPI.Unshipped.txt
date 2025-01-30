@@ -5,4 +5,3 @@ static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double value, s
 static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double? value, string? format, System.Globalization.CultureInfo? culture = null) -> string?
 static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float value, string? format, System.Globalization.CultureInfo? culture = null) -> string!
 static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float? value, string? format, System.Globalization.CultureInfo? culture = null) -> string?
-static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTime value, string? format, System.Globalization.CultureInfo? culture = null) -> string!
