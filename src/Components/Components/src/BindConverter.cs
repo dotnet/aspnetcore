@@ -246,7 +246,7 @@ public static class BindConverter
 
         if (format != null)
         {
-            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -295,7 +295,7 @@ public static class BindConverter
 
         if (format != null)
         {
-            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -344,7 +344,7 @@ public static class BindConverter
 
         if (format != null)
         {
-            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
