@@ -41,7 +41,7 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
 
     /// <summary>
-    /// Gets or sets the format to be used when displaying a number of types: <see cref="float"/> | <see cref="double"/> |  <see cref="decimal"/>.
+    /// Gets or sets the format to be used when displaying a number of types: <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
     [Parameter] public string? Format { get; set; }
 
