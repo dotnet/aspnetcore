@@ -107,13 +107,13 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
                 return BindConverter.FormatValue(@short, CultureInfo.InvariantCulture);
 
             case float @float:
-                return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture, Format);
+                return BindConverter.FormatValue(@float, Format, CultureInfo.InvariantCulture);
 
             case double @double:
-                return BindConverter.FormatValue(@double, CultureInfo.InvariantCulture, Format);
+                return BindConverter.FormatValue(@double, Format, CultureInfo.InvariantCulture);
 
             case decimal @decimal:
-                return BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture, Format);
+                return BindConverter.FormatValue(@decimal, Format, CultureInfo.InvariantCulture);
 
             default:
                 throw new InvalidOperationException($"Unsupported type {value.GetType()}");
