@@ -210,6 +210,7 @@ public static class BindConverter
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string FormatValue(float value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatFloatValueCore(value, culture, format);
@@ -231,6 +232,7 @@ public static class BindConverter
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(float? value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatNullableFloatValueCore(value, culture, format);
@@ -257,6 +259,7 @@ public static class BindConverter
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(double value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatDoubleValueCore(value, culture, format);
@@ -278,6 +281,7 @@ public static class BindConverter
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(double? value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatNullableDoubleValueCore(value, culture, format);
@@ -304,6 +308,7 @@ public static class BindConverter
     /// <param name="culture">
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string FormatValue(decimal value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatDecimalValueCore(value, culture, format);
@@ -326,6 +331,7 @@ public static class BindConverter
     /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
     /// The <see cref="StringSyntaxAttribute.NumericFormat)"/> to use while formatting.
     /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(decimal? value, CultureInfo? culture = null, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format = null) => FormatNullableDecimalValueCore(value, culture, format);
