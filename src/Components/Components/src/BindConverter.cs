@@ -1005,7 +1005,9 @@ public static class BindConverter
     }
 
     internal static BindParser<float> ConvertToFloat = ConvertToFloatCore;
+    internal static BindParserWithFormat<float> ConvertToFloatWithFormat = ConvertToFloatCore;
     internal static BindParser<float?> ConvertToNullableFloat = ConvertToNullableFloatCore;
+    internal static BindParserWithFormat<float?> ConvertToNullableFloatWithFormat = ConvertToNullableFloatCore;
 
     private static bool ConvertToFloatCore(object? obj, CultureInfo? culture, out float value)
     {
@@ -1082,7 +1084,9 @@ public static class BindConverter
     }
 
     internal static BindParser<double> ConvertToDoubleDelegate = ConvertToDoubleCore;
+    internal static BindParserWithFormat<double> ConvertToDoubleWithFormat = ConvertToDoubleCore;
     internal static BindParser<double?> ConvertToNullableDoubleDelegate = ConvertToNullableDoubleCore;
+    internal static BindParserWithFormat<double?> ConvertToNullableDoubleWithFormat = ConvertToNullableDoubleCore;
 
     private static bool ConvertToDoubleCore(object? obj, CultureInfo? culture, out double value)
     {
@@ -1159,7 +1163,9 @@ public static class BindConverter
     }
 
     internal static BindParser<decimal> ConvertToDecimal = ConvertToDecimalCore;
+    internal static BindParserWithFormat<decimal> ConvertToDecimalWithFormat = ConvertToDecimalCore;
     internal static BindParser<decimal?> ConvertToNullableDecimal = ConvertToNullableDecimalCore;
+    internal static BindParserWithFormat<decimal?> ConvertToNullableDecimalWithFormat = ConvertToNullableDecimalCore;
 
     private static bool ConvertToDecimalCore(object? obj, CultureInfo? culture, out decimal value)
     {
