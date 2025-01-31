@@ -7,7 +7,7 @@
     <SkipHelixArm>true</SkipHelixArm>
     <SkipHelixAlpine>true</SkipHelixAlpine>
     <!-- Temporary while Mac machines get new JDK -->
-    <SkipHelixQueues>OSX;$(SkipHelixQueues)</SkipHelixQueues>
+    <SkipHelixQueues>OSX.13.Amd64.Open;$(SkipHelixQueues)</SkipHelixQueues>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>
