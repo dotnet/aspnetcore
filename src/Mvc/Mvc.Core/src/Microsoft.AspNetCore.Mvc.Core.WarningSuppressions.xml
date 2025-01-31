@@ -17,7 +17,7 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Builder.MvcApplicationBuilderExtensions.&lt;&gt;c.{UseMvcWithDefaultRoute}b__1_0(Microsoft.AspNetCore.Routing.IRouteBuilder)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Builder.MvcApplicationBuilderExtensions.&lt;&gt;c.&lt;UseMvcWithDefaultRoute&gt;b__1_0(Microsoft.AspNetCore.Routing.IRouteBuilder)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -41,7 +41,7 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -527,7 +527,7 @@
       <argument>ILLink</argument>
       <argument>IL2060</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -545,7 +545,7 @@
       <argument>ILLink</argument>
       <argument>IL2060</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultCollectionValidationStrategy.&lt;&gt;c.{GetEnumeratorForElementType}b__5_0(System.Type)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultCollectionValidationStrategy.&lt;&gt;c.&lt;GetEnumeratorForElementType&gt;b__5_0(System.Type)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -569,7 +569,7 @@
       <argument>ILLink</argument>
       <argument>IL2067</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.TypeActivatorCache.&lt;&gt;c.{#ctor}b__3_0(System.Type)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.TypeActivatorCache.&lt;&gt;c.&lt;#ctor&gt;b__3_0(System.Type)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -641,7 +641,7 @@
       <argument>ILLink</argument>
       <argument>IL2070</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.{GetRecordTypeConstructor}g__IsRecordType|2_0(System.Type)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.&lt;GetRecordTypeConstructor&gt;g__IsRecordType|2_0(System.Type)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -653,7 +653,7 @@
       <argument>ILLink</argument>
       <argument>IL2072</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
