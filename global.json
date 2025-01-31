@@ -24,7 +24,7 @@
     "xcopy-msbuild": "17.8.5"
   },
   "native-tools": {
-    "jdk": "latest"
+    "jdk": "11.0.24"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25076.1",
