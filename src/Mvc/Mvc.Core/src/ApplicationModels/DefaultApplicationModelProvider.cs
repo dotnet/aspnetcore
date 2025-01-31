@@ -356,7 +356,11 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         return actionModel;
     }
 
-    [UnconditionalSuppressMessage("AssemblyLoadTrimming", "IL2026:RequiresUnreferencedCode",
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "The method utilizes reflection to get information about the return type of an action")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060",
+        Justification = "The method utilizes reflection to get information about the return type of an action")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072",
         Justification = "The method utilizes reflection to get information about the return type of an action")]
     internal static void AddReturnTypeMetadata(IList<SelectorModel> selectors, MethodInfo methodInfo)
     {
