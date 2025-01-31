@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -356,12 +355,6 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         return actionModel;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "The method utilizes reflection to get information about the return type of an action")]
-    [UnconditionalSuppressMessage("Trimming", "IL2060",
-        Justification = "The method utilizes reflection to get information about the return type of an action")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072",
-        Justification = "The method utilizes reflection to get information about the return type of an action")]
     internal static void AddReturnTypeMetadata(IList<SelectorModel> selectors, MethodInfo methodInfo)
     {
         // Get metadata from return type
