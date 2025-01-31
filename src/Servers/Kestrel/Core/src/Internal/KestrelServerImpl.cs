@@ -39,7 +39,7 @@ internal sealed class KestrelServerImpl : IServer
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
         IHttpsConfigurationService httpsConfigurationService,
         ILoggerFactory loggerFactory,
-        DiagnosticSource diagnosticSource,
+        DiagnosticSource? diagnosticSource,
         KestrelMetrics metrics)
         : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource, metrics))
     {
