@@ -1162,6 +1162,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         // Set whether response can have body
         _canWriteResponseBody = CanWriteResponseBody();
+        Output.SetCanWriteBody(_canWriteResponseBody);
 
         if (!_canWriteResponseBody && hasTransferEncoding)
         {
