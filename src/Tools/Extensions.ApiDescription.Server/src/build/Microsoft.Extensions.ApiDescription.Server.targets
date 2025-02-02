@@ -51,8 +51,7 @@
         Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework." />
 
     <PropertyGroup>
-      <_DotNetGetDocumentOutputPath>$(OpenApiDocumentsDirectory.TrimEnd('\'))</_DotNetGetDocumentOutputPath>
-      <_DotNetGetDocumentOutputPath>$([System.IO.Path]::GetFullPath('$(_DotNetGetDocumentOutputPath)'))</_DotNetGetDocumentOutputPath>
+      <_DotNetGetDocumentOutputPath>$([System.IO.Path]::GetFullPath('$(OpenApiDocumentsDirectory)').TrimEnd('\'))</_DotNetGetDocumentOutputPath>
       <_DotNetGetDocumentCommand>dotnet "$(MSBuildThisFileDirectory)../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) --output "$(_DotNetGetDocumentOutputPath)" --project "$(MSBuildProjectName)"</_DotNetGetDocumentCommand>
