@@ -51,12 +51,17 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
 
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
-    if (!g_fInShutdown && !m_shutdown.joinable())
+    if (!g_fInShutdown && !m_shutdown.joinable()
+        && (m_pApplicationManager->IsIISExpress() || !m_pApplicationManager->HasReceivedRequest()))
     {
         // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
         // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
         // so we should make sure to shutdown the server in those cases
         StartShutdown();
+    }
+    else
+    {
+        LOG_INFO(L"Ignoring OnGlobalApplicationStop, OnGlobalStopListening should be called shortly.");
     }
 
     return GL_NOTIFICATION_CONTINUE;
@@ -80,17 +85,18 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
 
     LOG_INFOF(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange '%ls'", pwszChangePath);
 
-    // Test for an error.
-    if (nullptr != pwszChangePath &&
+    if (pwszChangePath != nullptr && pwszChangePath[0] != L'\0' &&
         _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
-        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
-    {
+        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0 &&
         // Configuration change recycling behavior can be turned off via setting disallowRotationOnConfigChange=true on the handler settings section.
         // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
-        if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
-        {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
-        }
+        m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
+    {
+        m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
+    }
+    else
+    {
+        LOG_INFOF(L"Ignoring configuration change for '%ls'", pwszChangePath);
     }
 
     // Return processing to the pipeline.
