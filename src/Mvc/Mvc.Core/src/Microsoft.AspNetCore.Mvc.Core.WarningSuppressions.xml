@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <linker>
-  <assembly fullname="Microsoft.AspNetCore.Mvc.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+  <assembly fullname="Microsoft.AspNetCore.Mvc.Core, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2026</argument>
@@ -36,6 +36,12 @@
       <argument>IL2026</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult.#ctor(System.String,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
@@ -521,6 +527,12 @@
       <argument>ILLink</argument>
       <argument>IL2060</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.AsyncEnumerableReader.TryGetReader(System.Type,System.Func{System.Object,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Collections.ICollection}}@)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -636,6 +648,12 @@
       <argument>IL2070</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.GetBoundConstructor(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList&lt;Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel&gt;,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
