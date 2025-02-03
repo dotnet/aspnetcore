@@ -1583,7 +1583,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await connection.Receive(
                     "HTTP/1.1 200 OK",
                     $"Date: {server.Context.DateHeaderValue}",
-                    "Transfer-Encoding: chunked",
                     "",
                     "");
 
@@ -1674,7 +1673,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await connection.Receive(
                     "HTTP/1.1 200 OK",
                     $"Date: {server.Context.DateHeaderValue}",
-                    "Transfer-Encoding: chunked",
                     "",
                     "");
 

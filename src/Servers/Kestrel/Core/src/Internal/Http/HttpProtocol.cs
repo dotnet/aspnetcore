@@ -54,12 +54,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
     // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
     protected volatile bool _keepAlive = true;
-    // _canWriteResponseBody is set in CreateResponseHeaders.
+    // _responseBodyMode is set in CreateResponseHeaders.
     // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
-    private bool _canWriteResponseBody = true;
+    private ResponseBodyMode _responseBodyMode = ResponseBodyMode.ContentLength;
     private bool _hasAdvanced;
     private bool _isLeasedMemoryInvalid = true;
-    private bool _autoChunk;
     protected Exception? _applicationException;
     private BadHttpRequestException? _requestRejectedException;
 
@@ -347,7 +346,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         _routeValues?.Clear();
 
         _requestProcessingStatus = RequestProcessingStatus.RequestPending;
-        _autoChunk = false;
+        _responseBodyMode = ResponseBodyMode.ContentLength;
         _applicationException = null;
         _requestRejectedException = null;
 
@@ -397,7 +396,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         _isLeasedMemoryInvalid = true;
         _hasAdvanced = false;
-        _canWriteResponseBody = true;
 
         if (_scheme == null)
         {
@@ -999,7 +997,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         var responseHeaders = CreateResponseHeaders(appCompleted);
 
-        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted);
+        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted);
     }
 
     private void VerifyInitializeState(int firstWriteByteCount)
@@ -1067,7 +1065,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     private Task WriteSuffix()
     {
-        if (_autoChunk || _httpVersion >= Http.HttpVersion.Http2)
+        if (_responseBodyMode == ResponseBodyMode.Chunked || _httpVersion >= Http.HttpVersion.Http2)
         {
             // For the same reason we call CheckLastWrite() in Content-Length responses.
             PreventRequestAbortedCancellation();
@@ -1161,10 +1159,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
 
         // Set whether response can have body
-        _canWriteResponseBody = CanWriteResponseBody();
-        Output.SetCanWriteBody(_canWriteResponseBody);
+        _responseBodyMode = CanWriteResponseBody() ? ResponseBodyMode.ContentLength : ResponseBodyMode.Disabled;
 
-        if (!_canWriteResponseBody && hasTransferEncoding)
+        if (_responseBodyMode == ResponseBodyMode.Disabled && hasTransferEncoding)
         {
             RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.TransferEncoding);
         }
@@ -1198,7 +1195,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
         else if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
         {
-            if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
+            if ((appCompleted || _responseBodyMode == ResponseBodyMode.Disabled) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
             {
                 if (CanAutoSetContentLengthZeroResponseHeader())
                 {
@@ -1219,8 +1216,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             // The chunked transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.
             else if (_httpVersion == Http.HttpVersion.Http11)
             {
-                _autoChunk = true;
-                responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
+                if (_responseBodyMode == ResponseBodyMode.ContentLength)
+                {
+                    _responseBodyMode = ResponseBodyMode.Chunked;
+                    responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
+                }
             }
             else
             {
@@ -1471,7 +1471,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             throw new InvalidOperationException("Invalid ordering of calling StartAsync or CompleteAsync and Advance.");
         }
 
-        if (_canWriteResponseBody)
+        if (_responseBodyMode != ResponseBodyMode.Disabled)
         {
             VerifyAndUpdateWrite(bytes);
             Output.Advance(bytes);
@@ -1592,9 +1592,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             VerifyAndUpdateWrite(data.Length);
         }
 
-        if (_canWriteResponseBody)
+        if (_responseBodyMode != ResponseBodyMode.Disabled)
         {
-            if (_autoChunk)
+            if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 if (data.Length == 0)
                 {
@@ -1640,27 +1640,27 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
-        if (_canWriteResponseBody)
+        if (_responseBodyMode != ResponseBodyMode.Disabled)
         {
-            if (_autoChunk)
+            if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 if (data.Length == 0)
                 {
-                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+                    Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted: false);
                     return Output.FlushAsync(cancellationToken);
                 }
 
-                return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, data.Span, cancellationToken);
             }
             else
             {
                 CheckLastWrite();
-                return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, data.Span, cancellationToken);
             }
         }
         else
         {
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted: false);
             HandleNonBodyResponseWrite();
             return Output.FlushAsync(cancellationToken);
         }
@@ -1689,9 +1689,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         // WriteAsyncAwaited is only called for the first write to the body.
         // Ensure headers are flushed if Write(Chunked)Async isn't called.
-        if (_canWriteResponseBody)
+        if (_responseBodyMode != ResponseBodyMode.Disabled)
         {
-            if (_autoChunk)
+            if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 if (data.Length == 0)
                 {
