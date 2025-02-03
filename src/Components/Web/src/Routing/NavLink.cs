@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class NavLink : ComponentBase, IDisposable
 {
+    private const string DisableMatchAllIgnoresLeftUriPartSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.DisableMatchAllIgnoresLeftUriPart";
+    private readonly bool _disableMatchAllIgnoresLeftUriPart = AppContext.TryGetSwitch(DisableMatchAllIgnoresLeftUriPartSwitchKey, out var switchValue) && switchValue;
+
     private const string DefaultActiveClass = "active";
 
     private bool _isActive;
@@ -127,6 +130,11 @@ public class NavLink : ComponentBase, IDisposable
             && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
         {
             return true;
+        }
+
+        if (_disableMatchAllIgnoresLeftUriPart)
+        {
+            return false;
         }
 
         string uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsolute);
