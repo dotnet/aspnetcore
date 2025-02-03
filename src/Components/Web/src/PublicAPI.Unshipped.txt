@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Format.get -> string?
+Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Format.set -> void

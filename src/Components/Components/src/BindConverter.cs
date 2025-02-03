@@ -24,7 +24,6 @@ public static class BindConverter
     private static readonly object BoxedFalse = false;
 
     private delegate object? BindFormatter<T>(T value, CultureInfo? culture);
-
     internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value);
     internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, [MaybeNullWhen(false)] out T value);
 
@@ -212,7 +211,29 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(float value, CultureInfo? culture = null) => FormatFloatValueCore(value, culture);
+    public static string FormatValue(float value, CultureInfo? culture = null) => FormatFloatValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string FormatValue(float value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatFloatValueCore(value, culture, format);
+
+    private static string FormatFloatValueCore(float value, CultureInfo? culture, string? format)
+    {
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
+        return value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
 
     private static string FormatFloatValueCore(float value, CultureInfo? culture)
     {
@@ -228,7 +249,34 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(float? value, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture);
+    public static string? FormatValue(float? value, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="float.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string? FormatValue(float? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture, format);
+
+    private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture, string? format)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (format != null)
+        {
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
+        return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
 
     private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture)
     {
@@ -249,7 +297,29 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(double value, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture);
+    public static string? FormatValue(double value, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string? FormatValue(double value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture, format);
+
+    private static string FormatDoubleValueCore(double value, CultureInfo? culture, string? format)
+    {
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
+        return value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
 
     private static string FormatDoubleValueCore(double value, CultureInfo? culture)
     {
@@ -265,13 +335,40 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(double? value, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture);
+    public static string? FormatValue(double? value, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="double.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string? FormatValue(double? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture, format);
 
     private static string? FormatNullableDoubleValueCore(double? value, CultureInfo? culture)
     {
         if (value == null)
         {
             return null;
+        }
+
+        return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
+
+    private static string? FormatNullableDoubleValueCore(double? value, CultureInfo? culture, string? format)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (format != null)
+        {
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -286,10 +383,32 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(decimal value, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture);
+    public static string FormatValue(decimal value, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string FormatValue(decimal value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture, format);
 
     private static string FormatDecimalValueCore(decimal value, CultureInfo? culture)
     {
+        return value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatDecimalValueCore(decimal value, CultureInfo? culture, string? format)
+    {
+        if (format != null)
+        {
+            return value.ToString(format, culture ?? CultureInfo.CurrentCulture);
+        }
+
         return value.ToString(culture ?? CultureInfo.CurrentCulture);
     }
 
@@ -302,13 +421,40 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(decimal? value, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture);
+    public static string? FormatValue(decimal? value, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture, format: null);
+
+    /// <summary>
+    /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="culture">
+    /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+    /// </param>
+    /// <param name="format">The format to use. Provided to <see cref="decimal.ToString(string, IFormatProvider)"/>.</param>
+    /// <returns>The formatted value.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static string? FormatValue(decimal? value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture, format);
 
     private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture)
     {
         if (value == null)
         {
             return null;
+        }
+
+        return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+    }
+
+    private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture, string? format)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (format != null)
+        {
+            return value.Value.ToString(format, culture ?? CultureInfo.CurrentCulture);
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -969,9 +1115,16 @@ public static class BindConverter
     }
 
     internal static BindParser<float> ConvertToFloat = ConvertToFloatCore;
+    internal static BindParserWithFormat<float> ConvertToFloatWithFormat = ConvertToFloatCore;
     internal static BindParser<float?> ConvertToNullableFloat = ConvertToNullableFloatCore;
+    internal static BindParserWithFormat<float?> ConvertToNullableFloatWithFormat = ConvertToNullableFloatCore;
 
     private static bool ConvertToFloatCore(object? obj, CultureInfo? culture, out float value)
+    {
+        return ConvertToFloatCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToFloatCore(object? obj, CultureInfo? culture, string? format, out float value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -997,6 +1150,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableFloatCore(object? obj, CultureInfo? culture, out float? value)
+    {
+        return ConvertToNullableFloatCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableFloatCore(object? obj, CultureInfo? culture, string? format, out float? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1046,9 +1204,16 @@ public static class BindConverter
     }
 
     internal static BindParser<double> ConvertToDoubleDelegate = ConvertToDoubleCore;
+    internal static BindParserWithFormat<double> ConvertToDoubleWithFormat = ConvertToDoubleCore;
     internal static BindParser<double?> ConvertToNullableDoubleDelegate = ConvertToNullableDoubleCore;
+    internal static BindParserWithFormat<double?> ConvertToNullableDoubleWithFormat = ConvertToNullableDoubleCore;
 
     private static bool ConvertToDoubleCore(object? obj, CultureInfo? culture, out double value)
+    {
+        return ConvertToDoubleCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToDoubleCore(object? obj, CultureInfo? culture, string? format, out double value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1074,6 +1239,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableDoubleCore(object? obj, CultureInfo? culture, out double? value)
+    {
+        return ConvertToNullableDoubleCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableDoubleCore(object? obj, CultureInfo? culture, string? format, out double? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1123,9 +1293,16 @@ public static class BindConverter
     }
 
     internal static BindParser<decimal> ConvertToDecimal = ConvertToDecimalCore;
+    internal static BindParserWithFormat<decimal> ConvertToDecimalWithFormat = ConvertToDecimalCore;
     internal static BindParser<decimal?> ConvertToNullableDecimal = ConvertToNullableDecimalCore;
+    internal static BindParserWithFormat<decimal?> ConvertToNullableDecimalWithFormat = ConvertToNullableDecimalCore;
 
     private static bool ConvertToDecimalCore(object? obj, CultureInfo? culture, out decimal value)
+    {
+        return ConvertToDecimalCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToDecimalCore(object? obj, CultureInfo? culture, string? format, out decimal value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1145,6 +1322,11 @@ public static class BindConverter
     }
 
     private static bool ConvertToNullableDecimalCore(object? obj, CultureInfo? culture, out decimal? value)
+    {
+        return ConvertToNullableDecimalCore(obj, culture, format: null, out value);
+    }
+
+    private static bool ConvertToNullableDecimalCore(object? obj, CultureInfo? culture, string? format, out decimal? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))

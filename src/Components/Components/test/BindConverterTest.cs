@@ -369,6 +369,75 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
+    [Theory]
+    [InlineData(1.1, "0.0#", "1.1")]        // Single decimal place with optional second
+    [InlineData(1500, "0.00", "1500.00")]    // Force two decimal places
+    [InlineData(1500, "0.##", "1500")]       // Remove unnecessary decimals
+    [InlineData(0, "0.00", "0.00")]          // Zero with fixed decimals
+    [InlineData(0, "0.##", "0")]             // Zero with optional decimals
+    [InlineData(-1.1, "0.0#", "-1.1")]       // Negative number with one decimal place
+    [InlineData(-1500, "0.00", "-1500.00")]  // Negative number with two fixed decimals
+    [InlineData(1.999, "0.0", "2.0")]        // Rounding up
+    [InlineData(1.111, "0.0", "1.1")]        // Rounding down
+    [InlineData(1234567.89, "N2", "1,234,567.89")] // Large number with thousands separator
+    [InlineData(1234567.89, "#,##0.00", "1,234,567.89")] // Explicit thousands separator format
+    [InlineData(0.1234, "0.00%", "12.34%")]  // Percentage formatting
+    [InlineData(0.12, "00.00", "00.12")]     // Fixed zero's with fixed decimals
+    [InlineData(1234567.89, "0.00", "1234567.89")]    // Fixed two decimals
+    public void FormatValue_Double_Format(double value, string format, string expected)
+    {
+        // Act
+        var actual = BindConverter.FormatValue(value, format, CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData(1.1, "0.0#", "1.1")]        // Single decimal place with optional second
+    [InlineData(1500, "0.00", "1500.00")]    // Force two decimal places
+    [InlineData(1500, "0.##", "1500")]       // Remove unnecessary decimals
+    [InlineData(0, "0.00", "0.00")]          // Zero with fixed decimals
+    [InlineData(0, "0.##", "0")]             // Zero with optional decimals
+    [InlineData(-1.1, "0.0#", "-1.1")]       // Negative number with one decimal place
+    [InlineData(-1500, "0.00", "-1500.00")]  // Negative number with two fixed decimals
+    [InlineData(1.999, "0.0", "2.0")]        // Rounding up
+    [InlineData(1.111, "0.0", "1.1")]        // Rounding down
+    [InlineData(1234567.89, "N2", "1,234,567.89")] // Large number with thousands separator
+    [InlineData(1234567.89, "#,##0.00", "1,234,567.89")] // Explicit thousands separator format
+    [InlineData(0.1234, "0.00%", "12.34%")]  // Percentage formatting
+    [InlineData(0.12, "00.00", "00.12")]     // Fixed zero's with fixed decimals
+    public void FormatValue_Decimal_Format(decimal value, string format, string expected)
+    {
+        // Act
+        var actual = BindConverter.FormatValue(value, format, CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData(1.1, "0.0#", "1.1")]        // Single decimal place with optional second
+    [InlineData(1500, "0.00", "1500.00")]    // Force two decimal places
+    [InlineData(1500, "0.##", "1500")]       // Remove unnecessary decimals
+    [InlineData(0, "0.00", "0.00")]          // Zero with fixed decimals
+    [InlineData(0, "0.##", "0")]             // Zero with optional decimals
+    [InlineData(-1.1, "0.0#", "-1.1")]       // Negative number with one decimal place
+    [InlineData(-1500, "0.00", "-1500.00")]  // Negative number with two fixed decimals
+    [InlineData(1.999, "0.0", "2.0")]        // Rounding up
+    [InlineData(1.111, "0.0", "1.1")]        // Rounding down
+    [InlineData(1234567.89, "N2", "1,234,567.88")] // Large number with thousands separator
+    [InlineData(0.1234, "0.00%", "12.34%")]  // Percentage formatting
+    [InlineData(0.12, "00.00", "00.12")]     // Fixed zero's with fixed decimals
+    public void FormatValue_Float_Format(float value, string format, string expected)
+    {
+        // Act
+        var actual = BindConverter.FormatValue(value, format, CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     private enum SomeLetters
     {
         A,
