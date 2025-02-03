@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.SetCurrentValueAsStringAsync(string? value) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.SetCurrentValueAsync(TValue? value) -> System.Threading.Tasks.Task!
