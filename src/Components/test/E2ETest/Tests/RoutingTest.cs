@@ -299,7 +299,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Other with query")).Click();
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Other", "Other with query");
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)", "Other with query");
     }
 
     [Fact]
@@ -310,7 +310,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with query")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with query");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default with query");
     }
 
     [Fact]
@@ -321,7 +324,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with query, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with query, no trailing slash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default, no trailing slash (matches all)",
+            "Default with query, no trailing slash");
     }
 
     [Fact]
@@ -332,7 +339,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Other with hash")).Click();
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Other", "Other with hash");
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)", "Other with hash");
     }
 
     [Fact]
@@ -343,7 +350,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with hash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with hash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default with hash");
     }
 
     [Fact]
@@ -354,7 +364,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with hash, no trailing slash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default, no trailing slash (matches all)",
+            "Default with hash, no trailing slash");
     }
 
     [Fact]
@@ -381,6 +395,28 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+    }
+
+    [Fact]
+    public void CanOverrideNavLinkToNotIgnoreFragment()
+    {
+        SetUrlViaPushState("/layout-overridden/for-hash");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with hash, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Override layout with hash, no trailing slash");
+    }
+
+    [Fact]
+    public void CanOverrideNavLinkToNotIgnoreQuery()
+    {
+        SetUrlViaPushState("/layout-overridden");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with query, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Override layout with query, no trailing slash");
     }
 
     [Fact]

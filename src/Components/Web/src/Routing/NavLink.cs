@@ -106,7 +106,12 @@ public class NavLink : ComponentBase, IDisposable
         }
     }
 
-    private bool ShouldMatch(string currentUriAbsolute)
+    /// <summary>
+    /// Determines whether the current URI should match the link.
+    /// </summary>
+    /// <param name="currentUriAbsolute">The absolute URI of the current location.</param>
+    /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
+    protected virtual bool ShouldMatch(string currentUriAbsolute)
     {
         if (_hrefAbsolute == null)
         {
@@ -124,8 +129,18 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
+        string uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsolute);
+        if (Match == NavLinkMatch.All
+            && EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment))
+        {
+            return true;
+        }
+
         return false;
     }
+
+    private static string GetUriIgnoreQueryAndFragment(string uri) =>
+        new Uri(uri).GetLeftPart(UriPartial.Path);
 
     private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
     {
@@ -199,7 +214,7 @@ public class NavLink : ComponentBase, IDisposable
 
     private static bool IsUnreservedCharacter(char c)
     {
-        // Checks whether it is an unreserved character according to 
+        // Checks whether it is an unreserved character according to
         // https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
         // Those are characters that are allowed in a URI but do not have a reserved
         // purpose (e.g. they do not separate the components of the URI)
