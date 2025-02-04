@@ -307,7 +307,7 @@ public class IISDeployer : IISDeployerBase
 
     private void AddTemporaryAppHostConfig(string contentRoot, int port)
     {
-        var multiSite = true;
+        var multiSite = _applicationHostConfig is not null;
         XDocument config;
         if (_applicationHostConfig is not null)
         {
@@ -315,7 +315,6 @@ public class IISDeployer : IISDeployerBase
         }
         else
         {
-            multiSite = false;
             _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
             _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
             Directory.CreateDirectory(_configPath);

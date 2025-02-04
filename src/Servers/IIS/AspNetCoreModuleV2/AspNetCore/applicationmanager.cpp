@@ -23,9 +23,16 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 )
 {
     // GetOrCreateApplicationInfo is called from proxymodule when a request is received.
-    // Set this value to indicate that a request has been received so we can disable shutdown logic in OnGlobalApplicationStop
-    m_hasStarted = true;
 
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
+    // Check for preload or warmup request, part of the application initialization process, see comments in ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop for more info
+    if (FAILED(pHttpContext.GetServerVariable("PRELOAD_REQUEST", &pszVariableValue, &cbLength)) &&
+        FAILED(pHttpContext.GetServerVariable("WARMUP_REQUEST", &pszVariableValue, &cbLength)))
+    {
+        // Set this value to indicate that a request has been received so we can disable shutdown logic in OnGlobalApplicationStop
+        m_hasStarted = true;
+    }
     auto &pApplication = *pHttpContext.GetApplication();
 
     // The configuration path is unique for each application and is used for the
