@@ -511,6 +511,43 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void NavigationToSamePathDoesNotScrollToTheTop()
+    {
+        // This test checks if the navigation to same path or path with query appeneded,
+        // keeps the scroll in the position from before navigation
+        // but moves it when we navigate to a fragment
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        var testSelector = Browser.WaitUntilTestSelectorReady();
+
+        app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
+        // scroll max up to find the position of fragment
+        BrowserScrollY = 0;
+        var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return document.getElementById('fragment').getBoundingClientRect().top + window.scrollY;");
+
+        // scroll maximally down
+        BrowserScrollY = maxScrollPosition;
+
+        app.FindElement(By.Id("do-self-navigate")).Click();
+        var scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+
+        app.FindElement(By.Id("do-self-navigate-with-query")).Click();
+        scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+
+        app.FindElement(By.Id("do-self-navigate-to-fragment")).Click();
+        scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == fragmentScrollPosition, "Expected to scroll to the fragment.");
+    }
+
+    [Fact]
     public void CanNavigateProgrammaticallyValidateNoReplaceHistoryEntry()
     {
         // This test checks if default navigation does not replace Browser history entries
