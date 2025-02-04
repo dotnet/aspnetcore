@@ -54,6 +54,25 @@
         }
       }
     },
+    "/gettypedresult": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/forms": {
       "post": {
         "tags": [
@@ -83,6 +102,29 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MvcTodo": {
+        "required": [
+          "title",
+          "description",
+          "isCompleted"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isCompleted": {
+            "type": "boolean"
           }
         }
       }

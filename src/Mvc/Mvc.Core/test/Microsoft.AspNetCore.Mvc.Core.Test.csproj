@@ -12,6 +12,7 @@
   <ItemGroup>
     <Reference Include="FSharp.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
     <ProjectReference Include="..\..\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
 
