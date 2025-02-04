@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
 {
     internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+    internal const string GlobalRouteGroupBuilderKey = "__GlobalRouteGroupBuilder";
 
     private readonly IHost _host;
     private readonly GlobalEndpointRouteBuilder _globalEndpointRouteBuilder;
@@ -41,6 +42,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName ?? nameof(WebApplication));
 
         Properties[GlobalEndpointRouteBuilderKey] = _globalEndpointRouteBuilder;
+        Properties[GlobalRouteGroupBuilderKey] = _globalRouteGroupBuilder;
     }
 
     /// <summary>
@@ -91,7 +93,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// Gets the <see cref="IEndpointConventionBuilder"/> for the application.
     /// </summary>
-    public IEndpointConventionBuilder Conventions => _globalRouteGroupBuilder;
+    public IEndpointConventionBuilder EndpointConventions => _globalRouteGroupBuilder;
 
     internal ApplicationBuilder ApplicationBuilder { get; }
 
@@ -223,6 +225,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         var newBuilder = ApplicationBuilder.New();
         // Remove the route builder so branched pipelines have their own routing world
         newBuilder.Properties.Remove(GlobalEndpointRouteBuilderKey);
+        newBuilder.Properties.Remove(GlobalRouteGroupBuilderKey);
         return newBuilder;
     }
 

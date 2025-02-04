@@ -26,7 +26,7 @@ public class WebApplicationGlobalConventionTests
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("global"));
+        app.EndpointConventions.WithMetadata(new EndpointGroupNameAttribute("global"));
 
         app.MapGet("/1", () => "Hello, world!").WithName("One");
         app.MapGet("/2", () => "Hello, world!").WithName("Two");
@@ -61,7 +61,7 @@ public class WebApplicationGlobalConventionTests
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("one"));
+        app.EndpointConventions.WithMetadata(new EndpointGroupNameAttribute("one"));
 
         var group = app.MapGroup("/hello")
             .WithMetadata(new EndpointGroupNameAttribute("two"));
@@ -95,7 +95,7 @@ public class WebApplicationGlobalConventionTests
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Conventions.Add(builder =>
+        app.EndpointConventions.Add(builder =>
         {
             if (builder is RouteEndpointBuilder { RoutePattern.RawText: "/1" })
             {
@@ -134,7 +134,7 @@ public class WebApplicationGlobalConventionTests
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Conventions.Add(builder =>
+        app.EndpointConventions.Add(builder =>
         {
             globalConventionServiceProvider = builder.ApplicationServices;
         });
@@ -151,13 +151,13 @@ public class WebApplicationGlobalConventionTests
     }
 
     [Fact]
-    public async Task BranchedPipelinesExemptFromGlobalConventions()
+    public async Task BranchedPipelinesSupportGlobalConventions()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("global"));
+        app.EndpointConventions.WithMetadata(new EndpointGroupNameAttribute("global"));
 
         app.UseRouting();
 
@@ -183,7 +183,7 @@ public class WebApplicationGlobalConventionTests
             {
                 var groupNameMetadata = endpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>();
                 var nameMetadata = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-                Assert.Null(groupNameMetadata);
+                Assert.Equal("global", groupNameMetadata.EndpointGroupName);
                 Assert.Equal("Two", nameMetadata.EndpointName);
             }
         );
@@ -208,7 +208,7 @@ public class WebApplicationGlobalConventionTests
 
         var app = builder.Build();
 
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("global"));
+        app.EndpointConventions.WithMetadata(new EndpointGroupNameAttribute("global"));
 
         app.MapGet("/", () => "Hello, world!");
         app.MapHub<TestHub>("/test-hub");
@@ -260,40 +260,13 @@ public class WebApplicationGlobalConventionTests
     }
 
     [Fact]
-    public async Task ThrowsExceptionOnNonRouteEndpointsAtTopLevel()
+    public async Task DoesNotThrowExceptionOnNonRouteEndpointsAtTopLevelWhenConventionNotUsed()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         var app = builder.Build();
-
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("global"));
 
         app.DataSources.Add(new CustomEndpointDataSource());
-
-        await app.StartAsync();
-
-        var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
-        var ex = Assert.Throws<NotSupportedException>(() => endpointDataSource.Endpoints);
-        Assert.Equal("MapGroup does not support custom Endpoint type 'Microsoft.AspNetCore.Tests.WebApplicationGlobalConventionTests+TestCustomEndpoint'. Only RouteEndpoints can be grouped.", ex.Message);
-
-        await app.StopAsync();
-    }
-
-    [Fact]
-    public async Task DoesNotThrowExceptionOnNonRouteEndpointsInBranchedPipeline()
-    {
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-        var app = builder.Build();
-
-        app.Conventions.WithMetadata(new EndpointGroupNameAttribute("global"));
-
-        app.UseRouting();
-
-        app.UseEndpoints(e =>
-        {
-            e.DataSources.Add(new CustomEndpointDataSource());
-        });
 
         await app.StartAsync();
 
@@ -305,6 +278,26 @@ public class WebApplicationGlobalConventionTests
                 Assert.Null(groupNameMetadata);
             }
         );
+
+        await app.StopAsync();
+    }
+
+    [Fact]
+    public async Task ThrowsExceptionOnNonRouteEndpointsAtTopLevelWhenConventionUsed()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        var app = builder.Build();
+
+        app.EndpointConventions.WithMetadata(new EndpointGroupNameAttribute("global"));
+
+        app.DataSources.Add(new CustomEndpointDataSource());
+
+        await app.StartAsync();
+
+        var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+        var ex = Assert.Throws<NotSupportedException>(() => endpointDataSource.Endpoints);
+        Assert.Equal("MapGroup does not support custom Endpoint type 'Microsoft.AspNetCore.Tests.WebApplicationGlobalConventionTests+TestCustomEndpoint'. Only RouteEndpoints can be grouped.", ex.Message);
 
         await app.StopAsync();
     }

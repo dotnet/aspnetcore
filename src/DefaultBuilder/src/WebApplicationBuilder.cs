@@ -411,6 +411,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // by the WebApplication as the IEndpointRouteBuilder instance
         var globalRouteGroupBuilder = _builtApplication.Properties[WebApplication.GlobalEndpointRouteBuilderKey];
         app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, globalRouteGroupBuilder);
+        app.Properties.Add(WebApplication.GlobalRouteGroupBuilderKey, _builtApplication.Properties[WebApplication.GlobalRouteGroupBuilderKey]);
 
         // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
         if (_builtApplication.DataSources.Count > 0)

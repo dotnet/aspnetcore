@@ -15,6 +15,7 @@ public static class EndpointRoutingApplicationBuilderExtensions
 {
     private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
     private const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+    private const string GlobalRouteGroupBuilderKey = "__GlobalRouteGroupBuilder";
     private const string UseRoutingKey = "__UseRouting";
 
     /// <summary>
@@ -92,9 +93,13 @@ public static class EndpointRoutingApplicationBuilderExtensions
 
         VerifyRoutingServicesAreRegistered(builder);
 
-        VerifyEndpointRoutingMiddlewareIsRegistered(builder, out var endpointRouteBuilder);
+        // When registering endpoints, we want to target the underlying RouteGroupBuilder
+        // that is created by the WebApplication for targeting map action calls. However, we want
+        // to target the GlobalEndpointRouteBuilder which contains the GroupedEndpointDataSource
+        // for any conventions and EndpointDataSource resolution.
+        VerifyEndpointRoutingMiddlewareIsRegistered(builder, out var routeGroupBuilder, out var endpointRouteBuilder);
 
-        configure(endpointRouteBuilder);
+        configure(routeGroupBuilder);
 
         // Yes, this mutates an IOptions. We're registering data sources in a global collection which
         // can be used for discovery of endpoints or URL generation.
@@ -126,7 +131,7 @@ public static class EndpointRoutingApplicationBuilderExtensions
         }
     }
 
-    private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out IEndpointRouteBuilder endpointRouteBuilder)
+    private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out IEndpointRouteBuilder routeGroupBuilder, out IEndpointRouteBuilder endpointRouteBuilder)
     {
         if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj))
         {
@@ -137,6 +142,10 @@ public static class EndpointRoutingApplicationBuilderExtensions
                 $"to 'Configure(...)' in the application startup code.";
             throw new InvalidOperationException(message);
         }
+
+        routeGroupBuilder = app.Properties.TryGetValue(GlobalRouteGroupBuilderKey, out var globalRouteGroupBuilder)
+            ? (IEndpointRouteBuilder)globalRouteGroupBuilder!
+            : (IEndpointRouteBuilder)obj!;
 
         endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
 
