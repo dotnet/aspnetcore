@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public class NavLink : ComponentBase, IDisposable
 {
     private const string DisableMatchAllIgnoresLeftUriPartSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.DisableMatchAllIgnoresLeftUriPart";
-    private readonly bool _disableMatchAllIgnoresLeftUriPart = AppContext.TryGetSwitch(DisableMatchAllIgnoresLeftUriPartSwitchKey, out var switchValue) && switchValue;
+    private static readonly bool _disableMatchAllIgnoresLeftUriPart = AppContext.TryGetSwitch(DisableMatchAllIgnoresLeftUriPartSwitchKey, out var switchValue) && switchValue;
 
     private const string DefaultActiveClass = "active";
 
@@ -132,24 +132,50 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
-        if (_disableMatchAllIgnoresLeftUriPart)
+        if (_disableMatchAllIgnoresLeftUriPart || Match != NavLinkMatch.All)
         {
             return false;
         }
 
         string uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsolute);
-        if (Match == NavLinkMatch.All
-            && EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment))
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment))
         {
             return true;
         }
-
-        return false;
+        _hrefAbsolute = GetUriIgnoreQueryAndFragment(_hrefAbsolute);
+        return EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment);
     }
 
-    private static string GetUriIgnoreQueryAndFragment(string uri) =>
-        new Uri(uri).GetLeftPart(UriPartial.Path);
+    private static string GetUriIgnoreQueryAndFragment(string uri)
+    {
+        if (string.IsNullOrEmpty(uri))
+        {
+            return string.Empty;
+        }
 
+        var queryStartPos = uri.IndexOf('?');
+        var fragmentStartPos = uri.IndexOf('#');
+
+        if (queryStartPos < 0 && fragmentStartPos < 0)
+        {
+            return uri;
+        }
+
+        int minPos;
+        if (queryStartPos < 0)
+        {
+            minPos = fragmentStartPos;
+        }
+        else if (fragmentStartPos < 0)
+        {
+            minPos = queryStartPos;
+        }
+        else
+        {
+            minPos = Math.Min(queryStartPos, fragmentStartPos);
+        }
+        return uri.AsMemory(0..minPos).ToString();
+    }
     private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
     {
         Debug.Assert(_hrefAbsolute != null);
