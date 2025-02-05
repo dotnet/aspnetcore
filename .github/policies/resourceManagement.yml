@@ -550,7 +550,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.2
+          milestone: 9.0.3
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -561,7 +561,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.13
+          milestone: 8.0.14
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
