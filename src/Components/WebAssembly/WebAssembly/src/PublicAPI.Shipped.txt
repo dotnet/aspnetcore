@@ -81,24 +81,6 @@ Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.WebAssemblyHostConfiguration() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions
 Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.Delta() -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ILDelta.get -> byte[]!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ILDelta.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.MetadataDelta.get -> byte[]!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.MetadataDelta.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ModuleId.get -> string!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ModuleId.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.PdbDelta.get -> byte[]!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.PdbDelta.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.UpdatedTypes.get -> int[]!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.UpdatedTypes.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.LogEntry() -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Message.get -> string!
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Message.init -> void
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Severity.get -> int
-Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Severity.init -> void
 Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
 Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.Default = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
 Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.ForceCache = 4 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
@@ -126,7 +108,6 @@ static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnviro
 static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsProduction(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment) -> bool
 static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsStaging(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment) -> bool
 static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
-static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDeltas(Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta[]! deltas, int loggingLevel) -> Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry[]!
 static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.GetApplyUpdateCapabilities() -> string!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCache(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache requestCache) -> System.Net.Http.HttpRequestMessage!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCredentials(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials requestCredentials) -> System.Net.Http.HttpRequestMessage!
