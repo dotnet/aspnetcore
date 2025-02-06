@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux8);
-      $(HelixQueueAlpine316);
+      $(HelixQueueAlpine318);
       $(HelixQueueDebian12);
       $(HelixQueueFedora40);
       $(HelixQueueMariner);
