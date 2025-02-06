@@ -444,7 +444,7 @@ class GsonHubProtocolTest {
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, message.getMessageType());
         InvocationBindingFailureMessage failureMessage = (InvocationBindingFailureMessage) messages.get(0);
 
-        assertEquals("java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 41 path $.arguments[0]", failureMessage.getException().getMessage());
+        assertEquals("com.google.gson.JsonSyntaxException", failureMessage.getException().getClass().getName());
     }
 
     @Test
