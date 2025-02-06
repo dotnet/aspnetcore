@@ -79,9 +79,12 @@ exit 1
 }
 
 # Check if there are changes
-if (-not (git diff --cached --quiet)) {
+git diff --quiet
+if ($LASTEXITCODE -eq 0) {
     Write-Host "No changes to commit."
-    exit 0
+    # exit 0
+}else {
+    Write-Host "Updating the version of packages";
 }
 
 # Create a new branch
@@ -93,9 +96,9 @@ git add eng/Versions.props src/Components/benchmarkapps/Wasm.Performance/dockerf
 # Commit the changes
 $commitMessage = @"
 [Infrastructure] Update Selenium and Playwright dependencies $(Get-Date -Format "yyyy-MM-dd")
-* Updated Playwright version to $($versions["Microsoft.Playwright"])
-* Updated Selenium version to $($versions["Selenium.Support"])
-* Updated Selenium version to $($versions["Selenium.WebDriver"])
+* Updated Microsoft.Playwright version to $($versions["Microsoft.Playwright"])
+* Updated Selenium.Support version to $($versions["Selenium.Support"])
+* Updated Selenium.WebDriver version to $($versions["Selenium.WebDriver"])
 "@
 git commit -m $commitMessage
 

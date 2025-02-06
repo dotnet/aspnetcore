@@ -26,6 +26,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -59,12 +60,12 @@ internal sealed class OpenApiDocumentService(
         // Schema and operation transformers are scoped per-request and can be
         // pre-allocated to hold the same number of transformers as the associated
         // options object.
-        IOpenApiSchemaTransformer[] schemaTransformers = _options.SchemaTransformers.Count > 0
+        var schemaTransformers = _options.SchemaTransformers.Count > 0
             ? new IOpenApiSchemaTransformer[_options.SchemaTransformers.Count]
-            : Array.Empty<IOpenApiSchemaTransformer>();
-        IOpenApiOperationTransformer[] operationTransformers = _options.OperationTransformers.Count > 0 ?
+            : [];
+        var operationTransformers = _options.OperationTransformers.Count > 0 ?
             new IOpenApiOperationTransformer[_options.OperationTransformers.Count]
-            : Array.Empty<IOpenApiOperationTransformer>();
+            : [];
         InitializeTransformers(scopedServiceProvider, schemaTransformers, operationTransformers);
         var document = new OpenApiDocument
         {
@@ -277,14 +278,7 @@ internal sealed class OpenApiDocumentService(
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
-        var tags = GetTags(description);
-        if (tags != null)
-        {
-            foreach (var tag in tags)
-            {
-                document.Tags?.Add(tag);
-            }
-        }
+        var tags = GetTags(description, document);
         var operation = new OpenApiOperation
         {
             OperationId = GetOperationId(description),
@@ -308,16 +302,27 @@ internal sealed class OpenApiDocumentService(
         => description.ActionDescriptor.AttributeRouteInfo?.Name ??
             description.ActionDescriptor.EndpointMetadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName;
 
-    private static List<OpenApiTag>? GetTags(ApiDescription description)
+    private static List<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
         {
-            return tagsMetadata.Tags.Select(tag => new OpenApiTag { Name = tag }).ToList();
+            List<OpenApiTagReference> tags = [];
+            foreach (var tag in tagsMetadata.Tags)
+            {
+                document.Tags ??= [];
+                document.Tags.Add(new OpenApiTag { Name = tag });
+                tags.Add(new OpenApiTagReference(tag, document));
+
+            }
+            return tags;
         }
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
-        return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
+        var controllerName = description.ActionDescriptor.RouteValues["controller"];
+        document.Tags ??= [];
+        document.Tags.Add(new OpenApiTag { Name = controllerName });
+        return [new OpenApiTagReference(controllerName, document)];
     }
 
     private async Task<OpenApiResponses> GetResponsesAsync(

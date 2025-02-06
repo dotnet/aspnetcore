@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.CloseColumnOptionsAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.get -> System.Func<TGridItem, string?>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.set -> void

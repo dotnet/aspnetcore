@@ -47,6 +47,7 @@
 
     <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
     <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
+    <UsagePattern IdentityGlob="System.Formats.Asn1/5.0.0" />
   </IgnorePatterns>
 
   <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->

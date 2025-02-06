@@ -44,11 +44,11 @@
       AssetRole="Primary"
       FingerprintCandidates="true"
       BasePath="/">
-      <Output TaskParameter="Assets" ItemName="_FrameworkStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_WebViewFrameworkStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <ItemGroup>
-      <StaticWebAsset Include="@(_FrameworkStaticWebAsset)" />
+      <StaticWebAsset Include="@(_WebViewFrameworkStaticWebAsset)" />
     </ItemGroup>
   </Target>
 

@@ -117,16 +117,16 @@ public partial class BootResourceCachingTest
     }
 
     [GeneratedRegex("/Microsoft\\.AspNetCore\\.Components\\.\\w*\\.wasm")]
-    private static partial Regex GetFingerprintedComponentsEntryRegex();
+    private static partial Regex GetFingerprintedComponentsEntryRegex { get; }
 
     [GeneratedRegex("/dotnet\\.native\\.\\w*\\.wasm")]
-    private static partial Regex GetFingerprintedDotNetWasmEntryRegex();
+    private static partial Regex GetFingerprintedDotNetWasmEntryRegex { get; }
 
     private static bool IsFingerprintedComponentsEntry(string url)
-        => GetFingerprintedComponentsEntryRegex().IsMatch(url);
+        => GetFingerprintedComponentsEntryRegex.IsMatch(url);
 
     private static bool IsFingerprintedDotNetWasmEntry(string url)
-        => GetFingerprintedDotNetWasmEntryRegex().IsMatch(url);
+        => GetFingerprintedDotNetWasmEntryRegex.IsMatch(url);
 
     private IReadOnlyCollection<string> GetCacheEntryUrls()
     {

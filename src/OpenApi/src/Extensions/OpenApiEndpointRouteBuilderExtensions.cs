@@ -59,12 +59,12 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     {
                         if (UseYaml(pattern))
                         {
-                            document.Serialize(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
+                            await document.SerializeAsync(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
                             context.Response.ContentType = "text/plain+yaml;charset=utf-8";
                         }
                         else
                         {
-                            document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
+                            await document.SerializeAsync(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
                             context.Response.ContentType = "application/json;charset=utf-8";
                         }
                         await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);

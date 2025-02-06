@@ -52,7 +52,13 @@
     <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+    <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+  </PropertyGroup>
+
   <ItemGroup>
+    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />  
     <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 

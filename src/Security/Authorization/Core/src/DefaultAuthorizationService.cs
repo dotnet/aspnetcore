@@ -98,13 +98,14 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
     {
-        ArgumentNullThrowHelper.ThrowIfNull(policyName);
-
-        var policy = await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false);
-        if (policy == null)
-        {
-            throw new InvalidOperationException($"No policy found: {policyName}.");
-        }
+        var policy = await GetPolicyAsync(policyName).ConfigureAwait(false);
         return await this.AuthorizeAsync(user, resource, policy).ConfigureAwait(false);
+    }
+
+    // For use in DefaultAuthorizationServiceImpl.
+    private protected async Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(policyName);
+        return await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false) ?? throw new InvalidOperationException($"No policy found: {policyName}.");
     }
 }

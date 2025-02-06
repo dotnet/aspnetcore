@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.OpenApi.Models;
 
@@ -177,6 +178,62 @@ public partial class OpenApiDocumentServiceTests
             tag =>
             {
                 Assert.Equal("users", tag.Name);
+            });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiOperation_EditingReferenceInOperationThrowsException()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { }).WithTags(["todos"]);
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            foreach (var tag in operation.Tags)
+            {
+                tag.Name = "newTag"; // Should throw exception
+            }
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifyOpenApiDocument(builder, options, _ => { }));
+        Assert.Equal("Setting the value from the reference is not supported, use the target property instead.", exception.Message);
+    }
+
+    [Fact]
+    public async Task GetOpenApiOperation_EditingTargetTagInOperationWorks()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { }).WithTags(["todos"]);
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            foreach (var tag in operation.Tags)
+            {
+                tag.Target.Name = "newTag";
+            }
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            Assert.Collection(operation.Tags, tag =>
+            {
+                Assert.Equal("newTag", tag.Name);
+            });
+            Assert.Collection(document.Tags, tag =>
+            {
+                Assert.Equal("newTag", tag.Name);
             });
         });
     }

@@ -3,15 +3,16 @@
 <h3>Sample QuickGrid Component</h3>
 
 <div id="grid">
-    <QuickGrid Items="@FilteredPeople" Pagination="@pagination" custom-attrib="somevalue" class="custom-class-attrib">
+    <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.firstName)" Sortable="true">
-                <ColumnOptions>
-                    <div class="search-box">
-                        <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
-                    </div>
-                </ColumnOptions>
-         </PropertyColumn>
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
+                </div>
+                <button type="button" id="close-column-options" @onclick="@(() => quickGridRef.CloseColumnOptionsAsync())">Close Column Options</button>
+            </ColumnOptions>
+        </PropertyColumn>
         <PropertyColumn Property="@(p => p.lastName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true"/>
@@ -23,9 +24,12 @@
     record Person(int PersonId, string firstName, string lastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
+    QuickGrid<Person> quickGridRef;
 
     int ComputeAge(DateOnly birthDate)
         => DateTime.Now.Year - birthDate.Year - (birthDate.DayOfYear < DateTime.Now.DayOfYear ? 0 : 1);
+
+    string HighlightJulie(Person person) => person.firstName == "Julie" ? "highlight" : null;
 
     IQueryable<Person> FilteredPeople
     {
