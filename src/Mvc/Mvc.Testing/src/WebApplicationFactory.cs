@@ -22,15 +22,21 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// </summary>
 /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
 /// Typically the Startup or Program classes can be used.</typeparam>
+/// <remarks>The default behavior of the <see cref="CreateServer(IWebHostBuilder)"/> implementation
+/// creates a new <see cref="TestHost.TestServer"/> instance as an in-memory server to utilize for testing.
+/// If the developers wants, they can override the <see cref="CreateServer(IWebHostBuilder)"/> method to return a customer <see cref="ITestServer"/> implementation,
+/// and provide an adapter over a real web server, if needed. If done so, the <see cref="CreateClient()"/> and similar methods will
+/// create <see cref="HttpClient"/> instances configured to interact with the provided test server instead.</remarks>
 public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
 {
     private bool _disposed;
     private bool _disposedAsync;
-    private TestServer? _server;
+    private ITestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
+
 
     /// <summary>
     /// <para>
@@ -71,12 +77,24 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <summary>
     /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
-    public TestServer Server
+    [Obsolete("This property is obsolete. Consider utilizing the TestServer property instead.")]
+    public TestServer? Server
+    {
+        get
+        {
+            return TestServer as TestServer;
+        }
+    }
+
+    /// <summary>
+    /// Gets the <see cref="ITestServer"/> instance created by the underyling <see cref="CreateServer(IWebHostBuilder)"/> call.
+    /// </summary>
+    public ITestServer? TestServer
     {
         get
         {
             EnsureServer();
-            return _server;
+            return _server!;
         }
     }
 
@@ -136,7 +154,6 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return factory;
     }
 
-    [MemberNotNull(nameof(_server))]
     private void EnsureServer()
     {
         if (_server != null)
@@ -211,7 +228,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             webHostBuilder.UseTestServer();
         });
         _host = CreateHost(hostBuilder);
-        _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        _server = _host.Services.GetRequiredService<IServer>() as ITestServer;
     }
 
     private void SetContentRoot(IWebHostBuilder builder)
@@ -426,7 +443,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
+    protected virtual ITestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -606,7 +623,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
-        private readonly Func<IWebHostBuilder, TestServer> _createServer;
+        private readonly Func<IWebHostBuilder, ITestServer> _createServer;
         private readonly Func<IHostBuilder, IHost> _createHost;
         private readonly Func<IWebHostBuilder?> _createWebHostBuilder;
         private readonly Func<IHostBuilder?> _createHostBuilder;
@@ -615,7 +632,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         public DelegatedWebApplicationFactory(
             WebApplicationFactoryClientOptions options,
-            Func<IWebHostBuilder, TestServer> createServer,
+            Func<IWebHostBuilder, ITestServer> createServer,
             Func<IHostBuilder, IHost> createHost,
             Func<IWebHostBuilder?> createWebHostBuilder,
             Func<IHostBuilder?> createHostBuilder,
@@ -633,7 +650,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
+        protected override ITestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
