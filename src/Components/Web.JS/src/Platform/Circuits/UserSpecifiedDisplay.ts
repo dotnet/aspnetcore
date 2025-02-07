@@ -7,6 +7,8 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
 
   static readonly HideClassName = 'components-reconnect-hide';
 
+  static readonly RetryingClassName = 'components-reconnect-retrying';
+
   static readonly FailedClassName = 'components-reconnect-failed';
 
   static readonly RejectedClassName = 'components-reconnect-rejected';
@@ -32,6 +34,10 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
   show(): void {
     this.removeClasses();
     this.dialog.classList.add(UserSpecifiedDisplay.ShowClassName);
+
+    if ((this.dialog as HTMLDialogElement).showModal) {
+      (this.dialog as HTMLDialogElement).showModal();
+    }
   }
 
   update(currentAttempt: number, secondsToNextAttempt: number): void {
@@ -46,11 +52,19 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
     if (secondsToNextAttemptElement) {
       secondsToNextAttemptElement.innerText = secondsToNextAttempt.toString();
     }
+
+    if (currentAttempt > 1 && secondsToNextAttempt > 0) {
+      this.dialog.classList.add(UserSpecifiedDisplay.RetryingClassName);
+    }
   }
 
   hide(): void {
     this.removeClasses();
     this.dialog.classList.add(UserSpecifiedDisplay.HideClassName);
+
+    if ((this.dialog as HTMLDialogElement).close) {
+      (this.dialog as HTMLDialogElement).close();
+    }
   }
 
   failed(): void {
@@ -64,6 +78,11 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
   }
 
   private removeClasses() {
-    this.dialog.classList.remove(UserSpecifiedDisplay.ShowClassName, UserSpecifiedDisplay.HideClassName, UserSpecifiedDisplay.FailedClassName, UserSpecifiedDisplay.RejectedClassName);
+    this.dialog.classList.remove(
+      UserSpecifiedDisplay.ShowClassName,
+      UserSpecifiedDisplay.HideClassName,
+      UserSpecifiedDisplay.RetryingClassName,
+      UserSpecifiedDisplay.FailedClassName,
+      UserSpecifiedDisplay.RejectedClassName);
   }
 }

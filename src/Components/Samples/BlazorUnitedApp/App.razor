@@ -15,6 +15,17 @@
 </head>
 <body>
     <Routes />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <ReconnectModal></ReconnectModal>
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
+    <script>
+        Blazor.start({
+              circuit: {
+                  reconnectionOptions: {
+                      maxRetries: 12,
+                      retryIntervalMilliseconds: 5000,
+                      },
+                  },
+          });
+    </script>
 </body>
 </html>
