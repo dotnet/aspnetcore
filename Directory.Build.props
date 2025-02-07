@@ -234,10 +234,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+    <OfficialBaseURL>https://builds.dotnet.microsoft.com/dotnet/</OfficialBaseURL>
     <!-- Allow overriding the public base URL for Unified Build scenarios to pull assets from a local build. -->
-    <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.blob.core.windows.net/public/</PublicBaseURL>
-    <InternalBaseURL>https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+    <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://ci.dot.net/public/</PublicBaseURL>
+    <InternalBaseURL>https://ci.dot.net/internal/</InternalBaseURL>
     <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
     <AddVersionToCrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' != ''">true</AddVersionToCrossArchitectureInstallerBasePath>
     <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(ArtifactsShippingPackagesDir)</CrossArchitectureInstallerBasePath>
