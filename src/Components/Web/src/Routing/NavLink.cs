@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -121,7 +120,9 @@ public class NavLink : ComponentBase, IDisposable
             return false;
         }
 
-        if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
+        var currentUriAbsoluteSpan = currentUriAbsolute.AsSpan();
+        var hrefAbsoluteSpan = _hrefAbsolute.AsSpan();
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsoluteSpan, hrefAbsoluteSpan))
         {
             return true;
         }
@@ -137,20 +138,20 @@ public class NavLink : ComponentBase, IDisposable
             return false;
         }
 
-        string uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsolute);
-        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment))
+        var uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsoluteSpan);
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment, hrefAbsoluteSpan))
         {
             return true;
         }
-        _hrefAbsolute = GetUriIgnoreQueryAndFragment(_hrefAbsolute);
-        return EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment);
+        hrefAbsoluteSpan = GetUriIgnoreQueryAndFragment(hrefAbsoluteSpan);
+        return EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment, hrefAbsoluteSpan);
     }
 
-    private static string GetUriIgnoreQueryAndFragment(string uri)
+    private static ReadOnlySpan<char> GetUriIgnoreQueryAndFragment(ReadOnlySpan<char> uri)
     {
-        if (string.IsNullOrEmpty(uri))
+        if (uri.IsEmpty)
         {
-            return string.Empty;
+            return ReadOnlySpan<char>.Empty;
         }
 
         var queryStartPos = uri.IndexOf('?');
@@ -174,18 +175,20 @@ public class NavLink : ComponentBase, IDisposable
         {
             minPos = Math.Min(queryStartPos, fragmentStartPos);
         }
-        return uri.AsMemory(0..minPos).ToString();
-    }
-    private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
-    {
-        Debug.Assert(_hrefAbsolute != null);
 
-        if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.OrdinalIgnoreCase))
+        return uri.Slice(0, minPos);
+    }
+
+    private static readonly CaseInsensitiveCharComparer CaseInsensitiveComparer = new CaseInsensitiveCharComparer();
+
+    private static bool EqualsHrefExactlyOrIfTrailingSlashAdded(ReadOnlySpan<char> currentUriAbsolute, ReadOnlySpan<char> hrefAbsolute)
+    {
+        if (currentUriAbsolute.SequenceEqual(hrefAbsolute, CaseInsensitiveComparer))
         {
             return true;
         }
 
-        if (currentUriAbsolute.Length == _hrefAbsolute.Length - 1)
+        if (currentUriAbsolute.Length == hrefAbsolute.Length - 1)
         {
             // Special case: highlight links to http://host/path/ even if you're
             // at http://host/path (with no trailing slash)
@@ -195,8 +198,8 @@ public class NavLink : ComponentBase, IDisposable
             // which in turn is because it's common for servers to return the same page
             // for http://host/vdir as they do for host://host/vdir/ as it's no
             // good to display a blank page in that case.
-            if (_hrefAbsolute[_hrefAbsolute.Length - 1] == '/'
-                && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.OrdinalIgnoreCase))
+            if (hrefAbsolute[hrefAbsolute.Length - 1] == '/' &&
+                currentUriAbsolute.SequenceEqual(hrefAbsolute.Slice(0, hrefAbsolute.Length - 1), CaseInsensitiveComparer))
             {
                 return true;
             }
@@ -257,5 +260,18 @@ public class NavLink : ComponentBase, IDisposable
                 c == '.' ||
                 c == '_' ||
                 c == '~';
+    }
+
+    private class CaseInsensitiveCharComparer : IEqualityComparer<char>
+    {
+        public bool Equals(char x, char y)
+        {
+            return char.ToLowerInvariant(x) == char.ToLowerInvariant(y);
+        }
+
+        public int GetHashCode(char obj)
+        {
+            return char.ToLowerInvariant(obj).GetHashCode();
+        }
     }
 }
