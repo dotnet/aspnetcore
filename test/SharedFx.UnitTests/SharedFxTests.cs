@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore
             }
 
             var previousVersion = TestData.GetPreviousAspNetCoreReleaseVersion();
-            var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
+            var url = new Uri($"https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
             var zipName = "assemblies.zip";
             var nugetAssemblyVersions = new Dictionary<string, Version>();
             var root = TestData.GetDotNetRoot();
