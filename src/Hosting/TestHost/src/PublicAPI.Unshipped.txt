@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.TestHost.ITestServer
+Microsoft.AspNetCore.TestHost.ITestServer.CreateClient() -> System.Net.Http.HttpClient!
+Microsoft.AspNetCore.TestHost.ITestServer.CreateHandler() -> System.Net.Http.HttpMessageHandler!
+Microsoft.AspNetCore.TestHost.ITestServer.Host.get -> Microsoft.AspNetCore.Hosting.IWebHost!

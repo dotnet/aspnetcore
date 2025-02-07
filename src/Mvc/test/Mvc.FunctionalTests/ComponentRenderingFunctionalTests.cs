@@ -198,7 +198,7 @@ public class ComponentRenderingFunctionalTests : LoggedTest
 
         // We configure the inner handler with a handler to this TestServer instance so that calls to the
         // server can get routed properly.
-        loopHandler.InnerHandler = fixture.Server.CreateHandler();
+        loopHandler.InnerHandler = fixture.TestServer.CreateHandler();
 
         void ConfigureTestWeatherForecastService(IServiceCollection services) =>
             // We configure the test service here with an HttpClient that uses this loopback handler to talk

@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Initialize() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer?
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.TestServer.get -> Microsoft.AspNetCore.TestHost.ITestServer?
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.TestHost.ITestServer!
