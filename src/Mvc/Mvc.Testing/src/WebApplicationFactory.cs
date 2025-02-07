@@ -93,7 +93,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         get
         {
-            EnsureServer();
+            Initialize();
             return _server!;
         }
     }
@@ -105,7 +105,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         get
         {
-            EnsureServer();
+            Initialize();
             return _host?.Services ?? _server.Host.Services;
         }
     }
@@ -154,7 +154,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return factory;
     }
 
-    private void EnsureServer()
+    /// <summary>
+    /// Initializes the instance by configurating the host builder.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the provided <see cref="TEntryPoint"/> type has no factory method.</exception>
+    public void Initialize()
     {
         if (_server != null)
         {
@@ -493,7 +497,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <returns>The <see cref="HttpClient"/>.</returns>
     public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers)
     {
-        EnsureServer();
+        Initialize();
 
         HttpClient client;
         if (handlers == null || handlers.Length == 0)
