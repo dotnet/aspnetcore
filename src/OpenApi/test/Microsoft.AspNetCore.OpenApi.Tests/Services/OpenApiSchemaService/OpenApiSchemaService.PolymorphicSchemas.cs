@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -150,9 +151,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // property associated with them.
             Assert.Null(schema.Discriminator);
             Assert.Collection(schema.AnyOf,
-                schema => Assert.Equal("ColorPaintColor", schema.Reference.Id),
-                schema => Assert.Equal("ColorFabricColor", schema.Reference.Id),
-                schema => Assert.Equal("ColorBase", schema.Reference.Id));
+                schema => Assert.Equal("ColorPaintColor", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("ColorFabricColor", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("ColorBase", ((OpenApiSchemaReference)schema).Reference.Id));
             // Assert schema with discriminator = "paint" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ColorPaintColor", out var paintSchema));
             Assert.Contains("$type", paintSchema.Properties.Keys);
@@ -202,9 +203,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // type. In this scenario, we check that the base class is not included in the `anyOf`
             // schema.
             Assert.Collection(schema.AnyOf,
-                schema => Assert.Equal("PetCat", schema.Reference.Id),
-                schema => Assert.Equal("PetDog", schema.Reference.Id),
-                schema => Assert.Equal("PetPet", schema.Reference.Id));
+                schema => Assert.Equal("PetCat", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("PetDog", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("PetPet", ((OpenApiSchemaReference)schema).Reference.Id));
             // Assert schema with discriminator = "dog" has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PetDog", out var dogSchema));
             Assert.Contains(schema.Discriminator.PropertyName, dogSchema.Properties.Keys);
@@ -242,9 +243,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // property associated with them.
             Assert.Null(schema.Discriminator);
             Assert.Collection(schema.AnyOf,
-                schema => Assert.Equal("OrganismAnimal", schema.Reference.Id),
-                schema => Assert.Equal("OrganismPlant", schema.Reference.Id),
-                schema => Assert.Equal("OrganismBase", schema.Reference.Id));
+                schema => Assert.Equal("OrganismAnimal", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("OrganismPlant", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("OrganismBase", ((OpenApiSchemaReference)schema).Reference.Id));
             // Assert that schemas without discriminators have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("OrganismAnimal", out var animalSchema));
             Assert.DoesNotContain("$type", animalSchema.Properties.Keys);
@@ -271,7 +272,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            Assert.Equal("Employee", mediaType.Schema.Reference.Id);
+            Assert.Equal("Employee", ((OpenApiSchemaReference)mediaType.Schema).Reference.Id);
             var schema = mediaType.Schema;
             // Assert that discriminator mappings are configured correctly for type.
             Assert.Equal("$type", schema.Discriminator.PropertyName);
@@ -285,15 +286,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             );
             // Assert that anyOf schemas use the correct reference IDs.
             Assert.Collection(schema.AnyOf,
-                schema => Assert.Equal("EmployeeManager", schema.Reference.Id),
-                schema => Assert.Equal("EmployeeEmployee", schema.Reference.Id));
+                schema => Assert.Equal("EmployeeManager", ((OpenApiSchemaReference)schema).Reference.Id),
+                schema => Assert.Equal("EmployeeEmployee", ((OpenApiSchemaReference)schema).Reference.Id));
             // Assert that schemas without discriminators have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("EmployeeManager", out var managerSchema));
             Assert.Equal("manager", managerSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             Assert.True(document.Components.Schemas.TryGetValue("EmployeeEmployee", out var employeeSchema));
             Assert.Equal("employee", employeeSchema.Properties[schema.Discriminator.PropertyName].Enum.First().GetValue<string>());
             // Assert that the schema has a correct self-reference to the base-type. This points to the schema that contains the discriminator.
-            Assert.Equal("Employee", employeeSchema.Properties["manager"].Reference.Id);
+            Assert.Equal("Employee", ((OpenApiSchemaReference)employeeSchema.Properties["manager"]).Reference.Id);
         });
     }
 }

@@ -120,8 +120,15 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is MinLengthAttribute minLengthAttribute)
             {
-                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MinItemsKeyword : OpenApiSchemaKeywords.MinLengthKeyword;
-                schema[targetKey] = minLengthAttribute.Length;
+                if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+                    schemaTypes.HasFlag(JsonSchemaType.Array))
+                {
+                    schema[OpenApiSchemaKeywords.MinItemsKeyword] = minLengthAttribute.Length;
+                }
+                else
+                {
+                    schema[OpenApiSchemaKeywords.MinLengthKeyword] = minLengthAttribute.Length;
+                }
             }
             else if (attribute is LengthAttribute lengthAttribute)
             {
@@ -191,14 +198,13 @@ internal static class JsonNodeSchemaExtensions
         var underlyingType = Nullable.GetUnderlyingType(type);
         if (_simpleTypeToOpenApiSchema.TryGetValue(underlyingType ?? type, out var openApiSchema))
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
-            schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type.ToString();
+            if (underlyingType != null && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+                !schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
+            }
             schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
             schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
-            schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
-            // Clear out patterns that the underlying JSON schema generator uses to represent
-            // validations for DateTime, DateTimeOffset, and integers.
-            schema[OpenApiSchemaKeywords.PatternKeyword] = null;
         }
     }
 
@@ -334,14 +340,17 @@ internal static class JsonNodeSchemaExtensions
             schema.ApplyRouteConstraints(constraints);
         }
 
-        if (parameterDescription.Source is { } bindingSource && SupportsNullableProperty(bindingSource))
+        if (parameterDescription.Source is { } bindingSource
+            && SupportsNullableProperty(bindingSource)
+            && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+            schemaTypes.HasFlag(JsonSchemaType.Null))
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = false;
+            schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes & ~JsonSchemaType.Null).ToString();
         }
 
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
-        static bool SupportsNullableProperty(BindingSource bindingSource) =>bindingSource == BindingSource.Header
+        static bool SupportsNullableProperty(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -435,9 +444,11 @@ internal static class JsonNodeSchemaExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
-        if (nullabilityInfo.WriteState == NullabilityState.Nullable)
+        if (nullabilityInfo.WriteState == NullabilityState.Nullable
+            && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes
+            && !schemaTypes.HasFlag(JsonSchemaType.Null))
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
+            schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
         }
     }
 
@@ -452,7 +463,54 @@ internal static class JsonNodeSchemaExtensions
         // all schema (no type, no format, no constraints).
         if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
+            if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+                !schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
+            }
+        }
+    }
+
+    private static JsonSchemaType? MapJsonNodeToSchemaType(JsonNode? jsonNode)
+    {
+        if (jsonNode is not JsonArray jsonArray)
+        {
+            if (Enum.TryParse<JsonSchemaType>(jsonNode?.GetValue<string>(), true, out var openApiSchemaType))
+            {
+                return openApiSchemaType;
+            }
+
+            return jsonNode is JsonValue jsonValue && jsonValue.TryGetValue<string>(out var identifier)
+                ? ToSchemaType(identifier)
+                : null;
+        }
+
+        JsonSchemaType? schemaType = null;
+
+        foreach (var node in jsonArray)
+        {
+            if (node is JsonValue jsonValue && jsonValue.TryGetValue<string>(out var identifier))
+            {
+                var type = ToSchemaType(identifier);
+                schemaType = schemaType.HasValue ? (schemaType | type) : type;
+            }
+        }
+
+        return schemaType;
+
+        static JsonSchemaType ToSchemaType(string identifier)
+        {
+            return identifier.ToLowerInvariant() switch
+            {
+                "null" => JsonSchemaType.Null,
+                "boolean" => JsonSchemaType.Boolean,
+                "integer" => JsonSchemaType.Integer,
+                "number" => JsonSchemaType.Number,
+                "string" => JsonSchemaType.String,
+                "array" => JsonSchemaType.Array,
+                "object" => JsonSchemaType.Object,
+                _ => throw new InvalidOperationException($"Unknown schema type: {identifier}"),
+            };
         }
     }
 }

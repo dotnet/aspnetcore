@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 internal sealed partial class OpenApiJsonSchema
@@ -220,10 +221,6 @@ internal sealed partial class OpenApiJsonSchema
                 var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
                 break;
-            case OpenApiSchemaKeywords.NullableKeyword:
-                reader.Read();
-                schema.Nullable = reader.GetBoolean();
-                break;
             case OpenApiSchemaKeywords.DescriptionKeyword:
                 reader.Read();
                 schema.Description = reader.GetString();
@@ -274,7 +271,7 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.PropertiesKeyword:
                 reader.Read();
                 var props = ReadDictionary<OpenApiJsonSchema>(ref reader);
-                schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
+                schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema as IOpenApiSchema);
                 break;
             case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
                 reader.Read();
@@ -290,7 +287,7 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Type = JsonSchemaType.Object;
                 var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema).ToList();
+                schema.AnyOf = schemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
@@ -322,7 +319,8 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.RefKeyword:
                 reader.Read();
-                schema.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = reader.GetString() };
+                schema.Annotations ??= new Dictionary<string, object>();
+                schema.Annotations[OpenApiConstants.RefId] = reader.GetString();
                 break;
             default:
                 reader.Skip();
