@@ -36,11 +36,22 @@ public abstract class EndpointDataSource
     {
         // Only evaluate Endpoints once per call.
         var endpoints = Endpoints;
-        var wrappedEndpoints = new RouteEndpoint[endpoints.Count];
+        var wrappedEndpoints = new Endpoint[endpoints.Count];
 
         for (int i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
+
+            if (context.Conventions.Count == 0
+                && context.FinallyConventions.Count == 0
+                && endpoint is not RouteEndpoint)
+            {
+                // No conventions to apply, so just return the endpoints as-is. This supports
+                // scenarios where the endpoint is registered as part of the global route group
+                // handler on the WebApplication.
+                wrappedEndpoints[i] = endpoint;
+                continue;
+            }
 
             // Endpoint does not provide a RoutePattern but RouteEndpoint does. So it's impossible to apply a prefix for custom Endpoints.
             // Supporting arbitrary Endpoints just to add group metadata would require changing the Endpoint type breaking any real scenario.
