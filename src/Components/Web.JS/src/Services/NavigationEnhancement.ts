@@ -72,7 +72,13 @@ export function detachProgressivelyEnhancedNavigationListener() {
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
+
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
+
+  if (!isSelfNavigation) {
+    resetScrollAfterNextBatch();
+  }
 
   // history update should be the last step - same as in client side routing
   if (replace) {
@@ -205,7 +211,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
-  let forSamePath = isForSamePath(internalDestinationHref, currentContentUrl);
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
@@ -327,9 +332,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       const hash = internalDestinationHref.substring(hashPosition + 1);
       const targetElem = document.getElementById(hash);
       targetElem?.scrollIntoView();
-    }
-    else if (!forSamePath) {
-      resetScrollAfterNextBatch();
     }
 
     performingEnhancedPageLoad = false;
