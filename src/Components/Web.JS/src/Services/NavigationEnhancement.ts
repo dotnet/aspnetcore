@@ -205,6 +205,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
+  let forSamePath = isForSamePath(internalDestinationHref, currentContentUrl);
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
@@ -327,7 +328,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       const targetElem = document.getElementById(hash);
       targetElem?.scrollIntoView();
     }
-    else if (!isForSamePath(internalDestinationHref, location.href)) {
+    else if (!forSamePath) {
       resetScrollAfterNextBatch();
     }
 
