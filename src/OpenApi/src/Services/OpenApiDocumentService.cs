@@ -26,6 +26,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 using Microsoft.OpenApi.Models.References;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -89,7 +90,7 @@ internal sealed class OpenApiDocumentService(
         document.Workspace.RegisterComponents(document);
         if (document.Components?.Schemas is not null)
         {
-            document.Components.Schemas = new SortedDictionary<string, OpenApiSchema>(document.Components.Schemas);
+            document.Components.Schemas = new SortedDictionary<string, IOpenApiSchema>(document.Components.Schemas);
         }
         return document;
     }
@@ -399,14 +400,14 @@ internal sealed class OpenApiDocumentService(
         return response;
     }
 
-    private async Task<List<OpenApiParameter>?> GetParametersAsync(
+    private async Task<List<IOpenApiParameter>?> GetParametersAsync(
         OpenApiDocument document,
         ApiDescription description,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
-        List<OpenApiParameter>? parameters = null;
+        List<IOpenApiParameter>? parameters = null;
         foreach (var parameter in description.ParameterDescriptions)
         {
             if (ShouldIgnoreParameter(parameter))
@@ -513,7 +514,7 @@ internal sealed class OpenApiDocumentService(
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
-        var schema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, OpenApiSchema>() };
+        IOpenApiSchema schema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
         // Group form parameters by their name because MVC explodes form parameters that are bound from the
         // same model instance into separate ApiParameterDescriptions in ApiExplorer, while minimal APIs does not.
         //
@@ -547,7 +548,7 @@ internal sealed class OpenApiDocumentService(
                         schema.AllOf.Add(new OpenApiSchema
                         {
                             Type = JsonSchemaType.Object,
-                            Properties = new Dictionary<string, OpenApiSchema>
+                            Properties = new Dictionary<string, IOpenApiSchema>
                             {
                                 [description.Name] = parameterSchema
                             }
@@ -583,7 +584,7 @@ internal sealed class OpenApiDocumentService(
                             schema.AllOf.Add(new OpenApiSchema
                             {
                                 Type = JsonSchemaType.Object,
-                                Properties = new Dictionary<string, OpenApiSchema>
+                                Properties = new Dictionary<string, IOpenApiSchema>
                                 {
                                     [description.Name] = parameterSchema
                                 }
@@ -611,7 +612,7 @@ internal sealed class OpenApiDocumentService(
             {
                 if (hasMultipleFormParameters)
                 {
-                    var propertySchema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, OpenApiSchema>() };
+                    var propertySchema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
                     foreach (var description in parameter)
                     {
                         propertySchema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
@@ -706,7 +707,7 @@ internal sealed class OpenApiDocumentService(
         var requiresModelMetadataFallbackForEnum = parameterType == typeof(string)
             && parameter.ModelMetadata.ModelType != parameter.Type
             && parameter.ModelMetadata.ModelType.IsEnum;
-        // Enums are exempt because we want to set the OpenApiSchema.Enum field when feasible.
+        // Enums are exempt because we want to set the IOpenApiSchema.Enum field when feasible.
         // parameter.Type = typeof(TEnum), typeof(TypeWithTryParse)
         // parameter.ModelMetadata.Type = typeof(string)
         var hasTryParse = bindingMetadata?.HasTryParse == true && parameterType is not null && !parameterType.IsEnum;

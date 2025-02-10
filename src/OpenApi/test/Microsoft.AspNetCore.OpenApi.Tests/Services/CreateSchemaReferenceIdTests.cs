@@ -5,8 +5,8 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 {
@@ -78,7 +78,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
-            Assert.Equal("TodoSchema", content.Value.Schema.Reference.Id);
+            Assert.Equal("TodoSchema", ((OpenApiSchemaReference)content.Value.Schema).Reference.Id);
             var schema = content.Value.Schema;
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
@@ -90,7 +90,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -129,7 +129,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(content.Value.Schema);
             // Assert that no reference was created and the schema is inlined
             var schema = content.Value.Schema;
-            Assert.Null(schema.Reference);
+            Assert.IsType<OpenApiSchema>(schema);
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
@@ -140,7 +140,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -187,7 +187,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
             var schema = content.Value.Schema;
-            Assert.Null(schema.Reference);
+            Assert.IsNotType<OpenApiSchemaReference>(schema);
 
             // Assert that a reference was created for the TodoWithDueDate type
             Assert.NotNull(response);
@@ -195,8 +195,8 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.Equal("application/json", responseContent.Key);
             Assert.NotNull(responseContent.Value.Schema);
             var responseSchema = responseContent.Value.Schema;
-            Assert.NotNull(responseSchema.Reference);
-            Assert.Equal("TodoWithDueDate", responseSchema.Reference.Id);
+            Assert.IsType<OpenApiSchemaReference>(responseSchema);
+            Assert.Equal("TodoWithDueDate", ((OpenApiSchemaReference)responseSchema).Reference.Id);
         });
     }
 
@@ -230,7 +230,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
             var schema = content.Value.Schema;
-            Assert.NotNull(schema.Reference);
+            Assert.IsType<OpenApiSchemaReference>(schema);
 
             // Assert that a reference was created for the TodoWithDueDate type
             Assert.NotNull(response);
@@ -238,10 +238,10 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
             Assert.Equal("application/json", responseContent.Key);
             Assert.NotNull(responseContent.Value.Schema);
             var responseSchema = responseContent.Value.Schema;
-            Assert.NotNull(responseSchema.Reference);
+            Assert.IsType<OpenApiSchemaReference>(responseSchema);
 
             // Assert that the reference IDs are not the same (have been deduped)
-            Assert.NotEqual(schema.Reference.Id, responseSchema.Reference.Id);
+            Assert.NotEqual(((OpenApiSchemaReference)schema).Reference.Id, ((OpenApiSchemaReference)responseSchema).Reference.Id);
 
             // Assert that the referenced schemas are correct
             var effectiveResponseSchema = responseSchema;
@@ -250,7 +250,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("dueDate", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 },
                 property =>
@@ -261,7 +261,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -271,7 +271,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
 
@@ -286,7 +286,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -296,7 +296,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
