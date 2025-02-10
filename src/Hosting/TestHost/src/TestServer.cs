@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.TestHost;
 /// <summary>
 /// An <see cref="IServer"/> implementation for executing tests.
 /// </summary>
-public class TestServer : IServer
+public class TestServer : ITestServer
 {
     private readonly IWebHost? _hostInstance;
     private bool _disposed;
