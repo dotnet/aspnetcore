@@ -3,6 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -70,14 +71,21 @@ export function detachProgressivelyEnhancedNavigationListener() {
   window.removeEventListener('popstate', onPopState);
 }
 
-function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
+
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
+
+  if (!isSelfNavigation) {
+    resetScrollAfterNextBatch();
+  }
+
+  // history update should be the last step - same as in client side routing
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }
-
-  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
 function onDocumentClick(event: MouseEvent) {
