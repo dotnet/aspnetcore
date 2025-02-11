@@ -46,4 +46,8 @@
     <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\build\Microsoft.AspNetCore.OpenApi.targets" Pack="true" PackagePath="build" Visible="false" />
+  </ItemGroup>
+
 </Project>

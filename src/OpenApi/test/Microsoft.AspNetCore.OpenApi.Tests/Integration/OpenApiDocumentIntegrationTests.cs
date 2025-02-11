@@ -5,8 +5,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
@@ -14,31 +12,30 @@ using Microsoft.OpenApi.Writers;
 public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
 {
     [Theory]
-    [InlineData("v1", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("v2", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("controllers", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("responses", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("forms", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("v1", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("v2", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("controllers", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("responses", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("forms", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_1)]
-    public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
+    [InlineData("v1")]
+    [InlineData("v2")]
+    [InlineData("controllers")]
+    [InlineData("responses")]
+    [InlineData("forms")]
+    [InlineData("schemas-by-ref")]
+    [InlineData("xml")]
+    public async Task VerifyOpenApiDocument(string documentName)
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
-        var json = await document.SerializeAsJsonAsync(version);
-        var baseSnapshotsDirectory = SkipOnHelixAttribute.OnHelix()
-            ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
-            : "snapshots";
-        var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
-        await Verifier.Verify(json)
-            .UseDirectory(outputDirectory)
-            .AutoVerify()
+        await Verifier.Verify(GetOpenApiJson(document))
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
+                : "snapshots")
             .UseParameters(documentName);
+    }
+
+    private static string GetOpenApiJson(OpenApiDocument document)
+    {
+        using var textWriter = new StringWriter(CultureInfo.InvariantCulture);
+        var jsonWriter = new OpenApiJsonWriter(textWriter);
+        document.SerializeAsV31(jsonWriter);
+        return textWriter.ToString();
     }
 }
