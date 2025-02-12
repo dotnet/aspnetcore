@@ -14,5 +14,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="${MicrosoftAspNetCoreOpenApiVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
+  <!--#endif -->
 
 </Project>
