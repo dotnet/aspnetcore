@@ -149,7 +149,7 @@ public class User : IUser
 
             path = document.Paths["/project"].Operations[OperationType.Post];
             var project = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("The project that contains <a href=\\\"#/components/schemas/Todo\\\">Todo</a> items.", project.Description);
+            Assert.Equal("The project that contains Todo items.", project.Description);
 
             path = document.Paths["/board"].Operations[OperationType.Post];
             var board = path.RequestBody.Content["application/json"].Schema;

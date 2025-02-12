@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
@@ -18,8 +17,6 @@ namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Xml;
 
 internal sealed class XmlComment
 {
-    private const string IdSelector = @"((?![0-9])[\w_])+[\w\(\)\.\{\}\[\]\|\*\^~#@!`,_<>:]*";
-    private static readonly Regex CommentIdRegex = new(@"^(?<type>N|T|M|P|F|E|Overload):(?<id>" + IdSelector + ")$", RegexOptions.Compiled);
     public string? Summary { get; internal set; }
     public string? Description { get; internal set; }
     public string? Value { get; internal set; }
@@ -30,7 +27,7 @@ internal sealed class XmlComment
     public List<XmlParameterComment> Parameters { get; internal set; } = [];
     public List<XmlResponseComment> Responses { get; internal set; } = [];
 
-    private XmlComment(string xml)
+    private XmlComment(Compilation compilation, string xml)
     {
         // Treat <doc> as <member>
         if (xml.StartsWith("<doc>", StringComparison.InvariantCulture) && xml.EndsWith("</doc>", StringComparison.InvariantCulture))
@@ -42,8 +39,8 @@ internal sealed class XmlComment
         // Transform triple slash comment
         var doc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-        ResolveCrefLink(doc, "//seealso[@cref]");
-        ResolveCrefLink(doc, "//see[@cref]");
+        ResolveCrefLink(compilation, doc, $"//{DocumentationCommentXmlNames.SeeAlsoElementName}[@cref]");
+        ResolveCrefLink(compilation, doc, $"//{DocumentationCommentXmlNames.SeeElementName}[@cref]");
 
         var nav = doc.CreateNavigator();
         Summary = GetSingleNodeValue(nav, "/member/summary");
@@ -68,7 +65,7 @@ internal sealed class XmlComment
         }
 
         var resolvedComment = GetDocumentationComment(symbol, xmlText, [], compilation, cancellationToken);
-        return !string.IsNullOrEmpty(resolvedComment) ? new XmlComment(resolvedComment!) : null;
+        return !string.IsNullOrEmpty(resolvedComment) ? new XmlComment(compilation, resolvedComment!) : null;
     }
 
     private static string? GetDocumentationComment(ISymbol symbol, string xmlText, HashSet<ISymbol>? visitedSymbols, Compilation compilation, CancellationToken cancellationToken)
@@ -419,7 +416,13 @@ internal sealed class XmlComment
     private static bool ElementNameIs(XElement element, string name)
         => string.IsNullOrEmpty(element.Name.NamespaceName) && DocumentationCommentXmlNames.ElementEquals(element.Name.LocalName, name);
 
-    private static void ResolveCrefLink(XNode node, string nodeSelector)
+    /// <summary>
+    /// Resolves the cref links in the XML documentation into type names.
+    /// </summary>
+    /// <param name="compilation">The compilation to resolve type symbol declarations from.</param>
+    /// <param name="node">The target node to process crefs in.</param>
+    /// <param name="nodeSelector">The node type to process crefs for, can be `see` or `seealso`.</param>
+    private static void ResolveCrefLink(Compilation compilation, XNode node, string nodeSelector)
     {
         if (node == null || string.IsNullOrEmpty(nodeSelector))
         {
@@ -429,31 +432,17 @@ internal sealed class XmlComment
         var nodes = node.XPathSelectElements(nodeSelector + "[@cref]").ToList();
         foreach (var item in nodes)
         {
-            var cref = item.Attribute("cref").Value;
-
-            // Strict check is needed as value could be an invalid href,
-            // e.g. !:Dictionary&lt;TKey, string&gt; when user manually changed the intellisensed generic type
-            var match = CommentIdRegex.Match(cref);
-            if (match.Success)
+            var cref = item.Attribute(DocumentationCommentXmlNames.CrefAttributeName).Value;
+            if (string.IsNullOrEmpty(cref))
             {
-                var id = match.Groups["id"].Value;
-                var type = match.Groups["type"].Value;
+                continue;
+            }
 
-                if (type == "Overload")
-                {
-                    id += '*';
-                }
-
-                // When see and seealso are top level nodes in triple slash comments, do not convert it into xref node
-                if (item.Parent?.Parent != null)
-                {
-                    XElement replacement;
-                    if (type == "T")
-                    {
-                        replacement = XElement.Parse($"""<a href="#/components/schemas/{id}">{id}</a>""");
-                        item.ReplaceWith(replacement);
-                    }
-                }
+            var symbol = DocumentationCommentId.GetFirstSymbolForDeclarationId(cref, compilation);
+            if (symbol is not null)
+            {
+                var type = symbol.ToDisplayString();
+                item.ReplaceWith(new XText(type));
             }
         }
     }

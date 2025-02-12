@@ -260,7 +260,7 @@
             "type": "string"
           }
         },
-        "description": "The project that contains <a href=\\\"#/components/schemas/Todo\\\">Todo</a> items."
+        "description": "The project that contains Todo items."
       },
       "ProjectRecord": {
         "required": [
@@ -278,7 +278,7 @@
             "description": "The description of the project."
           }
         },
-        "description": "The project that contains <a href=\\\"#/components/schemas/Todo\\\">Todo</a> items."
+        "description": "The project that contains Todo items."
       },
       "Todo": {
         "required": [
