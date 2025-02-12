@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             _cache.Add((typeof(global::Project), null), new XmlComment("""The project that contains <a href=\"#/components/schemas/Todo\">Todo</a> items.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
             _cache.Add((typeof(global::ProjectBoard.BoardItem), null), new XmlComment("""An item on the board.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
             _cache.Add((typeof(global::ProjectRecord), null), new XmlComment("""The project that contains <a href=\"#/components/schemas/Todo\">Todo</a> items.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false), } ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::IUser), null), new XmlComment("""Represents a user in the system.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
             _cache.Add((typeof(global::User), null), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
             _cache.Add((typeof(global::ProjectRecord), "Name"), new XmlComment("""The name of the project.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
             _cache.Add((typeof(global::ProjectRecord), "Description"), new XmlComment("""The description of the project.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
@@ -245,7 +244,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "MUoNMEheN1FO70WBdPr5waMAAABQcm9ncmFtLmNz")]
+        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "UZZADqQajYC9HbHNRWW5LaMAAABQcm9ncmFtLmNz")]
         public static IServiceCollection AddOpenApi(this IServiceCollection services)
         {
             return services.AddOpenApi("v1", options =>

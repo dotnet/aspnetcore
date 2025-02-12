@@ -30,4 +30,8 @@
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**" LinkBase="$(MSBuildThisFileDirectory)\snapshots"/>
+  </ItemGroup>
+
 </Project>

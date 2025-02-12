@@ -5,6 +5,7 @@ using System.Runtime.Loader;
 using System.Text;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -48,8 +49,9 @@ public static class SnapshotTestHelper
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
-            .AutoVerify()
-            .UseDirectory("../snapshots");
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
+                : "../snapshots");
     }
 
     public static async Task VerifyOpenApi(Compilation compilation, Action<OpenApiDocument> verifyFunc)
