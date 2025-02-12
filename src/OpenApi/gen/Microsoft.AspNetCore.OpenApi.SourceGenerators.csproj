@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <WarnOnNullable>true</WarnOnNullable>
     <IsPackable>false</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
