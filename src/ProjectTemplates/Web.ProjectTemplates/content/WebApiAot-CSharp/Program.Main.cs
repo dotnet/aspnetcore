@@ -36,7 +36,9 @@ public class Program
                 ? Results.Ok(todo)
                 : Results.NotFound())
             #if (EnableOpenAPI)
-            .WithName("GetTodoById");
+            .WithName("GetTodoById")
+            .Produces<Todo>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
             #elif
             ;
             #endif
