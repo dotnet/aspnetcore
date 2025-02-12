@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.LockoutOptions.PermanentLockout.set -> void

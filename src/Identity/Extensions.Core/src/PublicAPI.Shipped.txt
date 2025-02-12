@@ -184,8 +184,6 @@ Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.get -> bool
 Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.set -> void
 Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.get -> System.TimeSpan
 Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.set -> void
-Microsoft.AspNetCore.Identity.LockoutOptions.PermanentLockout.get -> bool
-Microsoft.AspNetCore.Identity.LockoutOptions.PermanentLockout.set -> void
 Microsoft.AspNetCore.Identity.LockoutOptions.LockoutOptions() -> void
 Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.get -> int
 Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.set -> void
