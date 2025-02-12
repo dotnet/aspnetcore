@@ -1027,7 +1027,10 @@ public class UserManagerTest
         var result = await manager.AccessFailedAsync(user);
 
         // Assert
-        Assert.Equal(2, result);
+        IdentityResultAssert.IsSuccess(result);
+        store.Verify(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()), Times.Once);
+        var failedCount = await manager.GetAccessFailedCountAsync(user);
+        Assert.Equal(2, failedCount);
     }
 
     [Fact]
