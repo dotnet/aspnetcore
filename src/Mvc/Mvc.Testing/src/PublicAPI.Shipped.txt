@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaul
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaultClient(System.Uri! baseAddress, params System.Net.Http.DelegatingHandler![]! handlers) -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Dispose() -> void
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Factories.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint!>!>!
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.WebApplicationFactory() -> void
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.WithWebHostBuilder(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configuration) -> Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint!>!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
@@ -40,6 +41,7 @@ virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Conf
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> void
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHost(Microsoft.Extensions.Hosting.IHostBuilder! builder) -> Microsoft.Extensions.Hosting.IHost!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHostBuilder() -> Microsoft.Extensions.Hosting.IHostBuilder?
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.TestHost.TestServer!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateWebHostBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder?
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.DisposeAsync() -> System.Threading.Tasks.ValueTask

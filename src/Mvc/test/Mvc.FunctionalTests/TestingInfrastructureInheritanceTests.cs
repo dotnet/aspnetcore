@@ -27,8 +27,13 @@ public class TestingInfrastructureInheritanceTests
         Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
         Assert.True(factory.CreateServerCalled);
         Assert.True(factory.CreateWebHostBuilderCalled);
-        // GetTestAssemblies is not called when reading content roots from MvcAppManifest
-        Assert.False(factory.GetTestAssembliesCalled);
+
+        // When run locally on the developer machine, the test manifest will be generated,
+        // and the content root will be read from the manifest file.
+        // However, when run in CI, the relative path in the metadata will not exist,
+        // and the content root lookup logic will probe the test assemblies too.
+        //Assert.False(factory.GetTestAssembliesCalled);
+
         Assert.True(factory.CreateHostBuilderCalled);
         Assert.False(factory.CreateHostCalled);
     }
@@ -45,7 +50,13 @@ public class TestingInfrastructureInheritanceTests
 
         // Assert
         Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-        Assert.False(factory.GetTestAssembliesCalled);
+
+        // When run locally on the developer machine, the test manifest will be generated,
+        // and the content root will be read from the manifest file.
+        // However, when run in CI, the relative path in the metadata will not exist,
+        // and the content root lookup logic will probe the test assemblies too.
+        //Assert.False(factory.GetTestAssembliesCalled);
+
         Assert.True(factory.CreateHostBuilderCalled);
         Assert.True(factory.CreateHostCalled);
         Assert.False(factory.CreateServerCalled);
@@ -128,7 +139,12 @@ public class TestingInfrastructureInheritanceTests
 
     private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
     {
+        // GetTestAssemblies is not called when reading content roots from MvcAppManifest,
+        // and the content root specified in the manifest is a path that exists.
+        // Otherwise, the WebApplicationFactory will try to look for the referenced assemblies which have
+        // `WebApplicationFactoryContentRootAttribute` applied to them, to extract the content root path from that metadata.
         public bool GetTestAssembliesCalled { get; private set; }
+
         public bool CreateWebHostBuilderCalled { get; private set; }
         public bool CreateHostBuilderCalled { get; private set; }
         public bool CreateServerCalled { get; private set; }

@@ -246,17 +246,23 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return;
         }
 
-        var fromFile = File.Exists("MvcTestingAppManifest.json");
-        var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : GetContentRootFromAssembly();
+        string? contentRoot = null;
+        if (File.Exists("MvcTestingAppManifest.json"))
+        {
+            var manifestContentRoot = GetContentRootFromFile("MvcTestingAppManifest.json");
+            if (manifestContentRoot is not null && Directory.Exists(manifestContentRoot))
+            {
+                contentRoot = manifestContentRoot;
+            }
+        }
 
-        if (contentRoot != null)
+        contentRoot ??= GetContentRootFromAssembly();
+        if (contentRoot is null || !Directory.Exists(contentRoot))
         {
-            builder.UseContentRoot(contentRoot);
+            contentRoot = AppContext.BaseDirectory;
         }
-        else
-        {
-            builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name!);
-        }
+
+        builder.UseContentRoot(contentRoot);
     }
 
     private static string? GetContentRootFromFile(string file)
