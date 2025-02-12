@@ -57,13 +57,13 @@
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
-
-    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
+    
+    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
 
-    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
+    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
