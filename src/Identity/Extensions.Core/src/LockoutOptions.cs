@@ -32,4 +32,10 @@ public class LockoutOptions
     /// </summary>
     /// <value>The <see cref="TimeSpan"/> a user is locked out for when a lockout occurs.</value>
     public TimeSpan DefaultLockoutTimeSpan { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Specifies whether the lockout should be permanent.
+    /// If true, the user will be locked out indefinitely.
+    /// </summary>
+    public bool PermanentLockout { get; set; } = false;
 }
