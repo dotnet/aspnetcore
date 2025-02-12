@@ -83,7 +83,7 @@
     -->
     <ItemGroup>
       <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://builds.dotnet.microsoft.com/dotnet/Runtime/%(RemoteAsset.Identity)" />
+      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/%(RemoteAsset.Identity)" />
       <UrisToDownload Include="https://ci.dot.net/public/Runtime/%(RemoteAsset.Identity)" />
       <UrisToDownload Include="https://ci.dot.net/internal/Runtime/%(RemoteAsset.Identity)"
           Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
