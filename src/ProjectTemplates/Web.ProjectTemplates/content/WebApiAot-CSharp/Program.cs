@@ -7,7 +7,19 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
+#if (EnableOpenAPI)
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+#endif
+
 var app = builder.Build();
+
+#if (EnableOpenAPI)
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+#endif
 
 var sampleTodos = new Todo[] {
     new(1, "Walk the dog"),
@@ -18,11 +30,22 @@ var sampleTodos = new Todo[] {
 };
 
 var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos);
+todosApi.MapGet("/", () => sampleTodos)
+    #if (EnableOpenAPI)
+        .WithName("GetTodos");
+    #elif
+    ;
+    #endif
+
 todosApi.MapGet("/{id}", (int id) =>
     sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
         ? Results.Ok(todo)
-        : Results.NotFound());
+        : Results.NotFound())
+    #if (EnableOpenAPI)
+    .WithName("GetTodoById");
+    #elif
+    ;
+    #endif
 
 app.Run();
 
