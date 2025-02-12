@@ -78,17 +78,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file static class XmlCommentCache
     {
         private static Dictionary<(Type?, string?), XmlComment>? _cache;
-        public static Dictionary<(Type?, string?), XmlComment> Cache
-        {
-            get
-            {
-                if (_cache is null)
-                {
-                    _cache = GenerateCacheEntries();
-                }
-                return _cache;
-            }
-        }
+        public static Dictionary<(Type?, string?), XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
         private static Dictionary<(Type?, string?), XmlComment> GenerateCacheEntries()
         {
@@ -114,17 +104,17 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
             if (XmlCommentCache.Cache.TryGetValue((methodInfo.DeclaringType, methodInfo.Name), out var methodComment))
             {
-                if (methodComment.Summary is not null)
+                if (methodComment.Summary is { } summary)
                 {
-                    operation.Summary = methodComment.Summary;
+                    operation.Summary = summary;
                 }
-                if (methodComment.Description is not null)
+                if (methodComment.Description is { } description)
                 {
-                    operation.Description = methodComment.Description;
+                    operation.Description = description;
                 }
-                if (methodComment.Remarks is not null)
+                if (methodComment.Remarks is { } remarks)
                 {
-                    operation.Description = methodComment.Remarks;
+                    operation.Description = remarks;
                 }
                 if (methodComment.Parameters is { Count: > 0})
                 {
@@ -285,7 +275,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     });
                 }
         """,
-        _ => throw new InvalidOperationException("Invalid overload variant for `AddOpenApi`.")
+        _ => string.Empty // Effectively no-op for AddOpenApi invocations that do not conform to a variant
     };
 
     internal static string GenerateAddOpenApiInterceptions(ImmutableArray<(AddOpenApiInvocation Source, int Index, ImmutableArray<InterceptableLocation?> Elements)> groupedAddOpenApiInvocations)

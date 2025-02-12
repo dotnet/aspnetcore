@@ -9,4 +9,5 @@ internal enum AddOpenApiOverloadVariant
     AddOpenApiDocumentName,
     AddOpenApiDocumentNameConfigureOptions,
     AddOpenApiConfigureOptions,
+    Unknown
 }

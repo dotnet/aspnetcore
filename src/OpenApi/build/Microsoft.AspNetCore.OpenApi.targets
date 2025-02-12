@@ -8,7 +8,6 @@
   <Target Name="GenerateAdditionalXmlFilesForOpenApi"
     AfterTargets="ResolveReferences">
     <ItemGroup>
-      <Foo Include="@(ReferencePath)" />
       <AdditionalFiles
         Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')"
         Condition="'%(ReferencePath.Extension)' == '.dll' AND

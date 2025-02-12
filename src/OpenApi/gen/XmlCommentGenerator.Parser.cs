@@ -101,7 +101,7 @@ public sealed partial class XmlCommentGenerator
                 // Replace everything between < and > with empty strings separated by commas
                 var segment = result.ToString(start + 1, i - start - 1);
                 var commaCount = segment.Count(c => c == ',');
-                var replacement = string.Join(",", Enumerable.Repeat("", commaCount + 1));
+                var replacement = new string(',', commaCount);
                 result.Remove(start + 1, i - start - 1);
                 result.Insert(start + 1, replacement);
                 i = start + replacement.Length + 1;
@@ -143,6 +143,17 @@ public sealed partial class XmlCommentGenerator
     internal static AddOpenApiInvocation GetAddOpenApiOverloadVariant(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var invocationExpression = (InvocationExpressionSyntax)context.Node;
+
+        // Soft check to validate that the method is from the OpenApiServiceCollectionExtensions class
+        // in the Microsoft.AspNetCore.OpenApi assembly.
+        var symbol = context.SemanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol;
+        if (symbol is not IMethodSymbol methodSymbol
+            || methodSymbol.ContainingType.Name != "OpenApiServiceCollectionExtensions"
+            || methodSymbol.ContainingAssembly.Name != "Microsoft.AspNetCore.OpenApi")
+        {
+            return new(AddOpenApiOverloadVariant.Unknown, invocationExpression, null);
+        }
+
         var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocationExpression, cancellationToken);
         var argumentsCount = invocationExpression.ArgumentList.Arguments.Count;
         if (argumentsCount == 0)
