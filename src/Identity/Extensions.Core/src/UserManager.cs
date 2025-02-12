@@ -1812,39 +1812,39 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user whose failed access count to increment.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
-public virtual async Task<IdentityResult> AccessFailedAsync(TUser user)
-{
-    ThrowIfDisposed();
-    var store = GetUserLockoutStore();
-    ArgumentNullThrowHelper.ThrowIfNull(user);
-
-// If this puts the user over the threshold for lockout, lock them out and reset the access failed count
-    var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
-    if (count < Options.Lockout.MaxFailedAccessAttempts)
+    public virtual async Task<IdentityResult> AccessFailedAsync(TUser user)
     {
-        return await UpdateUserAsync(user).ConfigureAwait(false);
-    }
-    Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
+        ThrowIfDisposed();
+        var store = GetUserLockoutStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
 
-    // Prevent overflow when setting lockout end date
-    var now = DateTimeOffset.UtcNow;
-    DateTimeOffset lockoutEnd;
+        // If PermanentLockout is enabled, lock the user indefinitely
+        if (Options.Lockout.PermanentLockout)
+        {
+            Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is permanently locked out.");
+            await store.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue, CancellationToken).ConfigureAwait(false);
+            return await UpdateUserAsync(user).ConfigureAwait(false);
+        }
 
-    if (Options.Lockout.DefaultLockoutTimeSpan == TimeSpan.MaxValue)
-    {
-        lockoutEnd = DateTimeOffset.MaxValue;
-    }
-    else
-    {
-        lockoutEnd = now > (DateTimeOffset.MaxValue - Options.Lockout.DefaultLockoutTimeSpan)
+        // Increment access failed count
+        var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
+        if (count < Options.Lockout.MaxFailedAccessAttempts)
+        {
+            return await UpdateUserAsync(user).ConfigureAwait(false);
+        }
+
+        Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
+
+        // Set the lockout time based on configuration
+        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset lockoutEnd = Options.Lockout.DefaultLockoutTimeSpan == TimeSpan.MaxValue
             ? DateTimeOffset.MaxValue
             : now.Add(Options.Lockout.DefaultLockoutTimeSpan);
-    }
 
-    await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
-    await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
-    return await UpdateUserAsync(user).ConfigureAwait(false);
-}
+        await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
+        await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Resets the access failed count for the specified <paramref name="user"/>.
