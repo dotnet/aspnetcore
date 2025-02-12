@@ -99,10 +99,12 @@ public static class XmlEndpointExtensions
         /// The identifier of the todo, overridden.
         /// </summary>
         public int Id { get; set; }
+
         /// <value>
         /// The name of the todo, overridden.
         /// </value>
         public required string Name { get; set; }
+
         /// <summary>
         /// A description of the the todo.
         /// </summary>

@@ -65,25 +65,6 @@ internal sealed class HostFactoryResolver
             return null;
         }
 
-        try
-        {
-            // Attempt to load hosting and check the version to make sure the events
-            // even have a chance of firing (they were added in .NET >= 6)
-            var hostingAssembly = Assembly.Load("Microsoft.Extensions.Hosting");
-            if (hostingAssembly.GetName().Version is Version version && version.Major < 6)
-            {
-                return null;
-            }
-
-            // We're using a version >= 6 so the events can fire. If they don't fire
-            // then it's because the application isn't using the hosting APIs
-        }
-        catch
-        {
-            // There was an error loading the extensions assembly, return null.
-            return null;
-        }
-
         return args => new HostingListener(args, assembly.EntryPoint, waitTimeout == default ? s_defaultWaitTimeout : waitTimeout, stopApplication, configureHostBuilder, entrypointCompleted).CreateHost();
     }
 

@@ -474,7 +474,7 @@ internal sealed class XmlComment
         // Documents can't be added to containers, so our usual copy trick won't work.
         if (node.NodeType == XmlNodeType.Document)
         {
-            copy = new XDocument(((XDocument)(object)node));
+            copy = new XDocument((XDocument)(object)node);
         }
         else
         {
