@@ -44,6 +44,30 @@ public class WebApiNativeAotTemplateTest : LoggedTest
         await WebApiNativeAotTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
+    [ConditionalTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain)
+    {
+        var project = await FactoryFixture.CreateProject(Output);
+
+        var args = useProgramMain
+            ? new[] { ArgConstants.UseProgramMain, ArgConstants.NoOpenApi }
+            : new[] { ArgConstants.NoOpenApi };
+
+        await project.RunDotNetNewAsync("webapi", args: args);
+
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+        await aspNetProcess.AssertNotFound("openapi/v1.json");
+    }
+
     private async Task WebApiNativeAotTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
