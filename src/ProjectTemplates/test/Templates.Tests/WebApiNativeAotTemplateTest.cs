@@ -34,14 +34,14 @@ public class WebApiNativeAotTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task WebApiNativeAotTemplateCSharp()
     {
-        await WebApiNativeAotTemplateCore(languageOverride: null);
+        await WebApiNativeAotTemplateCore(languageOverride: null, additionalEndpointsThatShould200Ok: new[] { "/openapi/v1.json" });
     }
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task WebApiNativeAotTemplateProgramMainCSharp()
     {
-        await WebApiNativeAotTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
+        await WebApiNativeAotTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain }, additionalEndpointsThatShould200Ok: new[] { "/openapi/v1.json" });
     }
 
     [ConditionalTheory]
@@ -50,25 +50,14 @@ public class WebApiNativeAotTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain)
     {
-        var project = await FactoryFixture.CreateProject(Output);
-
         var args = useProgramMain
             ? new[] { ArgConstants.UseProgramMain, ArgConstants.NoOpenApi }
             : new[] { ArgConstants.NoOpenApi };
 
-        await project.RunDotNetNewAsync("webapi", args: args);
-
-        await project.RunDotNetBuildAsync();
-
-        using var aspNetProcess = project.StartBuiltProjectAsync();
-        Assert.False(
-            aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-
-        await aspNetProcess.AssertNotFound("openapi/v1.json");
+        await WebApiNativeAotTemplateCore(languageOverride: null, args: args, additionalEndpointsThatShould404NotFound: new[] { "/openapi/v1.json" });
     }
 
-    private async Task WebApiNativeAotTemplateCore(string languageOverride, string[] args = null)
+    private async Task WebApiNativeAotTemplateCore(string languageOverride, string[] args = null, string[] additionalEndpointsThatShould200Ok = null, string[] additionalEndpointsThatShould404NotFound = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
         project.SetCurrentRuntimeIdentifier();
@@ -101,7 +90,7 @@ public class WebApiNativeAotTemplateTest : LoggedTest
             Assert.False(
                aspNetProcess.Process.HasExited,
                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-            await AssertEndpoints(aspNetProcess);
+            await AssertEndpoints(aspNetProcess, additionalEndpointsThatShould200Ok, additionalEndpointsThatShould404NotFound);
         }
 
         using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true, usePublishedAppHost: true))
@@ -110,15 +99,31 @@ public class WebApiNativeAotTemplateTest : LoggedTest
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
-            await AssertEndpoints(aspNetProcess);
+            await AssertEndpoints(aspNetProcess, additionalEndpointsThatShould200Ok, additionalEndpointsThatShould404NotFound);
         }
     }
 
-    private async Task AssertEndpoints(AspNetProcess aspNetProcess)
+    private async Task AssertEndpoints(AspNetProcess aspNetProcess, string[] additionalEndpointsThatShould200Ok = null, string[] additionalEndpointsThatShould404NotFound = null)
     {
         await aspNetProcess.AssertOk("/todos");
         await aspNetProcess.AssertOk("/todos/1");
         await aspNetProcess.AssertNotFound("/todos/100");
         await aspNetProcess.AssertNotFound("/");
+
+        if (additionalEndpointsThatShould200Ok is not null)
+        {
+            foreach (var endpoint in additionalEndpointsThatShould200Ok)
+            {
+                await aspNetProcess.AssertOk(endpoint);
+            }
+        }
+
+        if (additionalEndpointsThatShould404NotFound is not null)
+        {
+            foreach (var endpoint in additionalEndpointsThatShould404NotFound)
+            {
+                await aspNetProcess.AssertNotFound(endpoint);
+            }
+        }
     }
 }
