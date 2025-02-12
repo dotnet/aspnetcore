@@ -1,4 +1,6 @@
 ﻿@using System.Timers
+@using System.Web
+@inject NavigationManager Navigation
 @implements IDisposable
 <h3>Reconnection Component</h3>
 
@@ -20,16 +22,27 @@
 
     <button id="cause-error" @onclick="CauseError">Cause error</button>
 </div>
+
+@if (useCustomReconnectModal)
+{
+    <ReconnectModal />
+}
+
 @code {
     int count;
     void Increment() => count++;
     int tickCount = 0;
     Timer timer;
     bool causeError = false;
+    bool useCustomReconnectModal = false;
 
     protected override  void OnInitialized()
     {
         timer = StartTimer();
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = HttpUtility.ParseQueryString(uri.Query);
+        useCustomReconnectModal = query["useCustomReconnectModal"] == "true";
     }
 
     private Timer StartTimer()
