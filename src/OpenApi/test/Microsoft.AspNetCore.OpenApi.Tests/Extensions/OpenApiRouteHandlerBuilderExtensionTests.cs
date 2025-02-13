@@ -74,7 +74,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         _ = builder.MapDelete("/{id}", GetString)
             .WithOpenApi(operation => new(operation)
             {
-                Parameters = new List<OpenApiParameter>() { new() { Schema = new() { Type = JsonSchemaType.Number } } }
+                Parameters = [new OpenApiParameter() { Schema = new OpenApiSchema() { Type = JsonSchemaType.Number } }]
             });
 
         var dataSource = GetBuilderEndpointDataSource(builder);

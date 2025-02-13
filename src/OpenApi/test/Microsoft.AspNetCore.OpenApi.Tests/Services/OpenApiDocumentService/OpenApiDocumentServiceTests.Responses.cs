@@ -240,7 +240,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             }, property =>
             {
                 Assert.Equal("message", property.Key);
-                Assert.Equal( JsonSchemaType.String, property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
         });
     }
@@ -274,7 +274,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             property =>
             {
                 Assert.Equal("message", property.Key);
-                Assert.Equal( JsonSchemaType.String, property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
             // Generates the 200 status code response with the `Todo` response type.
             var okResponse = operation.Responses["200"];
@@ -291,7 +291,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             }, property =>
             {
                 Assert.Equal("title", property.Key);
-                Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             }, property =>
             {
                 Assert.Equal("completed", property.Key);
