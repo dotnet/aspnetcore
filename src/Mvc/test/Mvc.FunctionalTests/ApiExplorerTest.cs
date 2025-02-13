@@ -1573,7 +1573,7 @@ public class ApiExplorerTest : LoggedTest
     [Fact]
     public void ApiExplorer_BuildsMetadataForActionWithTypedResult()
     {
-        var apiDescCollectionProvider = Factory.Server.Services.GetService<IApiDescriptionGroupCollectionProvider>();
+        var apiDescCollectionProvider = Factory.Services.GetService<IApiDescriptionGroupCollectionProvider>();
         var testGroupName = nameof(ApiExplorerWithTypedResultController).Replace("Controller", string.Empty);
         var group = apiDescCollectionProvider.ApiDescriptionGroups.Items.Where(i => i.GroupName == testGroupName).SingleOrDefault();
         Assert.NotNull(group);

@@ -42,7 +42,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
                 });
     }
 
-    protected override TestServer CreateServer(IWebHostBuilder builder)
+    protected override ITestServer CreateServer(IWebHostBuilder builder)
     {
         var originalCulture = CultureInfo.CurrentCulture;
         var originalUICulture = CultureInfo.CurrentUICulture;
