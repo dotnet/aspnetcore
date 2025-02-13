@@ -35,7 +35,7 @@ public class LockoutOptions
 
     /// <summary>
     /// Specifies whether the lockout should be permanent.
-    /// If true, the user will be locked out indefinitely.
+    /// If true, the user is locked out.
     /// </summary>
     public bool PermanentLockout { get; set; }
 }
