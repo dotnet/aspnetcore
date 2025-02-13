@@ -1013,6 +1013,33 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task AccessFailedAsyncIncrementsAccessFailedCount()
+    {
+        // Arrange
+        var user = new PocoUser() { UserName = "testuser" };
+        var store = new Mock<IUserLockoutStore<PocoUser>>();
+        int failedCount = 1; // Simulated access failed count
+
+        store.Setup(x => x.GetAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(() => failedCount); // Return the updated value dynamically
+
+        store.Setup(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(() => ++failedCount); // Increment and return the new count
+
+        var manager = MockHelpers.TestUserManager(store.Object);
+
+        // Act
+        var result = await manager.AccessFailedAsync(user);
+
+        // Assert
+        IdentityResultAssert.IsSuccess(result);
+        store.Verify(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()), Times.Once);
+
+        var newFailedCount = await manager.GetAccessFailedCountAsync(user);
+        Assert.Equal(2, newFailedCount); // Ensure the count was actually updated
+    }
+
+    [Fact]
     public async Task ManagerPublicNullChecks()
     {
         Assert.Throws<ArgumentNullException>("store",
