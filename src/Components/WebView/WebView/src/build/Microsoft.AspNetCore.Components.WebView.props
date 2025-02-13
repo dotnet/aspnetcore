@@ -13,13 +13,14 @@
   <Target Name="_AddBlazorWebViewAssets" DependsOnTargets="GenerateJSModuleManifestBuildStaticWebAssets">
     <PropertyGroup>
       <_WebViewAssetsBasePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\</_WebViewAssetsBasePath>
-      <_BlazorModulesFilePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\blazor.modules.json</_BlazorModulesFilePath>
+      <_BlazorWebViewJsPath>$(_WebViewAssetsBasePath)blazor.webview.js</_BlazorWebViewJsPath>
+      <_BlazorWebViewModulesJsonPath>$(_WebViewAssetsBasePath)blazor.modules.json</_BlazorWebViewModulesJsonPath>
     </PropertyGroup>
     <ItemGroup>
-      <_WebViewAssetCandidates Include="$(_WebViewAssetsBasePath)blazor.webview.js">
+      <_WebViewAssetCandidates Include="$(_BlazorWebViewJsPath)">
         <RelativePath>_framework/blazor.webview.js</RelativePath>
       </_WebViewAssetCandidates>
-      <_WebViewAssetCandidates Include="$(_BlazorModulesFilePath)" Condition="'@(_ExistingBuildJSModules)' == ''">
+      <_WebViewAssetCandidates Include="$(_BlazorWebViewModulesJsonPath)" Condition="'@(_ExistingBuildJSModules)' == ''">
         <RelativePath>_framework/blazor.modules.json</RelativePath>
       </_WebViewAssetCandidates>
 
@@ -53,4 +54,3 @@
   </Target>
 
 </Project>
-
