@@ -25,7 +25,9 @@
 
 @if (useCustomReconnectModal)
 {
-    <ReconnectModal />
+    <dialog id="components-reconnect-modal">
+        Rejoining the server...
+    </dialog>
 }
 
 @code {
@@ -36,7 +38,7 @@
     bool causeError = false;
     bool useCustomReconnectModal = false;
 
-    protected override  void OnInitialized()
+    protected override void OnInitialized()
     {
         timer = StartTimer();
 
