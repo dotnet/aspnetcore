@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "djIPELhgcEDP7ZT+7F1K5lABAABQcm9ncmFtLmNz")]
+        [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services)
         {
             return services.AddOpenApi("v1", options =>

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
@@ -19,8 +20,11 @@ using Microsoft.OpenApi.Models;
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
 [UsesVerify]
-public static class SnapshotTestHelper
+public static partial class SnapshotTestHelper
 {
+    [GeneratedRegex(@"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\([^)]*\)\]")]
+    private static partial Regex InterceptsLocationRegex();
+
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.OpenApi.Generated")]);
 
@@ -51,6 +55,7 @@ public static class SnapshotTestHelper
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
+            .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
                 : "snapshots");
@@ -505,5 +510,4 @@ public static class SnapshotTestHelper
             }
         }
     }
-
 }

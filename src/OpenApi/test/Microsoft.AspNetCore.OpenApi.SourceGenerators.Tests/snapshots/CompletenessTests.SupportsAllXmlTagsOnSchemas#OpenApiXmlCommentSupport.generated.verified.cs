@@ -315,7 +315,7 @@ T", null, null, false, null, null, null));
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "kqndciLnP9+ia+gBOXvuc6MAAABQcm9ncmFtLmNz")]
+        [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services)
         {
             return services.AddOpenApi("v1", options =>
