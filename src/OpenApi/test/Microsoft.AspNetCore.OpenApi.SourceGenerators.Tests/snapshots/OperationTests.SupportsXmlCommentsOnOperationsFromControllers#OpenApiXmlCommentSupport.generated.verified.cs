@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Text.Json;
@@ -65,11 +66,21 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var _cache = new Dictionary<(Type?, string?), XmlComment>();
 
-            _cache.Add((typeof(global::TestController), "Get"), new XmlComment("""A summary of the action.""", """A description of the action.""", null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::Test2Controller), "Get"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"name", @"The name of the person.", null, false), } ,new List<XmlResponseComment>{new XmlResponseComment(@"200", @"Returns the greeting.", @""), }));
-            _cache.Add((typeof(global::Test2Controller), "Post"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"todo", @"The todo to insert into the database.", null, false), } ,new List<XmlResponseComment>{}));
+            _cache.Add((typeof(global::TestController), "Get"), new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::Test2Controller), "Get"), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            _cache.Add((typeof(global::Test2Controller), "Post"), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"todo", @"The todo to insert into the database.", null, false)], null));
 
             return _cache;
+        }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            if (type is not null && type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
+
+            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
         }
     }
 
@@ -86,7 +97,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue((methodInfo.DeclaringType, methodInfo.Name), out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -157,7 +168,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue((propertyInfo.DeclaringType, propertyInfo.Name), out var propertyComment))
+                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -166,7 +177,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue((context.JsonTypeInfo.Type, null), out var typeComment))
+            System.Diagnostics.Debugger.Break();
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -44,6 +43,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Text.Json;
@@ -87,6 +87,16 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 {{commentsFromCompilation}}
             return _cache;
         }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            if (type is not null && type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
+
+            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
+        }
     }
 
     {{GeneratedCodeAttribute}}
@@ -102,7 +112,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue((methodInfo.DeclaringType, methodInfo.Name), out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -173,7 +183,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue((propertyInfo.DeclaringType, propertyInfo.Name), out var propertyComment))
+                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -182,7 +192,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue((context.JsonTypeInfo.Type, null), out var typeComment))
+            System.Diagnostics.Debugger.Break();
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -312,61 +323,88 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         return writer.ToString();
     }
 
+    private static string FormatStringForCode(string? input)
+    {
+        if (input == null)
+        {
+            return "null";
+        }
+
+        var formatted = input
+            .Replace("\"", "\"\""); // Escape double quotes
+
+        return $"@\"{formatted}\"";
+    }
+
     internal static string EmitSourceGeneratedXmlComment(XmlComment comment)
     {
         var writer = new StringWriter();
         var codeWriter = new CodeWriter(writer, baseIndent: 0);
         codeWriter.Write($"new XmlComment(");
-        codeWriter.Write(comment.Summary is null ? "null," : $"\"\"{SymbolDisplay.FormatLiteral(comment.Summary, true)}\"\", ");
-        codeWriter.Write(comment.Description is null ? "null," : $"\"\"{SymbolDisplay.FormatLiteral(comment.Description, true)}\"\", ");
-        codeWriter.Write(comment.Remarks is null ? "null," : $"\"\"{SymbolDisplay.FormatLiteral(comment.Remarks, true)}\"\", ");
-        codeWriter.Write(comment.Returns is null ? "null," : $"\"\"{SymbolDisplay.FormatLiteral(comment.Returns, true)}\"\", ");
-        codeWriter.Write(comment.Value is null ? "null," : $"\"\"{SymbolDisplay.FormatLiteral(comment.Value, true)}\"\", ");
-        codeWriter.Write(comment.Deprecated is null ? "false," : $"{SymbolDisplay.FormatPrimitive(comment.Deprecated == true ? "true" : "false", false, false)}, ");
-        if (comment.Examples is null)
+        codeWriter.Write(FormatStringForCode(comment.Summary) + ", ");
+        codeWriter.Write(FormatStringForCode(comment.Description) + ", ");
+        codeWriter.Write(FormatStringForCode(comment.Remarks) + ", ");
+        codeWriter.Write(FormatStringForCode(comment.Returns) + ", ");
+        codeWriter.Write(FormatStringForCode(comment.Value) + ", ");
+        codeWriter.Write(comment.Deprecated == true ? "true" : "false" + ", ");
+        if (comment.Examples is null || comment.Examples.Count == 0)
         {
             codeWriter.Write("null, ");
         }
         else
         {
-            codeWriter.Write("new List<string>");
-            codeWriter.Write("{");
-            foreach (var example in comment.Examples)
+            codeWriter.Write("[");
+            for (int i = 0; i < comment.Examples.Count; i++)
             {
-                codeWriter.Write($"@\"{example}\", ");
+                var example = comment.Examples[i];
+                codeWriter.Write(FormatStringForCode(example));
+                if (i < comment.Examples.Count - 1)
+                {
+                    codeWriter.Write(", ");
+                }
             }
-            codeWriter.Write("}, ");
+            codeWriter.Write("], ");
         }
-        if (comment.Parameters is null)
+
+        if (comment.Parameters is null || comment.Parameters.Count == 0)
         {
             codeWriter.Write("null, ");
         }
         else
         {
-            codeWriter.Write("new List<XmlParameterComment>");
-            codeWriter.Write("{");
-            foreach (var parameter in comment.Parameters)
+            codeWriter.Write("[");
+            for (int i = 0; i < comment.Parameters.Count; i++)
             {
+                var parameter = comment.Parameters[i];
                 var exampleLiteral = string.IsNullOrEmpty(parameter.Example)
                     ? "null"
-                    : $"\"\"\"{parameter.Example!}\"\"\"";
-                codeWriter.Write($"new XmlParameterComment(@\"{parameter.Name}\", @\"{parameter.Description}\", {exampleLiteral}, {(parameter.Deprecated == true ? "true" : "false")}), ");
+                    : FormatStringForCode(parameter.Example!);
+                codeWriter.Write($"new XmlParameterComment(@\"{parameter.Name}\", @\"{parameter.Description}\", {exampleLiteral}, {(parameter.Deprecated == true ? "true" : "false")})");
+                if (i < comment.Parameters.Count - 1)
+                {
+                    codeWriter.Write(", ");
+                }
             }
-            codeWriter.Write("} ,");
+            codeWriter.Write("], ");
         }
-        if (comment.Responses is null)
+
+        if (comment.Responses is null || comment.Responses.Count == 0)
         {
             codeWriter.Write("null");
         }
         else
         {
-            codeWriter.Write("new List<XmlResponseComment>");
-            codeWriter.Write("{");
-            foreach (var response in comment.Responses)
+            codeWriter.Write("[");
+            for (int i = 0; i < comment.Responses.Count; i++)
             {
-                codeWriter.Write($"new XmlResponseComment(@\"{response.Code}\", @\"{response.Description}\", @\"{response.Example}\"), ");
+                var response = comment.Responses[i];
+                codeWriter.Write($"new XmlResponseComment(@\"{response.Code}\", @\"{response.Description}\", {(response.Example is null ? "null" : FormatStringForCode(response.Example))})");
+                if (i < comment.Responses.Count - 1)
+                {
+                    codeWriter.Write(", ");
+                }
             }
-            codeWriter.Write("}");
+            codeWriter.Write("]");
         }
         codeWriter.Write(")");
         return writer.ToString();

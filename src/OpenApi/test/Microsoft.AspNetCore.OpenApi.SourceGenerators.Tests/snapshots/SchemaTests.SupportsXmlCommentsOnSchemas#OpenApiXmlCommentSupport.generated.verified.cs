@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Text.Json;
@@ -65,36 +66,46 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var _cache = new Dictionary<(Type?, string?), XmlComment>();
 
-            _cache.Add((typeof(global::Todo), null), new XmlComment("""This is a todo item.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::Project), null), new XmlComment("""The project that contains Todo items.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::ProjectBoard.BoardItem), null), new XmlComment("""An item on the board.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::ProjectRecord), null), new XmlComment("""The project that contains Todo items.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false), } ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::User), null), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::ProjectRecord), "Name"), new XmlComment("""The name of the project.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::ProjectRecord), "Description"), new XmlComment("""The description of the project.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TodoWithDescription), "Id"), new XmlComment("""The identifier of the todo.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TodoWithDescription), "Name"), new XmlComment(null,null,null,null,"""The name of the todo.""", false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TodoWithDescription), "Description"), new XmlComment("""A description of the the todo.""", null,null,null,"""Another description of the todo.""", false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "BooleanType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"true", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "IntegerType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"42", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "LongType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"1234567890123456789", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "DoubleType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"3.14", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "FloatType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"3.14", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "DateTimeType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"2022-01-01T00:00:00Z", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "DateOnlyType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"2022-01-01", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "StringType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"Hello, World!", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "GuidType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "TimeOnlyType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"12:30:45", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "TimeSpanType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"P3DT4H5M", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "ByteType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"255", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "DecimalType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"3.14159265359", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::TypeWithExamples), "UriType"), new XmlComment(null,null,null,null,null,false, new List<string>{@"https://example.com", }, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::IUser), "Id"), new XmlComment("""The unique identifier for the user.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::IUser), "Name"), new XmlComment("""The user's display name.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::User), "Id"), new XmlComment("""The unique identifier for the user.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::User), "Name"), new XmlComment("""The user's display name.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
+            _cache.Add((typeof(global::Todo), null), new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::Project), null), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ProjectBoard.BoardItem), null), new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ProjectRecord), null), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            _cache.Add((typeof(global::User), null), new XmlComment(null, null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ProjectRecord), "Name"), new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ProjectRecord), "Description"), new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::TodoWithDescription), "Id"), new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::TodoWithDescription), "Name"), new XmlComment(null, null, null, null, @"The name of the todo.", false, null, null, null));
+            _cache.Add((typeof(global::TodoWithDescription), "Description"), new XmlComment(@"A description of the the todo.", null, null, null, @"Another description of the todo.", false, null, null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "BooleanType"), new XmlComment(null, null, null, null, null, false, [@"true"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "IntegerType"), new XmlComment(null, null, null, null, null, false, [@"42"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "LongType"), new XmlComment(null, null, null, null, null, false, [@"1234567890123456789"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "DoubleType"), new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "FloatType"), new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "DateTimeType"), new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "DateOnlyType"), new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "StringType"), new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "GuidType"), new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "TimeOnlyType"), new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "TimeSpanType"), new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "ByteType"), new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "DecimalType"), new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
+            _cache.Add((typeof(global::TypeWithExamples), "UriType"), new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
+            _cache.Add((typeof(global::IUser), "Id"), new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::IUser), "Name"), new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::User), "Id"), new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::User), "Name"), new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
 
             return _cache;
+        }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            if (type is not null && type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
+
+            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
         }
     }
 
@@ -111,7 +122,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue((methodInfo.DeclaringType, methodInfo.Name), out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -182,7 +193,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue((propertyInfo.DeclaringType, propertyInfo.Name), out var propertyComment))
+                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -191,7 +202,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue((context.JsonTypeInfo.Type, null), out var typeComment))
+            System.Diagnostics.Debugger.Break();
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)

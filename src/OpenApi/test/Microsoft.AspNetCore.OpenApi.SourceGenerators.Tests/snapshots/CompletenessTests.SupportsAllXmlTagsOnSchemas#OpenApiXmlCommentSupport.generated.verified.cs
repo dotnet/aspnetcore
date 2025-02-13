@@ -66,6 +66,103 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var _cache = new Dictionary<(Type?, string?), XmlComment>();
 
+            _cache.Add((typeof(global::ExampleClass), null), new XmlComment(@"Every class and member should have a one sentence
+summary describing its purpose.", null, @"     You can expand on that one sentence summary to
+     provide more information for readers. In this case,
+     the `ExampleClass` provides different C#
+     elements to show how you would add documentation
+    comments for most elements in a typical class.
+     The remarks can add multiple paragraphs, so you can
+write detailed information for developers that use
+your work. You should add everything needed for
+readers to be successful. This class contains
+examples for the following:
+     * Summary
+
+This should provide a one sentence summary of the class or member.
+* Remarks
+
+This is typically a more detailed description of the class or member
+* para
+
+The para tag separates a section into multiple paragraphs
+* list
+
+Provides a list of terms or elements
+* returns, param
+
+Used to describe parameters and return values
+* value
+Used to describe properties
+* exception
+
+Used to describe exceptions that may be thrown
+* c, cref, see, seealso
+
+These provide code style and links to other
+documentation elements
+* example, code
+
+These are used for code examples
+     The list above uses the ""table"" style. You could
+also use the ""bullet"" or ""number"" style. Neither
+would typically use the ""term"" element.
+
+Note: paragraphs are double spaced. Use the *br*
+tag for single spaced lines.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::Person), null), new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
+created for positional records, yet. The language
+design team is still considering what tags should
+be supported, and where. Currently, you can use
+the ""param"" tag to describe the parameters to the
+primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
+            _cache.Add((typeof(global::MainClass), null), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+In this example, these comments also explain the
+general information about the derived class.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::DerivedClass), null), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+In this example, these comments also explain the
+general information about the derived class.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::ITestInterface), null), new XmlComment(@"This interface would describe all the methods in
+its contract.", null, @"While elided for brevity, each method or property
+in this interface would contain docs that you want
+to duplicate in each implementing class.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::ImplementingClass), null), new XmlComment(@"This interface would describe all the methods in
+its contract.", null, @"While elided for brevity, each method or property
+in this interface would contain docs that you want
+to duplicate in each implementing class.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::InheritOnlyReturns), null), new XmlComment(@"This class shows hows you can ""inherit"" the doc
+comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
+represented by an xpath expression.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::InheritAllButRemarks), null), new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::GenericClass<>), null), new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
+type as a cref attribute.
+In generic classes and methods, you'll often want to reference the
+generic type, or the type parameter.", null, null, false, null, null, null));
+            _cache.Add((typeof(global::ParamsAndParamRefs), null), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ExampleClass), "Label"), new XmlComment(null, null, @"    The ExampleClass.Label is a <see langword=""string"" />
+    that you use for a label.
+    Note that there isn't a way to provide a ""cref"" to
+each accessor, only to the property itself.", null, @"The `Label` property represents a label
+for this instance.", false, null, null, null));
+            _cache.Add((typeof(global::Person), "FirstName"), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::Person), "LastName"), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::ExampleClass), "Add"), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+if (c &gt; 10)
+{
+    Console.WriteLine(c);
+}```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
+            _cache.Add((typeof(global::ITestInterface), "Method"), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+that implement this interface when the
+implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
+            _cache.Add((typeof(global::InheritOnlyReturns), "MyParentMethod"), new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add((typeof(global::InheritOnlyReturns), "MyChildMethod"), new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add((typeof(global::InheritAllButRemarks), "MyParentMethod"), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+using the xpath expression.", @"A boolean", null, false, null, null, null));
+            _cache.Add((typeof(global::InheritAllButRemarks), "MyChildMethod"), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add((typeof(global::ParamsAndParamRefs), "GetGenericValue"), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T)
+method as a cref attribute.
+The parameter and return value are both of an arbitrary type,
+T", null, null, false, null, null, null));
 
             return _cache;
         }
@@ -218,41 +315,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "BrnVZrUWsBWGsQtqcWdZBKYAAABQcm9ncmFtLmNz")]
+        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "kqndciLnP9+ia+gBOXvuc6MAAABQcm9ncmFtLmNz")]
         public static IServiceCollection AddOpenApi(this IServiceCollection services)
         {
             return services.AddOpenApi("v1", options =>
             {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "BrnVZrUWsBWGsQtqcWdZBNcAAABQcm9ncmFtLmNz")]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
-        {
-            return services.AddOpenApi(documentName, options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "BrnVZrUWsBWGsQtqcWdZBBkBAABQcm9ncmFtLmNz")]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
-        {
-            return services.AddOpenApi("v1", options =>
-            {
-                configureOptions(options);
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "BrnVZrUWsBWGsQtqcWdZBL0BAABQcm9ncmFtLmNz")]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
-        {
-            // This overload is not intercepted.
-            return OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
-            {
-                configureOptions(options);
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
             });

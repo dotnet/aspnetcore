@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Text.Json;
@@ -65,15 +66,30 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var _cache = new Dictionary<(Type?, string?), XmlComment>();
 
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get"), new XmlComment("""A summary of the action.""", """A description of the action.""", null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get2"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"name", @"The name of the person.", null, false), } ,new List<XmlResponseComment>{new XmlResponseComment(@"200", @"Returns the greeting.", @""), }));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get3"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"name", @"The name of the person.", """Testy McTester""", false), } ,new List<XmlResponseComment>{}));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get4"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{new XmlResponseComment(@"404", @"Indicates that the value was not found.", @""), }));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get5"), new XmlComment(null,null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{} ,new List<XmlResponseComment>{new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @""), }));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Post6"), new XmlComment("""Creates a new user.""", null,"""Sample request:\n    POST /6\n    {\n        \"username\": \"johndoe\",\n        \"email\": \"john@example.com\"\n    }""", null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"user", @"The user information.", """{"username": "johndoe", "email": "john@example.com"}""", false), } ,new List<XmlResponseComment>{new XmlResponseComment(@"201", @"Successfully created the user.", @""), new XmlResponseComment(@"400", @"If the user data is invalid.", @""), }));
-            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Put7"), new XmlComment("""Updates an existing record.""", null,null,null,null,false, new List<string>{}, new List<XmlParameterComment>{new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false), } ,new List<XmlResponseComment>{new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @""), }));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get"), new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get2"), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get3"), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get4"), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Get5"), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Post6"), new XmlComment(@"Creates a new user.", null, @"Sample request:
+    POST /6
+    {
+        ""username"": ""johndoe"",
+        ""email"": ""john@example.com""
+    }", null, null, false, null, [new XmlParameterComment(@"user", @"The user information.", @"{""username"": ""johndoe"", ""email"": ""john@example.com""}", false)], [new XmlResponseComment(@"201", @"Successfully created the user.", @""), new XmlResponseComment(@"400", @"If the user data is invalid.", @"")]));
+            _cache.Add((typeof(global::RouteHandlerExtensionMethods), "Put7"), new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
 
             return _cache;
+        }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            if (type is not null && type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
+
+            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
         }
     }
 
@@ -90,7 +106,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue((methodInfo.DeclaringType, methodInfo.Name), out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -161,7 +177,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue((propertyInfo.DeclaringType, propertyInfo.Name), out var propertyComment))
+                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -170,7 +186,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue((context.JsonTypeInfo.Type, null), out var typeComment))
+            System.Diagnostics.Debugger.Break();
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
