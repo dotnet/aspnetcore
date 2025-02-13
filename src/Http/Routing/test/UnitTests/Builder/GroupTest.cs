@@ -298,12 +298,13 @@ public class GroupTest
     }
 
     [Fact]
-    public void GivenNonRouteEndpoint_ThrowsNotSupportedException()
+    public void GivenNonRouteEndpoint_WithConventions_ThrowsNotSupportedException()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
 
         var group = builder.MapGroup("/group");
-        ((IEndpointRouteBuilder)group).DataSources.Add(new TestCustomEndpintDataSource());
+        group.WithMetadata(new EndpointGroupNameAttribute("group"));
+        ((IEndpointRouteBuilder)group).DataSources.Add(new TestCustomEndpointDataSource());
 
         var dataSource = GetEndpointDataSource(builder);
         var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
@@ -311,6 +312,20 @@ public class GroupTest
             "MapGroup does not support custom Endpoint type 'Microsoft.AspNetCore.Builder.GroupTest+TestCustomEndpoint'. " +
             "Only RouteEndpoints can be grouped.",
             ex.Message);
+    }
+
+    [Fact]
+    public void GivenNonRouteEndpoint_WithNoConventions_ReturnsEndpointAsIs()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointRouteBuilder)group).DataSources.Add(new TestCustomEndpointDataSource());
+
+        var dataSource = GetEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.IsType<TestCustomEndpoint>(endpoint);
     }
 
     [Fact]
@@ -388,7 +403,7 @@ public class GroupTest
         public TestCustomEndpoint() : base(null, null, null) { }
     }
 
-    private sealed class TestCustomEndpintDataSource : EndpointDataSource
+    private sealed class TestCustomEndpointDataSource : EndpointDataSource
     {
         public override IReadOnlyList<Endpoint> Endpoints => new[] { new TestCustomEndpoint() };
         public override IChangeToken GetChangeToken() => throw new NotImplementedException();
