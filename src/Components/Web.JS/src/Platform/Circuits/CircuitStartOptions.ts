@@ -20,6 +20,8 @@ export interface CircuitStartOptions {
   reconnectionHandler?: ReconnectionHandler;
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
+  // Exists for compatibility with WebStartOptions.
+  circuit?: CircuitStartOptions;
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
