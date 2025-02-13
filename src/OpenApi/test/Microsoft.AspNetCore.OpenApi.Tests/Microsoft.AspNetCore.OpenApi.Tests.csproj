@@ -36,6 +36,8 @@
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
-    <HelixContent Include="$(MSBuildProjectDirectory)\Integration\snapshots\**" LinkBase="$(MSBuildThisFileDirectory)\Integration\snapshots"/>
+    <HelixContent
+      Include="$(MSBuildProjectDirectory)\Integration\snapshots\**"
+      LinkBase="$(MSBuildThisFileDirectory)\Integration\snapshots"/>
   </ItemGroup>
 </Project>

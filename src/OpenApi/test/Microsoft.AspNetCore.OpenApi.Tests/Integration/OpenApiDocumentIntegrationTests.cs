@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Writers;
 
 [UsesVerify]
 public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
@@ -20,12 +17,14 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     [InlineData("responses", OpenApiSpecVersion.OpenApi3_0)]
     [InlineData("forms", OpenApiSpecVersion.OpenApi3_0)]
     [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData("xml", OpenApiSpecVersion.OpenApi3_0)]
     [InlineData("v1", OpenApiSpecVersion.OpenApi3_1)]
     [InlineData("v2", OpenApiSpecVersion.OpenApi3_1)]
     [InlineData("controllers", OpenApiSpecVersion.OpenApi3_1)]
     [InlineData("responses", OpenApiSpecVersion.OpenApi3_1)]
     [InlineData("forms", OpenApiSpecVersion.OpenApi3_1)]
     [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData("xml", OpenApiSpecVersion.OpenApi3_1)]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
@@ -38,7 +37,6 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
         await Verifier.Verify(json)
             .UseDirectory(outputDirectory)
-            .AutoVerify()
             .UseParameters(documentName);
     }
 }

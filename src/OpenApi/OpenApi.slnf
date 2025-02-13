@@ -10,10 +10,12 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
+      "src\\OpenApi\\gen\\Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj",
       "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj",
       "src\\OpenApi\\sample\\Sample.csproj",
       "src\\OpenApi\\src\\Microsoft.AspNetCore.OpenApi.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests\\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj",
       "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
       "src\\OpenApi\\sample\\Sample.csproj",
       "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj"

@@ -223,6 +223,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="StackExchange.Redis" />
     <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
+    <LatestPackageReference Include="Verify.SourceGenerators" />
     <LatestPackageReference Include="Verify.Xunit" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />

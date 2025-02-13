@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.OpenApi" />
+    <Reference Include="Microsoft.OpenApi.Readers" />
+    <Reference Include="Verify.SourceGenerators" />
+    <Reference Include="Verify.Xunit" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**"/>
+  </ItemGroup>
+
+</Project>

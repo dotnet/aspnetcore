@@ -198,19 +198,24 @@
         "properties": {
           "id": {
             "type": "integer",
+            "description": "The unique identifier of the to-do item.",
             "format": "int32"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "The title of the to-do item."
           },
           "completed": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
           },
           "createdAt": {
             "type": "string",
+            "description": "The date and time when the to-do item was created.",
             "format": "date-time"
           }
-        }
+        },
+        "description": "Represents a to-do item."
       }
     }
   },
