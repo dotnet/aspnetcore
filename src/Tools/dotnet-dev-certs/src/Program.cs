@@ -98,7 +98,8 @@ internal sealed class Program
 
                 CommandOption trust = null;
                 trust = c.Option("-t|--trust",
-                    "Trust the certificate on the current platform. When combined with the --check option, validates that the certificate is trusted.",
+                    "When not combined with the --check option, trusts the certificate on the current platform, creating one if necessary.\n" +
+                    "                     When combined with the --check option, validates that there is a certificate and it is trusted.",
                     CommandOptionType.NoValue);
 
                 var verbose = c.Option("-v|--verbose",
