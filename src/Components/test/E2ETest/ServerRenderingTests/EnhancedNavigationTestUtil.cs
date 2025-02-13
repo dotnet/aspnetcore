@@ -32,4 +32,7 @@ public static class EnhancedNavigationTestUtil
 
     public static long GetScrollY(this IWebDriver browser)
         => Convert.ToInt64(((IJavaScriptExecutor)browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
+
+    public static long SetScrollY(this IWebDriver browser, long value)
+        => Convert.ToInt64(((IJavaScriptExecutor)browser).ExecuteScript($"window.scrollTo(0, {value})"), CultureInfo.CurrentCulture);
 }
