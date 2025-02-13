@@ -3,6 +3,9 @@
 
 namespace TestServer;
 
+/// <summary>
+/// Implementation of <see cref="ServerStartup"/> intended for tests that check behavior with Content-Security-Policy headers.
+/// </summary>
 public class ServerStartupWithCsp : ServerStartup
 {
     public ServerStartupWithCsp(IConfiguration configuration) : base(configuration)
