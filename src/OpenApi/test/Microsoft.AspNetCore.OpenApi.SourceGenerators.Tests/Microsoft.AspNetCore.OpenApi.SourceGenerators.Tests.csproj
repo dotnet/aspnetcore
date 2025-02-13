@@ -31,9 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HelixContent
-      Include="$(MSBuildProjectDirectory)\snapshots\**"
-      LinkBase="$(MSBuildThisFileDirectory)\snapshots"/>
+    <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**"/>
   </ItemGroup>
 
 </Project>
