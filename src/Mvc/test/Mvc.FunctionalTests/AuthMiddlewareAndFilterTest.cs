@@ -5,8 +5,4 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 public class AuthMiddlewareAndFilterTest : AuthMiddlewareAndFilterTestBase<SecurityWebSite.StartupWithGlobalAuthFilter>
 {
-    public AuthMiddlewareAndFilterTest(MvcTestFixture<SecurityWebSite.StartupWithGlobalAuthFilter> fixture)
-        : base(fixture)
-    {
-    }
 }

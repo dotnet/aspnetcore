@@ -3,7 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
@@ -177,7 +177,7 @@ public class TestLoggedTest : LoggedTest
     public bool SetupInvoked { get; private set; } = false;
     public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 

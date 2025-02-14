@@ -1,0 +1,78 @@
+<Project DefaultTargets="Build">
+
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsShippingPackage>true</IsShippingPackage>
+    <!-- This explicitly includes this project even though it's a test project, unit test project,
+         etc. which would be excluded by default. -->
+    <ExcludeFromDotNetBuild>false</ExcludeFromDotNetBuild>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <!-- Skip puppeteer tests until https://github.com/dotnet/aspnetcore/issues/54176 is resolved -->
+    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1</_NpmAdditionalEnvironmentVariables>
+  </PropertyGroup>
+
+  <Target Name="Restore">
+    <Message Text="Restoring NPM packages..." Importance="high" />
+    <Exec
+      Command="npm ci"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+  </Target>
+
+  <Target Name="Build">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <Message Text="Building NPM packages..." Importance="high" />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      />
+  </Target>
+
+  <Target Name="_Test" BeforeTargets="Test">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Pack">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)</PackageVersion>
+      <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
+    <Message Text="Packing NPM packages..." Importance="high" />
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+    <ItemGroup>
+      <_NpmGeneratedPackages Include="$(PackageOutputPath)/*.tgz" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_NpmFiles>@(_NpmGeneratedPackages->'📦 $(PackageOutputPath)%(FileName)%(Extension)', '%0a  ')</_NpmFiles>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(MSBuildProjectName) -> %0a%20%20$(_NpmFiles)" />
+  </Target>
+
+  <!-- Import Directory.Build.targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
+
+</Project>

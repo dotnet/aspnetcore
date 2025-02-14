@@ -1,0 +1,45 @@
+﻿@page "/forms/default-form-bound-parameter-annotations"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations;
+@using System.Runtime.Serialization;
+
+<h2>Default form with bound parameter using data annotations for validation and data member to tweak the binding.</h2>
+
+<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform" Enhance>
+    <DataAnnotationsValidator />
+    <ValidationSummary/>
+    <p>
+        <label>
+            Name: <InputText @bind-Value="Parameter.Name" />
+        </label>
+    </p>
+    <input type="hidden" name="Parameter.Id" value="5" />
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Hello @Parameter.Name!</p>
+    <p id="pass-id">@Parameter.Id</p>
+}
+
+@code {
+    bool _submitted = false;
+
+    [SupplyParameterFromForm] public Customer Parameter { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Parameter ??= new();
+    }
+
+    public class Customer
+    {
+        [IgnoreDataMember]
+        public int Id { get; set; }
+
+        [StringLength(3, ErrorMessage = "Name is too long")]
+        [DataMember(Name = "FirstName")]
+        public string Name { get; set; }
+    }
+}

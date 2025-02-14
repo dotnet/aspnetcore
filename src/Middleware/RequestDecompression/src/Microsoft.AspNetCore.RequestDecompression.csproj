@@ -22,4 +22,8 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Microbenchmarks" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)SizeLimitedStream.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

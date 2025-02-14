@@ -10,7 +10,7 @@
     <Version>$(BundleVersion)</Version>
 
     <!-- ARM64 MSIs require the installer version to be at least 500. -->
-    <!-- See: https://learn.microsoft.com/en-us/windows/win32/msi/64-bit-windows-installer-packages -->
+    <!-- See: https://learn.microsoft.com/windows/win32/msi/64-bit-windows-installer-packages -->
     <DefineConstants Condition=" '$(Platform)' == 'arm64' ">$(DefineConstants);InstallerVersion=500</DefineConstants>
     <DefineConstants Condition=" '$(Platform)' != 'arm64' ">$(DefineConstants);InstallerVersion=200</DefineConstants>
 
@@ -35,12 +35,11 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\net\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\netframework\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
-  <UsingTask TaskName="CreateLitCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
@@ -110,7 +109,7 @@
       NoLogo="true"
       Cultures="en-us"
       InstallerFile="%(WixInstallerFilesToProcess.Identity)"
-      AdditionalBasePaths="$(MSBuildProjectDirectory)"
+      AdditionalBasePaths="$(MSBuildProjectDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle"
       WixExtensions="@(WixExtension)"
       Loc="@(EmbeddedResource)"
       Sice="$(SuppressIces)"
@@ -120,5 +119,8 @@
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>
+
+  <!-- wixprojs don't do any packaging but the target is called from Arcade's Build.proj. -->
+  <Target Name="Pack" />
 
 </Project>

@@ -7481,7 +7481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe ushort ReadUnalignedLittleEndian_ushort(ref byte source)
+        internal static ushort ReadUnalignedLittleEndian_ushort(ref byte source)
         {
             ushort result = Unsafe.ReadUnaligned<ushort>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7491,7 +7491,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe uint ReadUnalignedLittleEndian_uint(ref byte source)
+        internal static uint ReadUnalignedLittleEndian_uint(ref byte source)
         {
             uint result = Unsafe.ReadUnaligned<uint>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7501,7 +7501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe ulong ReadUnalignedLittleEndian_ulong(ref byte source)
+        internal static ulong ReadUnalignedLittleEndian_ulong(ref byte source)
         {
             ulong result = Unsafe.ReadUnaligned<ulong>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7511,11 +7511,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var flag = 0L;
 
             // Does the name match any "known" headers
@@ -7924,9 +7924,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var nameStr = string.Empty;
             var flag = 0L;
 
@@ -8136,9 +8136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var nameStr = string.Empty;
             var flag = 0L;
 
@@ -8670,15 +8670,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return true;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 49
+                        : -1;
+            }
         }
     }
 
     internal partial class HttpResponseHeaders : IHeaderDictionary
     {
-        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
-        {
-            13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,68,97,116,101,58,32,13,10,83,101,114,118,101,114,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,67,114,101,100,101,110,116,105,97,108,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,77,101,116,104,111,100,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,79,114,105,103,105,110,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,69,120,112,111,115,101,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,77,97,120,45,65,103,101,58,32,13,10,65,103,101,58,32,13,10,65,108,108,111,119,58,32,13,10,65,108,116,45,83,118,99,58,32,13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,84,97,103,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,71,114,112,99,45,69,110,99,111,100,105,110,103,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,97,103,109,97,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,80,114,111,120,121,45,67,111,110,110,101,99,116,105,111,110,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,97,114,121,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,
-        };
+        private static ReadOnlySpan<byte> HeaderBytes => [13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,68,97,116,101,58,32,13,10,83,101,114,118,101,114,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,67,114,101,100,101,110,116,105,97,108,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,77,101,116,104,111,100,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,79,114,105,103,105,110,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,69,120,112,111,115,101,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,77,97,120,45,65,103,101,58,32,13,10,65,103,101,58,32,13,10,65,108,108,111,119,58,32,13,10,65,108,116,45,83,118,99,58,32,13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,84,97,103,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,71,114,112,99,45,69,110,99,111,100,105,110,103,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,97,103,109,97,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,80,114,111,120,121,45,67,111,110,110,101,99,116,105,111,110,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,97,114,121,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,];
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x1L) != 0;
@@ -14799,7 +14806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _bits &= ~13161725953;
         }
-        internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
+        internal void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
             var tempBits = (ulong)_bits;
             // Set exact next
@@ -14816,7 +14823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref readonly StringValues values = ref Unsafe.NullRef<StringValues>();
             do
             {
                 int keyStart;
@@ -15499,15 +15506,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return true;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 38
+                        : -1;
+            }
         }
     }
 
     internal partial class HttpResponseTrailers : IHeaderDictionary
     {
-        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
-        {
-            13,10,69,84,97,103,58,32,13,10,71,114,112,99,45,77,101,115,115,97,103,101,58,32,13,10,71,114,112,99,45,83,116,97,116,117,115,58,32,
-        };
+        private static ReadOnlySpan<byte> HeaderBytes => [13,10,69,84,97,103,58,32,13,10,71,114,112,99,45,77,101,115,115,97,103,101,58,32,13,10,71,114,112,99,45,83,116,97,116,117,115,58,32,];
         private HeaderReferences _headers;
 
 

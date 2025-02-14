@@ -2,14 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -44,6 +40,11 @@ public partial class Startup
         {
             app.UseHttpsRedirection();
         }
+
+#if !FORWARDCOMPAT
+        app.UseWebSockets();
+#endif
+
         TestStartup.Register(app, this);
         _httpContextAccessor = httpContextAccessor;
     }
@@ -66,6 +67,38 @@ public partial class Startup
     private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
 
     private async Task BaseDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(AppContext.BaseDirectory);
+
+    private async Task IIISEnvironmentFeatureConfig(HttpContext ctx)
+    {
+        var config = ctx.RequestServices.GetService<IConfiguration>();
+
+        await ctx.Response.WriteAsync("IIS Version: " + config["IIS_VERSION"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("ApplicationId: " + config["IIS_APPLICATION_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Path: " + config["IIS_PHYSICAL_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Virtual Path: " + config["IIS_APPLICATION_VIRTUAL_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Config Path: " + config["IIS_APP_CONFIG_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool ID: " + config["IIS_APP_POOL_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool Config File: " + config["IIS_APP_POOL_CONFIG_FILE"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site ID: " + config["IIS_SITE_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site Name: " + config["IIS_SITE_NAME"]);
+    }
+
+#if !FORWARDCOMPAT
+    private async Task IIISEnvironmentFeature(HttpContext ctx)
+    {
+        var envFeature = ctx.RequestServices.GetService<IServer>().Features.Get<IIISEnvironmentFeature>();
+
+        await ctx.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
+        await ctx.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Path: " + envFeature.ApplicationPhysicalPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool Config File: " + envFeature.AppPoolConfigFile + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site Name: " + envFeature.SiteName);
+    }
+#endif
 
     private async Task ASPNETCORE_IIS_PHYSICAL_PATH(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
 
@@ -1128,7 +1161,7 @@ public partial class Startup
         try
         {
 #if !FORWARDCOMPAT
-        Assert.True(ctx.Request.CanHaveBody());
+            Assert.True(ctx.Request.CanHaveBody());
 #endif
             Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
             Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);
@@ -1146,7 +1179,7 @@ public partial class Startup
         try
         {
 #if !FORWARDCOMPAT
-        Assert.True(ctx.Request.CanHaveBody());
+            Assert.True(ctx.Request.CanHaveBody());
 #endif
             Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
             Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);

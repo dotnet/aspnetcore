@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model Todo
+
+<div class="text-center">
+    <h1 class="display-4">Form (with middleware anti-forgery token validation)</h1>
+    @using (@Html.BeginForm("Index2", "Home", routeValues: null, method: FormMethod.Post, antiforgery: ViewBag.Antiforgery, htmlAttributes: null))
+    {
+        <span>Name:</span> @Html.TextBoxFor(m => m.Name)<br />
+        <span>Due Date: </span> @Html.TextBoxFor(m => m.DueDate)<br />
+        <span>IsCompleted: </span>@Html.TextBoxFor(m => m.IsCompleted)<br />
+
+        <input id = "Submit" type = "submit" value = "submit" />
+    }
+
+    <hr />
+
+    <strong>Name: </strong> @Html.DisplayFor(m => m.Name)<br />
+    <strong>Due Date: </strong> @Html.DisplayFor(m => m.DueDate)<br />
+    <strong>IsCompleted: </strong> @Html.DisplayFor(m => m.IsCompleted)<br />
+</div>

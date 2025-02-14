@@ -4,11 +4,17 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Endpoints.Tests;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -17,85 +23,11 @@ public class RazorComponentEndpointDataSourceTest
     [Fact]
     public void RegistersEndpoints()
     {
-        var endpointDataSource = CreateDataSource<App>(useDeclaredRenderModes: false);
-
-        var endpoints = endpointDataSource.Endpoints;
-        Assert.Equal(2, endpoints.Count);
-    }
-
-    [Fact]
-    public void ServerModeWiresUpServerEndpoints()
-    {
-        var builder = CreateBuilder(typeof(ServerComponent));
-        var services = CreateServices(typeof(ServerEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        var endpoints = endpointDataSource.Endpoints;
-        var endpoint = Assert.Single(endpoints);
-
-        Assert.Equal("/server", ((RouteEndpoint)endpoint).RoutePattern.RawText);
-    }
-
-    [Fact]
-    public void ServerModeNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(ServerComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
-    }
-
-    [Fact]
-    public void WebAssemblyWiresUpWebAssemblyEndpoints()
-    {
-
-        var builder = CreateBuilder(typeof(WebAssemblyComponent));
-        var services = CreateServices(typeof(WebassemblyEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        var endpoints = endpointDataSource.Endpoints;
-        var endpoint = Assert.Single(endpoints);
-
-        Assert.Equal("/webassembly", ((RouteEndpoint)endpoint).RoutePattern.RawText);
-    }
-
-    [Fact]
-    public void WebAssemblyNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(WebAssemblyComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
-    }
-
-    [Fact]
-    public void AutoWiresUpServerAndWebAssemblyEndpointsWhenBothAreConfigured()
-    {
-
-        var builder = CreateBuilder(typeof(AutoComponent));
-        var services = CreateServices(typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>();
 
         var endpoints = endpointDataSource.Endpoints;
 
-        Assert.Collection(endpoints,
-            endpoint => Assert.Equal("/server", ((RouteEndpoint)endpoint).RoutePattern.RawText),
-            endpoint => Assert.Equal("/webassembly", ((RouteEndpoint)endpoint).RoutePattern.RawText));
-    }
-
-    [Fact]
-    public void AutoNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(AutoComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
+        Assert.Equal(3, endpoints.Count);
     }
 
     [Fact]
@@ -107,55 +39,8 @@ public class RazorComponentEndpointDataSourceTest
         var endpointDataSource = CreateDataSource<App>(builder, services);
 
         var endpoints = endpointDataSource.Endpoints;
-        Assert.Empty(endpoints);
-    }
 
-    [Theory]
-    [MemberData(nameof(ConfiguredAndDiscoveredRenderModes))]
-    public void RenderModesAreConfiguredCorrectly(
-        IComponentRenderMode[] renderModes,
-        Type[] providers,
-        Type[] components,
-        string[] expectedEndpoints)
-    {
-        var builder = CreateBuilder(components);
-        var services = CreateServices(providers);
-        var endpointDataSource = CreateDataSource<App>(builder, services, renderModes);
-
-        var endpoints = endpointDataSource.Endpoints;
-
-        switch (expectedEndpoints.Length)
-        {
-            case 0:
-                Assert.Empty(endpoints);
-                break;
-            case 1:
-                var endpoint = Assert.Single(endpoints);
-                Assert.Equal(expectedEndpoints[0], ((RouteEndpoint)endpoint).RoutePattern.RawText);
-                break;
-            case 2:
-                Assert.Collection(endpoints.OrderBy(e => ((RouteEndpoint)e).RoutePattern.RawText),
-                    endpoint => Assert.Equal(expectedEndpoints[0], ((RouteEndpoint)endpoint).RoutePattern.RawText),
-                    endpoint => Assert.Equal(expectedEndpoints[1], ((RouteEndpoint)endpoint).RoutePattern.RawText));
-                break;
-            default:
-                Assert.Fail("Too many endpoints specified");
-                break;
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(SetRenderModesFailures))]
-    public void ThrowsForDeclaredRenderModes_WhenMissingRenderModes(
-        IComponentRenderMode[] renderModes,
-        Type[] providers,
-        Type[] components)
-    {
-        var builder = CreateBuilder(components);
-        var services = CreateServices(providers);
-        var endpointDataSource = CreateDataSource<App>(builder, services, renderModes);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
+        Assert.Single(endpoints);
     }
 
     // renderModes, providers, components, expectedEndpoints
@@ -171,21 +56,21 @@ public class RazorComponentEndpointDataSourceTest
             },
             // Auto component adds webassembly when available
             {
-                new []  { RenderMode.Server },
+                new []  { RenderMode.InteractiveServer },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(AutoComponent) },
                 new []  { "/server", "/webassembly" }
             },
             // Auto component adds server when available
             {
-                new []  { RenderMode.WebAssembly },
+                new []  { RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(AutoComponent) },
                 new []  { "/server", "/webassembly" }
             },
             // Auto component does nothing because modes are explicitly configured
             {
-                new IComponentRenderMode []  { RenderMode.Server, RenderMode.WebAssembly },
+                new IComponentRenderMode []  { RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(AutoComponent) },
                 new []  { "/server", "/webassembly" }
@@ -200,21 +85,21 @@ public class RazorComponentEndpointDataSourceTest
             // Webassembly component wires up webassembly endpoints in addition to server endpoints
             // as they were explicitly configured.
             {
-                new []  { RenderMode.Server },
+                new []  { RenderMode.InteractiveServer },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(WebAssemblyComponent) },
                 new []  { "/server", "/webassembly" }
             },
             // Webassembly component does nothing as webassembly is already configured explicitly.
             {
-                new []  { RenderMode.WebAssembly },
+                new []  { RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(WebAssemblyComponent) },
                 new []  { "/webassembly" }
             },
             // Server and webassembly endpoints are added as they were explicitly configured.
             {
-                new IComponentRenderMode [] { RenderMode.Server, RenderMode.WebAssembly },
+                new IComponentRenderMode [] { RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(WebAssemblyComponent) },
                 new []  { "/server", "/webassembly" }
@@ -228,7 +113,7 @@ public class RazorComponentEndpointDataSourceTest
             },
             // Server component does nothing as server is already configured.
             {
-                new []  { RenderMode.Server },
+                new []  { RenderMode.InteractiveServer },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(ServerComponent) },
                 new []  { "/server" }
@@ -236,14 +121,14 @@ public class RazorComponentEndpointDataSourceTest
             // Server component wires up server endpoints in addition to webassembly endpoints
             // that were explicitly configured.
             {
-                new []  { RenderMode.WebAssembly },
+                new []  { RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(ServerComponent) },
                 new []  { "/server", "/webassembly" }
             },
             // Server component does nothing as server and webassembly endpoints were explicitly configured.
             {
-                new IComponentRenderMode [] { RenderMode.Server, RenderMode.WebAssembly },
+                new IComponentRenderMode [] { RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider) },
                 new []  { typeof(ServerComponent) },
                 new []  { "/server", "/webassembly" }
@@ -287,7 +172,7 @@ public class RazorComponentEndpointDataSourceTest
             },
             // Server explicitly configured and missing
             {
-                new IComponentRenderMode[] { RenderMode.Server },
+                new IComponentRenderMode[] { RenderMode.InteractiveServer },
                 new []  { typeof(WebassemblyEndpointProvider) },
                 Array.Empty<Type>()
             },
@@ -308,7 +193,7 @@ public class RazorComponentEndpointDataSourceTest
 
             // Webassembly explicitly configured and missing
             {
-                new IComponentRenderMode[] { RenderMode.WebAssembly },
+                new IComponentRenderMode[] { RenderMode.InteractiveWebAssembly },
                 new []  { typeof(ServerEndpointProvider) },
                 Array.Empty<Type>()
             },
@@ -338,22 +223,23 @@ public class RazorComponentEndpointDataSourceTest
             services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(RenderModeEndpointProvider), type));
         }
 
+        services.AddSingleton<IWebHostEnvironment, TestWebHostEnvironment>();
+        services.AddLogging();
+
         return services.BuildServiceProvider();
     }
 
     private RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
         ComponentApplicationBuilder builder = null,
         IServiceProvider services = null,
-        IComponentRenderMode[] renderModes = null,
-        bool useDeclaredRenderModes = true)
+        IComponentRenderMode[] renderModes = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
             builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
-            new ApplicationBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
-            new RazorComponentEndpointFactory());
-
-        result.Options.UseDeclaredRenderModes = useDeclaredRenderModes;
+            new TestEndpointRouteBuilder(services ?? CreateServices()),
+            new RazorComponentEndpointFactory(),
+            new HotReloadService() { MetadataUpdateSupported = true });
 
         if (renderModes != null)
         {
@@ -366,15 +252,13 @@ public class RazorComponentEndpointDataSourceTest
         return result;
     }
 
-    private class StaticComponent : ComponentBase { }
-
-    [RenderModeServer]
+    [TestRenderMode<InteractiveServerRenderMode>]
     private class ServerComponent : ComponentBase { }
 
-    [RenderModeAuto]
+    [TestRenderMode<InteractiveAutoRenderMode>]
     private class AutoComponent : ComponentBase { }
 
-    [RenderModeWebAssembly]
+    [TestRenderMode<InteractiveWebAssemblyRenderMode>]
     private class WebAssemblyComponent : ComponentBase { }
 
     private class ServerEndpointProvider : RenderModeEndpointProvider
@@ -387,7 +271,7 @@ public class RazorComponentEndpointDataSourceTest
                 0);
         }
 
-        public override bool Supports(IComponentRenderMode renderMode) => renderMode is ServerRenderMode or AutoRenderMode;
+        public override bool Supports(IComponentRenderMode renderMode) => renderMode is InteractiveServerRenderMode or InteractiveAutoRenderMode;
     }
 
     private class WebassemblyEndpointProvider : RenderModeEndpointProvider
@@ -400,7 +284,38 @@ public class RazorComponentEndpointDataSourceTest
                 0);
         }
 
-        public override bool Supports(IComponentRenderMode renderMode) => renderMode is WebAssemblyRenderMode or AutoRenderMode;
+        public override bool Supports(IComponentRenderMode renderMode) => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
+    }
+
+    private class TestWebHostEnvironment : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "TestApplication";
+        public string EnvironmentName { get; set; } = "TestEnvironment";
+        public string WebRootPath { get; set; } = "";
+        public IFileProvider WebRootFileProvider { get => ContentRootFileProvider; set { } }
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = CreateTestFileProvider();
+
+        private static TestFileProvider CreateTestFileProvider()
+        {
+            var provider = new TestFileProvider();
+            provider.AddFile("site.css", "body { color: red; }");
+            return provider;
+        }
+    }
+
+    private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+    {
+        private IServiceProvider _serviceProvider;
+        private List<EndpointDataSource> _dataSources = new();
+
+        public TestEndpointRouteBuilder(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
+
+        public IServiceProvider ServiceProvider => _serviceProvider;
+
+        public ICollection<EndpointDataSource> DataSources => _dataSources;
+
+        public IApplicationBuilder CreateApplicationBuilder() => new ApplicationBuilder(_serviceProvider);
     }
 }
 

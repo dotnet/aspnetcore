@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -70,12 +69,12 @@ internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposabl
         try
         {
             // Zero-byte reads
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && asyncResult._size == 0)
+            if (errorCode == ErrorCodes.ERROR_MORE_DATA && asyncResult._size == 0)
             {
                 // numBytes returns 1 to let us know there's data available. Don't count it against the request body size yet.
                 asyncResult.Complete(0, errorCode);
             }
-            else if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            else if (errorCode != ErrorCodes.ERROR_SUCCESS && errorCode != ErrorCodes.ERROR_HANDLE_EOF)
             {
                 asyncResult.Fail(new IOException(string.Empty, new HttpSysException((int)errorCode)));
             }
@@ -97,7 +96,7 @@ internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposabl
         IOCompleted(asyncResult, errorCode, numBytes);
     }
 
-    internal void Complete(int read, uint errorCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+    internal void Complete(int read, uint errorCode = ErrorCodes.ERROR_SUCCESS)
     {
         if (_requestStream.TryCheckSizeLimit(read + (int)DataAlreadyRead, out var exception))
         {

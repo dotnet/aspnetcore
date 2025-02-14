@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// Handles incoming connections and implements the SignalR Hub Protocol.
 /// </summary>
-public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
+public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : ConnectionHandler where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly ILoggerFactory _loggerFactory;
@@ -28,6 +30,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     private readonly bool _enableDetailedErrors;
     private readonly long? _maximumMessageSize;
     private readonly int _maxParallelInvokes;
+    private readonly long _statefulReconnectBufferSize;
 
     // Internal for testing
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
@@ -70,6 +73,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _hubOptions.StatefulReconnectBufferSize;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -82,6 +86,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _globalHubOptions.StatefulReconnectBufferSize;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -94,8 +99,6 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             new HubContext<THub>(lifetimeManager),
             _enableDetailedErrors,
             disableImplicitFromServiceParameters,
-            // TODO
-            useAcks: true,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
             hubFilters,
             lifetimeManager);
@@ -123,11 +126,15 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             MaximumReceiveMessageSize = _maximumMessageSize,
             TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
+            StatefulReconnectBufferSize = _statefulReconnectBufferSize,
         };
 
         Log.ConnectedStarting(_logger);
 
-        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
+        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory)
+        {
+            OriginalActivity = Activity.Current,
+        };
 
         var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
         if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))

@@ -7,10 +7,16 @@
 
   <ItemGroup>
     <Compile Include="..\..\Shared\test\AutoRenderComponent.cs" Link="TestComponents\AutoRenderComponent.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" Link="Shared\WebRootComponentParameters.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="TestApplication.staticwebassets.endpoints.json" CopyToOutputDirectory="Always" />
+    <Content Update="TestManifests\Test.staticwebassets.endpoints.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>

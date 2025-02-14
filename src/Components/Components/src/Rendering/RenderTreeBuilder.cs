@@ -27,10 +27,6 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
-    private Dictionary<string, int>? _seenEventHandlerNames;
-
-    // Configure the render tree builder to capture the event handler names.
-    internal bool TrackNamedEventHandlers { get; set; }
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -487,42 +483,6 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
-    /// <para>
-    /// Indicates that the preceding attribute represents a named event handler
-    /// with the given <paramref name="eventHandlerName"/>.
-    /// </para>
-    /// <para>
-    /// This information is used by the rendering system to support dispatching
-    /// external events by name.
-    /// </para>
-    /// </summary>
-    /// <param name="eventHandlerName">The name associated with this event handler.</param>
-    public void SetEventHandlerName(string eventHandlerName)
-    {
-        if (!TrackNamedEventHandlers)
-        {
-            return;
-        }
-
-        if (_entries.Count == 0)
-        {
-            throw new InvalidOperationException("No preceding attribute frame exists.");
-        }
-
-        ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
-        if (prevFrame.FrameTypeField != RenderTreeFrameType.Attribute && !(prevFrame.AttributeValue is MulticastDelegate or IEventCallback))
-        {
-            throw new InvalidOperationException($"The previous attribute is not an event handler.");
-        }
-
-        _seenEventHandlerNames ??= new();
-        if (!_seenEventHandlerNames.TryAdd(eventHandlerName, _entries.Count - 1))
-        {
-            throw new InvalidOperationException($"An event handler '{eventHandlerName}' is already defined in this component.");
-        }
-    }
-
-    /// <summary>
     /// Appends a frame representing a child component.
     /// </summary>
     /// <typeparam name="TComponent">The type of the child component.</typeparam>
@@ -664,6 +624,66 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Adds a frame indicating the render mode on the enclosing component frame.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
+    public void AddComponentRenderMode(IComponentRenderMode? renderMode)
+    {
+        if (renderMode is null)
+        {
+            return;
+        }
+
+        // Note that a ComponentRenderMode frame is technically a child of the Component frame to which it applies,
+        // hence the terminology of "adding" it rather than "setting" it. For performance reasons, the diffing system
+        // will only look for ComponentRenderMode frames:
+        // [a] when the HasCallerSpecifiedRenderMode flag is set on the Component frame
+        // [b] up until the first child that is *not* a ComponentRenderMode frame or any other header frame type
+        //     that we may define in the future
+
+        var parentFrameIndex = GetCurrentParentFrameIndex();
+        if (!parentFrameIndex.HasValue)
+        {
+            throw new InvalidOperationException("There is no enclosing component frame.");
+        }
+
+        var parentFrameIndexValue = parentFrameIndex.Value;
+        ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+        if (parentFrame.FrameTypeField != RenderTreeFrameType.Component)
+        {
+            throw new InvalidOperationException($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.");
+        }
+
+        parentFrame.ComponentFrameFlagsField |= ComponentFrameFlags.HasCallerSpecifiedRenderMode;
+
+        _entries.AppendComponentRenderMode(renderMode);
+        _lastNonAttributeFrameType = RenderTreeFrameType.ComponentRenderMode;
+    }
+
+    /// <summary>
+    /// Assigns a name to an event in the enclosing element.
+    /// </summary>
+    /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
+    /// <param name="assignedName">The application-assigned name.</param>
+    public void AddNamedEvent(string eventType, string assignedName)
+    {
+        ArgumentNullException.ThrowIfNull(eventType);
+        ArgumentException.ThrowIfNullOrEmpty(assignedName);
+
+        // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
+        // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we
+        // can replace RenderTreeFrameType.NamedEvent with RenderTreeFrameType.NamedValue and use it to implement named events.
+
+        if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
+        {
+            throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
+        }
+
+        _entries.AppendNamedEvent(eventType, assignedName);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
+    }
+
+    /// <summary>
     /// Appends a frame representing a region of frames.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -730,8 +750,6 @@ public sealed class RenderTreeBuilder : IDisposable
         _lastNonAttributeFrameType = null;
         _hasSeenAddMultipleAttributes = false;
         _seenAttributeNames?.Clear();
-        _seenEventHandlerNames?.Clear();
-        TrackNamedEventHandlers = false;
     }
 
     // internal because this should only be used during the post-event tree patching logic
@@ -867,10 +885,5 @@ public sealed class RenderTreeBuilder : IDisposable
     public void Dispose()
     {
         _entries.Dispose();
-    }
-
-    internal Dictionary<string, int>? GetNamedEvents()
-    {
-        return _seenEventHandlerNames;
     }
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
@@ -46,6 +47,7 @@ public class MigrationsEndPointMiddleware
     /// </summary>
     /// <param name="context">The context for the current request.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     public virtual Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -57,6 +59,7 @@ public class MigrationsEndPointMiddleware
         return _next(context);
     }
 
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     private async Task InvokeCore(HttpContext context)
     {
         _logger.RequestPathMatched(context.Request.Path);

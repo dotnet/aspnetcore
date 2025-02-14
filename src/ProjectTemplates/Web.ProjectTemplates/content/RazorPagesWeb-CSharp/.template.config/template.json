@@ -1,22 +1,22 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Web",
     "MVC",
     "Razor Pages"
   ],
-  "name": "ASP.NET Core Web App",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
-  "precedence": "9800",
-  "identity": "Microsoft.Web.RazorPages.CSharp.8.0",
+  "precedence": "10000",
+  "identity": "Microsoft.Web.RazorPages.CSharp.10.0",
   "shortName": [
     "webapp",
     "razor"
   ],
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -24,8 +24,7 @@
   "sourceName": "Company.WebApplication1",
   "preferNameDirectory": true,
   "guids": [
-    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
-    "0ce56475-d1db-490f-8af1-a881ea4fcd2d" // Client ID
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
   "sources": [
     {
@@ -384,12 +383,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "copyrightYear": {
       "type": "generated",

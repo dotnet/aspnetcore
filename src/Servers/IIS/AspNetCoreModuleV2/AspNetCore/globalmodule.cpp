@@ -6,7 +6,7 @@
 extern BOOL         g_fInShutdown;
 
 ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(std::shared_ptr<APPLICATION_MANAGER> pApplicationManager) noexcept
-    :m_pApplicationManager(std::move(pApplicationManager))
+    : m_pApplicationManager(std::move(pApplicationManager))
 {
 }
 
@@ -16,23 +16,49 @@ ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(std::shared_ptr<APPLICATION
 //
 GLOBAL_NOTIFICATION_STATUS
 ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
-    _In_ IGlobalStopListeningProvider * pProvider
+    _In_ IGlobalStopListeningProvider* pProvider
 )
 {
     UNREFERENCED_PARAMETER(pProvider);
 
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening");
 
-    if (g_fInShutdown)
+    if (g_fInShutdown || m_shutdown.joinable())
     {
         // Avoid receiving two shutdown notifications.
         return GL_NOTIFICATION_CONTINUE;
     }
 
-    m_pApplicationManager->ShutDown();
-    m_pApplicationManager = nullptr;
+    StartShutdown();
 
     // Return processing to the pipeline.
+    return GL_NOTIFICATION_CONTINUE;
+}
+
+GLOBAL_NOTIFICATION_STATUS
+ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
+    IN IHttpApplicationStopProvider* pProvider
+)
+{
+    UNREFERENCED_PARAMETER(pProvider);
+
+    // If we're already cleaned up just return.
+    // If user has opted out of the new shutdown behavior ignore this call as we never registered for it before
+    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown())
+    {
+        return GL_NOTIFICATION_CONTINUE;
+    }
+
+    LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
+
+    if (!g_fInShutdown && !m_shutdown.joinable())
+    {
+        // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
+        // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
+        // so we should make sure to shutdown the server in those cases
+        StartShutdown();
+    }
+
     return GL_NOTIFICATION_CONTINUE;
 }
 
@@ -63,7 +89,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
         // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
         if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
         {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);   
+            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
         }
     }
 

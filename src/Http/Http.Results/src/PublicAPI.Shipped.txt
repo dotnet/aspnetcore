@@ -97,8 +97,8 @@ Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.RouteName.get -> st
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.Value.get -> TValue?
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult.ContentType.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult.EnableRangeProcessing.get -> bool
@@ -121,6 +121,13 @@ Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult
 Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult.AuthenticationSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError.StatusCode.get -> int
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.StatusCode.get -> int
+Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>
 Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>.ContentType.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
@@ -178,7 +185,7 @@ Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.Fragment.get -> 
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.Permanent.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.PreserveMethod.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteName.get -> string?
-Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
+Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult.AuthenticationScheme.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
@@ -223,11 +230,13 @@ Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.LastModified.get -> 
 Microsoft.AspNetCore.Http.IResultExtensions
 Microsoft.AspNetCore.Http.Results
 Microsoft.AspNetCore.Http.TypedResults
-static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
+static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 static Microsoft.AspNetCore.Http.Results.Accepted(string? uri = null, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Accepted<TValue>(string? uri = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute<TValue>(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.BadRequest(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.BadRequest<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Bytes(byte[]! contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
@@ -238,20 +247,29 @@ static Microsoft.AspNetCore.Http.Results.Conflict<TValue>(TValue? error) -> Micr
 static Microsoft.AspNetCore.Http.Results.Content(string? content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Created(string! uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Created(System.Uri! uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(string? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.CreatedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.CreatedAtRoute<TValue>(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Empty.get -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Extensions.get -> Microsoft.AspNetCore.Http.IResultExtensions!
 static Microsoft.AspNetCore.Http.Results.File(byte[]! fileContents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.File(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.File(System.IO.Stream! fileStream, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Forbid(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Text.Json.JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.LocalRedirect(string! localUrl, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.NoContent() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.NotFound(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
@@ -259,9 +277,11 @@ static Microsoft.AspNetCore.Http.Results.NotFound<TValue>(TValue? value) -> Micr
 static Microsoft.AspNetCore.Http.Results.Ok(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Problem(Microsoft.AspNetCore.Mvc.ProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Problem(string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.SignIn(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, string? authenticationScheme = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.StatusCode(int statusCode) -> Microsoft.AspNetCore.Http.IResult!
@@ -274,13 +294,16 @@ static Microsoft.AspNetCore.Http.Results.Text(System.ReadOnlySpan<byte> utf8Cont
 static Microsoft.AspNetCore.Http.Results.Unauthorized() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.TypedResults.Accepted(string? uri) -> Microsoft.AspNetCore.Http.HttpResults.Accepted!
 static Microsoft.AspNetCore.Http.TypedResults.Accepted(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Accepted!
 static Microsoft.AspNetCore.Http.TypedResults.Accepted<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Accepted<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Accepted<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Accepted<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute(string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute!
+static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute!
 static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute<TValue>(TValue? value, string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.BadRequest() -> Microsoft.AspNetCore.Http.HttpResults.BadRequest!
 static Microsoft.AspNetCore.Http.TypedResults.BadRequest<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Bytes(byte[]! contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult!
@@ -291,17 +314,25 @@ static Microsoft.AspNetCore.Http.TypedResults.Conflict<TValue>(TValue? error) ->
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
-static Microsoft.AspNetCore.Http.TypedResults.Created(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
-static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
-static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Created() -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created(string? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute(string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute!
+static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute!
 static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute<TValue>(TValue? value, string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Empty.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.Extensions.get -> Microsoft.AspNetCore.Http.IResultExtensions!
 static Microsoft.AspNetCore.Http.TypedResults.File(byte[]! fileContents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.File(System.IO.Stream! fileStream, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.FileStreamHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Forbid(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.ForbidHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
+static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.LocalRedirect(string! localUrl, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.NoContent() -> Microsoft.AspNetCore.Http.HttpResults.NoContent!
 static Microsoft.AspNetCore.Http.TypedResults.NotFound() -> Microsoft.AspNetCore.Http.HttpResults.NotFound!
@@ -310,9 +341,11 @@ static Microsoft.AspNetCore.Http.TypedResults.Ok() -> Microsoft.AspNetCore.Http.
 static Microsoft.AspNetCore.Http.TypedResults.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.PhysicalFile(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.PhysicalFileHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Problem(Microsoft.AspNetCore.Mvc.ProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
-static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult!
+static Microsoft.AspNetCore.Http.TypedResults.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.SignIn(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, string? authenticationScheme = null) -> Microsoft.AspNetCore.Http.HttpResults.SignInHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.SignOutHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.StatusCode(int statusCode) -> Microsoft.AspNetCore.Http.HttpResults.StatusCodeHttpResult!
@@ -325,5 +358,6 @@ static Microsoft.AspNetCore.Http.TypedResults.Text(System.ReadOnlySpan<byte> utf
 static Microsoft.AspNetCore.Http.TypedResults.Unauthorized() -> Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.UnprocessableEntity() -> Microsoft.AspNetCore.Http.HttpResults.UnprocessableEntity!
 static Microsoft.AspNetCore.Http.TypedResults.UnprocessableEntity<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.UnprocessableEntity<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
+static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail, string? instance, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
+static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors, string? detail = null, string? instance = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
 static Microsoft.AspNetCore.Http.TypedResults.VirtualFile(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult!

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -397,6 +398,44 @@ public partial class ResultsTests
         Assert.Equal(authenticationSchemes ?? new ReadOnlyCollection<string>(new List<string>()), result.AuthenticationSchemes);
     }
 
+    [Fact]
+    public void InternalServerError_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        object value = new { };
+
+        // Act
+        var result = Results.InternalServerError(value) as InternalServerError<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerErrorOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.InternalServerError(value) as InternalServerError<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerError_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.InternalServerError() as InternalServerError;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+    }
+
     [Theory]
     [MemberData(nameof(ChallengeForbidSignInOut_ResultHasCorrectValues_Data))]
     public void SignOut_ResultHasCorrectValues(AuthenticationProperties properties, IList<string> authenticationSchemes)
@@ -666,7 +705,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(default(string), value) as Created<object>;
 
         //Assert
@@ -680,7 +719,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(string.Empty, value) as Created<object>;
 
         //Assert
@@ -694,7 +733,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act       
+        // Act
         var result = Results.Created(default(Uri), value) as Created<object>;
 
         //Assert
@@ -895,7 +934,7 @@ public partial class ResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
 
@@ -1035,7 +1074,7 @@ public partial class ResultsTests
     [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("localUrl", () => Results.LocalRedirect(default(string)));
+        Assert.Throws<ArgumentNullException>("localUrl", () => Results.LocalRedirect(default(string)));
     }
 
     [Fact]
@@ -1229,6 +1268,54 @@ public partial class ResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Fact]
+    public void Problem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value") };
+
+        // Act
+        var result = Results.Problem(detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Problem_WithReadOnlyDictionary_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
+        var extensions = (IReadOnlyDictionary<string, object>)new Dictionary<string, object> { ["test"] = "value" };
+
+        // Act
+        var result = Results.Problem(detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
@@ -1337,9 +1424,40 @@ public partial class ResultsTests
     }
 
     [Fact]
+    public void ValidationProblem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var errors = new List<KeyValuePair<string, string[]>> { new("testField", new[] { "test error" }) };
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status412PreconditionFailed; // obscure for the test on purpose
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("testField", "test value") };
+
+        // Act
+        // Note: Results.ValidationProblem returns ProblemHttpResult instead of ValidationProblem by design as
+        //       as ValidationProblem doesn't allow setting a custom status code so that it can accurately report
+        //       a single status code in endpoint metadata via its implementation of IEndpointMetadataProvider
+        var result = Results.ValidationProblem(errors, detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.IsType<HttpValidationProblemDetails>(result.ProblemDetails);
+        Assert.Equal(errors, ((HttpValidationProblemDetails)result.ProblemDetails).Errors);
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal(statusCode, result.ProblemDetails.Status);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
     public void Redirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("url", () => Results.Redirect(default(string)));
+        Assert.Throws<ArgumentNullException>("url", () => Results.Redirect(default(string)));
     }
 
     [Fact]
@@ -1636,6 +1754,8 @@ public partial class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
+        (() => Results.InternalServerError(), typeof(InternalServerError)),
+        (() => Results.InternalServerError<object>(new()), typeof(InternalServerError<object>)),
         (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),

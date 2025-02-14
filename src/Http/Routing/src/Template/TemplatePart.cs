@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -104,6 +105,7 @@ public class TemplatePart
     /// <summary>
     /// <see langword="true"/> if the route part is represents a literal value.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Text))]
     public bool IsLiteral { get; private set; }
     /// <summary>
     /// <see langword="true"/> if the route part represents a parameterized value.

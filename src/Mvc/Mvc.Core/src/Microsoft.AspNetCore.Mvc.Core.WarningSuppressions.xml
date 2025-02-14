@@ -1,0 +1,791 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Mvc.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapAreaControllerRoute(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder,System.String,System.String,System.String,System.Object,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapControllerRoute(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder,System.String,System.String,System.Object,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Builder.MvcApplicationBuilderExtensions.&lt;&gt;c.&lt;UseMvcWithDefaultRoute&gt;b__1_0(Microsoft.AspNetCore.Routing.IRouteBuilder)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Builder.MvcAreaRouteBuilderExtensions.MapAreaRoute(Microsoft.AspNetCore.Routing.IRouteBuilder,System.String,System.String,System.String,System.Object,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.AcceptedAtActionResult.#ctor(System.String,System.String,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult.#ctor(System.String,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.IsComplexTypeParameter(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel,Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata@)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart.get_Types</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute.AssemblyLoadContextWrapper.LoadFromAssemblyPath(System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.CreatedAtActionResult.#ctor(System.String,System.String,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.CreatedAtRouteResult.#ctor(System.String,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.&lt;ReadRequestBodyAsync&gt;d__8.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonOutputFormatter.&lt;WriteResponseBodyAsync&gt;d__5.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvokerCache.GetCachedResult(Microsoft.AspNetCore.Mvc.ControllerContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.SystemTextJsonResultExecutor.&lt;ExecuteAsync&gt;d__4.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.JsonOptions.CreateDefaultTypeResolver</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder`1.&lt;BindComplexCollectionFromIndexes&gt;d__22.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder.&lt;BindPropertyAsync&gt;d__15.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.&lt;BindProperty&gt;d__11.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider.IsSimpleType(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinder.#ctor(System.Type,Microsoft.Extensions.Logging.ILoggerFactory)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinder.#cctor</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinder.CreateTryParseOperation(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.GetRecordTypeConstructor(System.Type,System.Reflection.ConstructorInfo[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.CalculateHasValidators(System.Collections.Generic.HashSet{Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata},Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.get_ElementMetadata</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.get_ValidateChildren</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.CreatePropertyDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.CreateSinglePropertyDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity,Microsoft.Extensions.Internal.PropertyHelper)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.CreateSinglePropertyDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ClearValidationStateForModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ConvertSimpleType(System.Object,System.Type,System.Globalization.CultureInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.PropertyValueSetter.SetValue(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultCollectionValidationStrategy.GetEnumeratorForElementType(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.VisitImplementation(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata@,System.String@,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterActionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor,Microsoft.AspNetCore.Http.HttpContext,Microsoft.AspNetCore.Routing.RouteData)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterActionMethodImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.ActionContext,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Object,Microsoft.AspNetCore.Mvc.IActionResult)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterActionResultImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.ActionContext,Microsoft.AspNetCore.Mvc.IActionResult)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnActionExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnActionExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnActionExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnAuthorizationAsyncImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnAuthorizationImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext,Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnExceptionAsyncImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ExceptionContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncExceptionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnExceptionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ExceptionContext,Microsoft.AspNetCore.Mvc.Filters.IExceptionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResourceExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResourceExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResourceExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResultExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResultExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.AfterOnResultExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeActionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor,Microsoft.AspNetCore.Http.HttpContext,Microsoft.AspNetCore.Routing.RouteData)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeActionMethodImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.ActionContext,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeActionResultImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.ActionContext,Microsoft.AspNetCore.Mvc.IActionResult)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnActionExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnActionExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnActionExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnAuthorizationAsyncImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnAuthorizationImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext,Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnExceptionAsyncImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ExceptionContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncExceptionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnExceptionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ExceptionContext,Microsoft.AspNetCore.Mvc.Filters.IExceptionFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResourceExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResourceExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResourceExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncResourceFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResultExecutedImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext,Microsoft.AspNetCore.Mvc.Filters.IResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResultExecutingImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.MvcCoreDiagnosticListenerExtensions.BeforeOnResultExecutionImpl(System.Diagnostics.DiagnosticListener,Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext,Microsoft.AspNetCore.Mvc.Filters.IAsyncResultFilter)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.RedirectToActionResult.#ctor(System.String,System.String,System.Object,System.Boolean,System.Boolean,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.RedirectToPageResult.#ctor(System.String,System.String,System.Object,System.Boolean,System.Boolean,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.RedirectToRouteResult.#ctor(System.String,System.Object,System.Boolean,System.Boolean,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Routing.ActionEndpointFactory.AddActionDataToBuilder(Microsoft.AspNetCore.Builder.EndpointBuilder,System.Collections.Generic.HashSet{System.String},Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor,System.String,Microsoft.AspNetCore.Routing.RouteValueDictionary,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Routing.ActionEndpointFactory.AddEndpoints(System.Collections.Generic.List{Microsoft.AspNetCore.Http.Endpoint},System.Collections.Generic.HashSet{System.String},Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor,System.Collections.Generic.IReadOnlyList{Microsoft.AspNetCore.Mvc.Routing.ConventionalRouteEntry},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.IReadOnlyList{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Boolean,Microsoft.AspNetCore.Routing.Patterns.RoutePattern)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Routing.ConventionalRouteEntry.#ctor(System.String,System.String,Microsoft.AspNetCore.Routing.RouteValueDictionary,System.Collections.Generic.IDictionary{System.String,System.Object},Microsoft.AspNetCore.Routing.RouteValueDictionary,System.Int32,System.Collections.Generic.List{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}},System.Collections.Generic.List{System.Action{Microsoft.AspNetCore.Builder.EndpointBuilder}})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Routing.EndpointRoutingUrlHelper.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GetValuesDictionary(System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.UrlHelperExtensions.Page(Microsoft.AspNetCore.Mvc.IUrlHelper,System.String,System.String,System.Object,System.String,System.String,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.CreateAddress(Microsoft.AspNetCore.Http.HttpContext,System.String,System.String,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.CreateAddress(Microsoft.AspNetCore.Http.HttpContext,System.String,System.String,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.DependencyInjection.MvcCoreRouteOptionsSetup.Configure(Microsoft.AspNetCore.Routing.RouteOptions)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.PropertyActivator`1.#ctor(System.Reflection.PropertyInfo,System.Func{`0,System.Object})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2057</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute.GetFactoryType</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.AsyncEnumerableReader.TryGetReader(System.Type,System.Func{System.Object,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Collections.ICollection}}@)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.PropertyValueSetter.SetValue(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,System.Object,System.Object)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultCollectionValidationStrategy.&lt;&gt;c.&lt;GetEnumeratorForElementType&gt;b__5_0(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Filters.MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetDefaultValueForType(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.AsyncEnumerableReader.TryGetReader(System.Type,System.Func{System.Object,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Collections.ICollection}}@)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.TypeActivatorCache.&lt;&gt;c.&lt;#ctor&gt;b__3_0(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BinderTypeModelBinder.#ctor(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder`1.CreateInstance(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinder.#ctor(System.Type,Microsoft.Extensions.Logging.ILoggerFactory)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.GetRecordTypeConstructor(System.Type,System.Reflection.ConstructorInfo[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ConvertSimpleType(System.Object,System.Type,System.Globalization.CultureInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ConvertTo(System.Object,System.Type,System.Globalization.CultureInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2067</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.PropertyActivator`1.GetActivatableProperties(System.Type,System.Type,System.Boolean)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApiConventionMethodAttribute.GetConventionMethod(System.Type,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApiConventionTypeAttribute.EnsureValid(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Filters.MiddlewareFilterConfigurationProvider.FindMethod(System.Type,System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Filters.MiddlewareFilterConfigurationProvider.HasParameterlessConstructor(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.&lt;GetRecordTypeConstructor&gt;g__IsRecordType|2_0(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2070</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultBindingMetadataProvider.GetBoundConstructor(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.AddReturnTypeMetadata(System.Collections.Generic.IList{Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel},System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartFactory.GetApplicationPartFactory(System.Reflection.Assembly)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Controllers.ControllerActivatorProvider.CreateActivator(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.Infrastructure.ParameterDefaultValues.GetParameterDefaultValue(System.Reflection.ParameterInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder`1.Log.AttemptingToBindCollectionUsingIndices(Microsoft.Extensions.Logging.ILogger,Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder.CreateModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.CreateModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.BuildFactoryExpression(System.Reflection.ConstructorInfo,System.Linq.Expressions.Expression)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.CreatePropertyDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.CreateSinglePropertyDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributes.GetAttributesForProperty(System.Type,System.Reflection.PropertyInfo,System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.ConvertSimpleType(System.Object,System.Type,System.Globalization.CultureInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingHelper.GetCompatibleCollection``1(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext,System.Nullable{System.Int32})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.TypeFilterAttribute.CreateInstance(System.IServiceProvider)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.DependencyInjection.MvcCoreMvcBuilderExtensions.AddControllersAsServices(Microsoft.Extensions.DependencyInjection.IMvcBuilder)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.DependencyInjection.MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApiExplorer.ApiConventionResult.GetConventionMethod(System.Reflection.MethodInfo,Microsoft.AspNetCore.Mvc.ApiConventionTypeAttribute[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ApplicationModels.DefaultApplicationModelProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder.CreateModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.CreateModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
+    </attribute>
+  </assembly>
+</linker>

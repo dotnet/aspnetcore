@@ -14,8 +14,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Endpoints.Binding;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
@@ -37,9 +38,6 @@ namespace Microsoft.AspNetCore.Http;
 [RequiresDynamicCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
 public static partial class RequestDelegateFactory
 {
-    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
-    private static readonly FormDataMapperOptions FormDataMapperOptions = new();
-
     private static readonly MethodInfo ExecuteTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -56,6 +54,8 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ExecuteAwaitedReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteAwaitedReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
     private static readonly MethodInfo GetServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
+    private static readonly MethodInfo GetRequiredKeyedServiceMethod = typeof(ServiceProviderKeyedServiceExtensions).GetMethod(nameof(ServiceProviderKeyedServiceExtensions.GetRequiredKeyedService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider), typeof(object) })!;
+    private static readonly MethodInfo GetKeyedServiceMethod = typeof(ServiceProviderKeyedServiceExtensions).GetMethod(nameof(ServiceProviderKeyedServiceExtensions.GetKeyedService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider), typeof(object) })!;
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
@@ -79,6 +79,8 @@ public static partial class RequestDelegateFactory
         Log.RequiredParameterNotProvided(httpContext, parameterType, parameterName, source, shouldThrow));
     private static readonly MethodInfo LogImplicitBodyNotProvidedMethod = GetMethodInfo<Action<HttpContext, string, bool>>((httpContext, parameterName, shouldThrow) =>
         Log.ImplicitBodyNotProvided(httpContext, parameterName, shouldThrow));
+    private static readonly MethodInfo LogFormMappingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, FormDataMappingException, bool>>((httpContext, parameterName, parameterType, exception, shouldThrow) =>
+        Log.FormDataMappingFailed(httpContext, parameterName, parameterType, exception, shouldThrow));
 
     private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
     private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
@@ -116,13 +118,13 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "filterContext");
 
-    private static readonly ConstructorInfo FormDataReaderConstructor = typeof(FormDataReader).GetConstructor(new[] { typeof(IReadOnlyDictionary<FormKey, StringValues>), typeof(CultureInfo), typeof(Memory<char>) })!;
+    private static readonly ConstructorInfo FormDataReaderConstructor = typeof(FormDataReader).GetConstructor(new[] { typeof(IReadOnlyDictionary<FormKey, StringValues>), typeof(CultureInfo), typeof(Memory<char>), typeof(IFormFileCollection) })!;
     private static readonly MethodInfo ProcessFormMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ProcessForm), BindingFlags.Static | BindingFlags.NonPublic)!;
     private static readonly MethodInfo FormDataMapperMapMethod = typeof(FormDataMapper).GetMethod(nameof(FormDataMapper.Map))!;
     private static readonly MethodInfo AsMemoryMethod = new Func<char[]?, int, int, Memory<char>>(MemoryExtensions.AsMemory).Method;
     private static readonly MethodInfo ArrayPoolSharedReturnMethod = typeof(ArrayPool<char>).GetMethod(nameof(ArrayPool<char>.Shared.Return))!;
 
-    private static readonly string[] DefaultAcceptsAndProducesContentType = new[] { JsonConstants.JsonContentType };
+    private static readonly string[] DefaultAcceptsAndProducesContentType = new[] { ContentTypeConstants.JsonContentType };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
     private static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     private static readonly string[] PlaintextContentType = new[] { "text/plain" };
@@ -272,6 +274,7 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        var formDataMapperOptions = new FormDataMapperOptions();
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -284,6 +287,7 @@ public static partial class RequestDelegateFactory
             EndpointBuilder = endpointBuilder,
             MetadataAlreadyInferred = metadataResult is not null,
             JsonSerializerOptions = jsonSerializerOptions,
+            FormDataMapperOptions = formDataMapperOptions
         };
 
         return factoryContext;
@@ -331,6 +335,11 @@ public static partial class RequestDelegateFactory
         // The converse is not true. Metadata may have already been inferred even if ArgumentExpressions is null, but metadata
         // inference is skipped internally if necessary.
         factoryContext.ArgumentExpressions ??= CreateArgumentsAndInferMetadata(methodInfo, factoryContext);
+
+        // Although we can re-use the cached argument expressions for most cases, parameters that are bound
+        // using the new form mapping logic are a special exception because we need to account for the `FormOptionsMetadata`
+        // added to the builder _during_ the construction of the parameter binding.
+        UpdateFormBindingArgumentExpressions(factoryContext);
 
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, factoryContext.ArgumentExpressions);
         EndpointFilterDelegate? filterPipeline = null;
@@ -388,6 +397,7 @@ public static partial class RequestDelegateFactory
             {
                 // Add the Accepts metadata when reading from FORM.
                 InferFormAcceptsMetadata(factoryContext);
+                InferAntiforgeryMetadata(factoryContext);
             }
 
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
@@ -495,34 +505,50 @@ public static partial class RequestDelegateFactory
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
         }
-        else if (returnType == typeof(Task))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
+            if (returnType == typeof(Task))
+            {
+                return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask))
+            {
+                return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask<object?>))
+            {
+                return methodCall;
+            }
+            else if (returnType.IsGenericType &&
+                         returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
+            else if (returnType.IsGenericType &&
+                        returnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
         }
-        else if (returnType == typeof(ValueTask))
+
+        if (returnType.IsValueType)
         {
-            return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
+            return Expression.Call(WrapObjectAsValueTaskMethod, Expression.Convert(methodCall, typeof(object)));
         }
-        else if (returnType == typeof(ValueTask<object?>))
-        {
-            return methodCall;
-        }
-        else if (returnType.IsGenericType &&
-                     returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else if (returnType.IsGenericType &&
-                    returnType.GetGenericTypeDefinition() == typeof(Task<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else
-        {
-            return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
-        }
+
+        return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
     }
 
     private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> valueTask)
@@ -625,8 +651,18 @@ public static partial class RequestDelegateFactory
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            args[i] = CreateArgument(parameters[i], factoryContext);
+            args[i] = CreateArgument(parameters[i], factoryContext, out var hasTryParse, out var hasBindAsync, out var isAsParameters);
 
+            if (!isAsParameters)
+            {
+                factoryContext.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata(
+                    name: parameters[i].Name!,
+                    parameterInfo: parameters[i],
+                    hasTryParse: hasTryParse,
+                    hasBindAsync: hasBindAsync,
+                    isOptional: IsOptionalParameter(parameters[i], factoryContext)
+                ));
+            }
             factoryContext.ArgumentTypes[i] = parameters[i].ParameterType;
             factoryContext.BoxedArgs[i] = Expression.Convert(args[i], typeof(object));
         }
@@ -652,8 +688,11 @@ public static partial class RequestDelegateFactory
         return args;
     }
 
-    private static Expression CreateArgument(ParameterInfo parameter, RequestDelegateFactoryContext factoryContext)
+    private static Expression CreateArgument(ParameterInfo parameter, RequestDelegateFactoryContext factoryContext, out bool hasTryParse, out bool hasBindAsync, out bool isAsParameters)
     {
+        hasTryParse = false;
+        hasBindAsync = false;
+        isAsParameters = false;
         if (parameter.Name is null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
@@ -747,19 +786,35 @@ public static partial class RequestDelegateFactory
             var useSimpleBinding = parameter.ParameterType == typeof(string) ||
                 parameter.ParameterType == typeof(StringValues) ||
                 parameter.ParameterType == typeof(StringValues?) ||
-                ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType) ||
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+            hasTryParse = useSimpleBinding;
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
-                : BindComplexParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext);
+                : BindComplexParameterFromFormItem(parameter, string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name : formAttribute.Name, factoryContext);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {
+            if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is not null)
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
+            }
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
         }
+        else if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } keyedServicesAttribute)
+        {
+            if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
+            {
+                throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
+            }
+            var key = keyedServicesAttribute.Key;
+            return BindParameterFromKeyedService(parameter, key, factoryContext);
+        }
         else if (parameterCustomAttributes.OfType<AsParametersAttribute>().Any())
         {
+            isAsParameters = true;
             if (parameter is PropertyAsParameterInfo)
             {
                 throw new NotSupportedException(
@@ -808,12 +863,14 @@ public static partial class RequestDelegateFactory
         {
             return RequestPipeReaderExpr;
         }
-        else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
+        else if (ParameterBindingMethodCache.Instance.HasBindAsyncMethod(parameter))
         {
+            hasBindAsync = true;
             return BindParameterFromBindAsync(parameter, factoryContext);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType))
         {
+            hasTryParse = true;
             // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
             // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
             // 3. Otherwise, we fallback to route or query if route parameters is null (it means we don't know what route parameters are defined). This case only happens
@@ -841,10 +898,10 @@ public static partial class RequestDelegateFactory
             parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues) ||
                  parameter.ParameterType == typeof(StringValues?) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues/StringValues?, and DisableInferredFromBody is true
-
+            hasTryParse = true;
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
             return BindParameterFromProperty(parameter, QueryExpr, QueryIndexerProperty, parameter.Name, factoryContext, "query string");
         }
@@ -972,33 +1029,26 @@ public static partial class RequestDelegateFactory
             throw GetUnsupportedReturnTypeException(returnType);
         }
 
-        if (returnType == typeof(Task) || returnType == typeof(ValueTask))
+        var isAwaitable = false;
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            returnType = typeof(void);
-        }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
-        {
-            var genericTypeDefinition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : null;
-
-            if (genericTypeDefinition == typeof(Task<>) || genericTypeDefinition == typeof(ValueTask<>))
-            {
-                returnType = returnType.GetGenericArguments()[0];
-            }
-            else
-            {
-                throw GetUnsupportedReturnTypeException(returnType);
-            }
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
+            isAwaitable = true;
         }
 
         // Skip void returns and IResults. IResults might implement IEndpointMetadataProvider but otherwise we don't know what it might do.
-        if (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType))
+        if (!isAwaitable && (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType)))
         {
             return;
         }
 
         if (returnType == typeof(string))
         {
-            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(type: null, statusCode: 200, PlaintextContentType));
+            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(type: typeof(string), statusCode: 200, PlaintextContentType));
+        }
+        else if (returnType == typeof(void))
+        {
+            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(returnType, statusCode: 200, PlaintextContentType));
         }
         else
         {
@@ -1035,8 +1085,18 @@ public static partial class RequestDelegateFactory
                 HttpContextExpr,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
             if (returnType == typeof(Task))
             {
                 return methodCall;
@@ -1066,6 +1126,14 @@ public static partial class RequestDelegateFactory
                         ExecuteTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
@@ -1106,6 +1174,14 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
@@ -1425,37 +1501,48 @@ public static partial class RequestDelegateFactory
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
-            if (feature?.CanHaveBody == true)
+            if (feature?.CanHaveBody == false)
             {
-                if (!httpContext.Request.HasFormContentType)
-                {
-                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (null, false);
-                }
+                Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
 
-                try
-                {
-                    formValue = await httpContext.Request.ReadFormAsync();
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = ex.StatusCode;
-                    return (null, false);
-                }
-                catch (IOException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
-                catch (InvalidDataException ex)
-                {
-                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
+            if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
+
+            if (!httpContext.Request.HasFormContentType)
+            {
+                Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                return (null, false);
+            }
+
+            try
+            {
+                formValue = await httpContext.Request.ReadFormAsync();
+            }
+            catch (BadHttpRequestException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = ex.StatusCode;
+                return (null, false);
+            }
+            catch (IOException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
+            catch (InvalidDataException ex)
+            {
+                Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
             }
 
             return (formValue, true);
@@ -1481,7 +1568,7 @@ public static partial class RequestDelegateFactory
         }
 
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameterType);
+        var (constructor, parameters) = ParameterBindingMethodCache.Instance.FindConstructor(parameterType);
 
         Expression initExpression;
 
@@ -1495,8 +1582,10 @@ public static partial class RequestDelegateFactory
             {
                 var parameterInfo =
                     new PropertyAsParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
-                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
+                Debug.Assert(parameterInfo.Name != null, "Parameter name must be set for parameters resolved from properties.");
+                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext, out var hasTryParse, out var hasBindAsync, out var _);
                 factoryContext.Parameters.Add(parameterInfo);
+                factoryContext.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata(parameterInfo.Name, parameterInfo, hasTryParse: hasTryParse, hasBindAsync: hasBindAsync, isOptional: parameterInfo.IsOptional));
             }
 
             initExpression = Expression.New(constructor, constructorArguments);
@@ -1518,8 +1607,10 @@ public static partial class RequestDelegateFactory
                 if (properties[i].CanWrite && properties[i].GetSetMethod(nonPublic: false) != null)
                 {
                     var parameterInfo = new PropertyAsParameterInfo(properties[i], factoryContext.NullabilityContext);
-                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
+                    Debug.Assert(parameterInfo.Name != null, "Parameter name must be set for parameters resolved from properties.");
+                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext, out var hasTryParse, out var hasBindAsync, out var _)));
                     factoryContext.Parameters.Add(parameterInfo);
+                    factoryContext.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata(parameterInfo.Name, parameterInfo, hasTryParse: hasTryParse, hasBindAsync: hasBindAsync, isOptional: parameterInfo.IsOptional));
                 }
             }
 
@@ -1550,6 +1641,21 @@ public static partial class RequestDelegateFactory
         return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
     }
 
+    private static Expression BindParameterFromKeyedService(ParameterInfo parameter, object key, RequestDelegateFactoryContext factoryContext)
+    {
+        var isOptional = IsOptionalParameter(parameter, factoryContext);
+
+        if (isOptional)
+        {
+            return Expression.Call(GetKeyedServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr, Expression.Convert(
+                Expression.Constant(key),
+                typeof(object)));
+        }
+        return Expression.Call(GetRequiredKeyedServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr, Expression.Convert(
+            Expression.Constant(key),
+            typeof(object)));
+    }
+
     private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, RequestDelegateFactoryContext factoryContext, string source)
     {
         if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[])
@@ -1573,7 +1679,7 @@ public static partial class RequestDelegateFactory
         var isNotNullable = underlyingNullableType is null;
 
         var nonNullableParameterType = underlyingNullableType ?? targetParseType;
-        var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
+        var tryParseMethodCall = ParameterBindingMethodCache.Instance.FindTryParseMethod(nonNullableParameterType);
 
         if (tryParseMethodCall is null)
         {
@@ -1871,7 +1977,7 @@ public static partial class RequestDelegateFactory
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
         // Get the BindAsync method for the type.
-        var bindAsyncMethod = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
+        var bindAsyncMethod = ParameterBindingMethodCache.Instance.FindBindAsyncMethod(parameter);
         // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
         Debug.Assert(bindAsyncMethod.Expression is not null);
 
@@ -1915,7 +2021,7 @@ public static partial class RequestDelegateFactory
             return;
         }
 
-        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
+        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes, type, factoryContext.AllowEmptyRequestBody));
     }
 
     private static void InferFormAcceptsMetadata(RequestDelegateFactoryContext factoryContext)
@@ -1928,6 +2034,16 @@ public static partial class RequestDelegateFactory
         {
             AddInferredAcceptsMetadata(factoryContext, factoryContext.FirstFormRequestBodyParameter!.ParameterType, FormContentType);
         }
+    }
+
+    private static void InferAntiforgeryMetadata(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.MetadataAlreadyInferred)
+        {
+            return;
+        }
+
+        factoryContext.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);
     }
 
     private static Expression BindParameterFromFormCollection(
@@ -1963,73 +2079,154 @@ public static partial class RequestDelegateFactory
             "form");
     }
 
+    private static void UpdateFormBindingArgumentExpressions(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.ArgumentExpressions == null || factoryContext.ArgumentExpressions.Length == 0)
+        {
+            return;
+        }
+
+        for (var i = 0; i < factoryContext.ArgumentExpressions.Length; i++)
+        {
+            var parameter = factoryContext.Parameters[i];
+            var formAttribute = parameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault();
+            var key = formAttribute == null || string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name! : formAttribute.Name;
+            if (factoryContext.TrackedParameters.TryGetValue(key, out var trackedParameter) && trackedParameter == RequestDelegateFactoryConstants.FormBindingAttribute)
+            {
+                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext, true);
+            }
+        }
+    }
+
     private static Expression BindComplexParameterFromFormItem(
         ParameterInfo parameter,
         string key,
-        RequestDelegateFactoryContext factoryContext)
+        RequestDelegateFactoryContext factoryContext,
+        bool setExpressions = false)
     {
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
-        factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
+        factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
 
         // var name_local;
+        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // Delay setting the generated LINQ expressions until
+        // metadata has already been inferred so that we can read from `FormMappingOptionsMetadata`.
+        if (!setExpressions)
+        {
+            return formArgument;
+        }
+
+        var formDataMapperOptions = factoryContext.FormDataMapperOptions;
+        var formMappingOptionsMetadatas = factoryContext.EndpointBuilder.Metadata.OfType<FormMappingOptionsMetadata>();
+        foreach (var formMappingOptionsMetadata in formMappingOptionsMetadatas)
+        {
+            formDataMapperOptions.MaxRecursionDepth = formMappingOptionsMetadata.MaxRecursionDepth ?? formDataMapperOptions.MaxRecursionDepth;
+            formDataMapperOptions.MaxCollectionSize = formMappingOptionsMetadata.MaxCollectionSize ?? formDataMapperOptions.MaxCollectionSize;
+            formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
+        }
+
         // var name_reader;
         // var form_dict;
         // var form_buffer;
-        // var form_max_key_length;
-        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
         var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
-        var formMaxKeyLength = Expression.Variable(typeof(int), "form_max_key_length");
+        var formDataMappingException = Expression.Variable(typeof(FormDataMappingException), "form_exception");
 
-        // ProcessForm(context.Request.Form, form_dict, form_max_key_length, form_buffer);
-        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, formDict, formMaxKeyLength, formBuffer);
-        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, form_max_key_length));
+        // ProcessForm(context.Request.Form, form_dict, form_buffer);
+        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, Expression.Constant(formDataMapperOptions.MaxKeyBufferSize), formDict, formBuffer);
+        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, formDataMapperOptions.MaxKeyBufferSize), httpContext.Request.Form.Files);
         var initializeReaderExpr = Expression.Assign(
             formReader,
             Expression.New(FormDataReaderConstructor,
                 formDict,
                 Expression.Constant(CultureInfo.InvariantCulture),
-                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), formMaxKeyLength)));
+                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize)),
+                FormFilesExpr));
+        // name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        var setMaxRecursionDepthExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
+            Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
             formReader,
-            Expression.Constant(FormDataMapperOptions));
-        // ArrayPool<char>.Shared.Return(form_buffer, false);
+            Expression.Constant(formDataMapperOptions));
+        // if (form_buffer != null)
+        // {
+        //   ArrayPool<char>.Shared.Return(form_buffer, false);
+        // }
         var returnBufferExpr = Expression.Call(
             Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
             ArrayPoolSharedReturnMethod,
             formBuffer,
             Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
 
-        return Expression.Block(
-            new[] { formArgument, formReader, formDict, formBuffer, formMaxKeyLength },
-            Expression.TryFinally(
+        var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
+        var parameterNameConstant = Expression.Constant(parameter.Name);
+
+        // try
+        // {
+        //   ProcessForm(context.Request.Form, form_dict, form_buffer);
+        //   name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
+        //   name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        //   name_local = FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
+        // }
+        // catch (FormDataMappingException e)
+        // {
+        //    wasParamCheckFailure = true;
+        //    LogFormMappingFailedMethod(httpContext, "string", "name", ex, factoryContext.ThrowOnBadRequest);
+        // }
+        // finally
+        // {
+        //   if (form_buffer != null)
+        //   {
+        //     ArrayPool<char>.Shared.Return(form_buffer, false);
+        //   }
+        // }
+        var bindAndCheckForm = Expression.Block(
+            new[] { formReader, formDict, formBuffer, formDataMappingException },
+            Expression.TryCatchFinally(
                 Expression.Block(
+                    typeof(void),
                     processFormExpr,
                     initializeReaderExpr,
+                    setMaxRecursionDepthExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-                returnBufferExpr),
-            formArgument
+                conditionalReturnBufferExpr,
+                Expression.Catch(formDataMappingException, Expression.Block(
+                    typeof(void),
+                    Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                    Expression.Call(
+                        LogFormMappingFailedMethod,
+                        HttpContextExpr,
+                        parameterTypeNameConstant,
+                        parameterNameConstant,
+                        formDataMappingException,
+                        Expression.Constant(factoryContext.ThrowOnBadRequest))
+                )))
         );
+
+        factoryContext.ParamCheckExpressions.Add(bindAndCheckForm);
+        factoryContext.ExtraLocals.Add(formArgument);
+
+        return formArgument;
     }
 
-    private static void ProcessForm(IFormCollection form, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref int maxKeyLength, ref char[] buffer)
+    private static void ProcessForm(IFormCollection form, int maxKeyBufferSize, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
     {
         var dictionary = new Dictionary<FormKey, StringValues>();
-        maxKeyLength = -1;
         foreach (var (key, value) in form)
         {
-            if (key.Length > maxKeyLength)
-            {
-                maxKeyLength = key.Length;
-            }
             dictionary.Add(new FormKey(key.AsMemory()), value);
         }
         formDictionary = dictionary.AsReadOnly();
-        buffer = ArrayPool<char>.Shared.Rent(maxKeyLength);
+        buffer = ArrayPool<char>.Shared.Rent(maxKeyBufferSize);
     }
 
     private static Expression BindParameterFromFormFiles(
@@ -2429,6 +2626,7 @@ public static partial class RequestDelegateFactory
         public const string ServiceAttribute = "Service (Attribute)";
         public const string FormFileAttribute = "Form File (Attribute)";
         public const string FormAttribute = "Form (Attribute)";
+        public const string FormBindingAttribute = "Form Binding (Attribute)";
         public const string RouteParameter = "Route (Inferred)";
         public const string QueryStringParameter = "Query String (Inferred)";
         public const string ServiceParameter = "Services (Inferred)";
@@ -2546,6 +2744,48 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidFormRequestBodyEventName)]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void InvalidAntiforgeryToken(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.InvalidAntiforgeryTokenExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            InvalidAntiforgeryToken(GetLogger(httpContext), parameterTypeName, parameterName, exception);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidAntiforgeryTokenLogMessage, EventName = RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventName)]
+        private static partial void InvalidAntiforgeryToken(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void FormDataMappingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, FormDataMappingException exception, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, exception.Error.Message.Format, exception.Error.Message.GetArguments());
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            FormDataMappingFailed(GetLogger(httpContext), parameterTypeName, parameterName, exception);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.FormDataMappingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.FormDataMappingFailedLogMessage, EventName = RequestDelegateCreationLogging.FormDataMappingFailedEventName)]
+        private static partial void FormDataMappingFailed(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void UnexpectedRequestWithoutBody(HttpContext httpContext, string parameterTypeName, string parameterName, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            UnexpectedRequestWithoutBody(GetLogger(httpContext), parameterTypeName, parameterName);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventName)]
+        private static partial void UnexpectedRequestWithoutBody(ILogger logger, string parameterType, string parameterName);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

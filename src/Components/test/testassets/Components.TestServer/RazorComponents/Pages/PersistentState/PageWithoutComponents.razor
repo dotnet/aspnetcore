@@ -1,0 +1,14 @@
+﻿@page "/persistent-state/page-no-components"
+
+<h3>This page does not render any component. We use it to test that persisted state is only provided at the time interactive components get activated on the page.</h3>
+
+<a id="page-with-components-link" href=@($"persistent-state/page-with-components?render-mode={RenderMode}&streaming-id={StreamingId}")>Go to page with components</a>
+
+<a id="page-with-components-link-and-state" href=@($"persistent-state/page-with-components?render-mode={RenderMode}&streaming-id={StreamingId}&server-state=other")>Go to page with components and state</a>
+
+
+@code {
+    [SupplyParameterFromQuery(Name = "render-mode")] public string RenderMode { get; set; }
+
+    [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
+}

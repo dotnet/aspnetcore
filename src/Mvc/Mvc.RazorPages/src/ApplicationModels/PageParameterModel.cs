@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A model type for reading and manipulation properties and parameters representing a Page Parameter.
 /// </summary>
-[DebuggerDisplay("PageParameterModel: Name={ParameterName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {ParameterName}")]
 public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingModel
 {
     /// <summary>

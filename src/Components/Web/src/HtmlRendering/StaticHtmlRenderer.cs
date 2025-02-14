@@ -3,9 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
@@ -17,7 +19,10 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 /// </summary>
 public partial class StaticHtmlRenderer : Renderer
 {
+    private static readonly RendererInfo _componentPlatform = new RendererInfo("Static", isInteractive: false);
+
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
+    private readonly NavigationManager? _navigationManager;
 
     /// <summary>
     /// Constructs an instance of <see cref="StaticHtmlRenderer"/>.
@@ -27,10 +32,16 @@ public partial class StaticHtmlRenderer : Renderer
     public StaticHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
+        _navigationManager = serviceProvider.GetService<NavigationManager>();
+        _htmlEncoder = serviceProvider.GetService<HtmlEncoder>() ?? HtmlEncoder.Default;
+        _javaScriptEncoder = serviceProvider.GetService<JavaScriptEncoder>() ?? JavaScriptEncoder.Default;
     }
 
     /// <inheritdoc/>
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+    /// <inheritdoc/>
+    protected internal override RendererInfo RendererInfo => _componentPlatform;
 
     /// <summary>
     /// Adds a root component of the specified type and begins rendering it.

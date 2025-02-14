@@ -33,7 +33,7 @@ internal static class EndpointParameterEmitter
         }
         else if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : {endpointParameter.DefaultValue};");
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
         }
         else if (endpointParameter.IsStringValues)
         {
@@ -89,13 +89,26 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitParsingBlock(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
+        // parsable array
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
         {
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
+            var createArray = $"new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length]";
+
+            // we assign a null to result parameter if it's optional array, otherwise we create new array immediately
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = {createArray};");
+
             codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
-            endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+
+            // emit parsing block for current array element
+            codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation("element", "parsed_element")}})""");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (!string.IsNullOrEmpty(element))");
+            codeWriter.StartBlock();
+            EmitLogOrThrowException(endpointParameter, codeWriter, "element");
+            codeWriter.EndBlock();
+            codeWriter.EndBlock();
 
             // In cases where we are dealing with an array of parsable nullables we need to substitute
             // empty strings for null values.
@@ -109,18 +122,68 @@ internal static class EndpointParameterEmitter
             }
             codeWriter.EndBlock();
         }
-        else if (endpointParameter.IsArray && !endpointParameter.IsParsable)
+        // array fallback
+        else if (endpointParameter.IsArray)
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
-        else if (!endpointParameter.IsArray && endpointParameter.IsParsable)
+        // parsable single
+        else if (endpointParameter.IsParsable)
         {
-            endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
+            var temp_argument = endpointParameter.EmitTempArgument();
+            var output_argument = endpointParameter.EmitParsedTempArgument();
+
+            // emit parsing block for optional OR nullable values
+            if (endpointParameter.IsOptional || endpointParameter.Type.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                var temp_argument_parsed_non_nullable = $"{temp_argument}_parsed_non_nullable";
+
+                codeWriter.WriteLine($"""{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {output_argument} = default;""");
+                codeWriter.WriteLine($"""if ({endpointParameter.PreferredTryParseInvocation(temp_argument, temp_argument_parsed_non_nullable)})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {temp_argument_parsed_non_nullable};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine($"""else if (string.IsNullOrEmpty({temp_argument}))""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"""{output_argument} = {endpointParameter.DefaultValue};""");
+                codeWriter.EndBlock();
+                codeWriter.WriteLine("else");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("wasParamCheckFailure = true;");
+                codeWriter.EndBlock();
+            }
+            // parsing block for non-nullable required parameters
+            else
+            {
+                codeWriter.WriteLine($$"""if (!{{endpointParameter.PreferredTryParseInvocation(temp_argument, output_argument)}})""");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine($"if (!string.IsNullOrEmpty({temp_argument}))");
+                codeWriter.StartBlock();
+                EmitLogOrThrowException(endpointParameter, codeWriter, temp_argument);
+                codeWriter.EndBlock();
+                codeWriter.EndBlock();
+            }
+
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
-        else // Not parsable, not an array.
+        // Not parsable, not an array.
+        else
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
+        }
+
+        static void EmitLogOrThrowException(EndpointParameter parameter, CodeWriter writer, string inputArgument)
+        {
+            if (parameter.IsArray && parameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(parameter.ToMessageString(), true)});");
+            }
+            else
+            {
+                writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, {inputArgument});");
+                writer.WriteLine("wasParamCheckFailure = true;");
+            }
         }
     }
 
@@ -215,7 +278,6 @@ internal static class EndpointParameterEmitter
         var assigningCode = $"await {endpointParameter.SymbolName}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         var resolveJsonBodyOrServiceResult = $"{endpointParameter.SymbolName}_resolveJsonBodyOrServiceResult";
         codeWriter.WriteLine($"var {resolveJsonBodyOrServiceResult} = {assigningCode};");
-        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
 
         // If binding from the JSON body fails, ResolveJsonBodyOrService
         // will return `false` and we will need to exit early.
@@ -223,6 +285,14 @@ internal static class EndpointParameterEmitter
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();
+
+        // Required parameters are guranteed to be set by the time we reach this point
+        // because they are either associated with a service that existed in DI or
+        // the appropriate checks have already happened when binding from the JSON body.
+        codeWriter.WriteLine(!endpointParameter.IsOptional
+            ? $"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2!;"
+            : $"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
+
     }
 
     internal static void EmitJsonBodyOrQueryParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
@@ -270,7 +340,7 @@ internal static class EndpointParameterEmitter
         var bindMethodReceiverType = receiverType?.UnwrapTypeSymbol(unwrapNullable: true);
         var bindMethodReceiverTypeString = bindMethodReceiverType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
+        var unwrappedType = endpointParameter.UnwrapParameterType();
         var unwrappedTypeString = unwrappedType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var resolveParameterInfo = endpointParameter.IsProperty
@@ -280,35 +350,32 @@ internal static class EndpointParameterEmitter
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext);");
                 break;
             default:
                 throw new NotImplementedException($"Unreachable! Unexpected {nameof(BindabilityMethod)}: {endpointParameter.BindMethod}");
         }
 
-        // TODO: Generate more compact code if the type is a reference type and/or the BindAsync return nullability matches the handler parameter type.
-        if (endpointParameter.IsOptional)
+        if (!endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}?){endpointParameter.EmitTempArgument()};");
-        }
-        else
-        {
-            codeWriter.WriteLine($"{unwrappedTypeString} {endpointParameter.EmitHandlerArgument()};");
-            codeWriter.WriteLine($"if ((object?){endpointParameter.EmitTempArgument()} == null)");
+            // Non-nullable value types can never be null so we can avoid emitting the requiredness check.
+            if (endpointParameter.Type.IsValueType && !endpointParameter.GetBindAsyncReturnType().IsNullableOfT())
+            {
+                return;
+            }
+            codeWriter.WriteLine(endpointParameter.Type.IsValueType && endpointParameter.GetBindAsyncReturnType().IsNullableOfT()
+                ? $"if (!{endpointParameter.EmitHandlerArgument()}.HasValue)"
+                : $"if ({endpointParameter.EmitHandlerArgument()} == null)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = default!;");
-            codeWriter.EndBlock();
-            codeWriter.WriteLine("else");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}){endpointParameter.EmitTempArgument()};");
             codeWriter.EndBlock();
         }
     }
@@ -322,8 +389,23 @@ internal static class EndpointParameterEmitter
         // Unlike other scenarios, this will result in an exception being thrown
         // at runtime.
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
-            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
+            $"httpContext.RequestServices.GetService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>();" :
+            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>()";
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
+    }
+
+    internal static void EmitKeyedServiceParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        codeWriter.WriteLine("if (httpContext.RequestServices.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine(@"throw new InvalidOperationException($""Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services."");");
+        codeWriter.EndBlock();
+
+        var assigningCode = endpointParameter.IsOptional ?
+            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey});" :
+            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({endpointParameter.KeyedServiceKey})";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 

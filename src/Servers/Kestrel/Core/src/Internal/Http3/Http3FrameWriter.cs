@@ -23,13 +23,13 @@ internal sealed class Http3FrameWriter
     // is 63, and encode it to get ff 00 (see QPackEncoder.EncodeStaticIndexedHeaderField).
     // The two zero bytes are for the section prefix
     // (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix)
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x00, 0x00, 0xff, 0x00 };
+    private static ReadOnlySpan<byte> ContinueBytes => [0x00, 0x00, 0xff, 0x00];
 
     // Size based on HTTP/2 default frame size
     private const int MaxDataFrameSize = 16 * 1024;
     private const int HeaderBufferSize = 16 * 1024;
 
-    private readonly object _writeLock = new object();
+    private readonly Lock _writeLock = new();
 
     private readonly int _maxTotalHeaderSize;
     private readonly ConnectionContext _connectionContext;

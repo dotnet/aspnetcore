@@ -9,6 +9,24 @@ internal static class MessageDescriptorHelpers
 {
     public static Type ResolveFieldType(FieldDescriptor field)
     {
+        if (field.IsMap)
+        {
+            var mapFields = field.MessageType.Fields.InFieldNumberOrder();
+            var valueType = GetTypeFromFieldType(mapFields[1]);
+            return typeof(IDictionary<,>).MakeGenericType(typeof(string), valueType);
+        }
+        else if (field.IsRepeated)
+        {
+            return typeof(IList<>).MakeGenericType(GetTypeFromFieldType(field));
+        }
+        else
+        {
+            return GetTypeFromFieldType(field);
+        }
+    }
+
+    private static Type GetTypeFromFieldType(FieldDescriptor field)
+    {
         switch (field.FieldType)
         {
             case FieldType.Double:

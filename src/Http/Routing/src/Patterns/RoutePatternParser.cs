@@ -5,6 +5,10 @@
 
 using System.Buffers;
 using System.Diagnostics;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Routing.Patterns;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
@@ -441,7 +445,7 @@ internal static class RoutePatternParser
         Debug.Assert(context != null);
         Debug.Assert(literal != null);
 
-        if (literal.IndexOf(QuestionMark) != -1)
+        if (literal.Contains(QuestionMark))
         {
             context.Error = Resources.FormatTemplateRoute_InvalidLiteral(literal);
             return false;

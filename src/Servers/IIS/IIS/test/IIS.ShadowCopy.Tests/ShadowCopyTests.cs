@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
@@ -143,6 +139,37 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    public async Task ShadowCopyDeleteFolderDuringShutdownWorks()
+    {
+        using var directory = TempDirectory.Create();
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+        var deleteDirPath = Path.Combine(deploymentResult.ContentRoot, "wwwroot/deletethis");
+        Directory.CreateDirectory(deleteDirPath);
+        File.WriteAllText(Path.Combine(deleteDirPath, "file.dll"), "");
+
+        var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+
+        AddAppOffline(deploymentResult.ContentRoot);
+        await AssertAppOffline(deploymentResult);
+
+        // Delete folder + file after app is shut down
+        // Testing specific path on startup where we compare the app directory contents with the shadow copy directory
+        Directory.Delete(deleteDirPath, recursive: true);
+
+        RemoveAppOffline(deploymentResult.ContentRoot);
+
+        await deploymentResult.AssertRecycledAsync();
+
+        response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [ConditionalFact]
     public async Task ShadowCopyE2EWorksWithFolderPresent()
     {
         using var directory = TempDirectory.Create();
@@ -208,6 +235,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58106")]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();
@@ -362,7 +390,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    // copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+    // copied from https://learn.microsoft.com/dotnet/standard/io/how-to-copy-directories
     private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
     {
         // Get the subdirectories for the specified directory.

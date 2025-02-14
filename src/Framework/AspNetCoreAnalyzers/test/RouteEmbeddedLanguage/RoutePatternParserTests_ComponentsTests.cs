@@ -184,8 +184,6 @@ public partial class RoutePatternParserTests
     [InlineData("{p*}")]
     [InlineData("{{}")]
     [InlineData("{}}")]
-    [InlineData("{=}")]
-    [InlineData("{.}")]
     public void Components_ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(string template)
     {
         var tree = Test(@"""" + template + @"""", routePatternOptions: RoutePatternOptions.ComponentsRoute, allowDiagnosticsMismatch: true);
@@ -286,7 +284,7 @@ public partial class RoutePatternParserTests
     }
 
     [Fact]
-    public void InvalidTemplate_CatchAllParamWithMultipleAsterisks()
+    public void Template_CatchAllParamWithMultipleAsterisks()
     {
         Test(@"""/test/{a}/{**b}""", @"<Tree>
   <CompilationUnit>
@@ -327,9 +325,6 @@ public partial class RoutePatternParserTests
     </Segment>
     <EndOfFile />
   </CompilationUnit>
-  <Diagnostics>
-    <Diagnostic Message=""A catch-all parameter may only have one '*' at the beginning of the segment."" Span=""[20..22)"" Text=""**"" />
-  </Diagnostics>
   <Parameters>
     <Parameter Name=""a"" IsCatchAll=""false"" IsOptional=""false"" EncodeSlashes=""true"" />
     <Parameter Name=""b"" IsCatchAll=""true"" IsOptional=""false"" EncodeSlashes=""false"" />
@@ -458,9 +453,6 @@ public partial class RoutePatternParserTests
     </Segment>
     <EndOfFile />
   </CompilationUnit>
-  <Diagnostics>
-    <Diagnostic Message=""A parameter with a default value isn't supported."" Span=""[12..17)"" Text=""=Home"" />
-  </Diagnostics>
   <Parameters>
     <Parameter Name=""id"" IsCatchAll=""false"" IsOptional=""false"" EncodeSlashes=""true"" DefaultValue=""Home"" />
   </Parameters>
@@ -496,9 +488,6 @@ public partial class RoutePatternParserTests
     </Segment>
     <EndOfFile />
   </CompilationUnit>
-  <Diagnostics>
-    <Diagnostic Message=""Complex segment is not supported."" Span=""[9..19)"" Text=""{p1}.{p2?}"" />
-  </Diagnostics>
   <Parameters>
     <Parameter Name=""p1"" IsCatchAll=""false"" IsOptional=""false"" EncodeSlashes=""true"" />
     <Parameter Name=""p2"" IsCatchAll=""false"" IsOptional=""true"" EncodeSlashes=""true"" />

@@ -138,6 +138,7 @@ const Microsoft.AspNetCore.Http.StatusCodes.Status428PreconditionRequired = 428 
 const Microsoft.AspNetCore.Http.StatusCodes.Status429TooManyRequests = 429 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status431RequestHeaderFieldsTooLarge = 431 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status451UnavailableForLegalReasons = 451 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError = 500 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented = 501 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status502BadGateway = 502 -> int
@@ -149,6 +150,8 @@ const Microsoft.AspNetCore.Http.StatusCodes.Status507InsufficientStorage = 507 -
 const Microsoft.AspNetCore.Http.StatusCodes.Status508LoopDetected = 508 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended = 510 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired = 511 -> int
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata.RequiresValidation.get -> bool
 Microsoft.AspNetCore.Builder.EndpointBuilder
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.init -> void
@@ -220,7 +223,7 @@ Microsoft.AspNetCore.Http.CookieSecurePolicy.Always = 1 -> Microsoft.AspNetCore.
 Microsoft.AspNetCore.Http.CookieSecurePolicy.None = 2 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
 Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest = 0 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext
-Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
+Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
 Microsoft.AspNetCore.Http.Endpoint
 Microsoft.AspNetCore.Http.Endpoint.DisplayName.get -> string?
 Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
@@ -271,10 +274,10 @@ Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.HostString.Host.get -> string!
 Microsoft.AspNetCore.Http.HostString.HostString() -> void
 Microsoft.AspNetCore.Http.HostString.HostString(string! host, int port) -> void
-Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 Microsoft.AspNetCore.Http.HostString.Port.get -> int?
 Microsoft.AspNetCore.Http.HostString.ToUriComponent() -> string!
-Microsoft.AspNetCore.Http.HostString.Value.get -> string!
+Microsoft.AspNetCore.Http.HostString.Value.get -> string?
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpContext.HttpContext() -> void
 Microsoft.AspNetCore.Http.HttpMethods
@@ -284,10 +287,14 @@ Microsoft.AspNetCore.Http.HttpRequest.HttpRequest() -> void
 Microsoft.AspNetCore.Http.HttpResponse
 Microsoft.AspNetCore.Http.HttpResponse.HttpResponse() -> void
 Microsoft.AspNetCore.Http.HttpResponseWritingExtensions
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IContentTypeHttpResult
@@ -311,6 +318,7 @@ Microsoft.AspNetCore.Http.IMiddlewareFactory.Release(Microsoft.AspNetCore.Http.I
 Microsoft.AspNetCore.Http.INestedHttpResult
 Microsoft.AspNetCore.Http.INestedHttpResult.Result.get -> Microsoft.AspNetCore.Http.IResult!
 Microsoft.AspNetCore.Http.IProblemDetailsService
+Microsoft.AspNetCore.Http.IProblemDetailsService.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Http.IProblemDetailsWriter
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> bool
@@ -323,10 +331,21 @@ Microsoft.AspNetCore.Http.IValueHttpResult
 Microsoft.AspNetCore.Http.IValueHttpResult.Value.get -> object?
 Microsoft.AspNetCore.Http.IValueHttpResult<TValue>
 Microsoft.AspNetCore.Http.IValueHttpResult<TValue>.Value.get -> TValue?
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(string![]! contentTypes, System.Type? type = null, bool isOptional = false) -> void
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.IsOptional.get -> bool
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.RequestType.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.FormMappingOptionsMetadata(int? maxCollectionSize = null, int? maxRecursionDepth = null, int? maxKeySize = null) -> void
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxCollectionSize.get -> int?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxKeySize.get -> int?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxRecursionDepth.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.IDisableHttpMetricsMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider
@@ -335,6 +354,17 @@ Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider
 Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider.PopulateMetadata(System.Reflection.ParameterInfo! parameter, Microsoft.AspNetCore.Builder.EndpointBuilder! builder) -> void
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.BufferBody.get -> bool?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.BufferBodyLengthLimit.get -> long?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.KeyLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MemoryBufferThreshold.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartBodyLengthLimit.get -> long?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartBoundaryLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartHeadersCountLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartHeadersLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.ValueCountLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.ValueLengthLimit.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
@@ -346,12 +376,20 @@ Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasBindAsync.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasTryParse.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.IsOptional.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.Name.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -> System.Reflection.ParameterInfo!
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
+Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata
+Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata.Route.get -> string!
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
 Microsoft.AspNetCore.Http.Metadata.ITagsMetadata
 Microsoft.AspNetCore.Http.Metadata.ITagsMetadata.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -374,11 +412,18 @@ Microsoft.AspNetCore.Http.PathString.Value.get -> string?
 Microsoft.AspNetCore.Http.ProblemDetailsContext
 Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection?
 Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.get -> System.Exception?
+Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
-Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ProducesResponseTypeMetadata(int statusCode, System.Type? type = null, string![]? contentTypes = null) -> void
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.StatusCode.get -> int
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.QueryString
 Microsoft.AspNetCore.Http.QueryString.Add(Microsoft.AspNetCore.Http.QueryString other) -> Microsoft.AspNetCore.Http.QueryString
 Microsoft.AspNetCore.Http.QueryString.Add(string! name, string! value) -> Microsoft.AspNetCore.Http.QueryString
@@ -402,6 +447,7 @@ Microsoft.AspNetCore.Mvc.ProblemDetails
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
@@ -448,9 +494,11 @@ override Microsoft.AspNetCore.Http.FragmentString.ToString() -> string!
 override Microsoft.AspNetCore.Http.HostString.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.HostString.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.HostString.ToString() -> string!
+override Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Http.PathString.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.PathString.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.PathString.ToString() -> string!
+override Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Http.QueryString.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.QueryString.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.QueryString.ToString() -> string!
@@ -465,6 +513,15 @@ static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this M
 static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object?[]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.UsePathBaseExtensions.UsePathBase(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathBase) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.UseWhenExtensions.UseWhen(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>! predicate, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T arg) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6, T7, T8>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6, T7>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
+static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
 static Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Http.Endpoint?
 static Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.Endpoint? endpoint) -> void
 static Microsoft.AspNetCore.Http.FragmentString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.FragmentString
@@ -499,6 +556,7 @@ static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp2(string! protocol) -> bool
 static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp3(string! protocol) -> bool
 static Microsoft.AspNetCore.Http.HttpResponseWritingExtensions.WriteAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! text, System.Text.Encoding! encoding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.HttpResponseWritingExtensions.WriteAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! text, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
 static Microsoft.AspNetCore.Http.PathString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.PathString
 static Microsoft.AspNetCore.Http.PathString.FromUriComponent(System.Uri! uri) -> Microsoft.AspNetCore.Http.PathString
 static Microsoft.AspNetCore.Http.PathString.implicit operator Microsoft.AspNetCore.Http.PathString(string? s) -> Microsoft.AspNetCore.Http.PathString

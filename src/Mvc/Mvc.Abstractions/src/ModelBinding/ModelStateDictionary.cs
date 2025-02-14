@@ -4,9 +4,11 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -15,6 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// Represents the state of an attempt to bind values from an HTTP Request to an action method, which includes
 /// validation information.
 /// </summary>
+[DebuggerDisplay("Entries = {Count}, IsValid = {IsValid}")]
+[DebuggerTypeProxy(typeof(ModelStateDictionaryDebugView))]
 public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?>
 {
     // Make sure to update the doc headers if this value is changed.
@@ -820,7 +824,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         OpenBracket
     }
 
-    [DebuggerDisplay("SubKey={SubKey}, Key={Key}, ValidationState={ValidationState}")]
+    [DebuggerDisplay("SubKey = {SubKey}, Key = {Key}, ValidationState = {ValidationState}")]
     private sealed class ModelStateNode : ModelStateEntry
     {
         private bool _isContainerNode = true;
@@ -1250,5 +1254,13 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
             _prefixEnumerator.Reset();
             Current = default!;
         }
+    }
+
+    private sealed class ModelStateDictionaryDebugView(ModelStateDictionary dictionary)
+    {
+        private readonly ModelStateDictionary _dictionary = dictionary;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public DictionaryItemDebugView<string, ModelStateEntry?>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, ModelStateEntry?>(pair)).ToArray();
     }
 }

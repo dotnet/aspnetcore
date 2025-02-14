@@ -33,8 +33,6 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
 1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
 
-Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj contains the Single Page Application templates, including Angular, React. **This is brought in by a submodule from the dotnet/spa-templates repo.**
-
 To build the ProjectTemplates, use one of:
 
 1. Run `eng\build.cmd -all -pack -configuration Release` in the repository root to build and pack all of the repo, including template projects.
@@ -52,11 +50,11 @@ Otherwise, you'll get a test error "Certificate error: Navigation blocked".
 
 Then, use one of:
 
-1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuilddeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
+1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuildDeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
 1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
     - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
 1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
-    - `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
+    - `dotnet new -i Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
     - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
@@ -111,7 +109,7 @@ When tests are run as part of the CI infrastructure, a number of different timeo
 
 ##### Helix job timeout
 
-When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](eng/targets/Helix.props):
+When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](/eng/targets/Helix.props): 
 
 ```xml
 <HelixTimeout>00:45:00</HelixTimeout>
@@ -128,7 +126,7 @@ Note that some test projects might override this value in their project file and
 
 ##### Helix runner timeout
 
-The [Helix test runner](eng/tools/HelixTestRunner) launches the actual process that runs tests within a Helix job and when doing so configures its own timeout that is 5 minutes less than the Helix job timeout, e.g. if the Helix job timeout is 45 minutes, the Helix test runner process timeout will be 40 minutes.
+The [Helix test runner](/eng/tools/HelixTestRunner) launches the actual process that runs tests within a Helix job and when doing so configures its own timeout that is 5 minutes less than the Helix job timeout, e.g. if the Helix job timeout is 45 minutes, the Helix test runner process timeout will be 40 minutes.
 
 If this timeout is exceeded, the Helix test runner will capture a dump of the test process before terminating it and printing a message in the console log, e.g.:
 
@@ -138,7 +136,7 @@ If this timeout is exceeded, the Helix test runner will capture a dump of the te
 
 ##### Helix runner `dotnet test` timeout
 
-When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](eng/tools/HelixTestRunner/TestRunner.cs)
+When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](/eng/tools/HelixTestRunner/TestRunner.cs)
 
 ```csharp
 public async Task<int> RunTestsAsync()

@@ -24,7 +24,7 @@ public class WebAssemblyGlobalizationTest : GlobalizationTest<ToggleExecutionMod
 
     protected override void SetCulture(string culture)
     {
-        Navigate($"{ServerPathBase}/?culture={culture}", noReload: false);
+        Navigate($"{ServerPathBase}/?culture={culture}");
 
         // That should have triggered a page load, so wait for the main test selector to come up.
         Browser.MountTestComponent<GlobalizationBindCases>();

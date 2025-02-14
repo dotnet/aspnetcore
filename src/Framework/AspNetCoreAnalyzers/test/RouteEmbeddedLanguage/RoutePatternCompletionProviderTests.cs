@@ -3,11 +3,13 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49126")]
 public partial class RoutePatternCompletionProviderTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());

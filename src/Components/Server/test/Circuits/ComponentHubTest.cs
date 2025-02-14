@@ -1,10 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -127,6 +131,11 @@ public class ComponentHubTest
         mockCaller.Setup(x => x.Caller).Returns(mockClientProxy.Object);
         hub.Clients = mockCaller.Object;
         var mockContext = new Mock<HubCallerContext>();
+        var feature = new FeatureCollection();
+        var httpContextFeature = new Mock<IHttpContextFeature>();
+        httpContextFeature.Setup(x => x.HttpContext).Returns(() => new DefaultHttpContext());
+        feature.Set(httpContextFeature.Object);
+        mockContext.Setup(x => x.Features).Returns(feature);
         mockContext.Setup(x => x.ConnectionId).Returns("123");
         hub.Context = mockContext.Object;
 
@@ -168,6 +177,12 @@ public class ComponentHubTest
             descriptors = default;
             return true;
         }
+
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationsWithDescriptors)
+        {
+            operationsWithDescriptors = default;
+            return true;
+        }
     }
 
     private class TestCircuitFactory : ICircuitFactory
@@ -187,7 +202,8 @@ public class ComponentHubTest
             string baseUri,
             string uri,
             ClaimsPrincipal user,
-            IPersistentComponentStateStore store)
+            IPersistentComponentStateStore store,
+            ResourceAssetCollection resourceCollection)
         {
             var serviceScope = new Mock<IServiceScope>();
             var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));

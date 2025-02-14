@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
@@ -8,7 +8,7 @@ internal static class ViewPath
     public static string NormalizePath(string path)
     {
         var addLeadingSlash = path[0] != '\\' && path[0] != '/';
-        var transformSlashes = path.IndexOf('\\') != -1;
+        var transformSlashes = path.Contains('\\');
 
         if (!addLeadingSlash && !transformSlashes)
         {

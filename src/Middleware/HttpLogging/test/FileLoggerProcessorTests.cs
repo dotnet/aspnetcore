@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -19,7 +19,7 @@ public class FileLoggerProcessorTests
 
     public FileLoggerProcessorTests()
     {
-        TempPath = Path.GetTempFileName() + "_";
+        TempPath = Path.Combine(Environment.CurrentDirectory, "_");
     }
 
     public string TempPath { get; }
@@ -233,7 +233,7 @@ public class FileLoggerProcessorTests
                 await WaitForFile(lastFilePath, _messageOne.Length).DefaultTimeout();
 
                 // directory is full, no warnings yet
-                Assert.Equal(0, testSink.Writes.Count);
+                Assert.Empty(testSink.Writes);
 
                 logger.EnqueueMessage(_messageOne);
                 await WaitForCondition(() => testSink.Writes.FirstOrDefault()?.EventId.Name == "MaxFilesReached").DefaultTimeout();
@@ -248,7 +248,7 @@ public class FileLoggerProcessorTests
             var testLogger2 = new TestLoggerFactory(testSink2, enabled:true);
             await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), testLogger2))
             {
-                Assert.Equal(0, testSink2.Writes.Count);
+                Assert.Empty(testSink2.Writes);
 
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);

@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 // See the details of the component serialization protocol in ServerComponentDeserializer.cs on the Components solution.
 internal sealed class ServerComponentSerializer
 {
-    public const int PreambleBufferSize = 3;
-
     private readonly ITimeLimitedDataProtector _dataProtector;
 
     public ServerComponentSerializer(IDataProtectionProvider dataProtectionProvider) =>
@@ -18,16 +16,17 @@ internal sealed class ServerComponentSerializer
             .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
-    public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered)
+    public void SerializeInvocation(ref ComponentMarker marker, ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters)
     {
-        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters);
-        return prerendered ? ServerComponentMarker.Prerendered(sequence, serverComponent) : ServerComponentMarker.NonPrerendered(sequence, serverComponent);
+        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key);
+        marker.WriteServerData(sequence, serverComponent);
     }
 
     private (int sequence, string payload) CreateSerializedServerComponent(
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,
-        ParameterView parameters)
+        ParameterView parameters,
+        ComponentMarkerKey? key)
     {
         var sequence = invocationId.Next();
 
@@ -35,6 +34,7 @@ internal sealed class ServerComponentSerializer
 
         var serverComponent = new ServerComponent(
             sequence,
+            key,
             rootComponent.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name"),
             rootComponent.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name"),
             definitions,
@@ -44,30 +44,5 @@ internal sealed class ServerComponentSerializer
         var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
         var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, ServerComponentSerializationSettings.DataExpiration);
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
-    }
-
-    /// <remarks>
-    /// Remember to update <see cref="PreambleBufferSize"/> if the number of entries being appended in this function changes.
-    /// </remarks>
-    internal static void AppendPreamble(TextWriter writer, ServerComponentMarker record)
-    {
-        var serializedStartRecord = JsonSerializer.Serialize(
-            record,
-            ServerComponentSerializationSettings.JsonSerializationOptions);
-
-        writer.Write("<!--Blazor:");
-        writer.Write(serializedStartRecord);
-        writer.Write("-->");
-    }
-
-    internal static void AppendEpilogue(TextWriter writer, ServerComponentMarker record)
-    {
-        var endRecord = JsonSerializer.Serialize(
-            record.GetEndRecord(),
-            ServerComponentSerializationSettings.JsonSerializationOptions);
-
-        writer.Write("<!--Blazor:");
-        writer.Write(endRecord);
-        writer.Write("-->");
     }
 }

@@ -25,7 +25,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -39,21 +39,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Wait until items have been rendered.
         Browser.True(() => (initialItemCount = GetItemCount()) > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll halfway.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight * 0.5;");
 
         // Validate that we get the same item count after scrolling halfway.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll to the bottom.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight;");
 
         // Validate that we get the same item count after scrolling to the bottom.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         int GetItemCount() => Browser.FindElements(By.Id("sync-item")).Count;
     }
@@ -199,7 +199,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
 
         // Validate that the top spacer has a height of zero.
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
@@ -208,7 +208,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => lastElement.Displayed);
 
         // Validate that the top spacer has expanded.
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
         // due to the incorrect item size, whereby it would not realise it's necessary to show more
@@ -233,7 +233,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validate that the top spacer did change
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
     }
@@ -249,7 +249,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetAttribute("style"));
+        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetDomAttribute("style"));
 
         // Check scrolling document element works
         Browser.DoesNotExist(By.Id("row-999"));
@@ -258,8 +258,38 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => lastElement.Displayed);
 
         // Validate that the top spacer has expanded, and bottom one has collapsed
-        Browser.False(() => topSpacer.GetAttribute("style").Contains(expectedInitialSpacerStyle));
-        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
+        Browser.False(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
+        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetDomAttribute("style"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanLimitMaxItemsRendered(bool useAppContext)
+    {
+        if (useAppContext)
+        {
+            // This is to test back-compat with the switch added in a .NET 8 patch.
+            // Newer applications shouldn't use this technique.
+            Browser.MountTestComponent<VirtualizationMaxItemCount_AppContext>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationMaxItemCount>();
+        }
+
+        // Despite having a 600px tall scroll area and 30px high items (600/30=20),
+        // we only render 10 items due to the MaxItemCount setting
+        var scrollArea = Browser.Exists(By.Id("virtualize-scroll-area"));
+        var getItems = () => scrollArea.FindElements(By.ClassName("my-item"));
+        Browser.Equal(10, () => getItems().Count);
+        Browser.Equal("Id: 0; Name: Thing 0", () => getItems().First().Text);
+
+        // Scrolling still works and loads new data, though there's no guarantee about
+        // exactly how many items will show up at any one time
+        Browser.ExecuteJavaScript("document.getElementById('virtualize-scroll-area').scrollTop = 300;");
+        Browser.NotEqual("Id: 0; Name: Thing 0", () => getItems().First().Text);
+        Browser.True(() => getItems().Count > 3 && getItems().Count <= 10);
     }
 
     [Fact]
@@ -487,6 +517,51 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         dataSetLengthSelector.SelectByText("25");
         Browser.Equal(25, dataSetLengthLastRendered);
         Browser.True(() => GetPeopleNames(container).Contains("Person 25"));
+    }
+
+    [Fact]
+    public void EmptyContentRendered_Sync()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        Browser.Exists(By.Id("no-data-sync"));
+    }
+
+    [Fact]
+    public void EmptyContentRendered_Async()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        var finishLoadingWithItemsButton = Browser.Exists(By.Id("finish-loading-button"));
+        var finishLoadingWithoutItemsButton = Browser.Exists(By.Id("finish-loading-button-empty"));
+        var refreshDataAsync = Browser.Exists(By.Id("refresh-data-async"));
+
+        // Check that no items or placeholders are visible.
+        // No data fetches have happened so we don't know how many items there are.
+        Browser.Equal(0, GetItemCount);
+        Browser.Equal(0, GetPlaceholderCount);
+
+        // Check that <EmptyContent> is not shown while loading
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Load the initial set of items.
+        finishLoadingWithItemsButton.Click();
+
+        // Check that <EmptyContent> is still not shown (because there are items loaded)
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Start loading
+        refreshDataAsync.Click();
+
+        // Check that <EmptyContent> is not shown
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Simulate 0 items
+        finishLoadingWithoutItemsButton.Click();
+
+        // Check that <EmptyContent> is shown
+        Browser.Exists(By.Id("no-data-async"));
+
+        int GetItemCount() => Browser.FindElements(By.Id("async-item")).Count;
+        int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
     }
 
     private string[] GetPeopleNames(IWebElement container)

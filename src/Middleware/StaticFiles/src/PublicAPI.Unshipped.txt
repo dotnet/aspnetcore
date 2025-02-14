@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponseAsync.get -> System.Func<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext!, System.Threading.Tasks.Task!>!
-Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponseAsync.set -> void

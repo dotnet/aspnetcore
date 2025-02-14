@@ -18,6 +18,8 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFea
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature.MinDataRate.get -> Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate?
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature.MinDataRate.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.ISslStreamFeature
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.ISslStreamFeature.SslStream.get -> System.Net.Security.SslStream!
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.ITlsApplicationProtocolFeature
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.ITlsApplicationProtocolFeature.ApplicationProtocol.get -> System.ReadOnlyMemory<byte>
 Microsoft.AspNetCore.Server.Kestrel.Core.Http2Limits
@@ -136,6 +138,8 @@ Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AddServerHeader.ge
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AddServerHeader.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowAlternateSchemes.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowAlternateSchemes.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowHostHeaderOverride.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowHostHeaderOverride.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowResponseHeaderCompression.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowResponseHeaderCompression.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowSynchronousIO.get -> bool
@@ -167,6 +171,8 @@ Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenHandle(ulong
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenHandle(ulong handle, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenLocalhost(int port) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenLocalhost(int port, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenUnixSocket(string! socketPath) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenUnixSocket(string! socketPath, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.RequestHeaderEncodingSelector.get -> System.Func<string!, System.Text.Encoding?>!
@@ -182,6 +188,7 @@ Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.EndPoint.get -> System.Ne
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.FileHandle.get -> ulong
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.IPEndPoint.get -> System.Net.IPEndPoint?
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.KestrelServerOptions.get -> Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!
+Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.PipeName.get -> string?
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.Protocols.get -> Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.Protocols.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.SocketPath.get -> string?
@@ -253,6 +260,8 @@ Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.HandleEndpoint(ul
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.Load() -> void
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.LocalhostEndpoint(int port) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.LocalhostEndpoint(int port, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
+Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.NamedPipeEndpoint(string! pipeName) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
+Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.NamedPipeEndpoint(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.Options.get -> Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.UnixSocketEndpoint(string! socketPath) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.UnixSocketEndpoint(string! socketPath, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!

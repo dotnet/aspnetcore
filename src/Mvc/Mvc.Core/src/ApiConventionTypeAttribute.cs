@@ -83,6 +83,7 @@ public sealed class ApiConventionTypeAttribute : Attribute
     {
         return attribute is ProducesResponseTypeAttribute ||
             attribute is ProducesDefaultResponseTypeAttribute ||
-            attribute is ApiConventionNameMatchAttribute;
+            attribute is ApiConventionNameMatchAttribute ||
+            attribute.GetType().FullName == "System.Runtime.CompilerServices.NullableContextAttribute";
     }
 }

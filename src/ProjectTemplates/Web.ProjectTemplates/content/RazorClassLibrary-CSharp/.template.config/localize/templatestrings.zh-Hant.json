@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
   "name": "Razor 類別庫",
-  "description": "用於建立以 .NET Standard 為目標之 Razor 類別庫的專案",
+  "description": "用於建立以 .NET 為目標之 Razor 類別庫的專案",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net8.0/description": "目標 net8.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/SupportPagesAndViews/displayName": "支援頁面及檢視",
   "symbols/SupportPagesAndViews/description": "是否支援將傳統 Razor 頁面及檢視新增至此程式庫。",

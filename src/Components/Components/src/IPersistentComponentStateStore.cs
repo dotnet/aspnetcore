@@ -20,4 +20,11 @@ public interface IPersistentComponentStateStore
     /// <param name="state">The serialized state to persist.</param>
     /// <returns>A <see cref="Task" /> that completes when the state is persisted to disk.</returns>
     Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state);
+
+    /// <summary>
+    /// Returns a value that indicates whether the store supports the given <see cref="IComponentRenderMode"/>.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> in question.</param>
+    /// <returns><c>true</c> if the render mode is supported by the store, otherwise <c>false</c>.</returns>
+    bool SupportsRenderMode(IComponentRenderMode renderMode) => true;
 }

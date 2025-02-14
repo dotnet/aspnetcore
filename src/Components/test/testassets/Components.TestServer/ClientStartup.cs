@@ -34,6 +34,7 @@ public class ClientStartup
         app.Map("/subdir", app =>
         {
             // Add it before to ensure it takes priority over files in wwwroot
+            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 

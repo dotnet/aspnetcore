@@ -1,0 +1,14 @@
+﻿@page "/redirect/error-boundary/get"
+
+<h1>Redirect in error boundary GET</h1>
+
+<ErrorBoundary>
+    <ChildContent>
+        <RedirectGet />
+    </ChildContent>
+    <ErrorContent>
+        <p>
+            Error caught by error boundary: @context.Message
+        </p>
+    </ErrorContent>
+</ErrorBoundary>

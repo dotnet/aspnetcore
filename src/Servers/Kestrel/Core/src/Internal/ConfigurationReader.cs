@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -388,37 +389,47 @@ internal sealed class CertificateConfig
     public IConfigurationSection? ConfigSection { get; }
 
     // File
+
+    [MemberNotNullWhen(true, nameof(Path))]
     public bool IsFileCert => !string.IsNullOrEmpty(Path);
 
-    public string? Path { get; set; }
+    public string? Path { get; init; }
 
-    public string? KeyPath { get; set; }
+    public string? KeyPath { get; init; }
 
-    public string? Password { get; set; }
+    public string? Password { get; init; }
+
+    /// <remarks>
+    /// Vacuously false if this isn't a file cert.
+    /// Used for change tracking - not actually part of configuring the certificate.
+    /// </remarks>
+    public bool FileHasChanged { get; internal set; }
 
     // Cert store
 
+    [MemberNotNullWhen(true, nameof(Subject))]
     public bool IsStoreCert => !string.IsNullOrEmpty(Subject);
 
-    public string? Subject { get; set; }
+    public string? Subject { get; init; }
 
-    public string? Store { get; set; }
+    public string? Store { get; init; }
 
-    public string? Location { get; set; }
+    public string? Location { get; init; }
 
-    public bool? AllowInvalid { get; set; }
+    public bool? AllowInvalid { get; init; }
 
     public override bool Equals(object? obj) =>
         obj is CertificateConfig other &&
         Path == other.Path &&
         KeyPath == other.KeyPath &&
         Password == other.Password &&
+        FileHasChanged == other.FileHasChanged &&
         Subject == other.Subject &&
         Store == other.Store &&
         Location == other.Location &&
         (AllowInvalid ?? false) == (other.AllowInvalid ?? false);
 
-    public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, Subject, Store, Location, AllowInvalid ?? false);
+    public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, FileHasChanged, Subject, Store, Location, AllowInvalid ?? false);
 
     public static bool operator ==(CertificateConfig? lhs, CertificateConfig? rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
     public static bool operator !=(CertificateConfig? lhs, CertificateConfig? rhs) => !(lhs == rhs);

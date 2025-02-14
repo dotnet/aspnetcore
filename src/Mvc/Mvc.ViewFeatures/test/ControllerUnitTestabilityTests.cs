@@ -554,7 +554,7 @@ public class ControllerUnitTestabilityTests
         controller = new TestabilityController();
 
         // Act && Assert
-        Assert.Throws<ArgumentException>(() => controller.Redirect_Action(null));
+        Assert.Throws<ArgumentNullException>(() => controller.Redirect_Action(null));
     }
 
     [Fact]

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting.FunctionalTests;
@@ -14,6 +14,7 @@ public class WebHostBuilderTests : LoggedTest
     public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
             .WithTfms(Tfm.Default);
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52429")]
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
     public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
@@ -43,11 +44,11 @@ public class WebHostBuilderTests : LoggedTest
                     if (!string.IsNullOrWhiteSpace(data))
                     {
                         output += data + '\n';
-                        tcs.TrySetResult();
                     }
                 };
 
-                await deployer.DeployAsync();
+                var deploymentResult = await deployer.DeployAsync();
+                deploymentResult.HostShutdownToken.Register(tcs.SetResult);
 
                 try
                 {

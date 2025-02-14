@@ -1,9 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-
-  <PropertyGroup>
-    <!-- TODO: Remove when Grpc.Tools on MacOS 11 is fixed. See https://github.com/grpc/grpc/issues/32558 -->
-    <ExcludeFromBuild Condition="'$(TargetOsName)' == 'osx'">true</ExcludeFromBuild>
-  </PropertyGroup>
-
-</Project>

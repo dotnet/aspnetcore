@@ -4,17 +4,21 @@
         "noEmitOnError": true,
         "removeComments": false,
         "sourceMap": true,
+        "moduleResolution": "node",
         "target": "es2019",
         "lib": ["es2019", "dom"],
         "strict": true,
         "declaration": true,
+        "declarationMap": true,
         "outDir": "dist",
         "module": "ESNext",
+        "skipLibCheck": true,
+        "composite": true
     },
     "include": [
-        "src/**/*.ts"
+        "./src/**/*.ts"
     ],
     "exclude": [
-        "dist/**"
+        "./dist/**"
     ]
 }

@@ -1,0 +1,16 @@
+// https://github.com/microsoft/cswin32
+// Listing specific types reduces the size of the final dll.
+// Uncomment the next line to import all definitions during development.
+// Windows.Win32.Networking.HttpServer
+HTTP_AUTH_STATUS
+HTTP_COOKED_URL
+HTTP_DATA_CHUNK
+HTTP_REQUEST_AUTH_INFO
+HTTP_REQUEST_AUTH_TYPE
+HTTP_REQUEST_FLAG_*
+HTTP_REQUEST_PROPERTY
+HTTP_REQUEST_PROPERTY_SNI
+HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH
+HTTP_REQUEST_V1
+HTTP_REQUEST_V2
+HTTP_SSL_PROTOCOL_INFO

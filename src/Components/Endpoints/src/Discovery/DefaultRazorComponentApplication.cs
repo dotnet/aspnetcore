@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Reflection;
-
 namespace Microsoft.AspNetCore.Components.Discovery;
 
 internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApplication
@@ -37,39 +34,7 @@ internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApp
         // endpoint metadata.
         // We might expose something like the PageCollection or PageFeature in the future
         // so that users can decide the list of things that get considered as endpoints.
-        var libraryName = typeof(TComponent).Assembly.FullName!;
-        var (pages, components) = CreatePageRouteCollection(libraryName);
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(libraryName, pages, components));
-        return builder;
-
-        static (IReadOnlyList<PageComponentBuilder>, IReadOnlyList<ComponentBuilder>) CreatePageRouteCollection(string name)
-        {
-            var exported = typeof(TComponent).Assembly.GetExportedTypes();
-            var pages = new List<PageComponentBuilder>();
-            var components = new List<ComponentBuilder>();
-
-            for (var i = 0; i < exported.Length; i++)
-            {
-                var candidate = exported[i];
-                if (candidate.IsAssignableTo(typeof(IComponent)))
-                {
-                    if (candidate.GetCustomAttributes<RouteAttribute>() is { } routes &&
-                        routes.Any())
-                    {
-                        pages.Add(new PageComponentBuilder()
-                        {
-                            RouteTemplates = routes.Select(r => r.Template).ToList(),
-                            AssemblyName = name,
-                            PageType = candidate
-                        });
-                    }
-
-                    var renderMode = candidate.GetCustomAttribute<RenderModeAttribute>();
-                    components.Add(new ComponentBuilder() { AssemblyName = name, ComponentType = candidate, RenderMode = renderMode });
-                }
-            }
-
-            return (pages, components);
-        }
+        var assembly = typeof(TComponent).Assembly;
+        return IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
     }
 }

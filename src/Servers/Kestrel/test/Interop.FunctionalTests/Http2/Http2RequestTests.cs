@@ -5,18 +5,18 @@ using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Interop.FunctionalTests.Http2;
 
@@ -24,27 +24,106 @@ namespace Interop.FunctionalTests.Http2;
 public class Http2RequestTests : LoggedTest
 {
     [Fact]
-    public async Task GET_Metrics_HttpProtocolAndTlsSet()
+    public async Task InvalidHandshake_MetricsHasErrorType()
     {
         // Arrange
-        var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var builder = CreateHostBuilder(c =>
-        {
-            protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
-            return Task.CompletedTask;
-        }, protocol: HttpProtocols.Http2, plaintext: false);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                return Task.CompletedTask;
+            },
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
 
         using (var host = builder.Build())
         {
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
-            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            // Use MeterListener for this test because we want to check that a single error.type tag is added.
+            // MetricCollector can't be used for this because it stores tags in a dictionary and overwrites values.
+            var measurementTcs = new TaskCompletionSource<Measurement<double>>();
+            var meterListener = new MeterListener();
+            meterListener.InstrumentPublished = (instrument, meterListener) =>
+            {
+                if (instrument.Meter.Scope == meterFactory &&
+                    instrument.Meter.Name == "Microsoft.AspNetCore.Server.Kestrel" &&
+                    instrument.Name == "kestrel.connection.duration")
+                {
+                    meterListener.EnableMeasurementEvents(instrument);
+                    meterListener.SetMeasurementEventCallback<double>((Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object>> tags, object state) =>
+                    {
+                        measurementTcs.SetResult(new Measurement<double>(measurement, tags));
+                    });
+                }
+            };
+            meterListener.Start();
+
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient(maxResponseHeadersLength: 1024);
+
+            // Act
+            using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            socket.LingerState = new LingerOption(false, 0);
+
+            socket.Connect(IPAddress.Loopback, host.GetPort());
+            socket.Send(new byte[1024 * 16]);
+
+            // Wait for measurement to be available.
+            var measurement = await measurementTcs.Task.DefaultTimeout();
+
+            // Assert
+            Assert.True(measurement.Value > 0);
+
+            var tags = measurement.Tags.ToArray();
+            Assert.Equal("http", (string)tags.Single(t => t.Key == "network.protocol.name").Value);
+            Assert.Equal("2", (string)tags.Single(t => t.Key == "network.protocol.version").Value);
+            Assert.Equal("tcp", (string)tags.Single(t => t.Key == "network.transport").Value);
+            Assert.Equal("ipv4", (string)tags.Single(t => t.Key == "network.type").Value);
+            Assert.Equal("127.0.0.1", (string)tags.Single(t => t.Key == "server.address").Value);
+            Assert.Equal(host.GetPort(), (int)tags.Single(t => t.Key == "server.port").Value);
+            Assert.Equal("invalid_handshake", (string)tags.Single(t => t.Key == "error.type").Value);
+
+            socket.Close();
+
+            await host.StopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task GET_Metrics_HttpProtocolAndTlsSet()
+    {
+        // Arrange
+        var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
+                return Task.CompletedTask;
+            },
+            configureKestrel: o =>
+            {
+                // Test IPv6 endpoint with metrics.
+                o.Listen(IPAddress.IPv6Loopback, 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(TestResources.GetTestCertificate(), https =>
+                    {
+                        https.SslProtocols = SslProtocols.Tls12;
+                    });
+                });
+            });
+
+        using (var host = builder.Build())
+        {
+            var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
+
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
             await host.StartAsync();
             var client = HttpHelpers.CreateClient();
 
             // Act
-            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://[::1]:{host.GetPort()}/");
             request1.Version = HttpVersion.Version20;
             request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
@@ -63,10 +142,54 @@ public class Http2RequestTests : LoggedTest
                 m =>
                 {
                     Assert.True(m.Value > 0);
-                    Assert.Equal(protocol.ToString(), m.Tags["tls-protocol"]);
-                    Assert.Equal("HTTP/2", m.Tags["http-protocol"]);
-                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags["endpoint"]);
+                    Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
+                    Assert.Equal("2", (string)m.Tags["network.protocol.version"]);
+                    Assert.Equal("tcp", (string)m.Tags["network.transport"]);
+                    Assert.Equal("ipv6", (string)m.Tags["network.type"]);
+                    Assert.Equal("::1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
+                    Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
                 });
+
+            await host.StopAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task GET_LargeResponseHeader_Success(bool largeValue, bool largeKey)
+    {
+        // Arrange
+        var longKey = "key-" + new string('$', largeKey ? 128 * 1024 : 1);
+        var longValue = "value-" + new string('!', largeValue ? 128 * 1024 : 1);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                c.Response.Headers["test"] = "abc";
+                c.Response.Headers[longKey] = longValue;
+                return Task.CompletedTask;
+            },
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient(maxResponseHeadersLength: 1024);
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version20;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response = await client.SendAsync(request1, CancellationToken.None);
+            response.EnsureSuccessStatusCode();
+
+            // Assert
+            Assert.Equal("abc", response.Headers.GetValues("test").Single());
+            Assert.Equal(longValue, response.Headers.GetValues(longKey).Single());
 
             await host.StopAsync();
         }
@@ -96,10 +219,9 @@ public class Http2RequestTests : LoggedTest
         }
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/41074")]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41074")]
     public async Task GET_RequestReturnsLargeData_GracefulShutdownDuringRequest_RequestGracefullyCompletes(bool hasTrailers)
     {
         // Enable client logging.

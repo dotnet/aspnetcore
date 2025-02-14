@@ -22,6 +22,10 @@ case "$ARCH" in
         TIZEN_ARCH="x86_64"
         LINK_ARCH="x86"
         ;;
+    riscv64)
+        TIZEN_ARCH="riscv64"
+        LINK_ARCH="riscv"
+        ;;
     *)
         echo "Unsupported architecture for tizen: $ARCH"
         exit 1
@@ -58,4 +62,21 @@ rm -rf $TIZEN_TMP_DIR
 echo ">>Start configuring Tizen rootfs"
 ln -sfn asm-${LINK_ARCH} ./usr/include/asm
 patch -p1 < $__TIZEN_CROSSDIR/tizen.patch
+if [[ "$TIZEN_ARCH" == "riscv64" ]]; then
+    echo "Fixing broken symlinks in $PWD"
+    rm ./usr/lib64/libresolv.so
+    ln -s ../../lib64/libresolv.so.2 ./usr/lib64/libresolv.so
+    rm ./usr/lib64/libpthread.so
+    ln -s ../../lib64/libpthread.so.0 ./usr/lib64/libpthread.so
+    rm ./usr/lib64/libdl.so
+    ln -s ../../lib64/libdl.so.2 ./usr/lib64/libdl.so
+    rm ./usr/lib64/libutil.so
+    ln -s ../../lib64/libutil.so.1 ./usr/lib64/libutil.so
+    rm ./usr/lib64/libm.so
+    ln -s ../../lib64/libm.so.6 ./usr/lib64/libm.so
+    rm ./usr/lib64/librt.so
+    ln -s ../../lib64/librt.so.1 ./usr/lib64/librt.so
+    rm ./lib/ld-linux-riscv64-lp64d.so.1
+    ln -s ../lib64/ld-linux-riscv64-lp64d.so.1 ./lib/ld-linux-riscv64-lp64d.so.1
+fi
 echo "<<Finish configuring Tizen rootfs"

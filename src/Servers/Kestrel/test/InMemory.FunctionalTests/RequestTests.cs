@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,10 +12,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -269,15 +264,15 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "Done");
 
                 await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).DefaultTimeout();
-                Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
-                Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
+                Assert.Equal(new PathString(expectedPath), await pathTcs.Task);
+                Assert.Equal(requestUrl, await rawTargetTcs.Task);
                 if (queryValue == null)
                 {
-                    Assert.False(queryTcs.Task.Result.ContainsKey("q"));
+                    Assert.False((await queryTcs.Task).ContainsKey("q"));
                 }
                 else
                 {
-                    Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
+                    Assert.Equal(queryValue, (await queryTcs.Task)["q"]);
                 }
             }
         }
@@ -1057,7 +1052,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
-
+            httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -1158,7 +1153,10 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ContentLengthReadAsyncSingleBytesAtATime()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1227,6 +1225,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]
@@ -1663,7 +1663,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                 await appEvent.Task.DefaultTimeout();
 
-                serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(5));
+                serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(5));
                 serviceContext.ConnectionManager.OnHeartbeat();
 
                 delayEvent.SetResult();
@@ -1891,7 +1891,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Warning);
     }
 
     [Fact]
@@ -2250,6 +2250,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+    }
+
+    [Fact]
+    public async Task TlsOverHttp()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = new TestServer(context =>
+        {
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Stream.WriteAsync(new byte[] { 0x16, 0x03, 0x01, 0x02, 0x00, 0x01, 0x00, 0xfc, 0x03, 0x03, 0x03, 0xca, 0xe0, 0xfd, 0x0a }).DefaultTimeout();
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 400 Bad Request",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsNotSupported, m.Tags));
     }
 
     [Fact]

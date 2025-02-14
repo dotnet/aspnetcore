@@ -7,7 +7,7 @@
     <DebugType>embedded</DebugType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Need to build this project in source build -->
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <!-- Temporarily target the previous runtime until https://github.com/dotnet/sdk/pull/14574 is merged. -->
     <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <!-- No need to track public APIs of these MSBuild tasks. -->
@@ -15,18 +15,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Explicitly reference the desired version of Newtonsoft.Json to avoid getting an older version
+         from the dependency on NuGet.Packaging which would cause a source-built prebuilt. -->
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Compile Remove="GenerateTestDevCert.cs" />
+    <Compile Remove="shared\CertificateGeneration\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
+    <!-- Manually updated version to address CVE-2024-38095 -->
+    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Microsoft.Signed.Wix" Version="1.0.0-v3.14.0.5722" />
+    <PackageReference Include="Microsoft.IO.Redist" Version="$(MicrosoftIoRedistVersion)" />
+    <PackageReference Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <Reference Include="Microsoft.Build" />
@@ -40,4 +55,5 @@
       <HintPath>$(WiXSdkPath)\Microsoft.Deployment.WindowsInstaller.Package.dll</HintPath>
     </Reference>
   </ItemGroup>
+
 </Project>

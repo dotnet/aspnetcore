@@ -1,0 +1,15 @@
+﻿@page "/redirect/get"
+@inject NavigationManager Nav
+
+<h1>Nonstreaming GET</h1>
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool External { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        Nav.NavigateTo(External ? "https://microsoft.com?foo=🙂" : "nav/scroll-to-hash?foo=🙂#some-content");
+    }
+}

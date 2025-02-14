@@ -9,6 +9,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Grpc.Swagger.Tests" />
 
+    <Compile Include="..\Shared\DescriptorRegistry.cs" Link="Internal\Shared\DescriptorRegistry.cs" />
     <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
     <Compile Include="..\Shared\HttpRoutePattern.cs" Link="Internal\Shared\HttpRoutePattern.cs" />
     <Compile Include="..\Shared\HttpRoutePatternParser.cs" Link="Internal\Shared\HttpRoutePatternParser.cs" />
@@ -16,5 +17,11 @@
 
     <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
     <Reference Include="Swashbuckle.AspNetCore" />
+
+    <!-- Enforce build order. -->
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 </Project>

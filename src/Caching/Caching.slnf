@@ -6,6 +6,7 @@
       "src\\Caching\\SqlServer\\test\\Microsoft.Extensions.Caching.SqlServer.Tests.csproj",
       "src\\Caching\\StackExchangeRedis\\src\\Microsoft.Extensions.Caching.StackExchangeRedis.csproj",
       "src\\Caching\\StackExchangeRedis\\test\\Microsoft.Extensions.Caching.StackExchangeRedis.Tests.csproj",
+      "src\\Caching\\perf\\MicroBenchmarks\\Microsoft.Extensions.Caching.MicroBenchmarks\\Microsoft.Extensions.Caching.MicroBenchmarks.csproj",
       "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj"
     ]
   }

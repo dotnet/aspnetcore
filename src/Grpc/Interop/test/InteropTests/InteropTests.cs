@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using InteropTests.Helpers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace InteropTests;
@@ -55,12 +55,14 @@ public class InteropTests
     public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60245")]
     public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
 
     [Fact]
     public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
     [Fact]

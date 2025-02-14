@@ -13,17 +13,14 @@
   },
   "sideEffects": false,
   "scripts": {
-    "preclean": "cd ../common && yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
-    "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
-    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
-    "build": "yarn run build:lint && yarn run build:esm && yarn run build:cjs && yarn run build:browser && yarn run build:uglify",
-    "build:lint": "node ../common/node_modules/eslint/bin/eslint ./src --ext .ts --resolve-plugins-relative-to ../common",
-    "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
-    "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
-    "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",
-    "build:uglify": "node ../common/node_modules/terser/bin/terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
-    "prepack": "node ../build/embed-version.js",
-    "test": "echo \"Run 'yarn test' in the 'clients/ts' folder to test this package\" && exit 1"
+    "clean": "rimraf ./dist",
+    "prebuild": "rimraf ./src/pkg-version.ts && node -e \"const fs = require('fs'); const packageJson = require('./package.json'); fs.writeFileSync('./src/pkg-version.ts', 'export const VERSION = \\'' + packageJson.version + '\\';');\"",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
+    "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
+    "build:browser": "webpack-cli",
+    "build:uglify": "terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
+    "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
   "keywords": [
     "signalr",
@@ -44,11 +41,11 @@
     "src/**/*"
   ],
   "dependencies": {
-    "@microsoft/signalr": "link:../signalr",
+    "@microsoft/signalr": "*",
     "@msgpack/msgpack": "^2.7.0"
   },
-  "devDependencies": {},
-  "resolutions": {
-    "ws": ">=7.4.6"
+  "overrides": {
+    "ws": ">=7.4.6",
+    "tough-cookie": ">=4.1.3"
   }
 }

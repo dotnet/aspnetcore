@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -44,11 +44,26 @@ public class Http2FrameWriterBenchmark
             "TestConnectionId",
             _memoryPool,
             serviceContext);
+    }
 
-        _responseHeaders = new HttpResponseHeaders();
-        var headers = (IHeaderDictionary)_responseHeaders;
-        headers.ContentType = "application/json";
-        headers.ContentLength = 1024;
+    private int _largeHeaderSize;
+
+    [Params(0, 10, 20)]
+    public int LargeHeaderSize
+    {
+        get => _largeHeaderSize;
+        set
+        {
+            _largeHeaderSize = value;
+            _responseHeaders = new HttpResponseHeaders();
+            var headers = (IHeaderDictionary)_responseHeaders;
+            headers.ContentType = "application/json";
+            headers.ContentLength = 1024;
+            if (value > 0)
+            {
+                headers.Add("my", new string('a', value * 1024));
+            }
+        }
     }
 
     [Benchmark]

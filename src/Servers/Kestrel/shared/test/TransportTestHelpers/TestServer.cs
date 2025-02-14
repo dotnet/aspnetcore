@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -48,7 +48,7 @@ internal class TestServer : IAsyncDisposable, IStartup
     {
     }
 
-    public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions)
+    public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions, Action<IServiceCollection> configureServices = null)
         : this(app, context, options =>
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -57,7 +57,10 @@ internal class TestServer : IAsyncDisposable, IStartup
             };
             configureListenOptions(listenOptions);
             options.CodeBackedListenOptions.Add(listenOptions);
-        }, _ => { })
+        }, s =>
+        {
+            configureServices?.Invoke(s);
+        })
     {
     }
 

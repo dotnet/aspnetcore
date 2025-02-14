@@ -1,8 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Identity.IdentityBuilderUIExtensions
 Microsoft.AspNetCore.Identity.UI.LoggerEventIds
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender (forwarded, contained in Microsoft.AspNetCore.Identity)
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
 Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute
 Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute.UIFramework.get -> string!
 Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute.UIFrameworkAttribute(string! uiFramework) -> void

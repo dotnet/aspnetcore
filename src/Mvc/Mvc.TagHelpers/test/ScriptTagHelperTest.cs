@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -113,7 +113,7 @@ public class ScriptTagHelperTest
         Assert.Equal(expectedAttributes, output.Attributes);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_Data
     {
         get
         {
@@ -295,7 +295,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData RunsWhenRequiredAttributesArePresent_NoSrc_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> RunsWhenRequiredAttributesArePresent_NoSrc_Data
     {
         get
         {
@@ -383,7 +383,7 @@ public class ScriptTagHelperTest
         Assert.True(output.PostElement.IsModified);
     }
 
-    public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
+    public static TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>> DoesNotRunWhenARequiredAttributeIsMissing_Data
     {
         get
         {
@@ -638,6 +638,176 @@ public class ScriptTagHelperTest
         Assert.Equal("/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
     }
 
+    [Theory]
+    [InlineData("~/js/site.js", "/js/site.fingerprint.js")]
+    [InlineData("/js/site.js", "/js/site.fingerprint.js")]
+    [InlineData("js/site.js", "js/site.fingerprint.js")]
+    public void RenderScriptTags_WithFileVersion_UsingResourceCollection(string src, string expected)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", src),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper(urlHelperFactory: MakeUrlHelperFactory(value =>
+            value.StartsWith("~/", StringComparison.Ordinal) ? value[1..] : value));
+
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.Src = src;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal(expected, output.Attributes["src"].Value);
+    }
+
+    [Theory]
+    [InlineData("~/js/site.js")]
+    [InlineData("/approot/js/site.js")]
+    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection(string path)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", path),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            if (value.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return value.Replace("~/", "/approot/");
+            }
+
+            return value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.ViewContext.HttpContext.Request.PathBase = "/approot";
+        helper.Src = path;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("/approot/js/site.fingerprint.js", output.Attributes["src"].Value);
+    }
+
+    [Fact]
+    public void ScriptTagHelper_RendersProvided_ImportMap()
+    {
+        // Arrange
+        var importMap = new ImportMapDefinition(
+            new Dictionary<string, string>
+            {
+                { "jquery", "https://code.jquery.com/jquery-3.5.1.min.js" },
+                { "bootstrap", "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" }
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["development"] = new Dictionary<string, string>
+                {
+                    { "jquery", "https://code.jquery.com/jquery-3.5.1.js" },
+                    { "bootstrap", "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.js" }
+                }.AsReadOnly()
+            },
+            new Dictionary<string, string>
+            {
+                { "https://code.jquery.com/jquery-3.5.1.js", "sha384-jquery" },
+                { "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.js", "sha256-bootstrap" }
+            });
+
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("type", "importmap"),
+                    new TagHelperAttribute("asp-importmap", importMap)
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.Type = "importmap";
+        helper.ImportMap = importMap;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal(importMap.ToJson(), output.Content.GetContent());
+    }
+
+    [Fact]
+    public void ScriptTagHelper_RendersImportMap_FromEndpoint()
+    {
+        // Arrange
+        var importMap = new ImportMapDefinition(
+            new Dictionary<string, string>
+            {
+                { "jquery", "https://code.jquery.com/jquery-3.5.1.min.js" },
+                { "bootstrap", "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" }
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["development"] = new Dictionary<string, string>
+                {
+                    { "jquery", "https://code.jquery.com/jquery-3.5.1.js" },
+                    { "bootstrap", "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.js" }
+                }.AsReadOnly()
+            },
+            new Dictionary<string, string>
+            {
+                { "https://code.jquery.com/jquery-3.5.1.js", "sha384-jquery" },
+                { "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.js", "sha256-bootstrap" }
+            });
+
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("type", "importmap"),
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint(importMap));
+        helper.Type = "importmap";
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal(importMap.ToJson(), output.Content.GetContent());
+    }
+
+    private Endpoint CreateEndpoint(ImportMapDefinition importMap = null)
+    {
+        return new Endpoint(
+            (context) => Task.CompletedTask,
+            new EndpointMetadataCollection(
+                [new ResourceAssetCollection([
+                    new("js/site.fingerprint.js", [new ResourceAssetProperty("label", "js/site.js")]),
+                    new("common.fingerprint.js", [new ResourceAssetProperty("label", "common.js")]),
+                    new("fallback.fingerprint.js", [new ResourceAssetProperty("label", "fallback.js")]),
+                ]),
+                importMap ?? new ImportMapDefinition(null, null, null)]),
+            "Test");
+    }
+
     [Fact]
     public void RenderScriptTags_WithFileVersion_AndRequestPathBase()
     {
@@ -691,6 +861,38 @@ public class ScriptTagHelperTest
         Assert.Equal("/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
         Assert.Equal(Environment.NewLine + "<script>(isavailable()||document.write(\"JavaScriptEncode[[<script " +
             "src=\"HtmlEncode[[fallback.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
+            "</script>]]\"));</script>", output.PostElement.GetContent());
+    }
+
+    [Fact]
+    public void RenderScriptTags_FallbackSrc_AppendVersion_WithStaticAssets()
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-fallback-src-include", "fallback.js"),
+                    new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.FallbackSrc = "fallback.js";
+        helper.FallbackTestExpression = "isavailable()";
+        helper.AppendVersion = true;
+        helper.Src = "/js/site.js";
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
+        Assert.Equal(Environment.NewLine + "<script>(isavailable()||document.write(\"JavaScriptEncode[[<script " +
+            "src=\"HtmlEncode[[fallback.fingerprint.js]]\">" +
             "</script>]]\"));</script>", output.PostElement.GetContent());
     }
 
@@ -784,6 +986,83 @@ public class ScriptTagHelperTest
         Assert.Equal(expectedContent, content);
     }
 
+    [Fact]
+    public void RenderScriptTags_GlobbedSrc_WithFileVersion_WithStaticAssets()
+    {
+        // Arrange
+        var expectedContent = "<script " +
+            "src=\"HtmlEncode[[/js/site.fingerprint.js]]\"></script>" +
+            "<script src=\"HtmlEncode[[/common.fingerprint.js]]\"></script>";
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-src-include", "*.js"),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+        var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+            new TestFileProvider(),
+            Mock.Of<IMemoryCache>(),
+            PathString.Empty);
+        globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "*.js", null))
+            .Returns(new[] { "/common.js" });
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+        helper.SrcInclude = "*.js";
+        helper.AppendVersion = true;
+        helper.Src = "/js/site.js";
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
+        var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
+        Assert.Equal(expectedContent, content);
+    }
+
+    [Theory]
+    [InlineData("~/js/site.js")]
+    [InlineData("/approot/js/site.js")]
+    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection_PreservesModule(string path)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", path),
+                    new TagHelperAttribute("type", "module"),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            return value.StartsWith("~/", StringComparison.Ordinal) ?
+                value.Replace("~/", "/approot/") :
+                value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.ViewContext.HttpContext.Request.PathBase = "/approot";
+        helper.Src = path;
+        helper.Type = "module";
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("module", output.Attributes["type"].Value);
+        Assert.Equal("/approot/js/site.fingerprint.js", output.Attributes["src"].Value);
+    }
+
     private static ScriptTagHelper GetHelper(
         IWebHostEnvironment hostingEnvironment = null,
         IUrlHelperFactory urlHelperFactory = null,
@@ -823,10 +1102,10 @@ public class ScriptTagHelperTest
 
     private static ViewContext MakeViewContext(string requestPathBase = null)
     {
-        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        var actionContext = new ActionContext(new DefaultHttpContext(), new AspNetCore.Routing.RouteData(), new ActionDescriptor());
         if (requestPathBase != null)
         {
-            actionContext.HttpContext.Request.PathBase = new Http.PathString(requestPathBase);
+            actionContext.HttpContext.Request.PathBase = new PathString(requestPathBase);
         }
 
         var metadataProvider = new EmptyModelMetadataProvider();
@@ -876,13 +1155,13 @@ public class ScriptTagHelperTest
         return hostingEnvironment.Object;
     }
 
-    private static IUrlHelperFactory MakeUrlHelperFactory()
+    private static IUrlHelperFactory MakeUrlHelperFactory(Func<string, string> urlResolver = null)
     {
         var urlHelper = new Mock<IUrlHelper>();
-
+        urlResolver ??= (url) => url;
         urlHelper
             .Setup(helper => helper.Content(It.IsAny<string>()))
-            .Returns(new Func<string, string>(url => url));
+            .Returns(new Func<string, string>(urlResolver));
 
         var urlHelperFactory = new Mock<IUrlHelperFactory>();
         urlHelperFactory

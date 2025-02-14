@@ -122,9 +122,7 @@ app.MapPost("/", postTodoWithDefault){withFilter}
         };
         var source = $"""
 app.MapPost("/fromBodyRequired", ([FromBody] Todo todo) => TypedResults.Ok(todo));
-#pragma warning disable CS8622
 app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo));
-#pragma warning restore CS8622
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
 
@@ -404,6 +402,39 @@ app.MapPost("/", TestAction);
         await endpoint.RequestDelegate(httpContext);
 
         Assert.Equal(default(BodyStruct), httpContext.Items[structToBeZeroedKey]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesRequiredBodyStruct()
+    {
+        var targetStruct = new BodyStruct
+        {
+            Id = 42
+        };
+
+        var source = $$"""
+void TestAction(HttpContext httpContext, BodyStruct bodyStruct)
+{
+    httpContext.Items["targetStruct"] = bodyStruct;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(targetStruct);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var resultStruct = Assert.IsType<BodyStruct>(httpContext.Items["targetStruct"]);
+        Assert.Equal(42, resultStruct.Id);
     }
 
     public static IEnumerable<object[]> AllowEmptyData

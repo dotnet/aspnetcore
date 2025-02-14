@@ -18,9 +18,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -77,7 +79,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         IISHttpServer server,
         ILogger logger,
         bool useLatin1)
-        : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
+        : base((HTTP_REQUEST_V1*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
     {
         _memoryPool = memoryPool;
         _requestNativeHandle = pInProcessHandler;
@@ -89,7 +91,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
-    private int ResumeWriterTheshold => PauseWriterThreshold / 2;
+    private int ResumeWriterThreshold => PauseWriterThreshold / 2;
     private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
@@ -117,11 +119,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public SslProtocols Protocol { get; private set; }
     public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
     public string SniHostName { get; private set; } = default!;
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int CipherStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public HashAlgorithmType HashAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int HashStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     public int KeyExchangeStrength { get; private set; }
 
     protected IAsyncIOEngine? AsyncIO { get; set; }
@@ -133,7 +141,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
     internal bool HasTrailers => _trailers?.Count > 0;
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+    internal HTTP_VERB KnownMethod { get; private set; }
 
     private bool HasStartedConsumingRequestBody { get; set; }
     public long? MaxRequestBodySize { get; set; }
@@ -142,7 +150,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         // create a memory barrier between initialize and disconnect to prevent a possible
         // NullRef with disconnect being called before these fields have been written
-        // disconnect aquires this lock as well
+        // disconnect acquires this lock as well
         lock (_abortLock)
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -163,7 +171,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 pathBase = pathBase[..^1];
             }
 
-            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
@@ -301,7 +309,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 // schedules app code when backpressure is relieved which may block.
                 readerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterTheshold,
+                resumeWriterThreshold: ResumeWriterThreshold,
                 minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
         }
@@ -392,27 +400,29 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private void GetTlsHandshakeResults()
     {
-        var handshake = this.GetTlsHandshake();
-        Protocol = handshake.Protocol;
-        CipherAlgorithm = handshake.CipherType;
+        var handshake = GetTlsHandshake();
+        Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = handshake.HashType;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         var sni = GetClientSni();
-        SniHostName = sni.Hostname;
+        SniHostName = sni.Hostname.ToString();
     }
 
-    private unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
         fixed (byte* pBuffer = buffer)
         {
             var statusCode = NativeMethods.HttpQueryRequestProperty(
                 RequestId,
-                HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                 qualifier: null,
                 qualifierSize: 0,
                 (void*)pBuffer,
@@ -420,7 +430,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 bytesReturned: null,
                 IntPtr.Zero);
 
-            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
         }
     }
 
@@ -590,7 +600,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+            var isKnownHeader = HttpApiTypes.KnownResponseHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];
@@ -605,7 +615,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
                 fixed (byte* pHeaderValue = headerValueBytes)
                 {
-                    if (knownHeaderIndex == -1)
+                    if (!isKnownHeader)
                     {
                         var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                         fixed (byte* pHeaderName = headerNameBytes)

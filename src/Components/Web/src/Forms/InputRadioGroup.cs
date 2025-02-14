@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Groups child <see cref="InputRadio{TValue}"/> components.
 /// </summary>
-public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
+public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>, IInputRadioValueProvider
 {
     private readonly string _defaultGroupName = Guid.NewGuid().ToString("N");
     private InputRadioContext? _context;
@@ -27,6 +27,8 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
 
     [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
+    object? IInputRadioValueProvider.CurrentValue => CurrentValue;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -34,7 +36,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         if (_context is null)
         {
             var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
-            _context = new InputRadioContext(CascadedContext, changeEventCallback);
+            _context = new InputRadioContext(this, CascadedContext, changeEventCallback);
         }
         else if (_context.ParentContext != CascadedContext)
         {
@@ -59,7 +61,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
             // Otherwise, just use a GUID to disambiguate this group's radio inputs from any others on the page.
             _context.GroupName = _defaultGroupName;
         }
-        _context.CurrentValue = CurrentValue;
+
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
     }
 

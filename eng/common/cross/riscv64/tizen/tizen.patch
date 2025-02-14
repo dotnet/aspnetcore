@@ -1,0 +1,9 @@
+diff -u -r a/usr/lib/libc.so b/usr/lib/libc.so
+--- a/usr/lib64/libc.so	2016-12-30 23:00:08.284951863 +0900
++++ b/usr/lib64/libc.so	2016-12-30 23:00:32.140951815 +0900
+@@ -2,4 +2,4 @@
+    Use the shared library, but some functions are only in
+    the static library, so try that secondarily.  */
+ OUTPUT_FORMAT(elf64-littleriscv)
+-GROUP ( /lib64/libc.so.6 /usr/lib64/libc_nonshared.a  AS_NEEDED ( /lib64/ld-linux-riscv64-lp64d.so.1 ) )
++GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld-linux-riscv64-lp64d.so.1 ) )

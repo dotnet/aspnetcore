@@ -162,4 +162,7 @@
   <data name="RouteValueDictionary_DuplicatePropertyName" xml:space="preserve">
     <value>The type '{0}' defines properties '{1}' and '{2}' which differ only by casing. This is not supported by {3} which uses case-insensitive comparisons.</value>
   </data>
+  <data name="Exception_KeyedServicesNotSupported" xml:space="preserve">
+    <value>This service provider doesn't support keyed services.</value>
+  </data>
 </root>

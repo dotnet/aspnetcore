@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
-    <TargetFrameworks>netcoreapp2.1;$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
     <NoWarn>$(NoWarn);nullable</NoWarn>
   </PropertyGroup>
@@ -19,13 +19,12 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1'">
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.OpenApi" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
@@ -34,4 +33,8 @@
   <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' And '$(Platform)' != 'x86' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ApiDescription.Tool.Tests" />
+  </ItemGroup>
 </Project>

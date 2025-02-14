@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
   "name": "Biblioteka klas Razor",
-  "description": "Projekt służący do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
+  "description": "Projekt do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/SupportPagesAndViews/displayName": "Strony i widoki pomocy technicznej",
   "symbols/SupportPagesAndViews/description": "Określa, czy obsługiwać dodawanie tradycyjnych stron Razor i wyświetleń do tej biblioteki.",

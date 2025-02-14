@@ -1,9 +1,9 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Библиотека классов Razor",
-  "description": "Проект для создания библиотеки классов Razor, предназначенной для .NET Standard",
+  "description": "Проект для создания библиотеки классов Razor, предназначенной для .NET",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/SupportPagesAndViews/displayName": "Поддержка страниц и представлений",
   "symbols/SupportPagesAndViews/description": "Следует ли поддерживать добавление традиционных страниц и представлений Razor в эту библиотеку.",

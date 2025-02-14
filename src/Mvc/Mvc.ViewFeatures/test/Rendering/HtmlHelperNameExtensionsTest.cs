@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Core;
@@ -245,7 +245,7 @@ public class HtmlHelperNameExtensionsTest
     }
 
     // expression, expected name, expected id
-    public static TheoryData StaticExpressionNamesData
+    public static TheoryData<Expression<Func<List<OuterClass>, string>>, string, string> StaticExpressionNamesData
     {
         get
         {
@@ -256,7 +256,7 @@ public class HtmlHelperNameExtensionsTest
     }
 
     // expression, expected name, expected id
-    private TheoryData ExpressionNamesData
+    private TheoryData<Expression<Func<List<OuterClass>, string>>, string, string> ExpressionNamesData
     {
         get
         {

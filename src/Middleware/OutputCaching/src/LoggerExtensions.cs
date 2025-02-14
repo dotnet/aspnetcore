@@ -49,4 +49,10 @@ internal static partial class LoggerExtensions
         EventName = "ExpirationExpiresExceeded")]
     internal static partial void ExpirationExpiresExceeded(this ILogger logger, DateTimeOffset responseTime);
 
+    [LoggerMessage(12, LogLevel.Error, "Unable to query output cache.", EventName = "UnableToQueryOutputCache")]
+    internal static partial void UnableToQueryOutputCache(this ILogger logger, Exception exception);
+
+    [LoggerMessage(13, LogLevel.Error, "Unable to write to output-cache.", EventName = "UnableToWriteToOutputCache")]
+    internal static partial void UnableToWriteToOutputCache(this ILogger logger, Exception exception);
+
 }

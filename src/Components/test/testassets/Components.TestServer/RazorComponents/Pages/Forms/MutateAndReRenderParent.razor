@@ -1,0 +1,19 @@
+﻿@page "/forms/mutate-and-rerender"
+
+<p>
+    The idea in this test is that a child component receives data using SupplyParameterFromForm,
+    and then mutates that data before re-rendering its parent. This only works because of
+    SingleDelivery=true for form data, as without it, the parent would resupply the original
+    form post data and overwrite the child's edits.
+</p>
+
+<MutateAndReRenderChild OnFormDataMutated="@(() => receivedNotification = true)" />
+
+@if (receivedNotification)
+{
+    <p id="received-notification">Received notification</p>
+}
+
+@code {
+    bool receivedNotification;
+}

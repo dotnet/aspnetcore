@@ -30,7 +30,7 @@ internal static partial class FileResultHelper
     {
         const int BufferSize = 64 * 1024;
         var outputStream = context.Response.Body;
-        using (fileStream)
+        await using (fileStream)
         {
             try
             {

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace BasicTestApp;
 
@@ -15,7 +16,7 @@ public class PreserveStateService : IDisposable
     public PreserveStateService(PersistentComponentState componentApplicationState)
     {
         _componentApplicationState = componentApplicationState;
-        _persistingSubscription = _componentApplicationState.RegisterOnPersisting(PersistState);
+        _persistingSubscription = _componentApplicationState.RegisterOnPersisting(PersistState, RenderMode.InteractiveAuto);
         TryRestoreState();
     }
 

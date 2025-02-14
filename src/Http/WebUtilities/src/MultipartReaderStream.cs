@@ -145,9 +145,19 @@ internal sealed class MultipartReaderStream : Stream
         if (_observedLength < _position)
         {
             _observedLength = _position;
-            if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
+            if (LengthLimit.HasValue &&
+                LengthLimit.GetValueOrDefault() is var lengthLimit &&
+                _observedLength > lengthLimit)
             {
-                throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
+                // If we hit the limit before the first boundary then we're using the header length limit, not the body length limit.
+                if (_boundary.BeforeFirstBoundary())
+                {
+                    throw new InvalidDataException($"Multipart header length limit {lengthLimit} exceeded. Too much data before the first boundary.");
+                }
+                else
+                {
+                    throw new InvalidDataException($"Multipart body length limit {lengthLimit} exceeded.");
+                }
             }
         }
         return read;
@@ -167,7 +177,27 @@ internal sealed class MultipartReaderStream : Stream
         }
         var bufferedData = _innerStream.BufferedData;
 
-        // scan for a boundary match, full or partial.
+        var index = bufferedData.AsSpan().IndexOf(_boundary.BoundaryBytes);
+        if (index >= 0)
+        {
+            // There is data before the boundary, we should return it to the user
+            if (index != 0)
+            {
+                // Sync, it's already buffered
+                var slice = buffer.AsSpan(offset, Math.Min(count, index));
+
+                var readAmount = _innerStream.Read(slice);
+                return UpdatePosition(readAmount);
+            }
+            else
+            {
+                var length = _boundary.BoundaryBytes.Length;
+
+                return ReadBoundary(this, length);
+            }
+        }
+
+        // scan for a partial boundary match.
         int read;
         if (SubMatch(bufferedData, _boundary.BoundaryBytes, out var matchOffset, out var matchCount))
         {
@@ -181,28 +211,33 @@ internal sealed class MultipartReaderStream : Stream
             var length = _boundary.BoundaryBytes.Length;
             Debug.Assert(matchCount == length);
 
-            // "The boundary may be followed by zero or more characters of
-            // linear whitespace. It is then terminated by either another CRLF"
-            // or -- for the final boundary.
-            var boundary = _bytePool.Rent(length);
-            read = _innerStream.Read(boundary, 0, length);
-            _bytePool.Return(boundary);
-            Debug.Assert(read == length); // It should have all been buffered
-
-            var remainder = _innerStream.ReadLine(lengthLimit: 100); // Whitespace may exceed the buffer.
-            remainder = remainder.Trim();
-            if (string.Equals("--", remainder, StringComparison.Ordinal))
-            {
-                FinalBoundaryFound = true;
-            }
-            Debug.Assert(FinalBoundaryFound || string.Equals(string.Empty, remainder, StringComparison.Ordinal), "Un-expected data found on the boundary line: " + remainder);
-            _finished = true;
-            return 0;
+            return ReadBoundary(this, length);
         }
 
         // No possible boundary match within the buffered data, return the data from the buffer.
         read = _innerStream.Read(buffer, offset, Math.Min(count, bufferedData.Count));
         return UpdatePosition(read);
+
+        static int ReadBoundary(MultipartReaderStream stream, int length)
+        {
+            // "The boundary may be followed by zero or more characters of
+            // linear whitespace. It is then terminated by either another CRLF"
+            // or -- for the final boundary.
+            var boundary = stream._bytePool.Rent(length);
+            var read = stream._innerStream.Read(boundary, 0, length);
+            stream._bytePool.Return(boundary);
+            Debug.Assert(read == length); // It should have all been buffered
+
+            var remainder = stream._innerStream.ReadLine(lengthLimit: 100).AsSpan(); // Whitespace may exceed the buffer.
+            remainder = remainder.Trim();
+            if (remainder.Equals("--", StringComparison.Ordinal))
+            {
+                stream.FinalBoundaryFound = true;
+            }
+            Debug.Assert(stream.FinalBoundaryFound || remainder.IsEmpty, "Un-expected data found on the boundary line: " + remainder.ToString());
+            stream._finished = true;
+            return 0;
+        }
     }
 
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -222,6 +257,27 @@ internal sealed class MultipartReaderStream : Stream
         }
         var bufferedData = _innerStream.BufferedData;
 
+        var index = bufferedData.AsSpan().IndexOf(_boundary.BoundaryBytes);
+
+        if (index >= 0)
+        {
+            // There is data before the boundary, we should return it to the user
+            if (index != 0)
+            {
+                var slice = buffer[..Math.Min(buffer.Length, index)];
+
+                // Sync, it's already buffered
+                var readAmount = _innerStream.Read(slice.Span);
+                return UpdatePosition(readAmount);
+            }
+            else
+            {
+                var length = _boundary.BoundaryBytes.Length;
+
+                return await ReadBoundaryAsync(this, length, cancellationToken);
+            }
+        }
+
         // scan for a boundary match, full or partial.
         int matchOffset;
         int matchCount;
@@ -231,70 +287,52 @@ internal sealed class MultipartReaderStream : Stream
             // We found a possible match, return any data before it.
             if (matchOffset > bufferedData.Offset)
             {
-                // Sync, it's already buffered
                 var slice = buffer[..Math.Min(buffer.Length, matchOffset - bufferedData.Offset)];
 
+                // Sync, it's already buffered
                 read = _innerStream.Read(slice.Span);
                 return UpdatePosition(read);
             }
 
-            var length = _boundary.BoundaryBytes!.Length;
+            var length = _boundary.BoundaryBytes.Length;
             Debug.Assert(matchCount == length);
 
-            // "The boundary may be followed by zero or more characters of
-            // linear whitespace. It is then terminated by either another CRLF"
-            // or -- for the final boundary.
-            var boundary = _bytePool.Rent(length);
-            read = _innerStream.Read(boundary, 0, length);
-            _bytePool.Return(boundary);
-            Debug.Assert(read == length); // It should have all been buffered
-
-            var remainder = await _innerStream.ReadLineAsync(lengthLimit: 100, cancellationToken: cancellationToken); // Whitespace may exceed the buffer.
-            remainder = remainder.Trim();
-            if (string.Equals("--", remainder, StringComparison.Ordinal))
-            {
-                FinalBoundaryFound = true;
-            }
-            Debug.Assert(FinalBoundaryFound || string.Equals(string.Empty, remainder, StringComparison.Ordinal), "Un-expected data found on the boundary line: " + remainder);
-
-            _finished = true;
-            return 0;
+            return await ReadBoundaryAsync(this, length, cancellationToken);
         }
 
         // No possible boundary match within the buffered data, return the data from the buffer.
         read = _innerStream.Read(buffer.Span[..Math.Min(buffer.Length, bufferedData.Count)]);
         return UpdatePosition(read);
+
+        static async Task<int> ReadBoundaryAsync(MultipartReaderStream stream, int length, CancellationToken cancellationToken)
+        {
+            // "The boundary may be followed by zero or more characters of
+            // linear whitespace. It is then terminated by either another CRLF"
+            // or -- for the final boundary.
+            var boundary = stream._bytePool.Rent(length);
+            var read = stream._innerStream.Read(boundary, 0, length);
+            stream._bytePool.Return(boundary);
+            Debug.Assert(read == length); // It should have all been buffered
+
+            var remainder = await stream._innerStream.ReadLineAsync(lengthLimit: 100, cancellationToken: cancellationToken); // Whitespace may exceed the buffer.
+            remainder = remainder.Trim();
+            if (string.Equals("--", remainder, StringComparison.Ordinal))
+            {
+                stream.FinalBoundaryFound = true;
+            }
+            Debug.Assert(stream.FinalBoundaryFound || string.Equals(string.Empty, remainder, StringComparison.Ordinal), "Un-expected data found on the boundary line: " + remainder);
+
+            stream._finished = true;
+            return 0;
+        }
     }
 
-    // Does segment1 contain all of matchBytes, or does it end with the start of matchBytes?
-    // 1: AAAAABBBBBCCCCC
-    // 2:      BBBBB
-    // Or:
+    // Does segment1 end with the start of matchBytes?
     // 1: AAAAABBB
     // 2:      BBBBB
-    private bool SubMatch(ArraySegment<byte> segment1, byte[] matchBytes, out int matchOffset, out int matchCount)
+    private static bool SubMatch(ArraySegment<byte> segment1, ReadOnlySpan<byte> matchBytes, out int matchOffset, out int matchCount)
     {
-        // case 1: does segment1 fully contain matchBytes?
-        {
-            var matchBytesLengthMinusOne = matchBytes.Length - 1;
-            var matchBytesLastByte = matchBytes[matchBytesLengthMinusOne];
-            var segmentEndMinusMatchBytesLength = segment1.Offset + segment1.Count - matchBytes.Length;
-
-            matchOffset = segment1.Offset;
-            while (matchOffset < segmentEndMinusMatchBytesLength)
-            {
-                var lookaheadTailChar = segment1.Array![matchOffset + matchBytesLengthMinusOne];
-                if (lookaheadTailChar == matchBytesLastByte &&
-                    CompareBuffers(segment1.Array, matchOffset, matchBytes, 0, matchBytesLengthMinusOne) == 0)
-                {
-                    matchCount = matchBytes.Length;
-                    return true;
-                }
-                matchOffset += _boundary.GetSkipValue(lookaheadTailChar);
-            }
-        }
-
-        // case 2: does segment1 end with the start of matchBytes?
+        matchOffset = Math.Max(segment1.Offset, segment1.Offset + segment1.Count - matchBytes.Length);
         var segmentEnd = segment1.Offset + segment1.Count;
 
         // clear matchCount to zero
@@ -315,18 +353,22 @@ internal sealed class MultipartReaderStream : Stream
                 break;
             }
         }
+
         return matchCount > 0;
     }
 
-    private static int CompareBuffers(byte[] buffer1, int offset1, byte[] buffer2, int offset2, int count)
+    public override void CopyTo(Stream destination, int bufferSize)
     {
-        for (; count-- > 0; offset1++, offset2++)
-        {
-            if (buffer1[offset1] != buffer2[offset2])
-            {
-                return buffer1[offset1] - buffer2[offset2];
-            }
-        }
-        return 0;
+        bufferSize = Math.Max(4096, bufferSize);
+        base.CopyTo(destination, bufferSize);
+    }
+
+    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    {
+        // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
+        // seekable *and* the length is 0 (it passes in a buffer size of 1).
+        // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
+        bufferSize = Math.Max(4096, bufferSize);
+        return base.CopyToAsync(destination, bufferSize, cancellationToken);
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -18,10 +18,10 @@
     <Compile Include="..\..\shared\src\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" LinkBase="Shared"
       Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
-    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
-      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,5 +52,6 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+    <InternalsVisibleTo Include="KeyManagementSimulator" />
   </ItemGroup>
 </Project>

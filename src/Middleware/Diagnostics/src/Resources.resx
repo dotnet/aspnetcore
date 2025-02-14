@@ -280,4 +280,13 @@
   <data name="ErrorPageHtml_NameColumn" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="ErrorPageHtml_Metadata" xml:space="preserve">
+    <value>Endpoint Metadata</value>
+  </data>
+  <data name="ErrorPageHtml_MetadataDetail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="ErrorPageHtml_MetadataTypeColumn" xml:space="preserve">
+    <value>Type</value>
+  </data>
 </root>

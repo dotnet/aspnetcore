@@ -5,11 +5,18 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class ExpressionFormatter
 {
+    static ExpressionFormatter()
+    {
+        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+    }
+
     internal const int StackAllocBufferSize = 128;
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
@@ -25,9 +32,15 @@ internal static class ExpressionFormatter
 
     public static string FormatLambda(LambdaExpression expression)
     {
+        return FormatLambda(expression, prefix: null);
+    }
+
+    public static string FormatLambda(LambdaExpression expression, string? prefix = null)
+    {
         var builder = new ReverseStringBuilder(stackalloc char[StackAllocBufferSize]);
         var node = expression.Body;
         var wasLastExpressionMemberAccess = false;
+        var wasLastExpressionIndexer = false;
 
         while (node is not null)
         {
@@ -45,20 +58,32 @@ internal static class ExpressionFormatter
                         throw new InvalidOperationException("Method calls cannot be formatted.");
                     }
 
+                    node = methodCallExpression.Object;
+                    if (prefix != null && node is ConstantExpression)
+                    {
+                        break;
+                    }
+
                     if (wasLastExpressionMemberAccess)
                     {
                         wasLastExpressionMemberAccess = false;
                         builder.InsertFront(".");
                     }
+                    wasLastExpressionIndexer = true;
 
                     builder.InsertFront("]");
                     FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
                     builder.InsertFront("[");
-                    node = methodCallExpression.Object;
+                    
                     break;
 
                 case ExpressionType.ArrayIndex:
                     var binaryExpression = (BinaryExpression)node;
+                    node = binaryExpression.Left;
+                    if (prefix != null && node is ConstantExpression)
+                    {
+                        break;
+                    }
 
                     if (wasLastExpressionMemberAccess)
                     {
@@ -69,23 +94,27 @@ internal static class ExpressionFormatter
                     builder.InsertFront("]");
                     FormatIndexArgument(binaryExpression.Right, ref builder);
                     builder.InsertFront("[");
-                    node = binaryExpression.Left;
+                    wasLastExpressionIndexer = true;
                     break;
 
                 case ExpressionType.MemberAccess:
                     var memberExpression = (MemberExpression)node;
-                    var nextNode = memberExpression.Expression;
+                    node = memberExpression.Expression;
+                    if (prefix != null && node is ConstantExpression)
+                    {
+                        break;
+                    }
 
                     if (wasLastExpressionMemberAccess)
                     {
                         builder.InsertFront(".");
                     }
                     wasLastExpressionMemberAccess = true;
+                    wasLastExpressionIndexer = false;
 
-                    var name = memberExpression.Member.Name;
+                    var name = memberExpression.Member.GetCustomAttribute<DataMemberAttribute>()?.Name ?? memberExpression.Member.Name;
                     builder.InsertFront(name);
 
-                    node = nextNode;
                     break;
 
                 default:
@@ -93,6 +122,15 @@ internal static class ExpressionFormatter
                     node = null;
                     break;
             }
+        }
+
+        if (prefix != null)
+        {
+            if (!builder.Empty && !wasLastExpressionIndexer)
+            {
+                builder.InsertFront(".");
+            }
+            builder.InsertFront(prefix);
         }
 
         var result = builder.ToString();
@@ -129,7 +167,7 @@ internal static class ExpressionFormatter
             var declaringType = methodInfo.DeclaringType;
             if (declaringType is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
@@ -137,14 +175,14 @@ internal static class ExpressionFormatter
             var defaultMember = declaringType.GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
             if (defaultMember is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             // Find default property (the indexer) and confirm its getter is the method in this expression.
             var runtimeProperties = declaringType.GetRuntimeProperties();
             if (runtimeProperties is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             foreach (var property in runtimeProperties)
@@ -152,11 +190,11 @@ internal static class ExpressionFormatter
                 if (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
                     property.GetMethod == methodInfo)
                 {
-                    return new(IsSingleArgumentIndexer: true);
+                    return new(isSingleArgumentIndexer: true);
                 }
             }
 
-            return new(IsSingleArgumentIndexer: false);
+            return new(isSingleArgumentIndexer: false);
         }
     }
 
@@ -266,5 +304,13 @@ internal static class ExpressionFormatter
         }
     }
 
-    private record struct MethodInfoData(bool IsSingleArgumentIndexer);
+    private readonly struct MethodInfoData
+    {
+        public bool IsSingleArgumentIndexer { get; }
+
+        public MethodInfoData(bool isSingleArgumentIndexer)
+        {
+            IsSingleArgumentIndexer = isSingleArgumentIndexer;
+        }
+    }
 }

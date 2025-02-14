@@ -1,21 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Edge;
-using OpenQA.Selenium.IE;
-using OpenQA.Selenium.Remote;
-using OpenQA.Selenium.Safari;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.E2ETesting;
@@ -23,7 +14,9 @@ namespace Microsoft.AspNetCore.E2ETesting;
 public class BrowserFixture : IAsyncLifetime
 {
     public static string StreamingContext { get; } = "streaming";
-    private readonly ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+    public static string RoutingTestContext { get; } = "routing";
+
+    private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
     {
@@ -51,7 +44,7 @@ public class BrowserFixture : IAsyncLifetime
         // We emit an assemblymetadata attribute that reflects the value of SeleniumE2ETestsSupported at build
         // time and we use that to conditionally skip Selenium tests parts.
         var attribute = typeof(BrowserFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(a => a.Key == "Microsoft.AspNetCore.Testing.Selenium.Supported");
+            .SingleOrDefault(a => a.Key == "Microsoft.AspNetCore.InternalTesting.Selenium.Supported");
         var attributeValue = attribute != null ? bool.Parse(attribute.Value) : false;
 
         // The environment variable below can be set up before running the tests so as to override the default
@@ -72,7 +65,7 @@ public class BrowserFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var browsers = await Task.WhenAll(_browsers.Values);
+        var browsers = _browsers.Values;
         foreach (var (browser, _) in browsers)
         {
             browser?.Quit();
@@ -115,34 +108,35 @@ public class BrowserFixture : IAsyncLifetime
         }
     }
 
-    public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
+    public (IWebDriver, ILogs) GetOrCreateBrowser(ITestOutputHelper output, string isolationContext = "")
     {
-        Func<string, ITestOutputHelper, Task<(IWebDriver, ILogs)>> createBrowserFunc;
-        if (E2ETestOptions.Instance.SauceTest)
+        if (!IsHostAutomationSupported())
         {
-            createBrowserFunc = CreateSauceBrowserAsync;
-        }
-        else
-        {
-            if (!IsHostAutomationSupported())
-            {
-                output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return Task.FromResult<(IWebDriver, ILogs)>(default);
-            }
-
-            createBrowserFunc = CreateBrowserAsync;
+            output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
+            return default;
         }
 
-        return _browsers.GetOrAdd(isolationContext, createBrowserFunc, output);
+        return _browsers.GetOrAdd(isolationContext, CreateBrowser, output);
     }
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    private async Task<(IWebDriver browser, ILogs log)> CreateBrowserAsync(string context, ITestOutputHelper output)
+    private (IWebDriver browser, ILogs log) CreateBrowser(string context, ITestOutputHelper output)
     {
         var opts = new ChromeOptions();
 
-        if (string.Equals(context, StreamingContext, StringComparison.Ordinal))
+        if (context?.StartsWith(RoutingTestContext, StringComparison.Ordinal) == true)
+        {
+            // Enables WebDriver BiDi, which is required to allow the 'beforeunload' event
+            // to display an alert dialog. This is needed by some of our routing tests.
+            // See: https://w3c.github.io/webdriver/#user-prompts
+            // We could consider making this the default for all tests when the BiDi spec
+            // becomes standard (it's in draft at the time of writing).
+            // See: https://w3c.github.io/webdriver-bidi/
+            opts.UseWebSocketUrl = true;
+        }
+
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
             opts.PageLoadStrategy = PageLoadStrategy.None;
@@ -183,8 +177,6 @@ public class BrowserFixture : IAsyncLifetime
             opts.AddUserProfilePreference("download.default_directory", Path.Combine(userProfileDirectory, "Downloads"));
         }
 
-        var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
-
         var attempt = 0;
         const int maxAttempts = 3;
         Exception innerException;
@@ -201,9 +193,9 @@ public class BrowserFixture : IAsyncLifetime
                 // Additionally, if we think the selenium server has become irresponsive, we could spin up
                 // replace the current selenium server instance and let a new instance take over for the
                 // remaining tests.
-                var driver = new RemoteWebDriverWithLogs(
-                    instance.Uri,
-                    opts.ToCapabilities(),
+                var driver = new ChromeDriver(
+                    CreateChromeDriverService(output),
+                    opts,
                     TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
@@ -224,6 +216,25 @@ public class BrowserFixture : IAsyncLifetime
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
     }
 
+    private static ChromeDriverService CreateChromeDriverService(ITestOutputHelper output)
+    {
+        // In AzDO, the path to the system chromedriver is in an env var called CHROMEWEBDRIVER
+        // We want to use this because it should match the installed browser version
+        // If the env var is not set, then we fall back on allowing Selenium Manager to download
+        // and use an up-to-date chromedriver
+        var chromeDriverPathEnvVar = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
+        if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
+        {
+            output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
+            return ChromeDriverService.CreateDefaultService(chromeDriverPathEnvVar);
+        }
+        else
+        {
+            output.WriteLine($"Using default chromedriver from Selenium Manager");
+            return ChromeDriverService.CreateDefaultService();
+        }
+    }
+
     private static string UserProfileDirectory(string context)
     {
         if (string.IsNullOrEmpty(context))
@@ -232,138 +243,5 @@ public class BrowserFixture : IAsyncLifetime
         }
 
         return Path.Combine(Path.GetTempPath(), "BrowserFixtureUserProfiles", context);
-    }
-
-    private async Task<(IWebDriver browser, ILogs log)> CreateSauceBrowserAsync(string context, ITestOutputHelper output)
-    {
-        var sauce = E2ETestOptions.Instance.Sauce;
-
-        if (sauce == null ||
-            string.IsNullOrEmpty(sauce.TestName) ||
-            string.IsNullOrEmpty(sauce.Username) ||
-            string.IsNullOrEmpty(sauce.AccessKey) ||
-            string.IsNullOrEmpty(sauce.TunnelIdentifier) ||
-            string.IsNullOrEmpty(sauce.PlatformName) ||
-            string.IsNullOrEmpty(sauce.BrowserName))
-        {
-            throw new InvalidOperationException("Required SauceLabs environment variables not set.");
-        }
-
-        var name = sauce.TestName;
-        if (!string.IsNullOrEmpty(context))
-        {
-            name = $"{name} - {context}";
-        }
-
-        DriverOptions options;
-
-        switch (sauce.BrowserName.ToLowerInvariant())
-        {
-            case "chrome":
-                options = new ChromeOptions();
-                break;
-            case "safari":
-                options = new SafariOptions();
-                break;
-            case "internet explorer":
-                options = new InternetExplorerOptions();
-                break;
-            case "microsoftedge":
-                options = new EdgeOptions();
-                break;
-            default:
-                throw new InvalidOperationException($"Browser name {sauce.BrowserName} not recognized");
-        }
-
-        // Required config
-        options.AddAdditionalOption("username", sauce.Username);
-        options.AddAdditionalOption("accessKey", sauce.AccessKey);
-        options.AddAdditionalOption("tunnelIdentifier", sauce.TunnelIdentifier);
-        options.AddAdditionalOption("name", name);
-
-        if (!string.IsNullOrEmpty(sauce.BrowserName))
-        {
-            options.AddAdditionalOption("browserName", sauce.BrowserName);
-        }
-
-        if (!string.IsNullOrEmpty(sauce.PlatformVersion))
-        {
-            options.PlatformName = sauce.PlatformName;
-            options.AddAdditionalOption("platformVersion", sauce.PlatformVersion);
-        }
-        else
-        {
-            // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
-            options.AddAdditionalOption("platform", sauce.PlatformName);
-        }
-
-        if (!string.IsNullOrEmpty(sauce.BrowserVersion))
-        {
-            options.BrowserVersion = sauce.BrowserVersion;
-        }
-
-        if (!string.IsNullOrEmpty(sauce.DeviceName))
-        {
-            options.AddAdditionalOption("deviceName", sauce.DeviceName);
-        }
-
-        if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
-        {
-            options.AddAdditionalOption("deviceOrientation", sauce.DeviceOrientation);
-        }
-
-        if (!string.IsNullOrEmpty(sauce.AppiumVersion))
-        {
-            options.AddAdditionalOption("appiumVersion", sauce.AppiumVersion);
-        }
-
-        if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
-        {
-            options.AddAdditionalOption("seleniumVersion", sauce.SeleniumVersion);
-        }
-
-        var capabilities = options.ToCapabilities();
-
-        //await SauceConnectServer.StartAsync(output);
-        await Task.Yield();
-
-        var attempt = 0;
-        const int maxAttempts = 3;
-        do
-        {
-            try
-            {
-                // Attempt to create a new browser in SauceLabs.
-                var driver = new RemoteWebDriver(
-                    new Uri("http://localhost:4445/wd/hub"),
-                    capabilities,
-                    TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
-
-                // Make sure implicit waits are disabled as they don't mix well with explicit waiting
-                // see https://www.selenium.dev/documentation/en/webdriver/waits/#implicit-wait
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
-                var logs = driver.Manage().Logs;
-
-                return (driver, logs);
-            }
-            catch (Exception ex)
-            {
-                output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
-            }
-
-            attempt++;
-
-        } while (attempt < maxAttempts);
-
-        throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
-    }
-
-    // This is a workaround for https://github.com/SeleniumHQ/selenium/issues/8229
-    private sealed class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
-    {
-        public RemoteWebDriverWithLogs(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
-            : base(remoteAddress, desiredCapabilities, commandTimeout)
-        {
-        }
     }
 }

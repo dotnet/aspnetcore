@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
@@ -27,7 +27,7 @@ public class DynamicComponentRenderingTest : ServerTestBase<ToggleExecutionModeS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         app = Browser.MountTestComponent<DynamicComponentRendering>();
         testCasePicker = new SelectElement(app.FindElement(By.Id("dynamic-component-case-picker")));
     }

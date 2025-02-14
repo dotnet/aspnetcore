@@ -72,7 +72,7 @@ export module DotNet {
       // However since we're the one calling the import keyword, they would be resolved relative to
       // this framework bundle URL. Fix this by providing an absolute URL.
       if (typeof url === "string" && url.startsWith("./")) {
-          url = new URL(url.substr(2), document.baseURI).toString();
+          url = new URL(url.substring(2), document.baseURI).toString();
       }
 
       return import(/* webpackIgnore: true */ url);

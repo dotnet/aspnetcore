@@ -3,10 +3,14 @@
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// Defines an abstraction for resolving inline constraints as instances of <see cref="IRouteConstraint"/>.
 /// </summary>
 public interface IInlineConstraintResolver
+#else
+internal interface IInlineConstraintResolver
+#endif
 {
     /// <summary>
     /// Resolves the inline constraint.

@@ -18,6 +18,13 @@ public class ExceptionHandlerOptions
     public PathString ExceptionHandlingPath { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the handler needs to create a separate <see cref="IServiceProvider"/> scope and
+    /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request to handle an error.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    public bool CreateScopeForErrors { get; set; }
+
+    /// <summary>
     /// The <see cref="RequestDelegate" /> that will handle the exception. If this is not
     /// explicitly provided, the subsequent middleware pipeline will be used by default.
     /// </summary>
@@ -31,4 +38,12 @@ public class ExceptionHandlerOptions
     /// the original exception.
     /// </summary>
     public bool AllowStatusCode404Response { get; set; }
+
+    /// <summary>
+    /// Gets or sets a delegate used to map an exception to a http status code.
+    /// </summary>
+    /// <remarks>
+    /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code 500 is used.
+    /// </remarks>
+    public Func<Exception, int>? StatusCodeSelector { get; set; }
 }

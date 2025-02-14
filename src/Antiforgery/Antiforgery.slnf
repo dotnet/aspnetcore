@@ -1,7 +1,8 @@
 ﻿{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
-    "projects" : [
+    "projects": [
+      "src\\Antiforgery\\samples\\MinimalFormSample\\MinimalFormSample.csproj",
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\Antiforgery\\test\\Microsoft.AspNetCore.Antiforgery.Test.csproj"
     ]

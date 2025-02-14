@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
@@ -270,6 +271,54 @@ public class DefaultHttpContextTests
         context.Uninitialize();
 
         Assert.False(context._active);
+    }
+
+    [Fact]
+    public void DebuggerToString_EmptyRequest()
+    {
+        var context = new DefaultHttpContext();
+
+        var debugText = HttpContextDebugFormatter.ContextToString(context, reasonPhrase: null);
+        Assert.Equal("(unspecified) 200", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasReason()
+    {
+        var context = new DefaultHttpContext();
+
+        var debugText = HttpContextDebugFormatter.ContextToString(context, reasonPhrase: "OK");
+        Assert.Equal("(unspecified) 200 OK", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasMethod()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+
+        var debugText = HttpContextDebugFormatter.ContextToString(context, reasonPhrase: null);
+        Assert.Equal("GET (unspecified) 200", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasProtocol()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Protocol = "HTTP/2";
+
+        var debugText = HttpContextDebugFormatter.ContextToString(context, reasonPhrase: null);
+        Assert.Equal("(unspecified) HTTP/2 200", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasContentType()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/json";
+
+        var debugText = HttpContextDebugFormatter.ContextToString(context, reasonPhrase: null);
+        Assert.Equal("(unspecified) application/json 200", debugText);
     }
 
     void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)

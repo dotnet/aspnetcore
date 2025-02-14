@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if !COMPONENTS
 /// <summary>
 /// Represents a parsed route template with default values and constraints.
 /// Use <see cref="RoutePatternFactory"/> to create <see cref="RoutePattern"/>
@@ -14,6 +15,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
 public sealed class RoutePattern
+#else
+[DebuggerDisplay("{DebuggerToString()}")]
+internal sealed class RoutePattern
+#endif
 {
     /// <summary>
     /// A marker object that can be used in <see cref="RequiredValues"/> to designate that

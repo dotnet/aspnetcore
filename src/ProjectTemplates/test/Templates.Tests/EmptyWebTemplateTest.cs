@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 public class EmptyWebTemplateTest : LoggedTest
 {
@@ -79,8 +81,8 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022

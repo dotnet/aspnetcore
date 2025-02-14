@@ -199,6 +199,7 @@ internal sealed class SniOptionsSelector
             ServerCertificateContext = sslOptions.ServerCertificateContext,
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
             CertificateChainPolicy = sslOptions.CertificateChainPolicy,
+            AllowTlsResume = sslOptions.AllowTlsResume,
         };
 
     private sealed class SniOptions

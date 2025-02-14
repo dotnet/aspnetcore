@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -1013,7 +1014,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
         Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
         Assert.True(SetCookieHeaderValue.TryParseStrictList(values.ToList(), out var parsedValues));
-        Assert.Equal(1, parsedValues.Count);
+        Assert.Single(parsedValues);
         Assert.True(StringSegment.IsNullOrEmpty(parsedValues.Single().Value));
     }
 
@@ -1285,7 +1286,10 @@ public class OpenIdConnectEventTests
                             EndSessionEndpoint = "http://testhost/end"
                         };
                         o.StateDataFormat = new TestStateDataFormat();
+#pragma warning disable CS0618 // Type or member is obsolete
                         o.SecurityTokenValidator = new TestTokenValidator();
+#pragma warning restore CS0618 // Type or member is obsolete
+                        o.UseSecurityTokenValidator = true;
                         o.ProtocolValidator = new TestProtocolValidator();
                         o.BackchannelHttpHandler = new TestBackchannel();
                     });

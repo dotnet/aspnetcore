@@ -6,8 +6,9 @@ import { Encoder, Decoder } from "@msgpack/msgpack";
 import { MessagePackOptions } from "./MessagePackOptions";
 
 import {
+    AckMessage,
     CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
-    LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat,
+    LogLevel, MessageHeaders, MessageType, NullLogger, SequenceMessage, StreamInvocationMessage, StreamItemMessage, TransferFormat,
 } from "@microsoft/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
@@ -25,7 +26,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     /** The name of the protocol. This is used by SignalR to resolve the protocol between the client and server. */
     public readonly name: string = "messagepack";
     /** The version of the protocol. */
-    public readonly version: number = 1;
+    public readonly version: number = 2;
     /** The TransferFormat of the protocol. */
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
@@ -114,6 +115,10 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this._writeCancelInvocation(message as CancelInvocationMessage);
             case MessageType.Close:
                 return this._writeClose();
+            case MessageType.Ack:
+                return this._writeAck(message as AckMessage);
+            case MessageType.Sequence:
+                return this._writeSequence(message as SequenceMessage);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -142,6 +147,10 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this._createPingMessage(properties);
             case MessageType.Close:
                 return this._createCloseMessage(properties);
+            case MessageType.Ack:
+                return this._createAckMessage(properties);
+            case MessageType.Sequence:
+                return this._createSequenceMessage(properties);
             default:
                 // Future protocol changes can add message types, old clients can ignore them
                 logger.log(LogLevel.Information, "Unknown message type '" + messageType + "' ignored.");
@@ -252,6 +261,30 @@ export class MessagePackHubProtocol implements IHubProtocol {
         return completionMessage;
     }
 
+    private _createAckMessage(properties: any[]): HubMessage {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 1) {
+            throw new Error("Invalid payload for Ack message.");
+        }
+
+        return {
+            sequenceId: properties[1],
+            type: MessageType.Ack,
+        } as HubMessage;
+    }
+
+    private _createSequenceMessage(properties: any[]): HubMessage {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 1) {
+            throw new Error("Invalid payload for Sequence message.");
+        }
+
+        return {
+            sequenceId: properties[1],
+            type: MessageType.Sequence,
+        } as HubMessage;
+    }
+
     private _writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         let payload: any;
         if (invocationMessage.streamIds) {
@@ -313,6 +346,18 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private _writeClose(): ArrayBuffer {
         const payload = this._encoder.encode([MessageType.Close, null]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private _writeAck(ackMessage: AckMessage): ArrayBuffer {
+        const payload = this._encoder.encode([MessageType.Ack, ackMessage.sequenceId]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private _writeSequence(sequenceMessage: SequenceMessage): ArrayBuffer {
+        const payload = this._encoder.encode([MessageType.Sequence, sequenceMessage.sequenceId]);
 
         return BinaryMessageFormat.write(payload.slice());
     }

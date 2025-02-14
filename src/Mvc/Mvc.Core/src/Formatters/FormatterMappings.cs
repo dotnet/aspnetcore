@@ -92,10 +92,7 @@ public class FormatterMappings
 
     private static string RemovePeriodIfPresent(string format)
     {
-        if (string.IsNullOrEmpty(format))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(format);
 
         if (format.StartsWith('.'))
         {

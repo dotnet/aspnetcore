@@ -3,14 +3,20 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ComponentsWebAssembly-CSharp</title>
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/bootstrap-icons/bootstrap-icons.min.css" />
+    <!--#if SampleContent -->
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!--#endif -->
     <link rel="stylesheet" href="css/app.css" />
+    <!--#if SampleContent -->
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="ComponentsWebAssembly-CSharp.styles.css" rel="stylesheet" />
+    <!--#else -->
+    <!-- If you add any scoped CSS files, uncomment the following to load them
+    <link href="ComponentsWebAssembly-CSharp.styles.css" rel="stylesheet" /> -->
+    <!--#endif -->
     <!--#if PWA -->
     <link href="manifest.webmanifest" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
@@ -29,8 +35,8 @@
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
     </div>
 <!--#if (IndividualLocalAuth)  -->
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>

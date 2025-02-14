@@ -12,8 +12,6 @@ public class Startup
     // Set up application services
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTransient<ILoggerFactory, LoggerFactory>();
-
         var wellKnownChangeToken = new WellKnownChangeToken();
         services.AddControllers(options =>
         {

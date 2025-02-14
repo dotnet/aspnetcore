@@ -7,7 +7,8 @@ using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Timeouts;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
@@ -498,7 +499,6 @@ public class WebSocketMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48933")]
     public async Task WebSocket_Abort_Interrupts_Pending_ReceiveAsync()
     {
         WebSocket serverSocket = null;
@@ -517,21 +517,19 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
-
             try
             {
                 while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
                 {
                     if (firstReceiveOccured.IsSet)
                     {
-                        var pendingResponse = serverSocket.ReceiveAsync(serverBuffer, default);
+                        var pendingResponse = serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), default);
                         secondReceiveInitiated.Set();
                         var response = await pendingResponse;
                     }
                     else
                     {
-                        var response = await serverSocket.ReceiveAsync(serverBuffer, default);
+                        var response = await serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), default);
                         firstReceiveOccured.Set();
                     }
                 }
@@ -544,6 +542,7 @@ public class WebSocketMiddlewareTests : LoggedTest
             catch (Exception ex)
             {
                 // Capture this exception so a test failure can give us more information.
+                Logger.LogError(ex, "Unexpected error.");
                 receiveException = ex;
             }
             finally
@@ -593,15 +592,13 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
-
             var finishedWithOperationCancelled = false;
 
             try
             {
                 while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
                 {
-                    var response = await serverSocket.ReceiveAsync(serverBuffer, cts.Token);
+                    var response = await serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), cts.Token);
                     firstReceiveOccured.Set();
                 }
             }
@@ -609,6 +606,11 @@ public class WebSocketMiddlewareTests : LoggedTest
             {
                 operationWasCancelled.Set();
                 finishedWithOperationCancelled = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Unexpected error.");
+                throw;
             }
             finally
             {
@@ -789,6 +791,57 @@ public class WebSocketMiddlewareTests : LoggedTest
             using (var client = new ClientWebSocket())
             {
                 await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task PingTimeoutCancelsReceiveAsync()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+        {
+            try
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                await webSocket.ReceiveAsync(new byte[1], cancellationToken: default);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+            finally
+            {
+                tcs.TrySetResult();
+            }
+        },
+        o =>
+        {
+            o.KeepAliveInterval = TimeSpan.FromMilliseconds(1);
+            o.KeepAliveTimeout = TimeSpan.FromMilliseconds(1);
+        }))
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
+                uri.Scheme = "http";
+
+                // Craft a valid WebSocket Upgrade request
+                using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                {
+                    request.Headers.Connection.Clear();
+                    request.Headers.Connection.Add("Upgrade");
+                    request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
+                    request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
+                    // SecWebSocketKey required to be 16 bytes
+                    request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+
+                    var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(() => tcs.Task);
+                    Assert.True(ex is ConnectionAbortedException or WebSocketException, ex.GetType().FullName);
+                }
             }
         }
     }

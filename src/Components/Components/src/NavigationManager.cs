@@ -167,6 +167,17 @@ public abstract class NavigationManager
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>
+    /// Refreshes the current page via request to the server.
+    /// </summary>
+    /// <remarks>
+    /// If <paramref name="forceReload"/> is <c>true</c>, a full page reload will always be performed.
+    /// Otherwise, the response HTML may be merged with the document's existing HTML to preserve client-side state,
+    /// falling back on a full page reload if necessary.
+    /// </remarks>
+    public virtual void Refresh(bool forceReload = false)
+        => NavigateTo(Uri, forceLoad: true, replace: true);
+
+    /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
     /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
     /// </summary>
@@ -234,6 +245,32 @@ public abstract class NavigationManager
             // slash is present, but ASP.NET Core at least does by default when
             // using PathBase.
             return uri.Substring(_baseUri.OriginalString.Length - 1);
+        }
+
+        var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";
+        throw new ArgumentException(message);
+    }
+
+    internal ReadOnlySpan<char> ToBaseRelativePath(ReadOnlySpan<char> uri)
+    {
+        if (MemoryExtensions.StartsWith(uri, _baseUri!.OriginalString.AsSpan(), StringComparison.Ordinal))
+        {
+            // The absolute URI must be of the form "{baseUri}something" (where
+            // baseUri ends with a slash), and from that we return "something"
+            return uri[_baseUri.OriginalString.Length..];
+        }
+
+        var pathEndIndex = uri.IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri[..pathEndIndex];
+        if (_baseUri.OriginalString.EndsWith('/') && MemoryExtensions.Equals(uriPathOnly, _baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        {
+            // Special case: for the base URI "/something/", if you're at
+            // "/something" then treat it as if you were at "/something/" (i.e.,
+            // with the trailing slash). It's a bit ambiguous because we don't know
+            // whether the server would return the same page whether or not the
+            // slash is present, but ASP.NET Core at least does by default when
+            // using PathBase.
+            return uri[(_baseUri.OriginalString.Length - 1)..];
         }
 
         var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";

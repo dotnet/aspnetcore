@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\DefaultBuilder\\samples\\SampleApp\\DefaultBuilder.SampleApp.csproj",
       "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
       "src\\DefaultBuilder\\test\\Microsoft.AspNetCore.FunctionalTests\\Microsoft.AspNetCore.FunctionalTests.csproj",
@@ -29,6 +30,7 @@
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
@@ -38,7 +40,7 @@
       "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj"
     ]
   }
 }

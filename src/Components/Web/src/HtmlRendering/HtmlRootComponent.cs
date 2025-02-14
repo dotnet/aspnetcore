@@ -11,23 +11,19 @@ namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 public readonly struct HtmlRootComponent
 {
     private readonly StaticHtmlRenderer? _renderer;
+    private readonly int _componentId;
 
     internal HtmlRootComponent(StaticHtmlRenderer renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
-        ComponentId = componentId;
+        _componentId = componentId;
         QuiescenceTask = quiescenceTask;
     }
 
     /// <summary>
-    /// Gets the component ID.
-    /// </summary>
-    public int ComponentId { get; }
-
-    /// <summary>
     /// Gets a <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
     /// </summary>
-    public Task QuiescenceTask { get; } = Task.CompletedTask;
+    public Task QuiescenceTask { get; }
 
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
@@ -50,5 +46,5 @@ public readonly struct HtmlRootComponent
     /// </summary>
     /// <param name="output">The output destination.</param>
     public void WriteHtmlTo(TextWriter output)
-        => _renderer?.WriteComponentHtml(ComponentId, output);
+        => _renderer?.WriteComponentHtml(_componentId, output);
 }

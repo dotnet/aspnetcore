@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.Logger.LogInformation($"Current process ID: {Process.GetCurrentProcess().Id}");
+app.Logger.LogInformation($"Current process ID: {Environment.ProcessId}");
 
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
@@ -59,7 +58,7 @@ var superNested = inner.MapGroup("/group/{groupName}")
 
 superNested.MapGet("/", (string groupName, string nestedName) =>
 {
-   return $"Hello from {groupName}:{nestedName}!";
+    return $"Hello from {groupName}:{nestedName}!";
 });
 
 object Json() => new { message = "Hello, World!" };

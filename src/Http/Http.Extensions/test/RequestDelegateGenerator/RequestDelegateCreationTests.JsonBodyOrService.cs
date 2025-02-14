@@ -86,7 +86,7 @@ app.MapPost("/", (Todo todo, TestService svc) => $"{svc.TestServiceMethod()}, {t
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
-        public static IEnumerable<object[]> BodyParamOptionalityData
+    public static IEnumerable<object[]> BodyParamOptionalityData
     {
         get
         {
@@ -98,6 +98,11 @@ app.MapPost("/", (Todo todo, TestService svc) => $"{svc.TestServiceMethod()}, {t
                 new object[] { @"(Todo? todo = null) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo"},
                 new object[] { @"(Todo? todo) => $""Todo: {todo?.Name}"";", false, false, "Todo: " },
                 new object[] { @"(Todo? todo) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo" },
+                new object[] { @"(TodoStruct todo) => $""Todo: {todo.Name}"";", true, false, "Todo: Default Todo"},
+                new object[] { @"(TodoStruct? todo = null) => $""Todo: {todo?.Name}"";", false, false, "Todo: "},
+                new object[] { @"(TodoStruct? todo = null) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo"},
+                new object[] { @"(TodoStruct? todo) => $""Todo: {todo?.Name}"";", false, false, "Todo: " },
+                new object[] { @"(TodoStruct? todo) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo" },
             };
         }
     }

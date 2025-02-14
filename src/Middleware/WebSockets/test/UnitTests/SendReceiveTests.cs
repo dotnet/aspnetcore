@@ -94,7 +94,7 @@ public class SendReceiveTests
             await pair.ClientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
 
             // The exception should prevent this line from running
-            Assert.False(true, "Expected an exception to be thrown!");
+            Assert.Fail("Expected an exception to be thrown!");
         }
         catch (WebSocketException ex)
         {

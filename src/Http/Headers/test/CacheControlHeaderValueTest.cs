@@ -46,21 +46,21 @@ public class CacheControlHeaderValueTest
         Assert.Throws<ArgumentException>(() => cacheControl.NoCacheHeaders.Add(null));
         Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid PLACEHOLDER"));
         cacheControl.NoCacheHeaders.Add("PLACEHOLDER");
-        Assert.Equal(1, cacheControl.NoCacheHeaders.Count);
-        Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First());
+        Assert.Single(cacheControl.NoCacheHeaders);
+        Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First().AsSpan());
 
         Assert.NotNull(cacheControl.PrivateHeaders);
         Assert.Throws<ArgumentException>(() => cacheControl.PrivateHeaders.Add(null));
         Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid PLACEHOLDER"));
         cacheControl.PrivateHeaders.Add("PLACEHOLDER");
-        Assert.Equal(1, cacheControl.PrivateHeaders.Count);
-        Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First());
+        Assert.Single(cacheControl.PrivateHeaders);
+        Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First().AsSpan());
 
         // NameValueHeaderValue collection property
         Assert.NotNull(cacheControl.Extensions);
         Assert.Throws<ArgumentNullException>(() => cacheControl.Extensions.Add(null!));
         cacheControl.Extensions.Add(new NameValueHeaderValue("name", "value"));
-        Assert.Equal(1, cacheControl.Extensions.Count);
+        Assert.Single(cacheControl.Extensions);
         Assert.Equal(new NameValueHeaderValue("name", "value"), cacheControl.Extensions.First());
     }
 
@@ -468,7 +468,7 @@ public class CacheControlHeaderValueTest
     [InlineData("s-maxage=1.5")]
     // Invalid Extension values
     [InlineData("custom value")]
-    public void TryParse_DifferentInvalidScenarios_ReturnsFalse(string input)
+    public void TryParse_DifferentInvalidScenarios_ReturnsFalse(string? input)
     {
         CheckInvalidTryParse(input);
     }

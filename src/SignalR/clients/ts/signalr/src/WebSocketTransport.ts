@@ -159,7 +159,7 @@ export class WebSocketTransport implements ITransport {
         return Promise.resolve();
     }
 
-    private _close(event?: CloseEvent | Error | unknown): void {
+    private _close(event: CloseEvent | Error | unknown): void {
         // webSocket will be null if the transport did not start successfully
         if (this._webSocket) {
             // Clear websocket handlers because we are considering the socket closed now
@@ -171,6 +171,7 @@ export class WebSocketTransport implements ITransport {
         }
 
         this._logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
+
         if (this.onclose) {
             if (this._isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
                 this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason || "no reason given"}).`));

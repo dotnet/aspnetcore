@@ -25,7 +25,7 @@ public class MediaTypeHeaderValue
     private const char PeriodCharacter = '.';
     private const char PlusCharacter = '+';
 
-    private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
+    private static readonly char[] PeriodCharacterArray = [PeriodCharacter];
 
     private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
         = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// be implemented to work across all render modes. Component authors should only specify
 /// a fixed rendering mode when the component is incapable of running in other modes.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public abstract class RenderModeAttribute : Attribute
 {
     /// <summary>

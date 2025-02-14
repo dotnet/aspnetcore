@@ -1,0 +1,40 @@
+﻿@page "/streaming-scripts"
+@attribute [StreamRendering]
+
+<h3>Adding script tags during streaming SSR</h3>
+
+<p>
+    Script tags introduce additional considerations since they force "slotchange" events that interfere with how
+    we used to detect when streaming content was added. This test case is to show that it now works.
+</p>
+
+<p id="dynamic-script-output-src"></p>
+<p id="dynamic-script-output-inline"></p>
+
+@if (addScripts)
+{
+    <p id="dynamic-p-before">This content is added before the scripts</p>
+
+    <!-- Show it works with inline script -->
+    <script>
+        document.getElementById("dynamic-script-output-inline").textContent = "This was set by JS via inline script asynchronously (special chars: @expressionWithSpecialChars)";
+    </script>
+
+    <p id="dynamic-p-between">This content is added between the scripts</p>
+
+    <!-- Show it works with src -->
+    <script src="data:text/javascript;charset=utf-8,document.getElementById%28%22dynamic-script-output-src%22%29.textContent%20%3D%20%22This%20was%20set%20by%20JS%20via%20src%22%3B"></script>
+
+    <p id="dynamic-p-after">This content is added after the scripts</p>
+}
+
+@code {
+    bool addScripts;
+    string expressionWithSpecialChars = "' \" </script>"; // To show the dynamic content is JS-encoded, not HTML-encoded
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(250);
+        addScripts = true;
+    }
+}

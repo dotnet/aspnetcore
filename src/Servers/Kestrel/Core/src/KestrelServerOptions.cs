@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -27,13 +26,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 public class KestrelServerOptions
 {
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+    private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
+    internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private static readonly bool _finOnError;
+    private static readonly bool _disableCertificateFileWatching;
+
+    static KestrelServerOptions()
+    {
+        AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
+        AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+    }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; } = _finOnError;
+
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
     private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
+
+    /// <summary>
+    /// In HTTP/1.x, when a request target is in absolute-form (see RFC 9112 Section 3.2.2),
+    /// for example
+    /// <code>
+    /// GET http://www.example.com/path/to/index.html HTTP/1.1
+    /// </code>
+    /// the Host header is redundant.  In fact, the RFC says
+    ///
+    ///   When an origin server receives a request with an absolute-form of request-target,
+    ///   the origin server MUST ignore the received Host header field (if any) and instead
+    ///   use the host information of the request-target.
+    ///
+    /// However, it is still sensible to check whether the request target and Host header match
+    /// because a mismatch might indicate, for example, a spoofing attempt.  Setting this property
+    /// to true bypasses that check and unconditionally overwrites the Host header with the value
+    /// from the request target.
+    /// </summary>
+    /// <remarks>
+    /// This option does not apply to HTTP/2 or HTTP/3.
+    /// </remarks>
+    /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9112#section-3.2.2-8"/>
+    public bool AllowHostHeaderOverride { get; set; }
 
     // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
     internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
@@ -340,22 +375,25 @@ public class KestrelServerOptions
     {
         try
         {
-            var cert = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
-                .FirstOrDefault();
+            var certs = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false);
 
+            var cert = certs.Count > 0 ? certs[0] : null;
             if (cert is null)
             {
                 logger.UnableToLocateDevelopmentCertificate();
                 return null;
             }
 
-            var status = CertificateManager.Instance.CheckCertificateState(cert, interactive: false);
+            var status = CertificateManager.Instance.CheckCertificateState(cert);
             if (!status.Success)
             {
-                // Display a warning indicating to the user that a prompt might appear and provide instructions on what to do in that
-                // case. The underlying implementation of this check is specific to Mac OS and is handled within CheckCertificateState.
-                // Kestrel must NEVER cause a UI prompt on a production system. We only attempt this here because Mac OS is not supported
-                // in production.
+                // Failure is only possible on MacOS and indicates that, if there is a dev cert, it must be from
+                // a dotnet version prior to 7.0 - newer versions store it in such a way that this check succeeds.
+                // (Success does not mean that the dev cert has been trusted).
+                // In practice, success.FailureMessage will always be MacOSCertificateManager.InvalidCertificateState.
+                // Basically, we're just going to encourage the user to generate and trust the dev cert.  We support
+                // these older certificates not by accepting them as-is, but by modernizing them when dev-certs is run.
+                // If we detect an issue here, we can avoid a UI prompt below.
                 Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                 logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
@@ -363,9 +401,17 @@ public class KestrelServerOptions
                 return null;
             }
 
-            if (!CertificateManager.Instance.IsTrusted(cert))
+            // On MacOS, this may cause a UI prompt, since it requires accessing the keychain.  Kestrel must NEVER
+            // cause a UI prompt on a production system. We only attempt this here because MacOS is not supported
+            // in production.
+            switch (CertificateManager.Instance.GetTrustLevel(cert))
             {
-                logger.DeveloperCertificateNotTrusted();
+                case CertificateManager.TrustLevel.Partial:
+                    logger.DeveloperCertificatePartiallyTrusted();
+                    break;
+                case CertificateManager.TrustLevel.None:
+                    logger.DeveloperCertificateNotTrusted();
+                    break;
             }
 
             return cert;
@@ -410,7 +456,12 @@ public class KestrelServerOptions
         }
 
         var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
-        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, reloadOnChange);
+        var certificatePathWatcher = reloadOnChange && !_disableCertificateFileWatching
+            ? new CertificatePathWatcher(
+                ApplicationServices.GetRequiredService<IHostEnvironment>(),
+                ApplicationServices.GetRequiredService<ILogger<CertificatePathWatcher>>())
+            : null;
+        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, certificatePathWatcher, reloadOnChange);
         ConfigurationLoader = loader;
         return loader;
     }

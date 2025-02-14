@@ -24,7 +24,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
     protected override void InitializeAsyncCore()
     {
         // Always do a full page reload because these tests need to start with no custom event registrations
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<EventCustomArgsComponent>();
     }
 
@@ -77,7 +77,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "You pressed: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
             }, GetLogLines);
 
         // Check it was actually preventDefault-ed
-        Assert.Equal("", input.GetAttribute("value"));
+        Assert.Equal("", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "Yet another aliased event received: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
                 "Yet another aliased event received: b",
             }, GetLogLines);
 
-        Assert.Equal("ab", input.GetAttribute("value"));
+        Assert.Equal("ab", input.GetDomProperty("value"));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
 
     private string[] GetLogLines()
         => Browser.Exists(By.Id("test-log"))
-        .GetAttribute("value")
+        .GetDomProperty("value")
         .Replace("\r\n", "\n")
         .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }

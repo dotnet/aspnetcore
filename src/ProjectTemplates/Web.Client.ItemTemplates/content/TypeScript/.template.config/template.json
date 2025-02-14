@@ -1,13 +1,13 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [ "Web", "Script" ],
   "name": "TypeScript file",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A blank TypeScript source file",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
-  "precedence": "9800",
-  "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript.8.0",
+  "precedence": "10000",
+  "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript.10.0",
   "shortName": "tsfile",
   "sourceName": "file1",
   "tags": {

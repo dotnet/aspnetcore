@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PhotinoTestApp</title>
+    <base href="/subdir/" />
+    <link href="css/app.css" rel="stylesheet" />
+</head>
+
+<body>
+    <root>Loading...</root>
+
+    <!-- Explicit display:none required so StartupErrorNotificationTest can observe it change -->
+    <div id="blazor-error-ui" style="display: none;">
+        An unhandled error has occurred.
+        <a href class='reload'>Reload</a>
+        <a class='dismiss' style="cursor: pointer;">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js"></script>
+
+    <script>
+        // These methods are used to communicate with the test infrastructure. The test can
+        // send messages to this JS code to invoke things or to check the status of things.
+
+        function PostMessageToDotNet(message) {
+            if (window.chrome && window.chrome.webview) {
+                // Windows WebView2
+                window.chrome.webview.postMessage(message);
+            }
+            else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
+                // iOS and MacCatalyst WKWebView
+                window.webkit.messageHandlers.webwindowinterop.postMessage(message);
+            }
+            else {
+                // Android WebView
+                // TODO: Not yet supported
+            }
+        }
+
+        window.chrome.webview.addEventListener('message', event => {
+            // console.log("ALL: Received message: " + event.data);
+            if (!event.data.startsWith('__bwv')) {
+                console.log("FILTER: Received message: " + event.data);
+
+                if (event.data === "wvt:GetControlDivValue") {
+                    var controlDivValue = document.getElementById('controlDiv').innerText;
+                    PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
+                }
+                else if (event.data.startsWith("wvt:ClickButton:")) {
+                    var buttonToClick = event.data.substring(16);
+                    document.getElementById(buttonToClick).click();
+                }
+            }
+        });
+
+        PostMessageToDotNet('wvt:Started');
+
+    </script>
+</body>
+
+</html>

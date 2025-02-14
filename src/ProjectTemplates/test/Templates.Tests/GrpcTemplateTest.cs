@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -34,16 +34,14 @@ public class GrpcTemplateTest : LoggedTest
         }
     }
 
-    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = "OSX.1100.Amd64.Open;windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplate()
     {
         await GrpcTemplateCore();
     }
 
-    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
     [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
@@ -52,16 +50,14 @@ public class GrpcTemplateTest : LoggedTest
         await GrpcTemplateCore(args: new[] { ArgConstants.PublishNativeAot });
     }
 
-    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = "OSX.1100.Amd64.Open;windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateProgramMain()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain });
     }
 
-    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
     [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.

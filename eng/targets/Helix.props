@@ -12,7 +12,7 @@
     <HelixTimeout>00:45:00</HelixTimeout>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
-    <NodeVersion>16.11.0</NodeVersion>
+    <NodeVersion>20.7.0</NodeVersion>
 
     <!--
       Many tests depend on the .dotnet/ layouts but only a few (those that restore or test packages) require

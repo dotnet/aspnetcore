@@ -86,7 +86,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         });
 
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         });
 
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
     }
 
     [Fact]

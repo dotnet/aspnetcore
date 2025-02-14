@@ -1,25 +1,4 @@
 #nullable enable
-const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
-*REMOVED*Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
-Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
-Microsoft.AspNetCore.Http.IProblemDetailsService.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata
-Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata.Route.get -> string!
-Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.get -> System.Exception?
-Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.init -> void
-*REMOVED*Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
-Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6, T7, T8>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6, T7>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5, T6>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4, T5>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3, T4>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, T3>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2, T3 arg3) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T arg) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
-static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?

@@ -30,10 +30,7 @@ public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
         get => _root;
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
 
             if (value[0] != '/')
             {

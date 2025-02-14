@@ -74,7 +74,7 @@ internal class WellKnownTypes
 
     private INamedTypeSymbol GetAndCache(int index)
     {
-        var result = _compilation.GetTypeByMetadataName(WellKnownTypeData.WellKnownTypeNames[index]);
+        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]);
         if (result == null)
         {
             throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeData.WellKnownTypeNames[index]}'.");
@@ -84,6 +84,33 @@ internal class WellKnownTypes
         // GetTypeByMetadataName should always return the same instance for a name.
         // To ensure we have a consistent value, for thread safety, return symbol set in the array.
         return _lazyWellKnownTypes[index]!;
+    }
+
+    // Filter for types within well-known (framework-owned) assemblies only.
+    private INamedTypeSymbol? GetTypeByMetadataNameInTargetAssembly(string metadataName)
+    {
+        var types = _compilation.GetTypesByMetadataName(metadataName);
+        if (types.Length == 0)
+        {
+            return null;
+        }
+
+        if (types.Length == 1)
+        {
+            return types[0];
+        }
+
+        // Multiple types match the name. This is most likely caused by someone reusing the namespace + type name in their apps or libraries.
+        // Workaround this situation by prioritizing types in System and Microsoft assemblies.
+        foreach (var type in types)
+        {
+            if (type.ContainingAssembly.Identity.Name.StartsWith("System.", StringComparison.Ordinal)
+                || type.ContainingAssembly.Identity.Name.StartsWith("Microsoft.", StringComparison.Ordinal))
+            {
+                return type;
+            }
+        }
+        return null;
     }
 
     public bool IsType(ITypeSymbol type, WellKnownTypeData.WellKnownType[] wellKnownTypes) => IsType(type, wellKnownTypes, out var _);

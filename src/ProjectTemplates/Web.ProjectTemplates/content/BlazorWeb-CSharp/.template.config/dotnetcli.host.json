@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "InteractivityPlatform": {
+      "longName": "interactivity",
+      "shortName": "int"
+    },
+    "AllInteractive": {
+      "longName": "all-interactive"
+    },
+    "InteractivityLocation": {
+      "isHidden": true
+    },
+    "Empty": {
+      "longName": "empty"
+    },
+    "IncludeSampleContent": {
+      "isHidden": true
+    },
+    "UseLocalDB": {
+      "longName": "use-local-db"
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "kestrelHttpPort": {
+      "isHidden": true
+    },
+    "kestrelHttpsPort": {
+      "isHidden": true
+    },
+    "iisHttpPort": {
+      "isHidden": true
+    },
+    "iisHttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
+    "UserSecretsId": {
+      "isHidden": true
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    "-int auto --auth individual --use-local-db"
+  ]
+}

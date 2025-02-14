@@ -15,6 +15,8 @@
     <!-- Bundle the theme CSS files as if they were scoped, even though they aren't -->
     <ThemeCssFiles Include="Themes\*.css" />
     <_CurrentProjectDiscoveredScopedCssFiles Include="@(ThemeCssFiles)" RelativePath="%(Identity)" BasePath="_content/$(AssemblyName)" />
+
+    <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>

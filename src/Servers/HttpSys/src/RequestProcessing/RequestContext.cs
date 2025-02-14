@@ -1,13 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -101,29 +102,13 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         // Set the status code and reason phrase
         Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
-        Response.ReasonPhrase = HttpReasonPhrase.Get(StatusCodes.Status101SwitchingProtocols);
+        Response.ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
 
         Response.SendOpaqueUpgrade(); // TODO: Async
         Request.SwitchToOpaqueMode();
         Response.SwitchToOpaqueMode();
         var opaqueStream = new OpaqueStream(Request.Body, Response.Body);
         return Task.FromResult<Stream>(opaqueStream);
-    }
-
-    // TODO: Public when needed
-    internal bool TryGetChannelBinding(ref ChannelBinding? value)
-    {
-        if (!Request.IsHttps)
-        {
-            Log.ChannelBindingNeedsHttps(Logger);
-            return false;
-        }
-
-        value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
-
-        Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-        Log.ChannelBindingRetrieved(Logger);
-        return value != null;
     }
 
     /// <summary>
@@ -187,9 +172,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             _disconnectToken = new CancellationToken(canceled: true);
         }
         ForceCancelRequest();
-        Request.Dispose();
+        // Request and/or Response can be null (even though the property doesn't say it can)
+        // if the constructor throws (can happen for invalid path format)
+        Request?.Dispose();
         // Only Abort, Response.Dispose() tries a graceful flush
-        Response.Abort();
+        Response?.Abort();
     }
 
     private static void Abort(object? state)
@@ -208,15 +195,22 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         try
         {
-            var statusCode = HttpApi.HttpCancelHttpRequest(Server.RequestQueue.Handle,
-                Request.RequestId, IntPtr.Zero);
+            // Shouldn't be able to get here when this is null, but just in case we'll noop
+            if (_requestId is null)
+            {
+                return;
+            }
+
+            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
+                _requestId.Value, default);
 
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.
             // The only way to cancel now is with CancelIoEx.
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID)
+            if (statusCode == ErrorCodes.ERROR_CONNECTION_INVALID)
             {
-                Response.CancelLastWrite();
+                // Can be null if processing the request threw and the response object was never created.
+                Response?.CancelLastWrite();
             }
         }
         catch (ObjectDisposedException)
@@ -225,7 +219,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         if (HttpApi.HttpGetRequestProperty != null)
         {
@@ -235,7 +229,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 var statusCode = HttpApi.HttpGetRequestProperty(
                     Server.RequestQueue.Handle,
                     RequestId,
-                    HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                    HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                     qualifier: null,
                     qualifierSize: 0,
                     (void*)pBuffer,
@@ -243,9 +237,9 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                     bytesReturned: null,
                     IntPtr.Zero);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                if (statusCode == ErrorCodes.ERROR_SUCCESS)
                 {
-                    return Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                    return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
                 }
             }
         }
@@ -263,9 +257,9 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         try
         {
-            var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
-            var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
-                (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
+            var streamError = new HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
+            var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, &streamError,
+                (uint)sizeof(HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
         }
         catch (ObjectDisposedException)
         {
@@ -307,25 +301,25 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         fixed (char* uriPointer = destination.UrlPrefix)
         {
-            var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+            var property = new HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
             {
-                PropertyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
-                PropertyInfo = (IntPtr)uriPointer,
+                PropertyId = HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                PropertyInfo = uriPointer,
                 PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
             };
 
             // Passing 0 for delegateUrlGroupId allows http.sys to find the right group for the
             // URL passed in via the property above. If we passed in the receiver's URL group id
             // instead of 0, then delegation would fail if the receiver restarted.
-            statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+            statusCode = PInvoke.HttpDelegateRequestEx(source.Handle,
                                                            destination.Queue.Handle,
                                                            Request.RequestId,
-                                                           delegateUrlGroupId: 0,
-                                                           propertyInfoSetSize: 1,
-                                                           &property);
+                                                           DelegateUrlGroupId: 0,
+                                                           PropertyInfoSetSize: 1,
+                                                           property);
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }

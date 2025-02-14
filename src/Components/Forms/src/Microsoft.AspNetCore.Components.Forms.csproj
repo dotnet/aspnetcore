@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
   </ItemGroup>
 
   <ItemGroup>

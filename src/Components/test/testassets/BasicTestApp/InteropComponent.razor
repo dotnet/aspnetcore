@@ -236,7 +236,7 @@
 
         if (shouldSupportSyncInterop)
         {
-            await InvokeInProcessJSInterop();
+            InvokeInProcessJSInterop();
         }
 
         var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
@@ -334,7 +334,7 @@
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
     }
 
-    public async Task InvokeInProcessJSInterop()
+    public void InvokeInProcessJSInterop()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
@@ -408,39 +408,6 @@
         {
             ReturnValues["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = $"Failure: {ex.Message}";
         }
-
-        // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
-        var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
-#pragma warning disable CS0618 // Type or member is obsolete
-        ReturnValues["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = unmarshalledCast.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
-        {
-            Message = "Sent from .NET",
-            NumberField = 41,
-        }).ToString();
-
-        try
-        {
-            jsInProcObjectReference.Dispose();
-            ReturnValues["disposeJSInProcessObjectReference"] = "Success";
-        }
-        catch (Exception ex)
-        {
-            ReturnValues["disposeJSInProcessObjectReference"] = $"Failure: {ex.Message}";
-        }
-
-        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
-        var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
-        ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
-        {
-            Message = "Sent from .NET",
-            NumberField = 42,
-        }).ToString();
-
-
-        var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
-#pragma warning restore CS0618 // Type or member is obsolete
-        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
-        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }
 
     public class PassDotNetObjectByRefArgs

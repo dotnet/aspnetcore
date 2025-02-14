@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -45,8 +45,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -83,8 +83,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -423,8 +423,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -470,8 +470,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -519,8 +519,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -594,8 +594,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext);
-                Assert.Equal(expectedAad, actualAad);
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
+                Assert.Equal(expectedAad, actualAad.AsSpan());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 

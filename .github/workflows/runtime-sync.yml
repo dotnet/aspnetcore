@@ -21,14 +21,14 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout aspnetcore
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         # Test this script using changes in a fork
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
         ref: main
     - name: Checkout runtime
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         # Test this script using changes in a fork
         repository: 'dotnet/runtime'
@@ -47,7 +47,7 @@ jobs:
         mkdir ..\artifacts
         git status > ..\artifacts\status.txt
         git diff > ..\artifacts\diff.txt
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: results
         path: artifacts

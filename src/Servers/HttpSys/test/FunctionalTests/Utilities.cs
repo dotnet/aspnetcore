@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -40,49 +40,49 @@ internal static class Utilities
         IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
     }
 
-    internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
+    internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         string root;
-        return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
+        return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app, loggerFactory);
     }
 
-    internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app, Action<HttpSysOptions> configureOptions)
+    internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app, Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         string root;
-        return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app);
+        return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
-    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app)
+    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         string baseAddress;
-        return CreateDynamicHttpServer(path, out root, out baseAddress, options => { }, app);
+        return CreateDynamicHttpServer(path, out root, out baseAddress, options => { }, app, loggerFactory);
     }
 
-    internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app)
+    internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         string root;
         return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options =>
         {
             options.Authentication.Schemes = authType;
             options.Authentication.AllowAnonymous = allowAnonymous;
-        }, app);
+        }, app, loggerFactory);
     }
 
-    internal static IHost CreateDynamicHost(AuthenticationSchemes authType, bool allowAnonymous, out string root, RequestDelegate app)
+    internal static IHost CreateDynamicHost(AuthenticationSchemes authType, bool allowAnonymous, out string root, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         return CreateDynamicHost(string.Empty, out root, out var baseAddress, options =>
         {
             options.Authentication.Schemes = authType;
             options.Authentication.AllowAnonymous = allowAnonymous;
-        }, app);
+        }, app, loggerFactory);
     }
 
-    internal static IHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+    internal static IHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app, ILoggerFactory loggerFactory)
     {
-        return CreateDynamicHost(string.Empty, out var root, out baseAddress, configureOptions, app);
+        return CreateDynamicHost(string.Empty, out var root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
-    internal static IHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+    internal static IHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
@@ -95,6 +95,7 @@ internal static class Utilities
                         options.UrlPrefixes.Add(prefix);
                         configureOptions(options);
                     })
+                    .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(loggerFactory)))
                     .Configure(appBuilder => appBuilder.Run(app));
             });
 
@@ -110,21 +111,21 @@ internal static class Utilities
         return host;
     }
 
-    internal static MessagePump CreatePump(ILoggerFactory loggerFactory = null)
+    internal static MessagePump CreatePump(ILoggerFactory loggerFactory)
         => new MessagePump(Options.Create(new HttpSysOptions()), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
-    internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory = null)
+    internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         var options = new HttpSysOptions();
         configureOptions(options);
         return new MessagePump(Options.Create(options), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
     }
 
-    internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+    internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-        var server = CreatePump(configureOptions);
+        var server = CreatePump(configureOptions, loggerFactory);
         server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
         server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
@@ -135,7 +136,7 @@ internal static class Utilities
         return server;
     }
 
-    internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory = null)
+    internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory)
     {
         return CreateDynamicHttpsServer("/", out var root, out baseAddress, options => { }, app, loggerFactory);
     }
@@ -171,5 +172,24 @@ internal static class Utilities
     internal static bool? CanHaveBody(this HttpRequest request)
     {
         return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+    }
+
+    private sealed class ForwardingLoggerProvider : ILoggerProvider
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public ForwardingLoggerProvider(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            return _loggerFactory.CreateLogger(categoryName);
+        }
     }
 }

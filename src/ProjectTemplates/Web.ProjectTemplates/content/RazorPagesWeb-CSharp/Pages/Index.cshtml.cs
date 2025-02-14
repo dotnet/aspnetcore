@@ -56,9 +56,9 @@ public class IndexModel : PageModel
 
     public async Task OnGet()
     {
-        var user = await _graphServiceClient.Me.Request().GetAsync();
+        var user = await _graphServiceClient.Me.GetAsync();
 
-        ViewData["ApiResult"] = user.DisplayName;
+        ViewData["ApiResult"] = user?.DisplayName;
     }
 #else
     public IndexModel(ILogger<IndexModel> logger)

@@ -1,0 +1,17 @@
+﻿@page "/forms/no-antiforgery"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form</h2>
+
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="someform">
+    <input id="send" type="submit" value="Send" />
+</form>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+}

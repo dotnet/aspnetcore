@@ -10,9 +10,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -37,145 +39,152 @@ internal sealed partial class Request
     {
         // TODO: Verbose log
         RequestContext = requestContext;
-        _contentBoundaryType = BoundaryType.None;
 
-        RequestId = requestContext.RequestId;
-        // For HTTP/2 Http.Sys assigns each request a unique connection id for use with API calls, but the RawConnectionId represents the real connection.
-        UConnectionId = requestContext.ConnectionId;
-        RawConnectionId = requestContext.RawConnectionId;
-        SslStatus = requestContext.SslStatus;
-
-        KnownMethod = requestContext.VerbId;
-        Method = requestContext.GetVerb()!;
-
-        RawUrl = requestContext.GetRawUrl()!;
-
-        var cookedUrl = requestContext.GetCookedUrl();
-        QueryString = cookedUrl.GetQueryString() ?? string.Empty;
-
-        var rawUrlInBytes = requestContext.GetRawUrlInBytes();
-        var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
-
-        PathBase = string.Empty;
-        Path = originalPath;
-        var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
-
-        // 'OPTIONS * HTTP/1.1'
-        if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
+        try
         {
+            _contentBoundaryType = BoundaryType.None;
+
+            RequestId = requestContext.RequestId;
+            // For HTTP/2 Http.Sys assigns each request a unique connection id for use with API calls, but the RawConnectionId represents the real connection.
+            UConnectionId = requestContext.ConnectionId;
+            RawConnectionId = requestContext.RawConnectionId;
+            SslStatus = requestContext.SslStatus;
+
+            KnownMethod = requestContext.VerbId;
+            Method = requestContext.GetVerb()!;
+
+            RawUrl = requestContext.GetRawUrl()!;
+
+            var cookedUrl = requestContext.GetCookedUrl();
+            QueryString = cookedUrl.GetQueryString() ?? string.Empty;
+
+            var rawUrlInBytes = requestContext.GetRawUrlInBytes();
+            var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
+
             PathBase = string.Empty;
-            Path = string.Empty;
-        }
-        // Prefix may be null if the requested has been transfered to our queue
-        else if (prefix is not null)
-        {
-            var pathBase = prefix.PathWithoutTrailingSlash;
+            Path = originalPath;
+            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
 
-            // url: /base/path, prefix: /base/, base: /base, path: /path
-            // url: /, prefix: /, base: , path: /
-            if (originalPath.Equals(pathBase, StringComparison.Ordinal))
+            // 'OPTIONS * HTTP/1.1'
+            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
             {
-                // Exact match, no need to preserve the casing
-                PathBase = pathBase;
+                PathBase = string.Empty;
                 Path = string.Empty;
             }
-            else if (originalPath.Equals(pathBase, StringComparison.OrdinalIgnoreCase))
+            // Prefix may be null if the requested has been transferred to our queue
+            else if (prefix is not null)
             {
-                // Preserve the user input casing
-                PathBase = originalPath;
-                Path = string.Empty;
-            }
-            else if (originalPath.StartsWith(prefix.Path, StringComparison.Ordinal))
-            {
-                // Exact match, no need to preserve the casing
-                PathBase = pathBase;
-                Path = originalPath[pathBase.Length..];
-            }
-            else if (originalPath.StartsWith(prefix.Path, StringComparison.OrdinalIgnoreCase))
-            {
-                // Preserve the user input casing
-                PathBase = originalPath[..pathBase.Length];
-                Path = originalPath[pathBase.Length..];
-            }
-            else
-            {
-                // Http.Sys path base matching is based on the cooked url which applies some non-standard normalizations that we don't use
-                // like collapsing duplicate slashes "//", converting '\' to '/', and un-escaping "%2F" to '/'. Find the right split and
-                // ignore the normalizations.
-                var originalOffset = 0;
-                var baseOffset = 0;
-                while (originalOffset < originalPath.Length && baseOffset < pathBase.Length)
+                var pathBase = prefix.PathWithoutTrailingSlash;
+
+                // url: /base/path, prefix: /base/, base: /base, path: /path
+                // url: /, prefix: /, base: , path: /
+                if (originalPath.Equals(pathBase, StringComparison.Ordinal))
                 {
-                    var baseValue = pathBase[baseOffset];
-                    var offsetValue = originalPath[originalOffset];
-                    if (baseValue == offsetValue
-                        || char.ToUpperInvariant(baseValue) == char.ToUpperInvariant(offsetValue))
-                    {
-                        // case-insensitive match, continue
-                        originalOffset++;
-                        baseOffset++;
-                    }
-                    else if (baseValue == '/' && offsetValue == '\\')
-                    {
-                        // Http.Sys considers these equivalent
-                        originalOffset++;
-                        baseOffset++;
-                    }
-                    else if (baseValue == '/' && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Http.Sys un-escapes this
-                        originalOffset += 3;
-                        baseOffset++;
-                    }
-                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
-                        && (offsetValue == '/' || offsetValue == '\\'))
-                    {
-                        // Duplicate slash, skip
-                        originalOffset++;
-                    }
-                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
-                        && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Duplicate slash equivalent, skip
-                        originalOffset += 3;
-                    }
-                    else
-                    {
-                        // Mismatch, fall back
-                        // The failing test case here is "/base/call//../bat//path1//path2", reduced to "/base/call/bat//path1//path2",
-                        // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
-                        // or duplicate slashes, how do we figure out that "call/" can be eliminated?
-                        originalOffset = 0;
-                        break;
-                    }
+                    // Exact match, no need to preserve the casing
+                    PathBase = pathBase;
+                    Path = string.Empty;
                 }
-                PathBase = originalPath[..originalOffset];
-                Path = originalPath[originalOffset..];
+                else if (originalPath.Equals(pathBase, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Preserve the user input casing
+                    PathBase = originalPath;
+                    Path = string.Empty;
+                }
+                else if (originalPath.StartsWith(prefix.Path, StringComparison.Ordinal))
+                {
+                    // Exact match, no need to preserve the casing
+                    PathBase = pathBase;
+                    Path = originalPath[pathBase.Length..];
+                }
+                else if (originalPath.StartsWith(prefix.Path, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Preserve the user input casing
+                    PathBase = originalPath[..pathBase.Length];
+                    Path = originalPath[pathBase.Length..];
+                }
+                else
+                {
+                    // Http.Sys path base matching is based on the cooked url which applies some non-standard normalizations that we don't use
+                    // like collapsing duplicate slashes "//", converting '\' to '/', and un-escaping "%2F" to '/'. Find the right split and
+                    // ignore the normalizations.
+                    var originalOffset = 0;
+                    var baseOffset = 0;
+                    while (originalOffset < originalPath.Length && baseOffset < pathBase.Length)
+                    {
+                        var baseValue = pathBase[baseOffset];
+                        var offsetValue = originalPath[originalOffset];
+                        if (baseValue == offsetValue
+                            || char.ToUpperInvariant(baseValue) == char.ToUpperInvariant(offsetValue))
+                        {
+                            // case-insensitive match, continue
+                            originalOffset++;
+                            baseOffset++;
+                        }
+                        else if (baseValue == '/' && offsetValue == '\\')
+                        {
+                            // Http.Sys considers these equivalent
+                            originalOffset++;
+                            baseOffset++;
+                        }
+                        else if (baseValue == '/' && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Http.Sys un-escapes this
+                            originalOffset += 3;
+                            baseOffset++;
+                        }
+                        else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                            && (offsetValue == '/' || offsetValue == '\\'))
+                        {
+                            // Duplicate slash, skip
+                            originalOffset++;
+                        }
+                        else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                            && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Duplicate slash equivalent, skip
+                            originalOffset += 3;
+                        }
+                        else
+                        {
+                            // Mismatch, fall back
+                            // The failing test case here is "/base/call//../bat//path1//path2", reduced to "/base/call/bat//path1//path2",
+                            // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
+                            // or duplicate slashes, how do we figure out that "call/" can be eliminated?
+                            originalOffset = 0;
+                            break;
+                        }
+                    }
+                    PathBase = originalPath[..originalOffset];
+                    Path = originalPath[originalOffset..];
+                }
             }
+            else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
+            {
+                PathBase = pathBase;
+                Path = path;
+            }
+
+            ProtocolVersion = RequestContext.GetVersion();
+
+            Headers = new RequestHeaders(RequestContext);
+
+            User = RequestContext.GetUser();
+
+            SniHostName = string.Empty;
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
+
+            // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
+
         }
-        else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
+        finally
         {
-            PathBase = pathBase;
-            Path = path;
+            // Finished directly accessing the HTTP_REQUEST structure.
+            RequestContext.ReleasePins();
+            // TODO: Verbose log parameters
         }
-
-        ProtocolVersion = RequestContext.GetVersion();
-
-        Headers = new RequestHeaders(RequestContext);
-
-        User = RequestContext.GetUser();
-
-        SniHostName = string.Empty;
-        if (IsHttps)
-        {
-            GetTlsHandshakeResults();
-        }
-
-        // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
-
-        // Finished directly accessing the HTTP_REQUEST structure.
-        RequestContext.ReleasePins();
-        // TODO: Verbose log parameters
 
         RemoveContentLengthIfTransferEncodingContainsChunked();
     }
@@ -230,9 +239,9 @@ internal sealed partial class Request
 
     public RequestHeaders Headers { get; }
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
+    internal HTTP_VERB KnownMethod { get; }
 
-    internal bool IsHeadMethod => KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbHEAD;
+    internal bool IsHeadMethod => KnownMethod == HTTP_VERB.HttpVerbHEAD;
 
     public string Method { get; }
 
@@ -328,31 +337,39 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int CipherStrength { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public HashAlgorithmType HashAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int HashStrength { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int KeyExchangeStrength { get; private set; }
 
     private void GetTlsHandshakeResults()
     {
         var handshake = RequestContext.GetTlsHandshake();
-        Protocol = handshake.Protocol;
-        CipherAlgorithm = handshake.CipherType;
+        Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = handshake.HashType;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         var sni = RequestContext.GetClientSni();
-        SniHostName = sni.Hostname;
+        SniHostName = sni.Hostname.ToString();
     }
 
     public X509Certificate2? ClientCertificate

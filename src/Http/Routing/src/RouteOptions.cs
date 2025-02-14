@@ -1,18 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !COMPONENTS
 using System.Diagnostics;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// Represents the configurable options on a route.
 /// </summary>
 public class RouteOptions
+#else
+internal class RouteOptions
+#endif
 {
     private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
+#if !COMPONENTS
     private ICollection<EndpointDataSource> _endpointDataSources = default!;
 
     /// <summary>
@@ -64,6 +73,7 @@ public class RouteOptions
     /// this check if it does not match your application's requirements.
     /// </remarks>
     public bool SuppressCheckForUnhandledSecurityMetadata { get; set; }
+#endif
 
     /// <summary>
     /// Gets or sets a collection of constraints on the current route.
@@ -116,9 +126,16 @@ public class RouteOptions
         // The alpha constraint uses a compiled regex which has a minimal size cost.
         AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
 
+#if !COMPONENTS
         AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
-
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
+#else
+        // Check if the feature is not enabled in the browser context
+        if (OperatingSystem.IsBrowser() && !RegexConstraintSupport.IsEnabled)
+        {
+            AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
+        }
+#endif
 
         // Files
         AddConstraint<FileNameRouteConstraint>(defaults, "file");

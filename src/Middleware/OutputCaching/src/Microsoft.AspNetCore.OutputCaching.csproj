@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core middleware for caching HTTP responses on the server.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
@@ -10,6 +11,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Microbenchmarks" />
   </ItemGroup>
   
   <ItemGroup>
@@ -21,7 +23,6 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\SegmentWriteStream.cs" Link="Streams\SegmentWriteStream.cs" />
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Transcoding;
 using Xunit.Abstractions;
@@ -791,7 +791,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     [Theory]
     [InlineData(null)]
     [InlineData("text/html")]
-    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string contentType)
+    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string? contentType)
     {
         // Arrange
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
@@ -869,6 +869,165 @@ public class UnaryServerCallHandlerTests : LoggedTest
         var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "RpcConnectionError");
         Assert.Equal("Error status code 'Unauthenticated' with detail 'Detail!' raised.", exceptionWrite.Message);
         Assert.Equal(debugException, exceptionWrite.Exception);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_RpcExceptionThrown_StatusDetailsReturned()
+    {
+        // Arrange
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            var debugInfo = new Google.Rpc.DebugInfo
+            {
+                Detail = "This is some debugging information"
+            };
+
+            var requestInfo = new Google.Rpc.RequestInfo
+            {
+                RequestId = "request-id"
+            };
+
+            var badRequest = new Google.Rpc.BadRequest
+            {
+                FieldViolations = { new Google.Rpc.BadRequest.Types.FieldViolation { Description = "Negative", Field = "speed" } }
+            };
+
+            var status = new Google.Rpc.Status
+            {
+                Code = 123,
+                Message = "This is a message",
+                Details =
+                {
+                    Any.Pack(debugInfo),
+                    Any.Pack(requestInfo),
+                    Any.Pack(badRequest)
+                }
+            };
+
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Bad request"),
+                new Metadata
+                {
+                    { JsonRequestHelpers.StatusDetailsTrailerName, status.ToByteArray() }
+                });
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(invoker,
+            jsonTranscodingOptions: new GrpcJsonTranscodingOptions()
+            {
+                TypeRegistry = TypeRegistry.FromMessages(
+                    Google.Rpc.DebugInfo.Descriptor,
+                    Google.Rpc.RequestInfo.Descriptor,
+                    Google.Rpc.BadRequest.Descriptor)
+            });
+
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal(123, responseJson.RootElement.GetProperty("code").GetInt32());
+        Assert.Equal("This is a message", responseJson.RootElement.GetProperty("message").GetString());
+
+        var details = responseJson.RootElement.GetProperty("details").EnumerateArray().ToArray();
+        Assert.Collection(details,
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.DebugInfo", d.GetProperty("@type").GetString());
+                Assert.Equal("This is some debugging information", d.GetProperty("detail").GetString());
+            },
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.RequestInfo", d.GetProperty("@type").GetString());
+                Assert.Equal("request-id", d.GetProperty("requestId").GetString());
+            },
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.BadRequest", d.GetProperty("@type").GetString());
+                Assert.Equal(1, d.GetProperty("fieldViolations").GetArrayLength());
+            });
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_OtherExceptionThrown_StatusDetailsReturned()
+    {
+        // Arrange
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            var debugInfo = new Google.Rpc.DebugInfo
+            {
+                Detail = "This is some debugging information"
+            };
+
+            var requestInfo = new Google.Rpc.RequestInfo
+            {
+                RequestId = "request-id"
+            };
+
+            var badRequest = new Google.Rpc.BadRequest
+            {
+                FieldViolations = { new Google.Rpc.BadRequest.Types.FieldViolation { Description = "Negative", Field = "speed" } }
+            };
+
+            var status = new Google.Rpc.Status
+            {
+                Code = 123,
+                Message = "This is a message",
+                Details =
+                {
+                    Any.Pack(debugInfo),
+                    Any.Pack(requestInfo),
+                    Any.Pack(badRequest)
+                }
+            };
+
+            c.ResponseTrailers.Add(JsonRequestHelpers.StatusDetailsTrailerName, status.ToByteArray());
+            throw new InvalidOperationException("exception");
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(invoker,
+            jsonTranscodingOptions: new GrpcJsonTranscodingOptions()
+            {
+                TypeRegistry = TypeRegistry.FromMessages(
+                    Google.Rpc.DebugInfo.Descriptor,
+                    Google.Rpc.RequestInfo.Descriptor,
+                    Google.Rpc.BadRequest.Descriptor)
+            });
+
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(500, httpContext.Response.StatusCode);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal(123, responseJson.RootElement.GetProperty("code").GetInt32());
+        Assert.Equal("This is a message", responseJson.RootElement.GetProperty("message").GetString());
+
+        var details = responseJson.RootElement.GetProperty("details").EnumerateArray().ToArray();
+        Assert.Collection(details,
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.DebugInfo", d.GetProperty("@type").GetString());
+                Assert.Equal("This is some debugging information", d.GetProperty("detail").GetString());
+            },
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.RequestInfo", d.GetProperty("@type").GetString());
+                Assert.Equal("request-id", d.GetProperty("requestId").GetString());
+            },
+            static d =>
+            {
+                Assert.Equal("type.googleapis.com/google.rpc.BadRequest", d.GetProperty("@type").GetString());
+                Assert.Equal(1, d.GetProperty("fieldViolations").GetArrayLength());
+            });
     }
 
     [Fact]

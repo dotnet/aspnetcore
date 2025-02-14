@@ -15,7 +15,6 @@
     <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
     <Compile Include="$(SharedSourceRoot)TestResources.cs" Link="shared\TestResources.cs" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLoggerLoggedTest.cs" Link="shared\TestApplicationErrorLoggerLoggedTest.cs" />
@@ -32,6 +31,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
 </Project>

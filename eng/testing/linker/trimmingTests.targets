@@ -85,6 +85,7 @@
                                                  .Replace('{RuntimeIdentifier}','%(TestConsoleApps.TestRuntimeIdentifier)')
                                                  .Replace('{PublishAot}','$(IsNativeAotTestProject)')
                                                  .Replace('{MicrosoftNETCoreAppRuntimeVersion}','$(MicrosoftNETCoreAppRuntimeVersion)')
+                                                 .Replace('{MicrosoftNETCoreAppRefVersion}','$(MicrosoftNETCoreAppRefVersion)')
                                                  .Replace('{RepoRoot}', '$(RepoRoot)')
                                                  .Replace('{ExtraTrimmerArgs}', '%(TestConsoleApps.ExtraTrimmerArgs)')
                                                  .Replace('{AdditionalProperties}', '$(_additionalPropertiesString)')

@@ -1,0 +1,16 @@
+﻿@page "/redirect/streaming/get"
+@attribute [StreamRendering]
+@inject NavigationManager Nav
+
+<h1>Streaming GET</h1>
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool External { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        Nav.NavigateTo(External ? "https://microsoft.com?foo=🙂" : "nav/scroll-to-hash?foo=🙂#some-content");
+    }
+}

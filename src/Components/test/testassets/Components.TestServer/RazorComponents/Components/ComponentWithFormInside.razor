@@ -1,5 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
-<EditForm EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true" >
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+    @if(BindingContext == null)
+    {
+        <AntiforgeryToken />
+    }
     <input id="send" type="submit" value="Send" />
 </EditForm>
 
@@ -9,6 +13,8 @@
 }
 
 @code{
+    [CascadingParameter] public FormMappingContext BindingContext { get; set; }
+
     bool _submitted = false;
     EditContext _editContext = new EditContext(new object());
 }

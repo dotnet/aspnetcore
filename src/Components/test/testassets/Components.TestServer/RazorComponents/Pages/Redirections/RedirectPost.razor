@@ -1,0 +1,17 @@
+﻿@page "/redirect/post"
+@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Nonstreaming POST</h1>
+
+<form @formname="myform" method="post" @onsubmit="DoRedirectionAsync"></form>
+
+@code {
+    [SupplyParameterFromQuery] public bool External { get; set; }
+
+    private async Task DoRedirectionAsync()
+    {
+        await Task.Delay(500);
+        Nav.NavigateTo(External ? "https://microsoft.com?foo=🙂" : "nav/scroll-to-hash?foo=🙂#some-content");
+    }
+}

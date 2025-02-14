@@ -4,7 +4,7 @@ ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup for nodejs
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_21.x | bash -
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -24,11 +24,12 @@ RUN git init \
     && git remote add origin https://github.com/aspnet/aspnetcore
 
 RUN ./restore.sh
-RUN .dotnet/dotnet publish -c Release --no-restore -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN npm run build
+RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
-FROM selenium/standalone-chrome:114.0 as final
+FROM mcr.microsoft.com/playwright/dotnet:v1.49.0-jammy-amd64 AS final
 COPY --from=build ./app ./
 COPY ./exec.sh ./
 

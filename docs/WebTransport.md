@@ -103,7 +103,7 @@ var host = builder.Build();
 ```
 **Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.Protocols` to include HTTP/3.
 
-**Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#Obtaining-a-test-certificate).
+**Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#obtaining-a-test-certificate).
 
 Next, we defined the code that will run when Kestrel receives a connection.
 ```C#
@@ -184,7 +184,6 @@ Aborting a WebTransport stream will result in abruptly ending all data transmiss
 stream.DisposeAsync();
 ```
 Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
-
 
 ### Examples
 

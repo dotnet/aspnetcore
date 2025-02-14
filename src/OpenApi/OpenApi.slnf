@@ -2,13 +2,21 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
+      "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj",
+      "src\\OpenApi\\sample\\Sample.csproj",
       "src\\OpenApi\\src\\Microsoft.AspNetCore.OpenApi.csproj",
-      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests.csproj"
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
+      "src\\OpenApi\\sample\\Sample.csproj",
+      "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj"
     ]
   }
 }

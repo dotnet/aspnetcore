@@ -3,7 +3,7 @@
 
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 public class TlsHandshakeFeatureTests : StrictTestServerTests
 {
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49306")]
     public async Task SetsTlsHandshakeFeatureForHttps()
     {
         ITlsHandshakeFeature tlsHandshakeFeature = null;
@@ -32,6 +33,7 @@ public class TlsHandshakeFeatureTests : StrictTestServerTests
         Assert.True(protocol > SslProtocols.None, "Protocol: " + protocol);
         Assert.True(Enum.IsDefined(typeof(SslProtocols), protocol), "Defined: " + protocol); // Mapping is required, make sure it's current
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
         var cipherAlgorithm = tlsHandshakeFeature.CipherAlgorithm;
         Assert.True(cipherAlgorithm > CipherAlgorithmType.Null, "Cipher: " + cipherAlgorithm);
 
@@ -49,6 +51,7 @@ public class TlsHandshakeFeatureTests : StrictTestServerTests
 
         var keyExchangeStrength = tlsHandshakeFeature.KeyExchangeStrength;
         Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         if (Environment.OSVersion.Version > new Version(10, 0, 19043, 0))
         {

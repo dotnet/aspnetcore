@@ -4,7 +4,7 @@
 using System;
 using System.Net.Quic;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
 public class MsQuicSupportedAttribute : Attribute, ITestCondition

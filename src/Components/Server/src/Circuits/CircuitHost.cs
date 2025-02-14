@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,11 +21,12 @@ internal partial class CircuitHost : IAsyncDisposable
 {
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
-    private readonly CircuitHandler[] _circuitHandlers;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly Func<Func<Task>, Task> _dispatchInboundActivity;
+    private Func<Func<Task>, Task> _dispatchInboundActivity;
+    private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
+    private bool _isFirstUpdate = true;
     private bool _disposed;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
@@ -100,7 +104,7 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.InitializationStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        return HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_initialized)
             {
@@ -111,8 +115,15 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                await OnCircuitOpenedAsync(cancellationToken);
-                await OnConnectionUpAsync(cancellationToken);
+                // We only run the handlers in case we are in a Blazor Server scenario, which renders
+                // the components inmediately during start.
+                // On Blazor Web scenarios we delay running these handlers until the first UpdateRootComponents call
+                // We do this so that the handlers can have access to the restored application state.
+                if (Descriptors.Count > 0)
+                {
+                    await OnCircuitOpenedAsync(cancellationToken);
+                    await OnConnectionUpAsync(cancellationToken);
+                }
 
                 // Here, we add each root component but don't await the returned tasks so that the
                 // components can be processed in parallel.
@@ -130,7 +141,20 @@ internal partial class CircuitHost : IAsyncDisposable
                 // At this point all components have successfully produced an initial render and we can clear the contents of the component
                 // application state store. This ensures the memory that was not used during the initial render of these components gets
                 // reclaimed since no-one else is holding on to it any longer.
-                store.ExistingState.Clear();
+                // This is also important because otherwise components will keep reusing the existing state after
+                // the initial render instead of initializing their state from the original sources like the Db or a
+                // web service, preventing UI updates.
+                if (Descriptors.Count > 0)
+                {
+                    store.ExistingState.Clear();
+                }
+
+                // This variable is used to track that this is the first time we are updating components.
+                // In Blazor Web scenarios the app will send an initial empty list of descriptors,
+                // so we want to make sure that we allow setting up the state in that case.
+                // In Blazor Server the initial set of descriptors is provided via the call to Start, so
+                // we want to make sure we don't take any state afterwards.
+                _isFirstUpdate = Descriptors.Count == 0;
 
                 Log.InitializationSucceeded(_logger);
             }
@@ -141,7 +165,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
-        });
+        }));
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -702,6 +726,145 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    internal Task UpdateRootComponents(
+        RootComponentOperationBatch operationBatch,
+        ProtectedPrerenderComponentApplicationStore store,
+        CancellationToken cancellation)
+    {
+        Log.UpdateRootComponentsStarted(_logger);
+
+        return Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var shouldClearStore = false;
+            var shouldWaitForQuiescence = false;
+            var operations = operationBatch.Operations;
+            var batchId = operationBatch.BatchId;
+            try
+            {
+                if (Descriptors.Count > 0)
+                {
+                    // Block updating components if they were provided during StartCircuit. This keeps
+                    // the footprint for Blazor Server closer to what it was before.
+                    throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
+                        " been provided during circuit start up.");
+                }
+                if (_isFirstUpdate)
+                {
+                    _isFirstUpdate = false;
+                    shouldWaitForQuiescence = true;
+                    if (store != null)
+                    {
+                        shouldClearStore = true;
+                        // We only do this if we have no root components. Otherwise, the state would have been
+                        // provided during the start up process
+                        var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        await appLifetime.RestoreStateAsync(store);
+                        RestoreAntiforgeryToken(_scope);
+                    }
+
+                    // Retrieve the circuit handlers at this point.
+                    _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                    _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
+                    await OnCircuitOpenedAsync(cancellation);
+                    await OnConnectionUpAsync(cancellation);
+
+                    for (var i = 0; i < operations.Length; i++)
+                    {
+                        var operation = operations[i];
+                        if (operation.Type != RootComponentOperationType.Add)
+                        {
+                            throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
+                        }
+                    }
+                }
+
+                await PerformRootComponentOperations(operations, shouldWaitForQuiescence);
+
+                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
+
+                Log.UpdateRootComponentsSucceeded(_logger);
+            }
+            catch (Exception ex)
+            {
+                // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+                Log.UpdateRootComponentsFailed(_logger, ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            }
+            finally
+            {
+                if (shouldClearStore)
+                {
+                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                    // application state store. This ensures the memory that was not used during the initial render of these components gets
+                    // reclaimed since no-one else is holding on to it any longer.
+                    store.ExistingState.Clear();
+                }
+            }
+        });
+    }
+
+    private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
+    {
+        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
+        // state and is available on the circuit whether or not is used by a component on the first
+        // render.
+        var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
+        _ = antiforgery?.GetAntiforgeryToken();
+    }
+
+    private async ValueTask PerformRootComponentOperations(
+        RootComponentOperation[] operations,
+        bool shouldWaitForQuiescence)
+    {
+        var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+        var pendingTasks = shouldWaitForQuiescence
+            ? new Task[operations.Length]
+            : null;
+
+        // The inbound activity pipeline needs to be awaited because it populates
+        // the pending tasks used to wait for quiescence.
+        await HandleInboundActivityAsync(() =>
+        {
+            for (var i = 0; i < operations.Length; i++)
+            {
+                var operation = operations[i];
+                switch (operation.Type)
+                {
+                    case RootComponentOperationType.Add:
+                        var task = webRootComponentManager.AddRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        if (pendingTasks != null)
+                        {
+                            pendingTasks[i] = task;
+                        }
+                        break;
+                    case RootComponentOperationType.Update:
+                        // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                        _ = webRootComponentManager.UpdateRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        break;
+                    case RootComponentOperationType.Remove:
+                        webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                        break;
+                }
+            }
+
+            return Task.CompletedTask;
+        });
+
+        if (pendingTasks != null)
+        {
+            await Task.WhenAll(pendingTasks);
+        }
+    }
+
     private static partial class Log
     {
         // 100s used for lifecycle stuff
@@ -740,6 +903,15 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(110, LogLevel.Error, "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}", EventName = "CircuitHandlerFailed")]
         private static partial void CircuitHandlerFailed(ILogger logger, Type handlerType, string handlerMethod, string message, Exception exception);
 
+        [LoggerMessage(111, LogLevel.Debug, "Update root components started.", EventName = nameof(UpdateRootComponentsStarted))]
+        public static partial void UpdateRootComponentsStarted(ILogger logger);
+
+        [LoggerMessage(112, LogLevel.Debug, "Update root components succeeded.", EventName = nameof(UpdateRootComponentsSucceeded))]
+        public static partial void UpdateRootComponentsSucceeded(ILogger logger);
+
+        [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
+        public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
+
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
         {
             CircuitHandlerFailed(
@@ -764,6 +936,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(115, LogLevel.Debug, "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.", EventName = "UnhandledExceptionClientDisconnected")]
         public static partial void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(116, LogLevel.Debug, "The root component operation of type 'Update' was invalid: {Message}", EventName = nameof(InvalidComponentTypeForUpdate))]
+        public static partial void InvalidComponentTypeForUpdate(ILogger logger, string message);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);

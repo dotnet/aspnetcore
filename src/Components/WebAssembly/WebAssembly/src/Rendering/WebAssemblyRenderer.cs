@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -22,16 +22,72 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
+    private readonly Dispatcher _dispatcher;
+    private readonly ResourceAssetCollection _resourceCollection;
+    private readonly IInternalJSImportMethods _jsMethods;
+    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+        _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();
+
+        // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+        _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
+            ? NullDispatcher.Instance
+            : new WebAssemblyDispatcher();
+
+        _resourceCollection = resourceCollection;
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
+        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
-    public override Dispatcher Dispatcher => NullDispatcher.Instance;
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
+    {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        for (var i = 0; i < batch.Operations.Length; i++)
+        {
+            var operation = batch.Operations[i];
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker!.Value.Key!,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Update:
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker?.Key,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Remove:
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                    break;
+            }
+        }
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
+    }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
+
+    public void NotifyEndUpdateRootComponents(long batchId)
+    {
+        _jsMethods.EndUpdateRootComponents(batchId);
+    }
+
+    protected override ResourceAssetCollection Assets => _resourceCollection;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
+
+    public override Dispatcher Dispatcher => _dispatcher;
 
     public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
     {
@@ -39,13 +95,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
-            "Blazor._internal.attachRootComponentToElement",
-            domElementSelector,
-            componentId,
-            RendererId);
+        _jsMethods.AttachRootComponentToElement(domElementSelector, componentId, RendererId);
     }
 
     /// <inheritdoc />
@@ -130,11 +184,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
-        => componentTypeRenderMode switch
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
         {
-            WebAssemblyRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
-            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{componentTypeRenderMode}' is not supported by WebAssembly rendering."),
+            InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
 
     private static partial class Log

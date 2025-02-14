@@ -73,24 +73,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x1u;
                 }
 
-                if (_Accept.Count > 0)
-                {
-                    return _Accept;
-                }
-                return StringValues.Empty;
+                return _Accept.Count > 0 ? _Accept : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x1u;
 
-                if (value.Count > 0)
-                {
-                    _Accept = value;
-                }
-                else
-                {
-                    _Accept = default;
-                }
+                _Accept = value.Count > 0 ? value : default;
             }
         }
 
@@ -108,24 +97,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x2u;
                 }
 
-                if (_AcceptCharset.Count > 0)
-                {
-                    return _AcceptCharset;
-                }
-                return StringValues.Empty;
+                return _AcceptCharset.Count > 0 ? _AcceptCharset : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x2u;
 
-                if (value.Count > 0)
-                {
-                    _AcceptCharset = value;
-                }
-                else
-                {
-                    _AcceptCharset = default;
-                }
+                _AcceptCharset = value.Count > 0 ? value : default;
             }
         }
 
@@ -143,24 +121,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x4u;
                 }
 
-                if (_AcceptEncoding.Count > 0)
-                {
-                    return _AcceptEncoding;
-                }
-                return StringValues.Empty;
+                return _AcceptEncoding.Count > 0 ? _AcceptEncoding : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x4u;
 
-                if (value.Count > 0)
-                {
-                    _AcceptEncoding = value;
-                }
-                else
-                {
-                    _AcceptEncoding = default;
-                }
+                _AcceptEncoding = value.Count > 0 ? value : default;
             }
         }
 
@@ -178,24 +145,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x8u;
                 }
 
-                if (_AcceptLanguage.Count > 0)
-                {
-                    return _AcceptLanguage;
-                }
-                return StringValues.Empty;
+                return _AcceptLanguage.Count > 0 ? _AcceptLanguage : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x8u;
 
-                if (value.Count > 0)
-                {
-                    _AcceptLanguage = value;
-                }
-                else
-                {
-                    _AcceptLanguage = default;
-                }
+                _AcceptLanguage = value.Count > 0 ? value : default;
             }
         }
 
@@ -213,24 +169,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x10u;
                 }
 
-                if (_Allow.Count > 0)
-                {
-                    return _Allow;
-                }
-                return StringValues.Empty;
+                return _Allow.Count > 0 ? _Allow : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x10u;
 
-                if (value.Count > 0)
-                {
-                    _Allow = value;
-                }
-                else
-                {
-                    _Allow = default;
-                }
+                _Allow = value.Count > 0 ? value : default;
             }
         }
 
@@ -248,24 +193,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x20u;
                 }
 
-                if (_Authorization.Count > 0)
-                {
-                    return _Authorization;
-                }
-                return StringValues.Empty;
+                return _Authorization.Count > 0 ? _Authorization : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x20u;
 
-                if (value.Count > 0)
-                {
-                    _Authorization = value;
-                }
-                else
-                {
-                    _Authorization = default;
-                }
+                _Authorization = value.Count > 0 ? value : default;
             }
         }
 
@@ -283,24 +217,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x40u;
                 }
 
-                if (_CacheControl.Count > 0)
-                {
-                    return _CacheControl;
-                }
-                return StringValues.Empty;
+                return _CacheControl.Count > 0 ? _CacheControl : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x40u;
 
-                if (value.Count > 0)
-                {
-                    _CacheControl = value;
-                }
-                else
-                {
-                    _CacheControl = default;
-                }
+                _CacheControl = value.Count > 0 ? value : default;
             }
         }
 
@@ -318,24 +241,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x80u;
                 }
 
-                if (_Connection.Count > 0)
-                {
-                    return _Connection;
-                }
-                return StringValues.Empty;
+                return _Connection.Count > 0 ? _Connection : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x80u;
 
-                if (value.Count > 0)
-                {
-                    _Connection = value;
-                }
-                else
-                {
-                    _Connection = default;
-                }
+                _Connection = value.Count > 0 ? value : default;
             }
         }
 
@@ -353,24 +265,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x100u;
                 }
 
-                if (_ContentEncoding.Count > 0)
-                {
-                    return _ContentEncoding;
-                }
-                return StringValues.Empty;
+                return _ContentEncoding.Count > 0 ? _ContentEncoding : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x100u;
 
-                if (value.Count > 0)
-                {
-                    _ContentEncoding = value;
-                }
-                else
-                {
-                    _ContentEncoding = default;
-                }
+                _ContentEncoding = value.Count > 0 ? value : default;
             }
         }
 
@@ -388,24 +289,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x200u;
                 }
 
-                if (_ContentLanguage.Count > 0)
-                {
-                    return _ContentLanguage;
-                }
-                return StringValues.Empty;
+                return _ContentLanguage.Count > 0 ? _ContentLanguage : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x200u;
 
-                if (value.Count > 0)
-                {
-                    _ContentLanguage = value;
-                }
-                else
-                {
-                    _ContentLanguage = default;
-                }
+                _ContentLanguage = value.Count > 0 ? value : default;
             }
         }
 
@@ -423,24 +313,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x400u;
                 }
 
-                if (_ContentLength.Count > 0)
-                {
-                    return _ContentLength;
-                }
-                return StringValues.Empty;
+                return _ContentLength.Count > 0 ? _ContentLength : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x400u;
 
-                if (value.Count > 0)
-                {
-                    _ContentLength = value;
-                }
-                else
-                {
-                    _ContentLength = default;
-                }
+                _ContentLength = value.Count > 0 ? value : default;
             }
         }
 
@@ -458,24 +337,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x800u;
                 }
 
-                if (_ContentLocation.Count > 0)
-                {
-                    return _ContentLocation;
-                }
-                return StringValues.Empty;
+                return _ContentLocation.Count > 0 ? _ContentLocation : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x800u;
 
-                if (value.Count > 0)
-                {
-                    _ContentLocation = value;
-                }
-                else
-                {
-                    _ContentLocation = default;
-                }
+                _ContentLocation = value.Count > 0 ? value : default;
             }
         }
 
@@ -493,24 +361,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x1000u;
                 }
 
-                if (_ContentMD5.Count > 0)
-                {
-                    return _ContentMD5;
-                }
-                return StringValues.Empty;
+                return _ContentMD5.Count > 0 ? _ContentMD5 : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x1000u;
 
-                if (value.Count > 0)
-                {
-                    _ContentMD5 = value;
-                }
-                else
-                {
-                    _ContentMD5 = default;
-                }
+                _ContentMD5 = value.Count > 0 ? value : default;
             }
         }
 
@@ -528,24 +385,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x2000u;
                 }
 
-                if (_ContentRange.Count > 0)
-                {
-                    return _ContentRange;
-                }
-                return StringValues.Empty;
+                return _ContentRange.Count > 0 ? _ContentRange : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x2000u;
 
-                if (value.Count > 0)
-                {
-                    _ContentRange = value;
-                }
-                else
-                {
-                    _ContentRange = default;
-                }
+                _ContentRange = value.Count > 0 ? value : default;
             }
         }
 
@@ -563,24 +409,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x4000u;
                 }
 
-                if (_ContentType.Count > 0)
-                {
-                    return _ContentType;
-                }
-                return StringValues.Empty;
+                return _ContentType.Count > 0 ? _ContentType : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x4000u;
 
-                if (value.Count > 0)
-                {
-                    _ContentType = value;
-                }
-                else
-                {
-                    _ContentType = default;
-                }
+                _ContentType = value.Count > 0 ? value : default;
             }
         }
 
@@ -598,24 +433,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x8000u;
                 }
 
-                if (_Cookie.Count > 0)
-                {
-                    return _Cookie;
-                }
-                return StringValues.Empty;
+                return _Cookie.Count > 0 ? _Cookie : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x8000u;
 
-                if (value.Count > 0)
-                {
-                    _Cookie = value;
-                }
-                else
-                {
-                    _Cookie = default;
-                }
+                _Cookie = value.Count > 0 ? value : default;
             }
         }
 
@@ -633,24 +457,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x10000u;
                 }
 
-                if (_Date.Count > 0)
-                {
-                    return _Date;
-                }
-                return StringValues.Empty;
+                return _Date.Count > 0 ? _Date : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x10000u;
 
-                if (value.Count > 0)
-                {
-                    _Date = value;
-                }
-                else
-                {
-                    _Date = default;
-                }
+                _Date = value.Count > 0 ? value : default;
             }
         }
 
@@ -668,24 +481,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x20000u;
                 }
 
-                if (_Expect.Count > 0)
-                {
-                    return _Expect;
-                }
-                return StringValues.Empty;
+                return _Expect.Count > 0 ? _Expect : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x20000u;
 
-                if (value.Count > 0)
-                {
-                    _Expect = value;
-                }
-                else
-                {
-                    _Expect = default;
-                }
+                _Expect = value.Count > 0 ? value : default;
             }
         }
 
@@ -703,24 +505,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x40000u;
                 }
 
-                if (_Expires.Count > 0)
-                {
-                    return _Expires;
-                }
-                return StringValues.Empty;
+                return _Expires.Count > 0 ? _Expires : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x40000u;
 
-                if (value.Count > 0)
-                {
-                    _Expires = value;
-                }
-                else
-                {
-                    _Expires = default;
-                }
+                _Expires = value.Count > 0 ? value : default;
             }
         }
 
@@ -738,24 +529,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x80000u;
                 }
 
-                if (_From.Count > 0)
-                {
-                    return _From;
-                }
-                return StringValues.Empty;
+                return _From.Count > 0 ? _From : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x80000u;
 
-                if (value.Count > 0)
-                {
-                    _From = value;
-                }
-                else
-                {
-                    _From = default;
-                }
+                _From = value.Count > 0 ? value : default;
             }
         }
 
@@ -773,24 +553,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x100000u;
                 }
 
-                if (_Host.Count > 0)
-                {
-                    return _Host;
-                }
-                return StringValues.Empty;
+                return _Host.Count > 0 ? _Host : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x100000u;
 
-                if (value.Count > 0)
-                {
-                    _Host = value;
-                }
-                else
-                {
-                    _Host = default;
-                }
+                _Host = value.Count > 0 ? value : default;
             }
         }
 
@@ -808,24 +577,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x200000u;
                 }
 
-                if (_IfMatch.Count > 0)
-                {
-                    return _IfMatch;
-                }
-                return StringValues.Empty;
+                return _IfMatch.Count > 0 ? _IfMatch : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x200000u;
 
-                if (value.Count > 0)
-                {
-                    _IfMatch = value;
-                }
-                else
-                {
-                    _IfMatch = default;
-                }
+                _IfMatch = value.Count > 0 ? value : default;
             }
         }
 
@@ -843,24 +601,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x400000u;
                 }
 
-                if (_IfModifiedSince.Count > 0)
-                {
-                    return _IfModifiedSince;
-                }
-                return StringValues.Empty;
+                return _IfModifiedSince.Count > 0 ? _IfModifiedSince : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x400000u;
 
-                if (value.Count > 0)
-                {
-                    _IfModifiedSince = value;
-                }
-                else
-                {
-                    _IfModifiedSince = default;
-                }
+                _IfModifiedSince = value.Count > 0 ? value : default;
             }
         }
 
@@ -878,24 +625,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x800000u;
                 }
 
-                if (_IfNoneMatch.Count > 0)
-                {
-                    return _IfNoneMatch;
-                }
-                return StringValues.Empty;
+                return _IfNoneMatch.Count > 0 ? _IfNoneMatch : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x800000u;
 
-                if (value.Count > 0)
-                {
-                    _IfNoneMatch = value;
-                }
-                else
-                {
-                    _IfNoneMatch = default;
-                }
+                _IfNoneMatch = value.Count > 0 ? value : default;
             }
         }
 
@@ -913,24 +649,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x1000000u;
                 }
 
-                if (_IfRange.Count > 0)
-                {
-                    return _IfRange;
-                }
-                return StringValues.Empty;
+                return _IfRange.Count > 0 ? _IfRange : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x1000000u;
 
-                if (value.Count > 0)
-                {
-                    _IfRange = value;
-                }
-                else
-                {
-                    _IfRange = default;
-                }
+                _IfRange = value.Count > 0 ? value : default;
             }
         }
 
@@ -948,24 +673,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x2000000u;
                 }
 
-                if (_IfUnmodifiedSince.Count > 0)
-                {
-                    return _IfUnmodifiedSince;
-                }
-                return StringValues.Empty;
+                return _IfUnmodifiedSince.Count > 0 ? _IfUnmodifiedSince : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x2000000u;
 
-                if (value.Count > 0)
-                {
-                    _IfUnmodifiedSince = value;
-                }
-                else
-                {
-                    _IfUnmodifiedSince = default;
-                }
+                _IfUnmodifiedSince = value.Count > 0 ? value : default;
             }
         }
 
@@ -983,24 +697,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x4000000u;
                 }
 
-                if (_KeepAlive.Count > 0)
-                {
-                    return _KeepAlive;
-                }
-                return StringValues.Empty;
+                return _KeepAlive.Count > 0 ? _KeepAlive : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x4000000u;
 
-                if (value.Count > 0)
-                {
-                    _KeepAlive = value;
-                }
-                else
-                {
-                    _KeepAlive = default;
-                }
+                _KeepAlive = value.Count > 0 ? value : default;
             }
         }
 
@@ -1018,24 +721,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x8000000u;
                 }
 
-                if (_LastModified.Count > 0)
-                {
-                    return _LastModified;
-                }
-                return StringValues.Empty;
+                return _LastModified.Count > 0 ? _LastModified : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x8000000u;
 
-                if (value.Count > 0)
-                {
-                    _LastModified = value;
-                }
-                else
-                {
-                    _LastModified = default;
-                }
+                _LastModified = value.Count > 0 ? value : default;
             }
         }
 
@@ -1053,24 +745,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x10000000u;
                 }
 
-                if (_MaxForwards.Count > 0)
-                {
-                    return _MaxForwards;
-                }
-                return StringValues.Empty;
+                return _MaxForwards.Count > 0 ? _MaxForwards : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x10000000u;
 
-                if (value.Count > 0)
-                {
-                    _MaxForwards = value;
-                }
-                else
-                {
-                    _MaxForwards = default;
-                }
+                _MaxForwards = value.Count > 0 ? value : default;
             }
         }
 
@@ -1088,24 +769,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x20000000u;
                 }
 
-                if (_Pragma.Count > 0)
-                {
-                    return _Pragma;
-                }
-                return StringValues.Empty;
+                return _Pragma.Count > 0 ? _Pragma : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x20000000u;
 
-                if (value.Count > 0)
-                {
-                    _Pragma = value;
-                }
-                else
-                {
-                    _Pragma = default;
-                }
+                _Pragma = value.Count > 0 ? value : default;
             }
         }
 
@@ -1123,24 +793,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x40000000u;
                 }
 
-                if (_ProxyAuthorization.Count > 0)
-                {
-                    return _ProxyAuthorization;
-                }
-                return StringValues.Empty;
+                return _ProxyAuthorization.Count > 0 ? _ProxyAuthorization : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x40000000u;
 
-                if (value.Count > 0)
-                {
-                    _ProxyAuthorization = value;
-                }
-                else
-                {
-                    _ProxyAuthorization = default;
-                }
+                _ProxyAuthorization = value.Count > 0 ? value : default;
             }
         }
 
@@ -1158,24 +817,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag0 |= 0x80000000u;
                 }
 
-                if (_Range.Count > 0)
-                {
-                    return _Range;
-                }
-                return StringValues.Empty;
+                return _Range.Count > 0 ? _Range : StringValues.Empty;
             }
             set
             {
                 _flag0 |= 0x80000000u;
 
-                if (value.Count > 0)
-                {
-                    _Range = value;
-                }
-                else
-                {
-                    _Range = default;
-                }
+                _Range = value.Count > 0 ? value : default;
             }
         }
 
@@ -1193,24 +841,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x1u;
                 }
 
-                if (_Referer.Count > 0)
-                {
-                    return _Referer;
-                }
-                return StringValues.Empty;
+                return _Referer.Count > 0 ? _Referer : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x1u;
 
-                if (value.Count > 0)
-                {
-                    _Referer = value;
-                }
-                else
-                {
-                    _Referer = default;
-                }
+                _Referer = value.Count > 0 ? value : default;
             }
         }
 
@@ -1228,24 +865,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x2u;
                 }
 
-                if (_TE.Count > 0)
-                {
-                    return _TE;
-                }
-                return StringValues.Empty;
+                return _TE.Count > 0 ? _TE : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x2u;
 
-                if (value.Count > 0)
-                {
-                    _TE = value;
-                }
-                else
-                {
-                    _TE = default;
-                }
+                _TE = value.Count > 0 ? value : default;
             }
         }
 
@@ -1263,24 +889,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x4u;
                 }
 
-                if (_Trailer.Count > 0)
-                {
-                    return _Trailer;
-                }
-                return StringValues.Empty;
+                return _Trailer.Count > 0 ? _Trailer : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x4u;
 
-                if (value.Count > 0)
-                {
-                    _Trailer = value;
-                }
-                else
-                {
-                    _Trailer = default;
-                }
+                _Trailer = value.Count > 0 ? value : default;
             }
         }
 
@@ -1298,24 +913,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x8u;
                 }
 
-                if (_TransferEncoding.Count > 0)
-                {
-                    return _TransferEncoding;
-                }
-                return StringValues.Empty;
+                return _TransferEncoding.Count > 0 ? _TransferEncoding : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x8u;
 
-                if (value.Count > 0)
-                {
-                    _TransferEncoding = value;
-                }
-                else
-                {
-                    _TransferEncoding = default;
-                }
+                _TransferEncoding = value.Count > 0 ? value : default;
             }
         }
 
@@ -1333,24 +937,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x10u;
                 }
 
-                if (_Translate.Count > 0)
-                {
-                    return _Translate;
-                }
-                return StringValues.Empty;
+                return _Translate.Count > 0 ? _Translate : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x10u;
 
-                if (value.Count > 0)
-                {
-                    _Translate = value;
-                }
-                else
-                {
-                    _Translate = default;
-                }
+                _Translate = value.Count > 0 ? value : default;
             }
         }
 
@@ -1368,24 +961,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x20u;
                 }
 
-                if (_Upgrade.Count > 0)
-                {
-                    return _Upgrade;
-                }
-                return StringValues.Empty;
+                return _Upgrade.Count > 0 ? _Upgrade : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x20u;
 
-                if (value.Count > 0)
-                {
-                    _Upgrade = value;
-                }
-                else
-                {
-                    _Upgrade = default;
-                }
+                _Upgrade = value.Count > 0 ? value : default;
             }
         }
 
@@ -1403,24 +985,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x40u;
                 }
 
-                if (_UserAgent.Count > 0)
-                {
-                    return _UserAgent;
-                }
-                return StringValues.Empty;
+                return _UserAgent.Count > 0 ? _UserAgent : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x40u;
 
-                if (value.Count > 0)
-                {
-                    _UserAgent = value;
-                }
-                else
-                {
-                    _UserAgent = default;
-                }
+                _UserAgent = value.Count > 0 ? value : default;
             }
         }
 
@@ -1438,24 +1009,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x80u;
                 }
 
-                if (_Via.Count > 0)
-                {
-                    return _Via;
-                }
-                return StringValues.Empty;
+                return _Via.Count > 0 ? _Via : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x80u;
 
-                if (value.Count > 0)
-                {
-                    _Via = value;
-                }
-                else
-                {
-                    _Via = default;
-                }
+                _Via = value.Count > 0 ? value : default;
             }
         }
 
@@ -1473,24 +1033,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     _flag1 |= 0x100u;
                 }
 
-                if (_Warning.Count > 0)
-                {
-                    return _Warning;
-                }
-                return StringValues.Empty;
+                return _Warning.Count > 0 ? _Warning : StringValues.Empty;
             }
             set
             {
                 _flag1 |= 0x100u;
 
-                if (value.Count > 0)
-                {
-                    _Warning = value;
-                }
-                else
-                {
-                    _Warning = default;
-                }
+                _Warning = value.Count > 0 ? value : default;
             }
         }
 
@@ -3151,50 +2700,50 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private static ReadOnlySpan<byte> HeaderKeys => new byte[]
-        {
-            (byte)HttpSysRequestHeader.Accept,
-            (byte)HttpSysRequestHeader.AcceptCharset,
-            (byte)HttpSysRequestHeader.AcceptEncoding,
-            (byte)HttpSysRequestHeader.AcceptLanguage,
-            (byte)HttpSysRequestHeader.Allow,
-            (byte)HttpSysRequestHeader.Authorization,
-            (byte)HttpSysRequestHeader.CacheControl,
-            (byte)HttpSysRequestHeader.Connection,
-            (byte)HttpSysRequestHeader.ContentEncoding,
-            (byte)HttpSysRequestHeader.ContentLanguage,
-            (byte)HttpSysRequestHeader.ContentLength,
-            (byte)HttpSysRequestHeader.ContentLocation,
-            (byte)HttpSysRequestHeader.ContentMd5,
-            (byte)HttpSysRequestHeader.ContentRange,
-            (byte)HttpSysRequestHeader.ContentType,
-            (byte)HttpSysRequestHeader.Cookie,
-            (byte)HttpSysRequestHeader.Date,
-            (byte)HttpSysRequestHeader.Expect,
-            (byte)HttpSysRequestHeader.Expires,
-            (byte)HttpSysRequestHeader.From,
-            (byte)HttpSysRequestHeader.Host,
-            (byte)HttpSysRequestHeader.IfMatch,
-            (byte)HttpSysRequestHeader.IfModifiedSince,
-            (byte)HttpSysRequestHeader.IfNoneMatch,
-            (byte)HttpSysRequestHeader.IfRange,
-            (byte)HttpSysRequestHeader.IfUnmodifiedSince,
-            (byte)HttpSysRequestHeader.KeepAlive,
-            (byte)HttpSysRequestHeader.LastModified,
-            (byte)HttpSysRequestHeader.MaxForwards,
-            (byte)HttpSysRequestHeader.Pragma,
-            (byte)HttpSysRequestHeader.ProxyAuthorization,
-            (byte)HttpSysRequestHeader.Range,
-            (byte)HttpSysRequestHeader.Referer,
-            (byte)HttpSysRequestHeader.Te,
-            (byte)HttpSysRequestHeader.Trailer,
-            (byte)HttpSysRequestHeader.TransferEncoding,
-            (byte)HttpSysRequestHeader.Translate,
-            (byte)HttpSysRequestHeader.Upgrade,
-            (byte)HttpSysRequestHeader.UserAgent,
-            (byte)HttpSysRequestHeader.Via,
-            (byte)HttpSysRequestHeader.Warning,
-        };
+        private static ReadOnlySpan<HttpSysRequestHeader> HeaderKeys =>
+        [
+            HttpSysRequestHeader.Accept,
+            HttpSysRequestHeader.AcceptCharset,
+            HttpSysRequestHeader.AcceptEncoding,
+            HttpSysRequestHeader.AcceptLanguage,
+            HttpSysRequestHeader.Allow,
+            HttpSysRequestHeader.Authorization,
+            HttpSysRequestHeader.CacheControl,
+            HttpSysRequestHeader.Connection,
+            HttpSysRequestHeader.ContentEncoding,
+            HttpSysRequestHeader.ContentLanguage,
+            HttpSysRequestHeader.ContentLength,
+            HttpSysRequestHeader.ContentLocation,
+            HttpSysRequestHeader.ContentMd5,
+            HttpSysRequestHeader.ContentRange,
+            HttpSysRequestHeader.ContentType,
+            HttpSysRequestHeader.Cookie,
+            HttpSysRequestHeader.Date,
+            HttpSysRequestHeader.Expect,
+            HttpSysRequestHeader.Expires,
+            HttpSysRequestHeader.From,
+            HttpSysRequestHeader.Host,
+            HttpSysRequestHeader.IfMatch,
+            HttpSysRequestHeader.IfModifiedSince,
+            HttpSysRequestHeader.IfNoneMatch,
+            HttpSysRequestHeader.IfRange,
+            HttpSysRequestHeader.IfUnmodifiedSince,
+            HttpSysRequestHeader.KeepAlive,
+            HttpSysRequestHeader.LastModified,
+            HttpSysRequestHeader.MaxForwards,
+            HttpSysRequestHeader.Pragma,
+            HttpSysRequestHeader.ProxyAuthorization,
+            HttpSysRequestHeader.Range,
+            HttpSysRequestHeader.Referer,
+            HttpSysRequestHeader.Te,
+            HttpSysRequestHeader.Trailer,
+            HttpSysRequestHeader.TransferEncoding,
+            HttpSysRequestHeader.Translate,
+            HttpSysRequestHeader.Upgrade,
+            HttpSysRequestHeader.UserAgent,
+            HttpSysRequestHeader.Via,
+            HttpSysRequestHeader.Warning,
+        ];
 
         private string GetHeaderKeyName(HttpSysRequestHeader header) => header switch
         {

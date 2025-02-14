@@ -497,6 +497,6 @@ public class FileBufferingReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(FileBufferingReadStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

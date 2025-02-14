@@ -20,7 +20,7 @@
 
   <PropertyGroup>
     <EnableCustomReferenceResolution
-      Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildFromSource)' != 'true' OR '$(ExcludeFromSourceBuild)' != 'true')">true</EnableCustomReferenceResolution>
+      Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildSourceOnly)' != 'true' OR '$(ExcludeFromSourceOnlyBuild)' != 'true')">true</EnableCustomReferenceResolution>
 
     <ResolveReferencesDependsOn>
       ResolveCustomReferences;
@@ -207,11 +207,6 @@
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning
-        Condition=" '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != '' "
-        Code="BUILD001"
-        Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
-
     <Error
         Condition=" '$(IsServicingBuild)' == 'true' AND '@(UnusedBaselinePackageReference->Count())' != '0' "
         Code="BUILD002"
@@ -233,10 +228,6 @@
       Code="BUILD004"
       Text="%25(Private) metadata should not be applied to the %(Identity) package reference. Did you mean %25(PrivateAssets)?" />
     <Warning
-      Condition=" '@(ProjectReference->HasMetadata('PrivateAssets')->Count())' != '0' "
-      Code="BUILD005"
-      Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) project reference. Did you mean %25(Private)?" />
-    <Warning
       Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
       Code="BUILD006"
       Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) assembly reference. Did you mean %25(Private)?" />
@@ -254,6 +245,7 @@
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
       '$(MSBuildProjectName)' != 'RepoTasks' AND
       ('$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR
+      '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref.Sfx' OR
       (('$(IsAspNetCoreApp)' == 'true' OR '$(UseAspNetCoreSharedRuntime)' == 'true') AND
       $(_CompileTfmUsingReferenceAssemblies))) ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
@@ -273,11 +265,12 @@
   -->
   <Target Name="RemoveExtensionsCompileAssets"
       AfterTargets="ResolvePackageAssets"
-      Condition=" '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
+      Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref'
+        OR ( '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
-          ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+          $(_CompileTfmUsingReferenceAssemblies)) ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
           Condition=" '%(NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
@@ -319,6 +312,7 @@
         <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
         <IsTrimmable>$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</IsTrimmable>
+        <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
 
         <!-- True if the project may be referenced using a @(Reference) item. -->
         <IsProjectReferenceProvider>$([MSBuild]::ValueOrDefault($(IsProjectReferenceProvider),'false'))</IsProjectReferenceProvider>

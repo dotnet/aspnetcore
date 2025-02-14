@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -225,6 +225,7 @@ public class ClientDisconnectTests : StrictTestServerTests
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55936")]
     [ConditionalFact]
     public async Task ReaderThrowsResetExceptionOnInvalidBody()
     {

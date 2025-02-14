@@ -7,7 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
   </ItemGroup>

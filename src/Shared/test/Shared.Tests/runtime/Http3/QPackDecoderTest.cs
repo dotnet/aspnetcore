@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace System.Net.Http.Unit.Tests.QPack
 {
-    public class QPackDecoderTests
+    public class QPackDecoderTests : IDisposable
     {
         private const int MaxHeaderFieldSize = 8192;
 
@@ -62,6 +62,11 @@ namespace System.Net.Http.Unit.Tests.QPack
         public QPackDecoderTests()
         {
             _decoder = new QPackDecoder(MaxHeaderFieldSize);
+        }
+
+        public void Dispose()
+        {
+            _decoder.Dispose();
         }
 
         [Fact]
@@ -318,7 +323,7 @@ namespace System.Net.Http.Unit.Tests.QPack
 
         private static void TestDecode(byte[] encoded, KeyValuePair<string, string>[] expectedValues, bool expectDynamicTableEntry, int? bytesAtATime)
         {
-            QPackDecoder decoder = new QPackDecoder(MaxHeaderFieldSize);
+            using QPackDecoder decoder = new QPackDecoder(MaxHeaderFieldSize);
             TestHttpHeadersHandler handler = new TestHttpHeadersHandler();
 
             // Read past header

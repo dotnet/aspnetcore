@@ -12,7 +12,6 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\Http3InMemory.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" />
@@ -37,6 +36,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 {
-  "$schema": "http://json.schemastore.org/ide.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 300,
-  "icon": "ide/Worker.png",
+  "icon": "ide/icon.ico",
   "supportsDocker": true
 }

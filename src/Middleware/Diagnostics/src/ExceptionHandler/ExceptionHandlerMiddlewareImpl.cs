@@ -2,14 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -70,6 +71,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
     public Task Invoke(HttpContext context)
     {
         ExceptionDispatchInfo edi;
+
         try
         {
             var task = _next(context);
@@ -141,8 +143,16 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         {
             context.Request.Path = _options.ExceptionHandlingPath;
         }
+        var oldScope = _options.CreateScopeForErrors ? context.RequestServices : null;
+        await using AsyncServiceScope? scope = _options.CreateScopeForErrors ? context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope() : null;
+
         try
         {
+            if (scope.HasValue)
+            {
+                context.RequestServices = scope.Value.ServiceProvider;
+            }
+
             var exceptionHandlerFeature = new ExceptionHandlerFeature()
             {
                 Error = edi.SourceException,
@@ -155,7 +165,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
             context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
             context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-            context.Response.StatusCode = DefaultStatusCode;
+            context.Response.StatusCode = _options.StatusCodeSelector?.Invoke(edi.SourceException) ?? DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
             string? handler = null;
@@ -182,7 +192,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                     {
                         HttpContext = context,
                         AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                        ProblemDetails = { Status = DefaultStatusCode },
+                        ProblemDetails = { Status = context.Response.StatusCode },
                         Exception = edi.SourceException,
                     });
                     if (handled)
@@ -192,7 +202,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 }
             }
             // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || handled || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (context.Response.HasStarted || handled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
@@ -216,6 +226,10 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         finally
         {
             context.Request.Path = originalPath;
+            if (oldScope != null)
+            {
+                context.RequestServices = oldScope;
+            }
         }
 
         _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
@@ -233,12 +247,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
         // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
         // the endpoint and route values to ensure things are re-calculated.
-        context.SetEndpoint(endpoint: null);
-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        if (routeValuesFeature != null)
-        {
-            routeValuesFeature.RouteValues = null!;
-        }
+        HttpExtensions.ClearEndpoint(context);
     }
 
     private static Task ClearCacheHeaders(object state)

@@ -1,0 +1,15 @@
+#nullable enable
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.Configuration.get -> string?
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.Configuration.set -> void
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ConfigurationOptions.get -> StackExchange.Redis.ConfigurationOptions?
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ConfigurationOptions.set -> void
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ConnectionMultiplexerFactory.get -> System.Func<System.Threading.Tasks.Task<StackExchange.Redis.IConnectionMultiplexer!>!>?
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ConnectionMultiplexerFactory.set -> void
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.InstanceName.get -> string?
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.InstanceName.set -> void
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ProfilingSession.get -> System.Func<StackExchange.Redis.Profiling.ProfilingSession!>?
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.ProfilingSession.set -> void
+Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions.RedisOutputCacheOptions() -> void
+Microsoft.Extensions.DependencyInjection.StackExchangeRedisOutputCacheServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.StackExchangeRedisOutputCacheServiceCollectionExtensions.AddStackExchangeRedisOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.RedisOutputCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

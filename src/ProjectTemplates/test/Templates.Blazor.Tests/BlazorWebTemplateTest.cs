@@ -1,126 +1,95 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
-using Xunit.Abstractions;
 
-namespace Templates.Blazor.Tests;
-public class BlazorWebTemplateTest : LoggedTest
+namespace BlazorTemplates.Tests;
+
+public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
-    public BlazorWebTemplateTest(ProjectFactoryFixture projectFactory)
-    {
-        ProjectFactory = projectFactory;
-    }
-
-    public ProjectFactoryFixture ProjectFactory { get; set; }
-
-    private ITestOutputHelper _output;
-    public ITestOutputHelper Output
-    {
-        get
-        {
-            if (_output == null)
-            {
-                _output = new TestOutputLogger(Logger);
-            }
-            return _output;
-        }
-    }
+    public override string ProjectType => "blazor";
 
     [ConditionalTheory]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [MemberData(nameof(ArgsData))]
-    public async Task BlazorWebTemplate_NoAuth(string[] args)
+    [SkipNonHelix]
+    [InlineData(BrowserKind.Chromium, "None")]
+    [InlineData(BrowserKind.Chromium, "Server")]
+    [InlineData(BrowserKind.Chromium, "WebAssembly")]
+    [InlineData(BrowserKind.Chromium, "Auto")]
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption)
     {
-        var project = await ProjectFactory.CreateProject(Output);
+        var project = await CreateBuildPublishAsync(
+            args: ["-int", interactivityOption],
+            getTargetProject: GetTargetProject);
 
-        await project.RunDotNetNewAsync("blazor", args: args);
+        // There won't be a counter page when the 'None' interactivity option is used
+        var pagesToExclude = interactivityOption is "None"
+            ? BlazorTemplatePages.Counter
+            : BlazorTemplatePages.None;
 
-        var expectedLaunchProfileNames = args.Contains(ArgConstants.NoHttps)
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        var appName = project.ProjectName;
 
-        var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
-        Assert.DoesNotContain(".db", projectFileContents);
-        Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
-        Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
-        Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
-        Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
-
-        await project.RunDotNetPublishAsync();
-
-        // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-        // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-        // later, while the opposite is not true.
-
-        await project.RunDotNetBuildAsync();
-
-        var pages = new List<Page>
-        {
-            new Page
-            {
-                Url = BlazorTemplatePages.Index,
-            },
-            new Page
-            {
-                Url = BlazorTemplatePages.Weather,
-            }
-        };
-
-        if (args.Contains(ArgConstants.UseServer))
-        {
-            pages.Add(new Page
-            {
-                Url = BlazorTemplatePages.Counter,
-            });
-        }
-
+        // Test the built project
         using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-            await aspNetProcess.AssertPagesOk(pages);
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
         }
 
+        // Test the published project
         using (var aspNetProcess = project.StartPublishedProjectAsync())
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
-            await aspNetProcess.AssertPagesOk(pages);
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+
+            if (HasClientProject())
+            {
+                await AssertWebAssemblyCompressionFormatAsync(aspNetProcess, "br");
+            }
+
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
+        }
+
+        bool HasClientProject()
+            => interactivityOption is "WebAssembly" or "Auto";
+
+        Project GetTargetProject(Project rootProject)
+        {
+            if (HasClientProject())
+            {
+                // Multiple projects were created, so we need to specifically select the server
+                // project to be used
+                return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
+            }
+
+            // In other cases, just use the root project
+            return rootProject;
         }
     }
 
-    public static TheoryData<string[]> ArgsData() => new TheoryData<string[]>
+    private static async Task AssertWebAssemblyCompressionFormatAsync(AspNetProcess aspNetProcess, string expectedEncoding)
     {
-        new string[0],
-        new[] { ArgConstants.UseProgramMain },
-        new[] { ArgConstants.NoHttps },
-        new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps },
-        new[] { ArgConstants.UseServer },
-        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain },
-        new[] { ArgConstants.UseServer, ArgConstants.NoHttps },
-        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain, ArgConstants.NoHttps }
-    };
-
-    private string ReadFile(string basePath, string path)
-    {
-        var fullPath = Path.Combine(basePath, path);
-        var doesExist = File.Exists(fullPath);
-
-        Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
-        return File.ReadAllText(Path.Combine(basePath, path));
+        var response = await aspNetProcess.SendRequest(() =>
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
+            // These are the same as chrome
+            request.Headers.AcceptEncoding.Clear();
+            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
+            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
+            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));
+            return request;
+        });
+        Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
     }
-
-    private class BlazorTemplatePages
-    {
-        internal static readonly string Index = "";
-        internal static readonly string Weather = "weather";
-        internal static readonly string Counter = "counter";
-    }   
 }

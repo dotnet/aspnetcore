@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -35,8 +34,9 @@ public class KestrelServer : IServer
             options,
             new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
             Array.Empty<IMultiplexedConnectionListenerFactory>(),
-            new SimpleHttpsConfigurationService(loggerFactory),
+            new SimpleHttpsConfigurationService(),
             loggerFactory,
+            diagnosticSource: null,
             new KestrelMetrics(new DummyMeterFactory()));
     }
 
@@ -78,13 +78,6 @@ public class KestrelServer : IServer
 
     private sealed class SimpleHttpsConfigurationService : IHttpsConfigurationService
     {
-        private readonly ILogger<HttpsConnectionMiddleware> _httpsLogger;
-
-        public SimpleHttpsConfigurationService(ILoggerFactory loggerFactory)
-        {
-            _httpsLogger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
-        }
-
         public bool IsInitialized => true;
 
         public void Initialize(IHostEnvironment hostEnvironment, ILogger<KestrelServer> serverLogger, ILogger<HttpsConnectionMiddleware> httpsLogger)
@@ -94,7 +87,7 @@ public class KestrelServer : IServer
 
         public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
         {
-            HttpsConfigurationService.PopulateMultiplexedTransportFeaturesWorker(features, listenOptions, _httpsLogger);
+            throw new NotImplementedException(); // Not actually required by this impl, which never provides an IMultiplexedConnectionListenerFactory
         }
 
         public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)

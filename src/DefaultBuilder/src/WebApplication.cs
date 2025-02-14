@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -141,6 +142,14 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         new(options, slim: true);
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with no defaults.
+    /// </summary>
+    /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateEmptyBuilder(WebApplicationOptions options) =>
+        new(options, slim: false, empty: true);
+
+    /// <summary>
     /// Start the application.
     /// </summary>
     /// <param name="cancellationToken"></param>
@@ -176,7 +185,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     }
 
     /// <summary>
-    /// Runs an application and block the calling thread until host shutdown.
+    /// Runs an application and blocks the calling thread until host shutdown.
     /// </summary>
     /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
     public void Run([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)
@@ -259,7 +268,30 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         public IHostApplicationLifetime Lifetime => _webApplication.Lifetime;
         public ILogger Logger => _webApplication.Logger;
         public string Urls => string.Join(", ", _webApplication.Urls);
-        public IReadOnlyList<Endpoint> Endpoints => _webApplication.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+        public IReadOnlyList<Endpoint> Endpoints
+        {
+            get
+            {
+                var dataSource = _webApplication.Services.GetRequiredService<EndpointDataSource>();
+                if (dataSource is CompositeEndpointDataSource compositeEndpointDataSource)
+                {
+                    // The web app's data sources aren't registered until the routing middleware is. That often happens when the app is run.
+                    // We want endpoints to be available in the debug view before the app starts. Test if all the web app's the data sources are registered.
+                    if (compositeEndpointDataSource.DataSources.Intersect(_webApplication.DataSources).Count() == _webApplication.DataSources.Count)
+                    {
+                        // Data sources are centrally registered.
+                        return dataSource.Endpoints;
+                    }
+                    else
+                    {
+                        // Fallback to just the web app's data sources to support debugging before the web app starts.
+                        return new CompositeEndpointDataSource(_webApplication.DataSources).Endpoints;
+                    }
+                }
+
+                return dataSource.Endpoints;
+            }
+        }
         public bool IsRunning => _webApplication.IsRunning;
         public IList<string>? Middleware
         {

@@ -5,10 +5,12 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-public class HostingEventSourceTests
+public class HostingEventSourceTests : LoggedTest
 {
     [Fact]
     public void MatchesNameAndGuid()
@@ -174,61 +176,68 @@ public class HostingEventSourceTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57259")]
     public async Task VerifyCountersFireWithCorrectValues()
     {
         // Arrange
-        var eventListener = new TestCounterListener(new[]
-        {
-            "requests-per-second",
+        var hostingEventSource = GetHostingEventSource();
+
+        // requests-per-second isn't tested because the value can't be reliably tested because of time
+        using var eventListener = new TestCounterListener(LoggerFactory, hostingEventSource.Name,
+        [
             "total-requests",
             "current-requests",
             "failed-requests"
-        });
-
-        var hostingEventSource = GetHostingEventSource();
+        ]);
 
         using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        timeoutTokenSource.Token.Register(() => Logger.LogError("Timeout while waiting for counter value."));
 
-        var rpsValues = eventListener.GetCounterValues("requests-per-second", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
-        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token);
+        var currentRequestValues = eventListener.GetCounterValues("current-requests", timeoutTokenSource.Token);
+        var failedRequestValues = eventListener.GetCounterValues("failed-requests", timeoutTokenSource.Token);
 
         eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
             new Dictionary<string, string>
             {
-                    { "EventCounterIntervalSec", "1" }
+                { "EventCounterIntervalSec", "1" }
             });
 
         // Act & Assert
+        Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("GET", "/");
 
-        Assert.Equal(1, await totalRequestValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(1, await rpsValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(1, await currentRequestValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await WaitForCounterValue(totalRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
+        Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        Assert.Equal(1, await totalRequestValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(0, await rpsValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await WaitForCounterValue(totalRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
+        Logger.LogInformation(nameof(HostingEventSource.RequestStart));
         hostingEventSource.RequestStart("POST", "/");
 
-        Assert.Equal(2, await totalRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(1, await rpsValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(1, await currentRequestValues.FirstOrDefault(v => v == 1));
-        Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 1, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 0, Logger);
 
+        Logger.LogInformation(nameof(HostingEventSource.RequestFailed));
         hostingEventSource.RequestFailed();
+        Logger.LogInformation(nameof(HostingEventSource.RequestStop));
         hostingEventSource.RequestStop();
 
-        Assert.Equal(2, await totalRequestValues.FirstOrDefault(v => v == 2));
-        Assert.Equal(0, await rpsValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
-        Assert.Equal(1, await failedRequestValues.FirstOrDefault(v => v == 1));
+        await WaitForCounterValue(totalRequestValues, expectedValue: 2, Logger);
+        await WaitForCounterValue(currentRequestValues, expectedValue: 0, Logger);
+        await WaitForCounterValue(failedRequestValues, expectedValue: 1, Logger);
+    }
+
+    private static async Task WaitForCounterValue(CounterValues values, double expectedValue, ILogger logger)
+    {
+        await values.Values.WaitForValueAsync(expectedValue, values.CounterName, logger);
     }
 
     private static HostingEventSource GetHostingEventSource()

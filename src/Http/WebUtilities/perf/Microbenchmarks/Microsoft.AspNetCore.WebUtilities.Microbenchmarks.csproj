@@ -8,7 +8,6 @@
     <RootNamespace>Microsoft.AspNetCore.WebUtilities</RootNamespace>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />

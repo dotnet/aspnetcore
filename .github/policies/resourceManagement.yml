@@ -1,0 +1,653 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: '[Idle Issue Management] Close stale issues'
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: 'Needs: Author Feedback'
+      - hasLabel:
+          label: 'Status: No Recent Activity'
+      - noActivitySince:
+          days: 3
+      actions:
+      - closeIssue
+    - description: '[Idle Issue Management] Add no recent activity label to issues'
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: 'Needs: Author Feedback'
+      - noActivitySince:
+          days: 4
+      - isNotLabeledWith:
+          label: 'Status: No Recent Activity'
+      actions:
+      - addLabel:
+          label: 'Status: No Recent Activity'
+      - addReply:
+          reply: >-
+            This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **4 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate.
+
+
+            See [our Issue Management Policies](https://aka.ms/aspnet/issue-policies) for more information.
+    - description: '[Resolved Issue Management] Close resolved issues'
+      frequencies:
+      - hourly:
+          hour: 3
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: 'Status: Resolved'
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: >-
+            This issue has been resolved and has not had any activity for **1 day**. It will be closed for housekeeping purposes.
+
+
+            See [our Issue Management Policies](https://aka.ms/aspnet/issue-policies) for more information.
+      - closeIssue
+    - description: '[Discussions Management] Closed with no activity'
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isOpen
+      - isIssue
+      - isPartOfMilestone:
+          milestone: Discussions
+      - noActivitySince:
+          days: 60
+      - isNotLabeledWith:
+          label: announcement
+      actions:
+      - addReply:
+          reply: >-
+            Thank you for contacting us. Due to a lack of activity on this discussion issue we're closing it in an effort to keep our backlog clean. If you believe there is a concern related to the ASP.NET Core framework, which hasn't been addressed yet, please file a new issue.
+
+
+            This issue will be locked after 30 more days of inactivity. If you still wish to discuss this subject after then, please create a new issue!
+      - closeIssue
+    - description: Stale PR reminder
+      frequencies:
+      - hourly:
+          hour: 3
+      filters:
+      - isOpen
+      - isPullRequest
+      - hasLabel:
+          label: 'pr: pending author input'
+      - noActivitySince:
+          days: 10
+      - isNotLabeledWith:
+          label: stale
+      actions:
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}.
+
+            It seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://aka.ms/aspnet/issue-policies).
+      - addLabel:
+          label: stale
+    - description: Close stale PRs
+      frequencies:
+      - hourly:
+          hour: 4
+      filters:
+      - isOpen
+      - isPullRequest
+      - hasLabel:
+          label: 'pr: pending author input'
+      - noActivitySince:
+          days: 4
+      - hasLabel:
+          label: stale
+      actions:
+      - closeIssue
+    - description: Request CI rerun for stalish PRs
+      frequencies:
+      - hourly:
+          hour: 12
+      filters:
+      - isNotDraftPullRequest
+      - isPullRequest
+      - isOpen
+      - noActivitySince:
+          days: 7
+      - isNotLabeledWith:
+          label: pending-ci-rerun
+      actions:
+      - addReply:
+          reply: >-
+            Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.
+
+            To make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening.
+      - addLabel:
+          label: pending-ci-rerun
+    eventResponderTasks:
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - hasLabel:
+          label: 'Needs: Author Feedback'
+      - isOpen
+      - or:
+        - and:
+          - hasLabel:
+              label: 'Author: Migration Bot :robot:'
+          - not:
+              activitySenderHasPermission:
+                permission: Write
+        - isActivitySender:
+            issueAuthor: True
+      then:
+      - addLabel:
+          label: 'Needs: Attention :wave:'
+      - removeLabel:
+          label: 'Needs: Author Feedback'
+      description: '[Idle Issue Management] Replace needs author feedback label with needs attention label when the author comments on an issue'
+    - if:
+      - payloadType: Issues
+      - not:
+          isAction:
+            action: Closed
+      - hasLabel:
+          label: 'Status: No Recent Activity'
+      then:
+      - removeLabel:
+          label: 'Status: No Recent Activity'
+      description: '[Closed Issue Management] Remove no recent activity label from issues'
+    - if:
+      - payloadType: Issue_Comment
+      - hasLabel:
+          label: 'Status: No Recent Activity'
+      then:
+      - removeLabel:
+          label: 'Status: No Recent Activity'
+      description: '[Idle Issue Management] Remove no recent activity label when an issue is commented on'
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      - or:
+        - isActivitySender:
+            user: vsfeedback
+            issueAuthor: False
+        - bodyContains:
+            pattern: Copied from original issue
+            isRegex: False
+      then:
+      - addLabel:
+          label: 'Author: Migration Bot :robot:'
+      description: '[Migration Bots] Tag issues opened by migration bots'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: dotnet-maestro[bot]
+          issueAuthor: False
+      - titleContains:
+          pattern: Update dependencies
+          isRegex: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - approvePullRequest:
+          comment: Auto-approving dependency update.
+      description: '[Infrastructure PRs] Add area-infrastructure label to dependency update Pull Requests'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: dotnet-maestro-bot
+          issueAuthor: False
+      - titleContains:
+          pattern: Merge branch
+          isRegex: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Merge Forward :fast_forward:'
+      - approvePullRequest:
+          comment: Auto-approving branch merge.
+      description: '[Infrastructure PRs] Add area-infrastructure label to auto-merge Pull Requests'
+    - if:
+      - payloadType: Issues
+      - or:
+        - labelAdded:
+            label: ':heavy_check_mark: Resolution: Answered'
+        - labelAdded:
+            label: ':heavy_check_mark: Resolution: By Design'
+        - labelAdded:
+            label: ':heavy_check_mark: Resolution: Duplicate'
+        - labelAdded:
+            label: ":heavy_check_mark: Resolution: Won't Fix"
+      then:
+      - addLabel:
+          label: 'Status: Resolved'
+      description: '[Resolved Issue Management] Apply Resolved label'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - or:
+        - includesModifiedFiles:
+            files:
+            - src/Shared/Runtime
+      then:
+      - addReply:
+          reply: Greetings human! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
+      - addLabel:
+          label: 'Attention: Shared Code Modified'
+      description: '[Shared Code PRs] Flag PRs that affect shared code src/Shared/Runtime'
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: api-ready-for-review
+      then:
+      - addReply:
+          reply: Thank you for your API proposal. I'm removing the `api-ready-for-review` label. API Proposals should be submitted for review through Issues based on [this](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=api-suggestion&template=25_api_proposal.md&title=]) template.
+      - removeLabel:
+          label: api-ready-for-review
+      description: '[API Review] PR Marked Ready'
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Closed
+      - hasLabel:
+          label: Working
+      then:
+      - addLabel:
+          label: Done
+      - removeLabel:
+          label: Working
+      description: '[Issue management: mark working issues as done when closed]'
+    - if:
+      - payloadType: Pull_Request
+      - hasLabel:
+          label: stale
+      - hasLabel:
+          label: 'pr: pending author input'
+      - isActivitySender:
+          issueAuthor: True
+      - not:
+          activitySenderHasPermission:
+            permission: Write
+      then:
+      - reopenIssue
+      - removeLabel:
+          label: stale
+      - removeLabel:
+          label: 'pr: pending author input'
+      - reopenIssue
+      description: Revitalize stale PR and reopen
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: 'Needs: Author Feedback'
+      then:
+      - addReply:
+          reply: >-
+            Hello. I see that you've just added `Needs: Author Feedback` label to this PR.
+
+            That label is for Issues and not for PRs. Don't worry, I'm going to replace it with the correct one.
+      - removeLabel:
+          label: 'Needs: Author Feedback'
+      - addLabel:
+          label: 'pr: pending author input'
+      description: 'Replace `Needs Author Feedback` by `pr: pending author input` for PRs'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - activitySenderHasPermission:
+          permission: Read
+      - not:
+          isActivitySender:
+            user: dotnet-maestro
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: dotnet-maestro-bot
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: community-contribution
+      - addReply:
+          reply: Thanks for your PR, @${issueAuthor}. Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
+      description: Label community PRs with `community contribution` label
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: main
+      then:
+      - addMilestone:
+          milestone: 10.0-preview2
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/10.0-preview1
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 10.0-preview1
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-preview1 branch'
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Labeled
+      - labelAdded:
+          label: feature-blazor-debugging
+      - hasLabel:
+          label: 'INTERNAL: Debug'
+      then:
+      - addReply:
+          reply: >-
+            Thanks for contacting us.
+
+            It looks like this issue is related to debugging in Blazor WebAssembly application.
+
+            Because there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.
+
+            You can find it [here](https://learn.microsoft.com/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
+
+            If these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up.
+      description: Provide Blazor WASM Debugging Troubleshooting link
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: api-ready-for-review
+      then:
+      - addReply:
+          reply: >-
+            Thank you for submitting this for API review. This will be reviewed by @dotnet/aspnet-api-review at the next meeting of the ASP.NET Core API Review group. Please ensure you take a look at [the API review process documentation](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md) and ensure that:
+
+
+            * The PR contains changes to the reference-assembly that describe the API change. **Or**, you have included a snippet of reference-assembly-style code that illustrates the API change.
+
+            * The PR describes the impact to users, both positive (useful new APIs) and negative (breaking changes).
+
+            * Someone is assigned to "champion" this change in the meeting, and they understand the impact and design of the change.
+      description: API Proposal Ready For Review
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: Servicing-consider
+      then:
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. Please make sure you've updated the PR description to use the [Shiproom Template](https://aka.ms/aspnet/servicing/template). Also, make sure this PR is not marked as a draft and is ready-to-merge.
+
+
+            To learn more about how to prepare a servicing PR [click here](https://aka.ms/aspnet/servicing).
+      description: Use servicing template for `servicing-consider` issues
+    - if:
+      - payloadType: Pull_Request
+      - hasLabel:
+          label: Servicing-consider
+      - labelAdded:
+          label: Servicing-approved
+      then:
+      - removeLabel:
+          label: Servicing-consider
+      description: Remove the `Servicing-consider` label, when `Servicing-approved` label added
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: 'Needs: Author Feedback'
+      then:
+      - addReply:
+          reply: 'Hi @${issueAuthor}. We have added the "Needs: Author Feedback" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.'
+      description: Add comment when 'Needs Author Feedback' is applied to issue
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - addMilestone:
+          milestone: 9.0.x
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+
+            Otherwise, please add `tell-mode` label.
+      description: Add release/9.0 targeting PRs to the servicing project
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/8.0
+      then:
+      - addMilestone:
+          milestone: 8.0.x
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+
+            Otherwise, please add `tell-mode` label.
+      description: Add release/8.0 targeting PRs to the servicing project
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/2.1
+      then:
+      - addMilestone:
+          milestone: 2.1.x
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+
+            Otherwise, please add `tell-mode` label.
+      description: Add release/2.1 targeting PRs to the servicing project
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: area-infrastructure
+      - isAction:
+          action: Labeled
+      then:
+      - addReply:
+          reply: Hey @dotnet/aspnet-build, looks like this PR is something you want to take a look at.
+      - assignTo:
+          users:
+          - aspnet-build
+      description: Ping the build team on infrastructure issues
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: blog-candidate
+      then:
+      - addReply:
+          reply: >-
+            @${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!
+
+
+            Please ensure that the original comment in this thread contains a clear explanation of what the change does, why it's important (what problem does it solve?), and, if relevant, include things like code samples and/or performance numbers.
+
+
+            This content may not be exactly what goes into the blog post, but it will help the team putting together the announcement.
+
+
+            Thanks!
+      description: Add comment when blog-candidate label is added
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: Servicing-approved
+      then:
+      - addReply:
+          reply: Hi @${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed.
+      description: '[Servicing PR Approved] Let the author know that the PR will be merged by the build team'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 9.0.3
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/8.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 8.0.14
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: 'Needs: Repro'
+      then:
+      - addReply:
+          reply: Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimal repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem without unnecessary code. Please share with us in a public GitHub repo because we cannot open ZIP attachments, and don't include any confidential content.
+      - addLabel:
+          label: 'Needs: Author Feedback'
+      description: '[Needs: Repro] Request a minimal repro project'
+    - if:
+      - payloadType: Issue_Comment
+      - activitySenderHasPermission:
+          permission: Write
+      - commentContains:
+          pattern: ^(\/azp run)$
+          isRegex: True
+      - hasLabel:
+          label: pending-ci-rerun
+      then:
+      - removeLabel:
+          label: pending-ci-rerun
+      description: Remove pending-ci-rerun label when CI rerun requested
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: breaking-change
+      then:
+      - addLabel:
+          label: needs-breaking-change-announcement
+      - addReply:
+          reply: >-
+            Thanks for identifying a breaking change.
+
+
+            ${assignees}, after you commit this PR please take the following actions, as part of the breaking changes announcement process:
+
+            \n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.
+
+            \n- [ ] Link the breaking change announcement issue from this PR.
+
+            \n- [ ] Remove the `needs-breaking-change-announcement` label.
+      description: Breaking change actions reminder
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      - or:
+        - bodyContains:
+            pattern: '[Aa][Oo][Tt]\W'
+            isRegex: True
+        - titleContains:
+            pattern: '[Aa][Oo][Tt]\W'
+            isRegex: True
+      then:
+      - addLabel:
+          label: NativeAOT
+      description: Label AOT related issues appropriately
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: help wanted
+      - isAction:
+          action: Labeled
+      then:
+      - addReply:
+          reply: Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)
+      description: Drop a comment when a help candidate issue is identified
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - titleContains:
+          pattern: Update .NET SDK
+          isRegex: False
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - approvePullRequest:
+          comment: Auto-approving SDK update.
+      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
+onFailure: 
+onSuccess: 

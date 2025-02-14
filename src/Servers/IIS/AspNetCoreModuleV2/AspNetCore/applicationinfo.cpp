@@ -16,6 +16,7 @@
 #include "ConfigurationLoadException.h"
 #include "resource.h"
 #include "file_utility.h"
+#include "ModuleEnvironment.h"
 
 extern HINSTANCE           g_hServerModule;
 extern BOOL                g_fInAppOfflineShutdown;
@@ -72,6 +73,8 @@ APPLICATION_INFO::CreateHandler(
 HRESULT
 APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 {
+    SetApplicationEnvironmentVariables(m_pServer, pHttpContext);
+
     auto& pHttpApplication = *pHttpContext.GetApplication();
     if (AppOfflineApplication::ShouldBeStarted(pHttpApplication))
     {
@@ -298,7 +301,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
         auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
         if (!shadowCopyBaseDirectory.exists())
         {
-            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), NULL);
+            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
         }
 
         for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))

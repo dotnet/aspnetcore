@@ -6,13 +6,12 @@ buildscript {
   }
   dependencies {
     classpath "com.diffplug.spotless:spotless-plugin-gradle:6.6.1"
-    classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
   }
 }
 
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 allprojects {
@@ -22,7 +21,9 @@ allprojects {
     // If we're run from outside MSBuild, just assign a bogus dev version.
     version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
-    sourceCompatibility = 1.8
+    java {
+        sourceCompatibility = 1.9
+    }
 
     repositories {
         mavenCentral()

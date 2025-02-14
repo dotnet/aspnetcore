@@ -10,7 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
 
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
     <Reference Include="Moq" />
   </ItemGroup>

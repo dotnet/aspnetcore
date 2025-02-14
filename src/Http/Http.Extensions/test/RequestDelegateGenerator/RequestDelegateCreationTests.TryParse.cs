@@ -55,7 +55,7 @@ public abstract partial class RequestDelegateCreationTests
                 new object[] { "MyEnum", "ValueB", MyEnum.ValueB },
                 new object[] { "MyTryParseRecord", "https://example.org", new MyTryParseRecord(new Uri("https://example.org")) },
                 new object[] { "int?", "42", 42 },
-                new object[] { "int?", null, null },
+                new object[] { "int?", null, null }
             };
         }
     }
@@ -198,6 +198,23 @@ app.MapGet("/hello", ([FromQuery]TryParseTodo p) => p.Name!);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Knit kitten mittens.");
         await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitIParsable()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]TodoWithExplicitIParsable p, HttpContext context) => context.Items["p"] = p);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=1");
+
+        await endpoint.RequestDelegate(httpContext);
+        var p = httpContext.Items["p"];
+
+        Assert.NotNull(p);
     }
 
     [Fact]

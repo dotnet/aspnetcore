@@ -1,4 +1,1 @@
 #nullable enable
-override Microsoft.AspNetCore.Cors.DisableCorsAttribute.ToString() -> string!
-override Microsoft.AspNetCore.Cors.EnableCorsAttribute.ToString() -> string!
-static Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions.RequireCors<TBuilder>(this TBuilder builder) -> TBuilder

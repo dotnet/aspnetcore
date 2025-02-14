@@ -38,7 +38,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
     internal ComplexObjectModelBinder(
         IDictionary<ModelMetadata, IModelBinder> propertyBinders,
         IReadOnlyList<IModelBinder> parameterBinders,
-        ILogger<ComplexObjectModelBinder> logger)
+        ILogger logger)
     {
         _propertyBinders = propertyBinders;
         _parameterBinders = parameterBinders;

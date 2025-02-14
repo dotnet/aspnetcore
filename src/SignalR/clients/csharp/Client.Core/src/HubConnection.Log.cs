@@ -334,5 +334,8 @@ public partial class HubConnection
 
         [LoggerMessage(92, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
         public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
     }
 }

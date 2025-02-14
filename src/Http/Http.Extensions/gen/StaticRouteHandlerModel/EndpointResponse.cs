@@ -14,13 +14,13 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 internal class EndpointResponse
 {
     public ITypeSymbol? ResponseType { get; set; }
-    public string WrappedResponseType { get; set; }
+    public ITypeSymbol WrappedResponseType { get; set; }
+    public string WrappedResponseTypeDisplayName { get; set; }
     public string? ContentType { get; set; }
     public bool IsAwaitable { get; set; }
     public bool HasNoResponse { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
-    public bool IsAnonymousType { get; set; }
     public bool IsEndpointMetadataProvider { get; set; }
     private WellKnownTypes WellKnownTypes { get; init; }
 
@@ -28,13 +28,13 @@ internal class EndpointResponse
     {
         WellKnownTypes = wellKnownTypes;
         ResponseType = UnwrapResponseType(method, out bool isAwaitable, out bool awaitableIsVoid);
-        WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
+        WrappedResponseType = method.ReturnType;
+        WrappedResponseTypeDisplayName = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
         IsAwaitable = isAwaitable;
         HasNoResponse = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType();
-        IsAnonymousType = method.ReturnType.IsAnonymousType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
 
@@ -102,7 +102,8 @@ internal class EndpointResponse
     {
         return obj is EndpointResponse otherEndpointResponse &&
             SymbolEqualityComparer.Default.Equals(otherEndpointResponse.ResponseType, ResponseType) &&
-            otherEndpointResponse.WrappedResponseType.Equals(WrappedResponseType, StringComparison.Ordinal) &&
+            SymbolEqualityComparer.Default.Equals(otherEndpointResponse.WrappedResponseType, WrappedResponseType) &&
+            otherEndpointResponse.WrappedResponseTypeDisplayName.Equals(WrappedResponseTypeDisplayName, StringComparison.Ordinal) &&
             otherEndpointResponse.IsAwaitable == IsAwaitable &&
             otherEndpointResponse.HasNoResponse == HasNoResponse &&
             otherEndpointResponse.IsIResult == IsIResult &&
@@ -110,5 +111,5 @@ internal class EndpointResponse
     }
 
     public override int GetHashCode() =>
-        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, HasNoResponse, IsIResult, ContentType);
+        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), SymbolEqualityComparer.Default.GetHashCode(WrappedResponseType), WrappedResponseTypeDisplayName, IsAwaitable, HasNoResponse, IsIResult, ContentType);
 }

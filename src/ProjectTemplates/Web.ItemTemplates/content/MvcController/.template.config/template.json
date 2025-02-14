@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [ "Web", "ASP.NET" ],
   "name": "MVC Controller",
@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.MvcController",
-  "precedence": "9800",
-  "identity": "Microsoft.AspNetCore.Mvc.MvcController.8.0",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Mvc.MvcController.10.0",
   "shortName": "mvccontroller",
   "sourceName": "HomeController",
   "primaryOutputs": [

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -64,10 +66,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             // Runs inline.
             webHostBuilder.Configure(ConfigureApplication);
 
-            webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
-            webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
-            webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
-            webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+            InitializeWebHostSettings(webHostBuilder);
         },
         options =>
         {
@@ -75,17 +74,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             options.SuppressEnvironmentConfiguration = true;
         });
 
-        // This applies the config from ConfigureWebHostDefaults
-        // Grab the GenericWebHostService ServiceDescriptor so we can append it after any user-added IHostedServices during Build();
-        _genericWebHostServiceDescriptor = bootstrapHostBuilder.RunDefaultCallbacks();
-
-        // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder. Then
-        // grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
-        var webHostContext = (WebHostBuilderContext)bootstrapHostBuilder.Properties[typeof(WebHostBuilderContext)];
-        Environment = webHostContext.HostingEnvironment;
-
-        Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
-        WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+        _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
     }
 
     internal WebApplicationBuilder(WebApplicationOptions options, bool slim, Action<IHostBuilder>? configureDefaults = null)
@@ -138,15 +127,12 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         bootstrapHostBuilder.ConfigureSlimWebHost(
             webHostBuilder =>
             {
-                AspNetCore.WebHost.ConfigureWebDefaultsCore(webHostBuilder);
+                AspNetCore.WebHost.ConfigureWebDefaultsSlim(webHostBuilder);
 
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
 
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
-                webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
-                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
-                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+                InitializeWebHostSettings(webHostBuilder);
             },
             options =>
             {
@@ -154,9 +140,70 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 options.SuppressEnvironmentConfiguration = true;
             });
 
+        _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+    }
+
+    internal WebApplicationBuilder(WebApplicationOptions options, bool slim, bool empty, Action<IHostBuilder>? configureDefaults = null)
+    {
+        Debug.Assert(!slim, "should only be called with slim: false");
+        Debug.Assert(empty, "should only be called with empty: true");
+
+        var configuration = new ConfigurationManager();
+
+        // empty builder should still default the ContentRoot as usual. This is the expected behavior for all WebApplicationBuilders.
+        SetDefaultContentRoot(options, configuration);
+
+        _hostApplicationBuilder = Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            Args = options.Args,
+            ApplicationName = options.ApplicationName,
+            EnvironmentName = options.EnvironmentName,
+            ContentRootPath = options.ContentRootPath,
+            Configuration = configuration,
+        });
+
+        // Set WebRootPath if necessary
+        if (options.WebRootPath is not null)
+        {
+            Configuration.AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>(WebHostDefaults.WebRootKey, options.WebRootPath),
+            });
+        }
+
+        // Run methods to configure web host defaults early to populate services
+        var bootstrapHostBuilder = new BootstrapHostBuilder(_hostApplicationBuilder);
+
+        // This is for testing purposes
+        configureDefaults?.Invoke(bootstrapHostBuilder);
+
+        bootstrapHostBuilder.ConfigureSlimWebHost(
+            webHostBuilder =>
+            {
+                // Note this doesn't configure any WebHost server - Kestrel or otherwise.
+                // It also doesn't register Routing, HostFiltering, or ForwardedHeaders.
+                // It is "empty" and up to the caller to configure these services.
+
+                // Runs inline.
+                webHostBuilder.Configure((context, app) => ConfigureApplication(context, app, allowDeveloperExceptionPage: false));
+
+                InitializeWebHostSettings(webHostBuilder);
+            },
+            options =>
+            {
+                // This is an "empty" builder, so don't add the "ASPNETCORE_" environment variables
+                options.SuppressEnvironmentConfiguration = true;
+            });
+
+        _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+    }
+
+    [MemberNotNull(nameof(Environment), nameof(Host), nameof(WebHost))]
+    private ServiceDescriptor InitializeHosting(BootstrapHostBuilder bootstrapHostBuilder)
+    {
         // This applies the config from ConfigureWebHostDefaults
         // Grab the GenericWebHostService ServiceDescriptor so we can append it after any user-added IHostedServices during Build();
-        _genericWebHostServiceDescriptor = bootstrapHostBuilder.RunDefaultCallbacks();
+        var genericWebHostServiceDescriptor = bootstrapHostBuilder.RunDefaultCallbacks();
 
         // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder. Then
         // grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
@@ -165,6 +212,16 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+
+        return genericWebHostServiceDescriptor;
+    }
+
+    private void InitializeWebHostSettings(IWebHostBuilder webHostBuilder)
+    {
+        webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
+        webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
+        webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
+        webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
     }
 
     private static DefaultServiceProviderFactory GetServiceProviderFactory(HostApplicationBuilder hostApplicationBuilder)
@@ -189,9 +246,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             // Logic taken from https://github.com/dotnet/runtime/blob/dc5a6c8be1644915c14c4a464447b0d54e223a46/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L209-L227
 
             // If we're running anywhere other than C:\Windows\system32, we default to using the CWD for the ContentRoot.
-            // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as there CWD which is not likely
-            // to really be the home for things like appsettings.json, we skip changing the ContentRoot in that case. The non-"default" initial
-            // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which probably makes more sense than the system32.
+            // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as their CWD, which is not likely
+            // to be the home for things like appsettings.json, we skip changing the ContentRoot in that case. The non-"default" initial
+            // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which probably makes more sense than system32.
 
             // In my testing, both Environment.CurrentDirectory and Environment.SystemDirectory return the path without
             // any trailing directory separator characters. I'm not even sure the casing can ever be different from these APIs, but I think it makes sense to
@@ -272,7 +329,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     /// <summary>
     /// Provides information about the web hosting environment an application is running.
     /// </summary>
-    public IWebHostEnvironment Environment { get; }
+    public IWebHostEnvironment Environment { get; private set; }
 
     /// <summary>
     /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
@@ -290,16 +347,21 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     public ILoggingBuilder Logging => _hostApplicationBuilder.Logging;
 
     /// <summary>
+    /// Allows enabling metrics and directing their output.
+    /// </summary>
+    public IMetricsBuilder Metrics => _hostApplicationBuilder.Metrics;
+
+    /// <summary>
     /// An <see cref="IWebHostBuilder"/> for configuring server specific properties, but not building.
     /// To build after configuration, call <see cref="Build"/>.
     /// </summary>
-    public ConfigureWebHostBuilder WebHost { get; }
+    public ConfigureWebHostBuilder WebHost { get; private set; }
 
     /// <summary>
     /// An <see cref="IHostBuilder"/> for configuring host specific properties, but not building.
     /// To build after configuration, call <see cref="Build"/>.
     /// </summary>
-    public ConfigureHostBuilder Host { get; }
+    public ConfigureHostBuilder Host { get; private set; }
 
     IDictionary<object, object> IHostApplicationBuilder.Properties => ((IHostApplicationBuilder)_hostApplicationBuilder).Properties;
 
@@ -321,7 +383,10 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         return _builtApplication;
     }
 
-    private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
+    private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app) =>
+        ConfigureApplication(context, app, allowDeveloperExceptionPage: true);
+
+    private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app, bool allowDeveloperExceptionPage)
     {
         Debug.Assert(_builtApplication is not null);
 
@@ -332,7 +397,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             app.Properties.Remove(EndpointRouteBuilderKey);
         }
 
-        if (context.HostingEnvironment.IsDevelopment())
+        if (allowDeveloperExceptionPage && context.HostingEnvironment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
@@ -407,7 +472,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
         app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
 
-        // reset route builder if it existed, this is needed for StartupFilters
+        // Reset route builder if it existed, this is needed for StartupFilters
         if (priorRouteBuilder is not null)
         {
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;

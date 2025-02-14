@@ -1,27 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Pipelines;
-using System.Linq;
-using System.Net.Http.HPack;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -52,15 +41,15 @@ public abstract class Http3ConnectionBenchmarkBase
         _httpRequestHeaders[InternalHeaderNames.Scheme] = new StringValues("http");
         _httpRequestHeaders[InternalHeaderNames.Authority] = new StringValues("localhost:80");
 
-        var mockTimeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            dateHeaderValueManager: new DateHeaderValueManager(mockTimeProvider),
-            timeProvider: mockTimeProvider);
+            dateHeaderValueManager: new DateHeaderValueManager(timeProvider),
+            timeProvider: timeProvider);
         serviceContext.DateHeaderValueManager.OnHeartbeat();
 
-        _http3 = new Http3InMemory(serviceContext, mockTimeProvider, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
+        _http3 = new Http3InMemory(serviceContext, timeProvider, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
 
         _http3.InitializeConnectionAsync(ProcessRequest).GetAwaiter().GetResult();
     }

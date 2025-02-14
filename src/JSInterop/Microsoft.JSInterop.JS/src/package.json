@@ -1,16 +1,16 @@
 {
   "name": "@microsoft/dotnet-js-interop",
-  "version": "8.0.0-dev",
+  "version": "9.0.0-dev",
   "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
-  "main": "dist/Microsoft.JSInterop.js",
-  "types": "dist/Microsoft.JSInterop.d.ts",
+  "main": "dist/src/Microsoft.JSInterop.js",
+  "types": "dist/src/Microsoft.JSInterop.d.ts",
   "type": "module",
   "scripts": {
-    "preclean": "yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
-    "clean": "node node_modules/rimraf/bin.js ./dist",
+    "clean": "rimraf ./dist",
     "build": "npm run clean && npm run build:esm",
     "build:lint": "eslint -c .eslintrc.json --ext .ts ./src",
-    "build:esm": "node node_modules/typescript/bin/tsc --project ./tsconfig.json"
+    "build:esm": "tsc --project ./tsconfig.json",
+    "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
   "repository": {
     "type": "git",
@@ -26,12 +26,12 @@
     "dist/**"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
-    "eslint": "^8.16.0",
-    "eslint-plugin-jsdoc": "^39.3.2",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-jsdoc": "^46.9.1",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.2.2"
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
   }
 }

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers.Binary;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -14,6 +16,8 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using System.Buffers.Text;
+using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -313,39 +317,13 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         ptr[3] = (byte)(value);
     }
 
-    private struct AdditionalAuthenticatedDataTemplate
+    internal struct AdditionalAuthenticatedDataTemplate
     {
         private byte[] _aadTemplate;
 
-        public AdditionalAuthenticatedDataTemplate(IEnumerable<string> purposes)
+        public AdditionalAuthenticatedDataTemplate(string[] purposes)
         {
-            const int MEMORYSTREAM_DEFAULT_CAPACITY = 0x100; // matches MemoryStream.EnsureCapacity
-            var ms = new MemoryStream(MEMORYSTREAM_DEFAULT_CAPACITY);
-
-            // additionalAuthenticatedData := { magicHeader (32-bit) || keyId || purposeCount (32-bit) || (purpose)* }
-            // purpose := { utf8ByteCount (7-bit encoded) || utf8Text }
-
-            using (var writer = new PurposeBinaryWriter(ms))
-            {
-                writer.WriteBigEndian(MAGIC_HEADER_V0);
-                Debug.Assert(ms.Position == sizeof(uint));
-                var posPurposeCount = writer.Seek(sizeof(Guid), SeekOrigin.Current); // skip over where the key id will be stored; we'll fill it in later
-                writer.Seek(sizeof(uint), SeekOrigin.Current); // skip over where the purposeCount will be stored; we'll fill it in later
-
-                uint purposeCount = 0;
-                foreach (string purpose in purposes)
-                {
-                    Debug.Assert(purpose != null);
-                    writer.Write(purpose); // prepends length as a 7-bit encoded integer
-                    purposeCount++;
-                }
-
-                // Once we have written all the purposes, go back and fill in 'purposeCount'
-                writer.Seek(checked((int)posPurposeCount), SeekOrigin.Begin);
-                writer.WriteBigEndian(purposeCount);
-            }
-
-            _aadTemplate = ms.ToArray();
+            _aadTemplate = BuildAadTemplateBytes(purposes);
         }
 
         public byte[] GetAadForKey(Guid keyId, bool isProtecting)
@@ -381,19 +359,57 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             }
         }
 
-        private sealed class PurposeBinaryWriter : BinaryWriter
+        internal static byte[] BuildAadTemplateBytes(string[] purposes)
         {
-            public PurposeBinaryWriter(MemoryStream stream) : base(stream, EncodingUtil.SecureUtf8Encoding, leaveOpen: true) { }
+            // additionalAuthenticatedData := { magicHeader (32-bit) || keyId || purposeCount (32-bit) || (purpose)* }
+            // purpose := { utf8ByteCount (7-bit encoded) || utf8Text }
 
-            // Writes a big-endian 32-bit integer to the underlying stream.
-            public void WriteBigEndian(uint value)
+            var keySize = sizeof(Guid);
+            int totalPurposeLen = 4 + keySize + 4;
+
+            int[]? lease = null;
+            var targetLength = purposes.Length;
+            Span<int> purposeLengthsPool = targetLength <= 32 ? stackalloc int[targetLength] : (lease = ArrayPool<int>.Shared.Rent(targetLength)).AsSpan(0, targetLength);
+            for (int i = 0; i < targetLength; i++)
             {
-                var outStream = BaseStream; // property accessor also performs a flush
-                outStream.WriteByte((byte)(value >> 24));
-                outStream.WriteByte((byte)(value >> 16));
-                outStream.WriteByte((byte)(value >> 8));
-                outStream.WriteByte((byte)(value));
+                string purpose = purposes[i];
+
+                int purposeLength = EncodingUtil.SecureUtf8Encoding.GetByteCount(purpose);
+                purposeLengthsPool[i] = purposeLength;
+
+                var encoded7BitUIntLength = purposeLength.Measure7BitEncodedUIntLength();
+                totalPurposeLen += purposeLength /* length of actual string */ + encoded7BitUIntLength /* length of 'string length' 7-bit encoded int */;
             }
+
+            byte[] targetArr = new byte[totalPurposeLen];
+            var targetSpan = targetArr.AsSpan();
+
+            // index 0: magic header
+            BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
+            // index 4: key (skipped for now, will be populated in `GetAadForKey()`)
+            // index 4 + keySize: purposeCount
+            BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), targetLength);
+
+            int index = 4 /* MAGIC_HEADER_V0 */ + keySize + 4 /* purposeLength */; // starting from first purpose
+            for (int i = 0; i < targetLength; i++)
+            {
+                string purpose = purposes[i];
+
+                // writing `utf8ByteCount (7-bit encoded integer)`
+                // we have already calculated the lengths of the purpose strings, so just get it from the pool
+                index += targetSpan.Slice(index).Write7BitEncodedInt(purposeLengthsPool[i]);
+
+                // write the utf8text for the purpose
+                index += EncodingUtil.SecureUtf8Encoding.GetBytes(purpose, charIndex: 0, charCount: purpose.Length, bytes: targetArr, byteIndex: index);
+            }
+
+            if (lease is not null)
+            {
+                ArrayPool<int>.Shared.Return(lease);
+            }
+            Debug.Assert(index == targetArr.Length);
+
+            return targetArr;
         }
     }
 

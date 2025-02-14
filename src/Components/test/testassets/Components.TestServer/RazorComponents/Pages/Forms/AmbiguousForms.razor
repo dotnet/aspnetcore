@@ -3,20 +3,10 @@
 
 <h2>Ambiguous forms</h2>
 
-<EditForm EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true">
+<EditForm Enhance Model="this" method="POST" OnValidSubmit="() => {}" FormName="form1">
     <input id="send" type="submit" value="Send" />
 </EditForm>
 
-<EditForm EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true">
-    <input id="send-second" type="submit" value="Send" />
+<EditForm Enhance Model="this" method="POST" OnValidSubmit="() => {}" FormName="form1">
+    <input id="send" type="submit" value="Send" />
 </EditForm>
-
-@if (_submitted)
-{
-    <p id="pass">Form submitted!</p>
-}
-
-@code{
-    bool _submitted = false;
-    EditContext _editContext = new EditContext(new object());
-}

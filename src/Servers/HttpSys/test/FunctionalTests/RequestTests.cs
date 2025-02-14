@@ -1,28 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class RequestTests
+public class RequestTests : LoggedTest
 {
     [ConditionalFact]
     public async Task Request_SimpleGet_ExpectedFieldsSet()
@@ -66,7 +59,7 @@ public class RequestTests
                 httpContext.Response.Body.Write(body, 0, body.Length);
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
             Assert.Equal(string.Empty, response);
@@ -130,7 +123,7 @@ public class RequestTests
                 httpContext.Response.Body.Write(body, 0, body.Length);
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
             Assert.Equal(string.Empty, response);
@@ -193,7 +186,7 @@ public class RequestTests
                 httpContext.Response.Body.Write(body, 0, body.Length);
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
             Assert.Equal(string.Empty, response);
@@ -237,7 +230,7 @@ public class RequestTests
                 httpContext.Response.Body.Write(body, 0, body.Length);
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(root + requestPath);
             Assert.Equal(string.Empty, response);
@@ -254,7 +247,7 @@ public class RequestTests
             Assert.Equal("/%2F", requestInfo.Path);
             Assert.Equal("/%252F", requestInfo.RawTarget);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendSocketRequestAsync(root, "/%252F");
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
@@ -271,7 +264,7 @@ public class RequestTests
             Assert.Equal("/", requestInfo.Path);
             Assert.Equal("", requestInfo.PathBase);
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             // Send a HTTP request with the request line:
             // GET http://localhost:5001 HTTP/1.1
@@ -287,7 +280,7 @@ public class RequestTests
         using (var server = Utilities.CreateHttpServerReturnRoot("/", out var root, httpContext =>
         {
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             // Send a HTTP request with the request line:
             // GET http://localhost:5001?query=value/1/2 HTTP/1.1
@@ -360,12 +353,49 @@ public class RequestTests
             // '/' %2F is an exception, un-escaping it would change the structure of the path
             Assert.Equal("/ !\"#$%&'()*+,-.%2F0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", requestInfo.Path);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendSocketRequestAsync(root, rawPath);
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
             Assert.Equal("200", responseStatusCode);
         }
+    }
+
+    [Fact]
+    public async Task Latin1UrlIsRejected()
+    {
+        string root;
+        using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+        {
+            Assert.Fail("Request should not reach here");
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            var uri = new Uri(root);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(FormattableString.Invariant($"GET /a HTTP/1.1"));
+            builder.AppendLine("Connection: close");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+            // Replace the 'a' in the path with a Latin1 value
+            request[5] = 0xe1;
+
+            using (var socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                socket.Send(request);
+                var response = new byte[12];
+                await Task.Run(() => socket.Receive(response));
+
+                var statusCode = Encoding.UTF8.GetString(response).Substring(9);
+                Assert.Equal("400", statusCode);
+            }
+        }
+
+        var errorLogs = TestSink.Writes.Where(w => w.LogLevel >= LogLevel.Error).Select(w => w.Exception);
+        Assert.False(errorLogs.Any(), string.Join(" ", errorLogs));
     }
 
     [ConditionalFact]
@@ -379,7 +409,7 @@ public class RequestTests
             Assert.Equal(rawPath, requestInfo.RawTarget);
             Assert.Equal(rawPath, requestInfo.Path);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendSocketRequestAsync(root, rawPath);
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
@@ -404,7 +434,7 @@ public class RequestTests
             Assert.Equal(expectedPathBase, requestInfo.PathBase);
             Assert.Equal(expectedPath, requestInfo.Path);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendSocketRequestAsync(root, input);
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
@@ -424,7 +454,7 @@ public class RequestTests
             Assert.Equal(input, requestInfo.RawTarget);
             Assert.Equal(expected, requestInfo.Path);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendSocketRequestAsync(root, input);
             var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
@@ -439,7 +469,7 @@ public class RequestTests
         using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
         {
             throw new NotImplementedException();
-        }))
+        }, LoggerFactory))
         {
             for (var i = 0; i < 32; i++)
             {
@@ -461,7 +491,7 @@ public class RequestTests
         using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
         {
             throw new NotImplementedException();
-        }))
+        }, LoggerFactory))
         {
             for (var i = 0; i < 32; i++)
             {
@@ -493,7 +523,7 @@ public class RequestTests
 
             // Don't exit until it fires or else it could be disposed.
             await result.Task.DefaultTimeout();
-        });
+        }, LoggerFactory);
 
         // Send a request and then abort.
 
@@ -540,7 +570,7 @@ public class RequestTests
             }
 
             result.SetResult(httpContext.RequestAborted.IsCancellationRequested);
-        });
+        }, LoggerFactory);
 
         // Send a request and then abort.
 
@@ -570,10 +600,10 @@ public class RequestTests
     private IServer CreateServer(out string root, RequestDelegate app)
     {
         // TODO: We're just doing this to get a dynamic port. This can be removed later when we add support for hot-adding prefixes.
-        var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
+        var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app, LoggerFactory);
         dynamicServer.Dispose();
         var rootUri = new Uri(root);
-        var server = Utilities.CreatePump();
+        var server = Utilities.CreatePump(LoggerFactory);
 
         foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
         {

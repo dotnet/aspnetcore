@@ -32,7 +32,7 @@ public class FormFile : IFormFile
     }
 
     /// <summary>
-    /// Gets the raw Content-Disposition header of the uploaded file.
+    /// Gets the raw <c>Content-Disposition</c> header of the uploaded file.
     /// </summary>
     public string ContentDisposition
     {
@@ -41,7 +41,7 @@ public class FormFile : IFormFile
     }
 
     /// <summary>
-    /// Gets the raw Content-Type header of the uploaded file.
+    /// Gets the raw <c>Content-Type</c> header of the uploaded file.
     /// </summary>
     public string ContentType
     {
@@ -60,12 +60,12 @@ public class FormFile : IFormFile
     public long Length { get; }
 
     /// <summary>
-    /// Gets the name from the Content-Disposition header.
+    /// Gets the name from the <c>Content-Disposition</c> header.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// Gets the file name from the Content-Disposition header.
+    /// Gets the file name from the <c>Content-Disposition</c> header.
     /// </summary>
     public string FileName { get; }
 

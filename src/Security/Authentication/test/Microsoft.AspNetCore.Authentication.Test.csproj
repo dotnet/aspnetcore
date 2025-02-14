@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)test\Certificates\Certificates.cs" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" />
 
     <Content Include="WsFederation\federationmetadata.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -50,6 +50,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.WsFederation" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

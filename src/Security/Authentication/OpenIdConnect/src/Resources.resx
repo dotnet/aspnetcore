@@ -135,4 +135,10 @@
   <data name="IdTokenCodeMissing" xml:space="preserve">
     <value>Cannot process the message. Both id_token and code are missing.</value>
   </data>
+  <data name="ValidatedSecurityTokenNotJsonWebToken" xml:space="preserve">
+    <value>The Validated Security Token must be of type JsonWebToken, but instead its type is '{0}'.</value>
+  </data>
+  <data name="UnableToValidateTokenFromHandler" xml:space="preserve">
+    <value>Unable to validate the 'id_token', no suitable TokenHandler was found for: '{0}'."</value>
+  </data>
 </root>

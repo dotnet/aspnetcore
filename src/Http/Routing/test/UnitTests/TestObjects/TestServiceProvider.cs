@@ -5,8 +5,5 @@ namespace Microsoft.AspNetCore.Routing.TestObjects;
 
 internal class TestServiceProvider : IServiceProvider
 {
-    public object GetService(Type serviceType)
-    {
-        throw new NotImplementedException();
-    }
+    public object GetService(Type serviceType) => null;
 }

@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -29,6 +28,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -45,6 +45,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -73,6 +74,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -118,12 +120,13 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
     public async Task HEADERS_IncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
     {
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var timestamp = timeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
 
@@ -158,7 +161,7 @@ public class Http3TimeoutTests : Http3TestBase
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamsEnabled;
 
-        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
+        var timestamp = _serviceContext.FakeTimeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
@@ -211,7 +214,7 @@ public class Http3TimeoutTests : Http3TestBase
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var timestamp = timeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
 
@@ -238,7 +241,7 @@ public class Http3TimeoutTests : Http3TestBase
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
 
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var timestamp = timeProvider.GetTimestamp();
         Http3Api._timeoutControl.Initialize();
         var limits = _serviceContext.ServerOptions.Limits;
@@ -301,7 +304,7 @@ public class Http3TimeoutTests : Http3TestBase
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamEnabled;
 
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
         limits.RequestHeadersTimeout = TimeSpan.MaxValue;
 
@@ -332,7 +335,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Received_TooSlowlyOnSmallRead_AbortsConnectionAfterGracePeriod()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -367,6 +369,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: 4,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -410,6 +413,7 @@ public class Http3TimeoutTests : Http3TestBase
             Http3ErrorCode.InternalError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
+        MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, Http3Api.ConnectionTags);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
     }
@@ -440,7 +444,7 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
+        var fakeTimeProvider = _serviceContext.FakeTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -460,7 +464,7 @@ public class Http3TimeoutTests : Http3TestBase
         await app.WriteStartedTask.DefaultTimeout();
 
         // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
-        Http3Api._timeoutControl.Tick(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Tick(fakeTimeProvider.GetTimestamp());
 
         // Don't read data frame to induce "socket" backpressure.
         Http3Api.AdvanceTime(TimeSpan.FromSeconds((requestStream.BytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
@@ -482,7 +486,7 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
+        var fakeTimeProvider = _serviceContext.FakeTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -502,7 +506,7 @@ public class Http3TimeoutTests : Http3TestBase
         await app.WriteStartedTask.DefaultTimeout();
 
         // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
-        Http3Api._timeoutControl.Tick(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Tick(fakeTimeProvider.GetTimestamp());
 
         var timeToWriteMaxData = TimeSpan.FromSeconds((requestStream.BytesReceived + _maxData.Length) / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
@@ -525,7 +529,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Received_TooSlowlyOnLargeRead_AbortsConnectionAfterRateTimeout()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -564,6 +567,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -571,7 +575,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Received_TooSlowlyOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -619,6 +622,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -626,7 +630,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Received_TooSlowlyOnSecondStream_AbortsConnectionAfterNonAdditiveRateTimeout()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
@@ -675,6 +678,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -682,7 +686,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task DATA_Received_SlowlyWhenRateLimitDisabledPerRequest_DoesNotAbortConnection()
     {
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
         var limits = _serviceContext.ServerOptions.Limits;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.

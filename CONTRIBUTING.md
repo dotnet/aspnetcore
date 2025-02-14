@@ -8,7 +8,8 @@ Start a discussion on the [repository issue tracker](https://github.com/dotnet/a
 
 ## Bugs and feature requests?
 
-❗ **IMPORTANT: If you want to report a security-related issue, please see the `Reporting security issues and bugs` section below.**
+> [!IMPORTANT]
+> **If you want to report a security-related issue, please see the `Reporting security issues and bugs` section below.**
 
 Before reporting a new issue, try to find an existing issue if one already exists. If it already exists, upvote (👍) it. Also, consider adding a comment with your unique scenarios and requirements related to that issue.  Upvotes and clear details on the issue's impact help us prioritize the most important issues to be worked on sooner rather than later. If you can't find one, that's okay, we'd rather get a duplicate report than none.
 
@@ -42,7 +43,7 @@ To help you be successful we've put together a few simple rules to follow when y
 
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
-  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
+  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted). When you choose an issue you'd like to work on, you'll see that some include a comment from our team that follows the [Issue Summary Template](/docs/HelpWantedIssueSummaryCommentTemplate.md). That comment is meant to make it much simpler for you to both understand what the problem is as well as provide references and hints about how to approach it.
 
 Within that set, we have additionally marked issues that are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with the `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
 

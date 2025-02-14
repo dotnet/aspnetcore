@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Diagnostics.Metrics;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -103,7 +103,8 @@ public class ConnectionLimitTests : LoggedTest
     public async Task RejectsConnectionsWhenLimitReached()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-rejected-connections");
+        using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.rejected_connections");
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
         const int max = 10;
         var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -148,6 +149,21 @@ public class ConnectionLimitTests : LoggedTest
                 requestTcs.TrySetResult();
             }
         }
+
+        var measurements = connectionDuration.GetMeasurementSnapshot();
+
+        var connectionErrors = measurements
+            .GroupBy(m =>
+            {
+                m.Tags.TryGetValue(KestrelMetrics.ErrorTypeAttributeName, out var value);
+                return value as string;
+            })
+            .ToList();
+
+        // 10 successful connections.
+        Assert.Equal(10, connectionErrors.Single(e => e.Key == null).Count());
+        // 10 rejected connecitons.
+        Assert.Equal(10, connectionErrors.Single(e => e.Key == KestrelMetrics.GetErrorType(ConnectionEndReason.MaxConcurrentConnectionsExceeded)).Count());
 
         static void AssertCounter(CollectedMeasurement<long> measurement) => Assert.Equal(1, measurement.Value);
     }

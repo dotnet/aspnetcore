@@ -13,10 +13,14 @@ Microsoft.AspNetCore.Builder.ApplicationBuilder.New() -> Microsoft.AspNetCore.Bu
 Microsoft.AspNetCore.Builder.ApplicationBuilder.Properties.get -> System.Collections.Generic.IDictionary<string!, object?>!
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ServerFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
 Microsoft.AspNetCore.Builder.ApplicationBuilder.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Builder.RequestTimeoutsIApplicationBuilderExtensions
+Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Http.BindingAddress
 Microsoft.AspNetCore.Http.BindingAddress.BindingAddress() -> void
 Microsoft.AspNetCore.Http.BindingAddress.Host.get -> string!
+Microsoft.AspNetCore.Http.BindingAddress.IsNamedPipe.get -> bool
 Microsoft.AspNetCore.Http.BindingAddress.IsUnixPipe.get -> bool
+Microsoft.AspNetCore.Http.BindingAddress.NamedPipeName.get -> string!
 Microsoft.AspNetCore.Http.BindingAddress.PathBase.get -> string!
 Microsoft.AspNetCore.Http.BindingAddress.Port.get -> int
 Microsoft.AspNetCore.Http.BindingAddress.Scheme.get -> string!
@@ -260,7 +264,33 @@ Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Stream.get -> System.IO.Stre
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature? priorFeature) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Writer.get -> System.IO.Pipelines.PipeWriter!
+Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute
+Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.DisableRequestTimeoutAttribute() -> void
+Microsoft.AspNetCore.Http.Timeouts.IHttpRequestTimeoutFeature
+Microsoft.AspNetCore.Http.Timeouts.IHttpRequestTimeoutFeature.DisableTimeout() -> void
+Microsoft.AspNetCore.Http.Timeouts.IHttpRequestTimeoutFeature.RequestTimeoutToken.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutAttribute
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutAttribute.PolicyName.get -> string?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutAttribute.RequestTimeoutAttribute(int milliseconds) -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutAttribute.RequestTimeoutAttribute(string! policyName) -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutAttribute.Timeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.AddPolicy(string! policyName, Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy! policy) -> Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions!
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.AddPolicy(string! policyName, System.TimeSpan timeout) -> Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions!
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.DefaultPolicy.get -> Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.DefaultPolicy.set -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.Policies.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy!>!
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions.RequestTimeoutOptions() -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.RequestTimeoutPolicy() -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.Timeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.Timeout.init -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.TimeoutStatusCode.get -> int?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.TimeoutStatusCode.init -> void
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.WriteTimeoutResponse.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy.WriteTimeoutResponse.init -> void
 Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions
+Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions
 override Microsoft.AspNetCore.Http.BindingAddress.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.BindingAddress.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.BindingAddress.ToString() -> string!
@@ -282,6 +312,12 @@ override Microsoft.AspNetCore.Http.DefaultHttpContext.TraceIdentifier.set -> voi
 override Microsoft.AspNetCore.Http.DefaultHttpContext.User.get -> System.Security.Claims.ClaimsPrincipal!
 override Microsoft.AspNetCore.Http.DefaultHttpContext.User.set -> void
 override Microsoft.AspNetCore.Http.DefaultHttpContext.WebSockets.get -> Microsoft.AspNetCore.Http.WebSocketManager!
+override Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.ToString() -> string!
+static Microsoft.AspNetCore.Builder.RequestTimeoutsIApplicationBuilderExtensions.UseRequestTimeouts(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.DisableRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy! policy) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, string! policyName) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, System.TimeSpan timeout) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Http.BindingAddress.Parse(string! address) -> Microsoft.AspNetCore.Http.BindingAddress!
 static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request) -> void
 static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request, int bufferThreshold) -> void
@@ -290,6 +326,8 @@ static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(thi
 static Microsoft.AspNetCore.Http.RequestFormReaderExtensions.ReadFormAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.Http.Features.FormOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection!>!
 static Microsoft.AspNetCore.Http.SendFileFallback.SendFileAsync(System.IO.Stream! destination, string! filePath, long offset, long? count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 static Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions.AddHttpContextAccessor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions.AddRequestTimeouts(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions.AddRequestTimeouts(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static readonly Microsoft.AspNetCore.Http.FormCollection.Empty -> Microsoft.AspNetCore.Http.FormCollection!
 static readonly Microsoft.AspNetCore.Http.QueryCollection.Empty -> Microsoft.AspNetCore.Http.QueryCollection!
 virtual Microsoft.AspNetCore.Http.Features.HttpResponseFeature.HasStarted.get -> bool

@@ -17,8 +17,10 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -448,6 +450,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         GenerateCorrelationId(properties);
 
+        foreach (var additionalParameter in Options.AdditionalAuthorizationParameters)
+        {
+            message.Parameters.Add(additionalParameter.Key, additionalParameter.Value);
+        }
+
         var redirectContext = new RedirectContext(Context, Scheme, Options, properties)
         {
             ProtocolMessage = message
@@ -476,6 +483,39 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             throw new InvalidOperationException(
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
+        }
+
+        var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
+
+        switch (Options.PushedAuthorizationBehavior)
+        {
+            case PushedAuthorizationBehavior.UseIfAvailable:
+                // Push if endpoint is in disco
+                if (!string.IsNullOrEmpty(parEndpoint))
+                {
+                    await PushAuthorizationRequest(message, properties, parEndpoint);
+                }
+
+                break;
+            case PushedAuthorizationBehavior.Disable:
+                // Fail if disabled in options but required by disco
+                if (_configuration?.RequirePushedAuthorizationRequests == true)
+                {
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
+                }
+
+                // Otherwise do nothing
+                break;
+            case PushedAuthorizationBehavior.Require:
+                // Fail if required in options but unavailable in disco
+                if (string.IsNullOrEmpty(parEndpoint))
+                {
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
+                }
+
+                // Otherwise push
+                await PushAuthorizationRequest(message, properties, parEndpoint);
+                break;
         }
 
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
@@ -507,6 +547,79 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
+    }
+
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(parEndpoint);
+
+        // Build context and run event
+        var parRequest = authorizeRequest.Clone();
+        var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
+        await Events.PushAuthorization(context);
+
+        // If the event handled client authentication, skip the default auth behavior
+        if (context.HandledClientAuthentication)
+        {
+            Logger.PushAuthorizationHandledClientAuthentication();
+        }
+        // Otherwise, add the client secret to the parameters (if available)
+        else
+        {
+            if (!string.IsNullOrEmpty(Options.ClientSecret))
+            {
+                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+            }
+        }
+
+        string requestUri;
+
+        // The event can either entirely skip pushing to the par endpoint...
+        if (context.SkippedPush)
+        {
+            Logger.PushAuthorizationSkippedPush();
+            return;
+        }
+
+        // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
+        if (context.HandledPush)
+        {
+            Logger.PushAuthorizationHandledPush();
+            requestUri = context.RequestUri;
+        }
+        else
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
+            requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
+            var parResponseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
+        }
+
+        authorizeRequest.Parameters.Clear();
+        authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+        authorizeRequest.Parameters.Add("request_uri", requestUri);
+    }
+
+    private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
+    {
+        // Check content type
+        var contentType = parResponseMessage.Content.Headers.ContentType;
+        if (!(contentType?.MediaType?.Equals("application/json", StringComparison.OrdinalIgnoreCase) ?? false))
+        {
+            throw new InvalidOperationException("Invalid response from pushed authorization: content type is not application/json.");
+        }
+
+        // Parse response
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
+        var message = new OpenIdConnectMessage(parResponseString);
+
+        var requestUri = message.GetParameter("request_uri");
+        if (requestUri == null)
+        {
+            throw CreateOpenIdConnectProtocolException(message, parResponseMessage);
+        }
+        return requestUri;
     }
 
     /// <summary>
@@ -649,7 +762,17 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
             {
                 Logger.ReceivedIdToken();
-                user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(authorizationResponse.IdToken, properties, validationParameters);
+                    user = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    jwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+                }
 
                 nonce = jwt.Payload.Nonce;
                 if (!string.IsNullOrEmpty(nonce))
@@ -717,7 +840,19 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
                 // And we'll want to validate the new JWT in ValidateTokenResponse.
-                var tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out var tokenEndpointJwt);
+                ClaimsPrincipal tokenEndpointUser;
+                JwtSecurityToken tokenEndpointJwt;
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(tokenEndpointResponse.IdToken, properties, validationParameters);
+                    tokenEndpointUser = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    tokenEndpointJwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
+                }
 
                 // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
                 if (user == null)
@@ -1244,11 +1379,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     // Note this modifies properties if Options.UseTokenLifetime
     private ClaimsPrincipal ValidateToken(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         if (!Options.SecurityTokenValidator.CanReadToken(idToken))
         {
             Logger.UnableToReadIdToken(idToken);
             throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (_configuration != null)
         {
@@ -1259,7 +1396,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ?? _configuration.SigningKeys;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+#pragma warning restore CS0618 // Type or member is obsolete
         if (validatedToken is JwtSecurityToken validatedJwt)
         {
             jwt = validatedJwt;
@@ -1292,6 +1431,61 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         return principal;
+    }
+
+    // Note this modifies properties if Options.UseTokenLifetime
+    private async Task<TokenValidationResult> ValidateTokenUsingHandlerAsync(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters)
+    {
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            validationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else if (_configuration != null)
+        {
+            var issuer = new[] { _configuration.Issuer };
+            validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuer) ?? issuer;
+
+            validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
+                ?? _configuration.SigningKeys;
+        }
+
+        var validationResult = await Options.TokenHandler.ValidateTokenAsync(idToken, validationParameters);
+
+        if (validationResult.Exception != null)
+        {
+            throw validationResult.Exception;
+        }
+
+        var validatedToken = validationResult.SecurityToken;
+
+        if (!validationResult.IsValid || validatedToken == null)
+        {
+            Logger.UnableToValidateIdTokenFromHandler(idToken);
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateTokenFromHandler, idToken));
+        }
+
+        if (validatedToken is not JsonWebToken)
+        {
+            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType());
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken?.GetType()));
+        }
+
+        if (Options.UseTokenLifetime)
+        {
+            var issued = validatedToken.ValidFrom;
+            if (issued != DateTime.MinValue)
+            {
+                properties.IssuedUtc = issued;
+            }
+
+            var expires = validatedToken.ValidTo;
+            if (expires != DateTime.MinValue)
+            {
+                properties.ExpiresUtc = expires;
+            }
+        }
+
+        return validationResult;
     }
 
     /// <summary>

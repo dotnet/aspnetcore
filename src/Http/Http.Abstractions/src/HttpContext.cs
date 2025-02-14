@@ -96,6 +96,7 @@ public abstract class HttpContext
         public ClaimsPrincipal User => _context.User;
         public IDictionary<object, object?> Items => _context.Items;
         public CancellationToken RequestAborted => _context.RequestAborted;
+        public IServiceProvider RequestServices => _context.RequestServices;
         public string TraceIdentifier => _context.TraceIdentifier;
         // The normal session property throws if accessed before/without the session middleware.
         public ISession? Session => _context.Features.Get<ISessionFeature>()?.Session;
@@ -107,6 +108,6 @@ public abstract class HttpContext
         private readonly IFeatureCollection _features = features;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object>[] Items => _features.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
+        public DictionaryItemDebugView<Type, object>[] Items => _features.Select(pair => new DictionaryItemDebugView<Type, object>(pair)).ToArray();
     }
 }

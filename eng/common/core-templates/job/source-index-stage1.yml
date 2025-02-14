@@ -1,0 +1,44 @@
+parameters:
+  runAsPublic: false
+  sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
+  preSteps: []
+  binlogPath: artifacts/log/Debug/Build.binlog
+  condition: ''
+  dependsOn: ''
+  pool: ''
+  is1ESPipeline: ''
+
+jobs:
+- job: SourceIndexStage1
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  variables:
+  - name: BinlogPath
+    value: ${{ parameters.binlogPath }}
+  - template: /eng/common/core-templates/variables/pool-providers.yml
+    parameters:
+      is1ESPipeline: ${{ parameters.is1ESPipeline }}
+
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $(DncEngPublicBuildPool)
+        image: windows.vs2022.amd64.open
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $(DncEngInternalBuildPool)
+        image: windows.vs2022.amd64
+
+  steps:
+  - ${{ if eq(parameters.is1ESPipeline, '') }}:
+    - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
+  - ${{ each preStep in parameters.preSteps }}:
+    - ${{ preStep }}
+  - script: ${{ parameters.sourceIndexBuildCommand }}
+    displayName: Build Repository
+
+  - template: /eng/common/core-templates/steps/source-index-stage1-publish.yml
+    parameters:
+      binLogPath: ${{ parameters.binLogPath }}

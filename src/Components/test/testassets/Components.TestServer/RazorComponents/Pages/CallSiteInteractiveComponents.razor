@@ -1,0 +1,27 @@
+﻿@page "/interactive-callsite"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>Call-site interactive components</h1>
+
+@if (ServerIncrementAmount.HasValue)
+{
+    <TestContentPackage.Counter @rendermode="@(new InteractiveServerRenderMode(Prerender))" IncrementAmount="@ServerIncrementAmount.Value" IdSuffix="server" />
+    <hr />
+}
+
+@if (WebAssemblyIncrementAmount.HasValue)
+{
+    <TestContentPackage.Counter @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" IncrementAmount="@WebAssemblyIncrementAmount.Value" IdSuffix="wasm" />
+    <hr />
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "server")]
+    public int? ServerIncrementAmount { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "wasm")]
+    public int? WebAssemblyIncrementAmount { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "prerender")]
+    public bool Prerender { get; set; }
+}

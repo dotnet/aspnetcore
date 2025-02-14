@@ -44,6 +44,8 @@ public static class LocalizationServiceCollectionExtensions
         ArgumentNullThrowHelper.ThrowIfNull(services);
         ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
+        services.AddOptions();
+        
         AddLocalizationServices(services, setupAction);
 
         return services;

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -143,7 +143,7 @@ public partial class WebHostTests
         {
             var server = (FakeServer)host.Services.GetRequiredService<IServer>();
             Assert.NotNull(host);
-            Assert.Equal(1, server.StartInstances.Count);
+            Assert.Single(server.StartInstances);
             Assert.Equal(0, server.StartInstances[0].DisposeCalls);
 
             host.Dispose();
@@ -174,7 +174,7 @@ public partial class WebHostTests
             lifetime.ApplicationStarted.WaitHandle.WaitOne();
             Assert.True(lifetime2.ApplicationStarted.IsCancellationRequested);
 
-            Assert.Equal(1, server.StartInstances.Count);
+            Assert.Single(server.StartInstances);
             Assert.Equal(0, server.StartInstances[0].DisposeCalls);
 
             cts.Cancel();

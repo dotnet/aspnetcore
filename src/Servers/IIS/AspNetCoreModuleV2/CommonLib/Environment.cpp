@@ -168,7 +168,7 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
     auto destinationDirEntry = std::filesystem::directory_entry(destination);
     if (!destinationDirEntry.exists())
     {
-        CreateDirectory(destination.wstring().c_str(), NULL);
+        CreateDirectory(destination.wstring().c_str(), nullptr);
     }
 
     for (auto& path : std::filesystem::directory_iterator(source))
@@ -231,7 +231,7 @@ bool Environment::CheckUpToDate(const std::wstring& source, const std::filesyste
             auto sourceInnerDirectory = std::filesystem::directory_entry(path);
             if (sourceInnerDirectory.path() != directoryToIgnore)
             {
-                CheckUpToDate(destination / path.path().filename(), path.path(), extension, directoryToIgnore);
+                CheckUpToDate(/* source */ path.path(), /* destination */ destination / path.path().filename(), extension, directoryToIgnore);
             }
         }
     }

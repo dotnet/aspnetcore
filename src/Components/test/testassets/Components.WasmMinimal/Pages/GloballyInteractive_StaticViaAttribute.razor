@@ -1,0 +1,15 @@
+﻿@page "/globally-interactive/static-via-attribute"
+@using Microsoft.AspNetCore.Components.Routing
+@attribute [ExcludeFromInteractiveRouting]
+
+<h1>Global interactivity page: Static via attribute</h1>
+
+<p>
+    This page should be rendered statically by GlobalInteractivityApp because
+    it has [ExcludeFromInteractiveRoutingAttribute], and the root component is
+    configured to render pages with that attribute statically.
+</p>
+
+<ShowExecutionMode />
+
+<GloballyInteractive_Links />

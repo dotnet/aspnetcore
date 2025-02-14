@@ -76,5 +76,6 @@ internal sealed class IpcCommon
         SendByteArrayToJS,
         SetHasLocationChangingListeners,
         EndLocationChanging,
+        Refresh,
     }
 }

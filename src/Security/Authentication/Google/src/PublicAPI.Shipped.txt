@@ -35,6 +35,7 @@ Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.Prompt.get 
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.Prompt.set -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleDefaults
 Microsoft.AspNetCore.Authentication.Google.GoogleHandler
+Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleOptions
 Microsoft.AspNetCore.Authentication.Google.GoogleOptions.AccessType.get -> string?

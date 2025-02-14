@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 {
-    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2AndHttp3;
+    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
 
     private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
     private readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
@@ -95,7 +95,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     /// <summary>
     /// The protocols enabled on this endpoint.
     /// </summary>
-    /// <remarks>Defaults to HTTP/1.x, HTTP/2, and HTTP/3.</remarks>
+    /// <remarks>Defaults to HTTP/1.x and HTTP/2</remarks>
     public HttpProtocols Protocols
     {
         get => _protocols;

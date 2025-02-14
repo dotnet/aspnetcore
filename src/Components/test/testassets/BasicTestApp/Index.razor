@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
+@using System.Web
+@inject NavigationManager NavigationManager
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -14,6 +16,7 @@
         <option value="BasicTestApp.ComponentRefComponent">Component ref component</option>
         <option value="BasicTestApp.ConcurrentRenderParent">Concurrent rendering</option>
         <option value="BasicTestApp.ConfigurationComponent">Configuration</option>
+        <option value="BasicTestApp.ConfigureRuntime">Configure runtime</option>
         <option value="BasicTestApp.ContentEditable">Content-editable</option>
         <option value="BasicTestApp.CounterComponent">Counter</option>
         <option value="BasicTestApp.CounterComponentUsingChild">Counter using child component</option>
@@ -48,11 +51,13 @@
         <option value="BasicTestApp.FormsTest.InputRangeComponent">Input range</option>
         <option value="BasicTestApp.FormsTest.InputsWithoutEditForm">Inputs without EditForm</option>
         <option value="BasicTestApp.FormsTest.InputsWithMutatingSetters">Inputs with mutating setters</option>
+        <option value="BasicTestApp.FormsTest.InputRadioParentImplementsIHandleEvent">Input Radio Parent Implements IHandleEvent</option>
         <option value="BasicTestApp.NavigateOnSubmit">Navigate to submit</option>
         <option value="BasicTestApp.GlobalizationBindCases">Globalization Bind Cases</option>
         <option value="BasicTestApp.GracefulTermination">Graceful Termination</option>
         <option value="BasicTestApp.HeadModification">Head Modification</option>
         <option value="BasicTestApp.HierarchicalImportsTest.Subdir.ComponentUsingImports">Imports statement</option>
+        <option value="BasicTestApp.HostRenderMode">Host render mode</option>
         <option value="BasicTestApp.HtmlBlockChildContent">ChildContent HTML Block</option>
         <option value="BasicTestApp.HtmlEncodedChildContent">ChildContent HTML Encoded Block</option>
         <option value="BasicTestApp.HtmlMixedChildContent">ChildContent Mixed Block</option>
@@ -79,6 +84,7 @@
         <option value="BasicTestApp.NavigationFailureComponent">Navigation failure</option>
         <option value="BasicTestApp.ParentChildComponent">Parent component with child</option>
         <option value="BasicTestApp.PropertiesChangedHandlerParent">Parent component that changes parameters on child</option>
+        <option value="BasicTestApp.PropertyInjection.PropertyInjectionComponent">Property injection</option>
         <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageUsageComponent")">Protected browser storage usage</option>
         <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageInjectionComponent")">Protected browser storage injection</option>
         <option value="BasicTestApp.QuickGridTest.SampleQuickGridComponent">QuickGrid Example</option>
@@ -101,9 +107,12 @@
         <option value="BasicTestApp.SvgFocusComponent">SVG Focus component</option>
         <option value="BasicTestApp.TextOnlyComponent">Plain text</option>
         <option value="BasicTestApp.ToggleEventComponent">Toggle Event</option>
+        <option value="BasicTestApp.DialogEventsComponent">Dialog Events</option>
         <option value="BasicTestApp.TouchEventComponent">Touch events</option>
         <option value="BasicTestApp.VirtualizationComponent">Virtualization</option>
         <option value="BasicTestApp.VirtualizationDataChanges">Virtualization data changes</option>
+        <option value="BasicTestApp.VirtualizationMaxItemCount">Virtualization MaxItemCount</option>
+        <option value="BasicTestApp.VirtualizationMaxItemCount_AppContext">Virtualization MaxItemCount (via AppContext)</option>
         <option value="BasicTestApp.VirtualizationTable">Virtualization HTML table</option>
         <option value="BasicTestApp.HotReload.RenderOnHotReload">Render on hot reload</option>
         <option value="BasicTestApp.SectionsTest.ParentComponentWithTwoChildren">Sections test</option>
@@ -129,6 +138,15 @@
 
     Type SelectedComponentType
         => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName, throwOnError: true);
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        if (HttpUtility.ParseQueryString(uri.Query)["initial-component-type"] is { Length: > 0 } initialComponentTypeName)
+        {
+            SelectedComponentTypeName = initialComponentTypeName;
+        }
+    }
 
     void RenderSelectedComponent(RenderTreeBuilder builder)
     {

@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -27,7 +28,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public IQueryable<TGridItem>? Items { get; set; }
 
     /// <summary>
-    /// A callback that supplies data for the rid.
+    /// A callback that supplies data for the grid.
     ///
     /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
     /// </summary>
@@ -63,6 +64,14 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public bool Virtualize { get; set; }
 
     /// <summary>
+    /// This is applicable only when using <see cref="Virtualize"/>. It defines how many additional items will be rendered
+    /// before and after the visible region to reduce rendering frequency during scrolling. While higher values can improve
+    /// scroll smoothness by rendering more items off-screen, they can also increase initial load times. Finding a balance
+    /// based on your data set size and user experience requirements is recommended. The default value is 3.
+    /// </summary>
+    [Parameter] public int OverscanCount { get; set; } = 3;
+
+    /// <summary>
     /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
     /// each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
     /// size and to ensure accurate scrolling.
@@ -89,6 +98,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// that displays and updates the supplied <see cref="PaginationState"/> instance.
     /// </summary>
     [Parameter] public PaginationState? Pagination { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of additional attributes that will be applied to the created element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Optional. A callback to be invoked for each rendered row to specify a CSS class.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -259,6 +278,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     }
 
     /// <summary>
+    /// Closes the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI that was previously displayed.
+    /// </summary>
+    public Task CloseColumnOptionsAsync()
+    {
+        _displayOptionsForColumn = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Instructs the grid to re-fetch and render the current data from the supplied data source
     /// (either <see cref="Items"/> or <see cref="ItemsProvider"/>).
     /// </summary>
@@ -387,7 +416,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         : ColumnClass(column);
 
     private string GridClass()
-        => $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+    {
+        var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
+    }
 
     private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
     {
@@ -422,10 +454,5 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
-    }
-
-    private void CloseColumnOptions()
-    {
-        _displayOptionsForColumn = null;
     }
 }

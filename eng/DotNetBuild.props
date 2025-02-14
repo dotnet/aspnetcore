@@ -1,0 +1,126 @@
+<!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
+
+<Project>
+
+  <PropertyGroup>
+    <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
+    <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+    <SourceBuildTargetFrameworkFilter>netstandard2.0%3bnetstandard2.1%3bnetcoreapp2.1%3bnetcoreapp3.1%3bnet5.0%3bnet6.0%3bnet7.0%3bnet8.0%3bnet9.0%3bnet10.0</SourceBuildTargetFrameworkFilter>
+  </PropertyGroup>
+
+  <!--
+    Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
+    Leaving the inner will cause all conflicting settings to be ignored.
+    https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files#general-options.
+    This only needs to be done if there is an inner clone.
+  -->
+  <Target Name="RemoveInnerGlobalConfig"
+          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
+          BeforeTargets="RunInnerSourceBuildCommand"
+          Condition="'$(DotNetBuildOrchestrator)' != 'true'">
+
+    <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
+  </Target>
+
+  <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
+       https://github.com/dotnet/source-build/issues/3807 -->
+  <Target Name="BuildRepoTasks"
+          Condition="'$(DotNetBuildInnerRepo)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
+          BeforeTargets="Execute">
+    <!-- If the alternative runtime location and key are present, pass those through -->
+    <PropertyGroup>
+      <_AdditionalRepoTaskBuildArgs />
+      <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
+      <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
+      <_AdditionalRepoTaskBuildArgs Condition="'$(RestoreConfigFile)' != ''" >$(_AdditionalRepoTaskBuildArgs) /p:RestoreConfigFile=$(RestoreConfigFile)</_AdditionalRepoTaskBuildArgs>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- We need to flow FullAssemblySigningSupported even when building repo tasks because they use full signing -->
+      <InnerBuildEnv Condition="'$(FullAssemblySigningSupported)' != ''" Include="FullAssemblySigningSupported=$(FullAssemblySigningSupported)" />
+      <InnerBuildEnv Include="DotNetBuildSourceOnly=$(DotNetBuildSourceOnly)" />
+    </ItemGroup>
+
+    <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
+         to true. This avoids fatal errors, because in internal builds there are usually a few failed installation
+         attempts as the install script walks through potential locations for a runtime.
+         The overall build script will return a proper exit code, but we don't want to pick up the printed error messages. -->
+    <Exec
+      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      IgnoreStandardErrorWarningFormat="true"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)"
+      Condition="'$(OS)' != 'Windows_NT'" />
+
+    <Exec
+      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      IgnoreStandardErrorWarningFormat="true"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)"
+      Condition="'$(OS)' == 'Windows_NT'" />
+  </Target>
+
+  <Target Name="CustomizeInnerBuildArgs"
+          BeforeTargets="GetSourceBuildCommandConfiguration">
+
+    <PropertyGroup>
+      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GetAspnetcoreCategorizedIntermediateNupkgContents"
+          BeforeTargets="GetCategorizedIntermediateNupkgContents">
+    <PropertyGroup>
+      <InstallersArtifactsDir>$(CurrentRepoSourceBuildArtifactsDir)\installers\$(Configuration)\</InstallersArtifactsDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!--
+        Add the internal installers artifacts required by dotnet/installer.
+      -->
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore_base_runtime.version" />
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.msi" />
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.pkg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RestoreNpmPackages"
+          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Message Text="Checking node version..." Importance="high" />
+    <Exec
+      Command="node --version"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+    <Message Text="Checking npm version..." Importance="high" />
+    <Exec
+      Command="npm --version"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+    <PropertyGroup>
+      <!-- Disable installing puppeteer browsers when running in source build -->
+      <_AdditionalEnvironmentVariable Condition="$(DotNetBuildSourceOnly) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
+    </PropertyGroup>
+
+    <Exec
+      Command="npm ci"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="$(_AdditionalEnvironmentVariable)" />
+
+  </Target>
+
+  <Target Name="BuildNpmFiles"
+          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
+          DependsOnTargets="RestoreNpmPackages"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Message Text="Building Node JS files..." Importance="high" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+  </Target>
+
+</Project>

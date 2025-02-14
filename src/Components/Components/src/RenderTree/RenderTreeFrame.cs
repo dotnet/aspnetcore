@@ -136,6 +136,7 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.Component
     // --------------------------------------------------------------------------------
 
+    [FieldOffset(6)] internal ComponentFrameFlags ComponentFrameFlagsField;
     [FieldOffset(8)] internal int ComponentSubtreeLengthField;
     [FieldOffset(12)] internal int ComponentIdField;
     [FieldOffset(16)]
@@ -143,6 +144,12 @@ public struct RenderTreeFrame
     internal Type ComponentTypeField;
     [FieldOffset(24)] internal ComponentState ComponentStateField;
     [FieldOffset(32)] internal object ComponentKeyField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
+    /// gets the <see cref="ComponentFrameFlags"/> for the component frame.
+    /// </summary>
+    public ComponentFrameFlags ComponentFrameFlags => ComponentFrameFlagsField;
 
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
@@ -249,6 +256,50 @@ public struct RenderTreeFrame
     /// gets the content of the markup frame. Otherwise, the value is undefined.
     /// </summary>
     public string MarkupContent => MarkupContentField;
+
+    // --------------------------------------------------------------------------------
+    // RenderTreeFrameType.ComponentRenderMode
+    // --------------------------------------------------------------------------------
+
+    [FieldOffset(16)] internal IComponentRenderMode ComponentRenderModeField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ComponentRenderMode"/>,
+    /// gets the specified <see cref="IComponentRenderMode"/>. Otherwise, the value is undefined.
+    /// </summary>
+    public IComponentRenderMode ComponentRenderMode
+    {
+        get
+        {
+            // Normally we don't check the frame type matches, and leave it to the caller to be responsible for only evaluating the correct properties.
+            // However the name "ComponentRenderMode" sounds so much like it would be a field on Component frames that we'll explicitly check to avoid mistakes.
+            if (FrameType != RenderTreeFrameType.ComponentRenderMode)
+            {
+                throw new InvalidOperationException($"The {nameof(ComponentRenderMode)} field only exists on frames of type {nameof(RenderTreeFrameType.ComponentRenderMode)}.");
+            }
+
+            return ComponentRenderModeField;
+        }
+    }
+
+    // --------------------------------------------------------------------------------
+    // RenderTreeFrameType.NamedEvent
+    // --------------------------------------------------------------------------------
+
+    [FieldOffset(16)] internal string NamedEventTypeField;
+    [FieldOffset(24)] internal string NamedEventAssignedNameField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the event type. Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventType => NamedEventTypeField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the assigned name. Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventAssignedName => NamedEventAssignedNameField;
 
     // Element constructor
     private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)
@@ -362,6 +413,12 @@ public struct RenderTreeFrame
 
     internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
         => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
+
+    internal static RenderTreeFrame NamedEvent(int sequence, string eventType, string assignedName)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.NamedEvent, NamedEventTypeField = eventType, NamedEventAssignedNameField = assignedName };
+
+    internal static RenderTreeFrame ComponentRenderModeFrame(int sequence, IComponentRenderMode renderMode)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.ComponentRenderMode, ComponentRenderModeField = renderMode };
 
     internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
         => new RenderTreeFrame(SequenceField, elementSubtreeLength: elementSubtreeLength, ElementNameField, ElementKeyField);

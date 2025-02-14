@@ -123,14 +123,15 @@ internal sealed partial class ComponentHub : Hub
             var store = !string.IsNullOrEmpty(applicationState) ?
                 new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
                 new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
-
+            var resourceCollection = Context.GetHttpContext().GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                 components,
                 circuitClient,
                 baseUri,
                 uri,
                 Context.User,
-                store);
+                store,
+                resourceCollection);
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
@@ -158,6 +159,33 @@ internal sealed partial class ComponentHub : Hub
             Context.Abort();
             return null;
         }
+    }
+
+    public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
+            serializedComponentOperations,
+            out var operations))
+        {
+            // There was an error, so kill the circuit.
+            await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+            await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
+            Context.Abort();
+
+            return;
+        }
+
+        var store = !string.IsNullOrEmpty(applicationState) ?
+            new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+            new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+
+        _ = circuitHost.UpdateRootComponents(operations, store, Context.ConnectionAborted);
     }
 
     public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)

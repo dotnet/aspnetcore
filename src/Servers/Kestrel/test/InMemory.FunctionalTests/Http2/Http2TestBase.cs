@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -13,17 +12,18 @@ using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit.Abstractions;
@@ -119,7 +119,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal readonly DynamicHPackEncoder _hpackEncoder;
     private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
-    private readonly MockTimeProvider _timeProvider = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
     protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -131,7 +131,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     protected readonly RequestFields _receivedRequestFields = new RequestFields();
     protected readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
-    protected readonly object _abortedStreamIdsLock = new object();
+    protected readonly Lock _abortedStreamIdsLock = new();
     protected readonly TaskCompletionSource _closingStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -155,9 +155,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal TestServiceContext _serviceContext;
 
     internal DuplexPipe.DuplexPipePair _pair;
+    internal IConnectionMetricsTagsFeature _metricsTagsFeature;
+    internal IConnectionMetricsContextFeature _metricsContextFeature;
     internal Http2Connection _connection;
     protected Task _connectionTask;
     protected long _bytesReceived;
+
+    internal Dictionary<string, object> ConnectionTags => _metricsTagsFeature.Tags.ToDictionary(t => t.Key, t => t.Value);
+    internal ConnectionMetricsContext MetricsContext => _metricsContextFeature.MetricsContext;
 
     public Http2TestBase()
     {
@@ -385,14 +390,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         };
     }
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
-            MockTimeProvider = _timeProvider,
+            FakeTimeProvider = _timeProvider,
             TimeProvider = _timeProvider,
         };
 
@@ -418,6 +423,16 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _memoryPool.Dispose();
 
         base.Dispose();
+    }
+
+    internal void AssertConnectionNoError()
+    {
+        MetricsAssert.NoError(ConnectionTags);
+    }
+
+    internal void AssertConnectionEndReason(ConnectionEndReason expectedEndReason)
+    {
+        Assert.Equal(expectedEndReason, MetricsContext.ConnectionEndReason);
     }
 
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
@@ -458,8 +473,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
+        _metricsTagsFeature = new TestConnectionMetricsTagsFeature();
+
+        var metricsContext = TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object);
+        _metricsContextFeature = new TestConnectionMetricsContextFeature() { MetricsContext = metricsContext };
+
         var features = new FeatureCollection();
-        features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
+        features.Set<IConnectionMetricsContextFeature>(_metricsContextFeature);
+        features.Set<IConnectionMetricsTagsFeature>(_metricsTagsFeature);
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -467,7 +488,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             transport: _pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: features,
-            timeoutControl: _mockTimeoutControl.Object);
+            timeoutControl: _mockTimeoutControl.Object,
+            metricsContext: metricsContext);
 
         _connection = new Http2Connection(httpConnectionContext);
         _connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(_connection._streamLifetimeHandler, this);
@@ -480,9 +502,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _timeoutControl.Initialize();
     }
 
+    private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
+    }
+
     private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
     {
-        public ConnectionMetricsContext MetricsContext { get; }
+        public ConnectionMetricsContext MetricsContext { get; init; }
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -850,7 +877,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal Task<bool> SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
@@ -920,7 +947,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal async Task SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, byte[] payload)
@@ -948,7 +975,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
@@ -1351,20 +1378,20 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     protected void TriggerTick(TimeSpan timeSpan)
     {
-        _serviceContext.MockTimeProvider.Advance(timeSpan);
+        _serviceContext.FakeTimeProvider.Advance(timeSpan);
         TriggerTick();
     }
 
     protected void TriggerTick()
     {
-        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
+        var timestamp = _serviceContext.FakeTimeProvider.GetTimestamp();
         _timeoutControl.Tick(timestamp);
         ((IRequestProcessor)_connection)?.Tick(timestamp);
     }
 
     protected void AdvanceTime(TimeSpan timeSpan)
     {
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var endTime = timeProvider.GetTimestamp(timeSpan);
 
         while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
@@ -1372,7 +1399,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             TriggerTick(Heartbeat.Interval);
         }
 
-        timeProvider.AdvanceTo(endTime);
+        timeProvider.Advance(timeProvider.GetElapsedTime(timeProvider.GetTimestamp(), endTime));
         TriggerTick();
     }
 

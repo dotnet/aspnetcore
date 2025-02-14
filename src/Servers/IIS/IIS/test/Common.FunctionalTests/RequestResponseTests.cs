@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
-[Collection(IISTestSiteCollection.Name)]
+[Collection(IISTestSiteCollectionInProc.Name)]
 [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class RequestResponseTests
 {
@@ -133,7 +133,7 @@ public class RequestResponseTests
         Assert.Equal(
             new byte[] {
                 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                0x04, 0x0A, 0x63, 0xA0, 0x03, 0x00, 0x00,
                 0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
             await response.Content.ReadAsByteArrayAsync());
     }
@@ -151,7 +151,7 @@ public class RequestResponseTests
         Assert.Equal(
             new byte[] {
                 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                0x04, 0x0A, 0x63, 0xA0, 0x03, 0x00, 0x00,
                 0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
             await response.Content.ReadAsByteArrayAsync());
     }
@@ -609,6 +609,28 @@ public class RequestResponseTests
         Assert.Equal(_fixture.DeploymentResult.ContentRoot, await _fixture.DeploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
         Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/BaseDirectory"));
         Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+    }
+
+    [ConditionalTheory]
+    [InlineData("IIISEnvironmentFeature")]
+    [InlineData("IIISEnvironmentFeatureConfig")]
+    public async Task IISEnvironmentFeatureIsAvailable(string endpoint)
+    {
+        var siteName = _fixture.DeploymentResult.DeploymentParameters.SiteName.ToUpperInvariant();
+    
+        var expected = $"""
+            IIS Version: 10.0
+            ApplicationId: /LM/W3SVC/1/ROOT
+            Application Path: {_fixture.DeploymentResult.ContentRoot}\
+            Application Virtual Path: /
+            Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
+            AppPool ID: {_fixture.DeploymentResult.AppPoolName}
+            AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
+            Site ID: 1
+            Site Name: {siteName}
+            """;
+
+        Assert.Equal(expected, await _fixture.Client.GetStringAsync($"/{endpoint}"));
     }
 
     [ConditionalTheory]

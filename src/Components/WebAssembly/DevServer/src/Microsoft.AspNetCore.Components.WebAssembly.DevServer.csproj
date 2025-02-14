@@ -21,6 +21,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Reference Include="System.Text.Json" />
 
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
   </ItemGroup>
@@ -28,7 +29,7 @@
   <!--  We include this here to ensure that the shared framework is built before we leverage it when running
   the dev server. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -36,8 +37,11 @@
 
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
     <PropertyGroup>
-      <_RuntimeConfigProperties>
-        SharedFxVersion=$(SharedFxVersion);
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_RuntimeConfigProperties>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
       </_RuntimeConfigProperties>
 
       <_RuntimeConfigPath>$(OutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>

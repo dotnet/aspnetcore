@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cryptography.Cng;
@@ -55,6 +55,6 @@ public unsafe class BCryptUtilTests
             }
         }
 
-        Assert.True(false, "Buffer was not filled as expected.");
+        Assert.Fail("Buffer was not filled as expected.");
     }
 }

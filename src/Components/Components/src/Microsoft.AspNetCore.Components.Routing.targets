@@ -1,0 +1,39 @@
+<Project>
+
+  <PropertyGroup>
+    <RoutingSourceRoot>$(RepoRoot)\src\Http\Routing\src\</RoutingSourceRoot>
+    <RoutingAbstractionsSourceRoot>$(RepoRoot)\src\Http\Routing.Abstractions\src\</RoutingAbstractionsSourceRoot>
+    <HttpAbstractionsSourceRoot>$(RepoRoot)\src\Http\Http.Abstractions\src\</HttpAbstractionsSourceRoot>
+  </PropertyGroup>
+
+  <ItemGroup Label="Routing">
+  <!-- Abstractions -->
+  <Compile Include="$(HttpAbstractionsSourceRoot)Routing\RouteValueDictionary.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingAbstractionsSourceRoot)IRouteConstraint.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingAbstractionsSourceRoot)IParameterPolicy.cs" LinkBase="Routing" />
+  <!-- Infrastructure -->
+  <Compile Include="$(RoutingSourceRoot)RouteValueEqualityComparer.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)RouteCreationException.cs" LinkBase="Routing" />
+  <!-- Tree router for matching -->
+  <Compile Include="$(RoutingSourceRoot)PathTokenizer.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)Tree\*.cs" LinkBase="Routing\Tree" />
+  <Compile Remove="$(RoutingSourceRoot)Tree\Outbound*.cs" LinkBase="Routing\Tree" />
+  <Compile Remove="$(RoutingSourceRoot)Tree\LinkGeneration*.cs" LinkBase="Routing\Tree" />
+  <!-- Route patterns -->
+  <Compile Include="$(RoutingSourceRoot)Template\RoutePrecedence.cs" LinkBase="Routing\Patterns" />
+  <Compile Include="$(RoutingSourceRoot)Patterns\*.cs" LinkBase="Routing\Patterns" />
+  <Compile Remove="$(RoutingSourceRoot)Patterns\*RoutePatternTransformer.cs" />
+  <!-- Route constraints -->
+  <Compile Include="$(RoutingSourceRoot)DefaultInlineConstraintResolver.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)ParameterPolicyActivator.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)RouteConstraintBuilder.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)RouteConstraintMatcher.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)RouteOptions.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)IInlineConstraintResolver.cs" LinkBase="Routing" />
+  <Compile Include="$(RoutingSourceRoot)Constraints\**\*.cs" LinkBase="Routing\Constraints" />
+
+  <Compile Remove="$(RoutingSourceRoot)Constraints\HttpMethodRouteConstraint.cs" />
+  <Compile Remove="$(RoutingSourceRoot)Constraints\RequiredRouteConstraint.cs" />
+  <Compile Remove="$(RoutingSourceRoot)Constraints\StringRouteConstraint.cs" />
+</ItemGroup>
+</Project>

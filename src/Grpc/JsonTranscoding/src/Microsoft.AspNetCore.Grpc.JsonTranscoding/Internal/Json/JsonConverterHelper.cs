@@ -78,51 +78,46 @@ internal static class JsonConverterHelper
         }
         else
         {
-            return GetFieldTypeCore(descriptor);
-        }   
+            // Return nullable field types so the serializer can successfully deserialize null value.
+            return GetFieldTypeCore(descriptor, nullableType: true);
+        }
     }
 
-    private static Type GetFieldTypeCore(FieldDescriptor descriptor)
+    private static Type GetFieldTypeCore(FieldDescriptor descriptor, bool nullableType = false)
     {
         switch (descriptor.FieldType)
         {
             case FieldType.Bool:
-                return typeof(bool);
+                return nullableType ? typeof(bool?) : typeof(bool);
             case FieldType.Bytes:
                 return typeof(ByteString);
             case FieldType.String:
                 return typeof(string);
             case FieldType.Double:
-                return typeof(double);
+                return nullableType ? typeof(double?) : typeof(double);
             case FieldType.SInt32:
             case FieldType.Int32:
             case FieldType.SFixed32:
-                return typeof(int);
+                return nullableType ? typeof(int?) : typeof(int);
             case FieldType.Enum:
-                return descriptor.EnumType.ClrType;
+                return nullableType ? typeof(Nullable<>).MakeGenericType(descriptor.EnumType.ClrType) : descriptor.EnumType.ClrType;
             case FieldType.Fixed32:
             case FieldType.UInt32:
-                return typeof(uint);
+                return nullableType ? typeof(uint?) : typeof(uint);
             case FieldType.Fixed64:
             case FieldType.UInt64:
-                return typeof(ulong);
+                return nullableType ? typeof(ulong?) : typeof(ulong);
             case FieldType.SFixed64:
             case FieldType.Int64:
             case FieldType.SInt64:
-                return typeof(long);
+                return nullableType ? typeof(long?) : typeof(long);
             case FieldType.Float:
-                return typeof(float);
+                return nullableType ? typeof(float?) : typeof(float);
             case FieldType.Message:
             case FieldType.Group: // Never expect to get this, but...
                 if (ServiceDescriptorHelpers.IsWrapperType(descriptor.MessageType))
                 {
-                    var t = GetFieldType(descriptor.MessageType.Fields[WrapperValueFieldNumber]);
-                    if (t.IsValueType)
-                    {
-                        return typeof(Nullable<>).MakeGenericType(t);
-                    }
-
-                    return t;
+                    return GetFieldType(descriptor.MessageType.Fields[WrapperValueFieldNumber]);
                 }
 
                 return descriptor.MessageType.ClrType;

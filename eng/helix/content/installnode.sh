@@ -19,7 +19,7 @@ fi
 echo "PlatformArch: $platformarch"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 output_dir="$DIR/node"
-url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
+url="https://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
 echo "Downloading from: $url"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
 

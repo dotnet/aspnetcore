@@ -11,7 +11,7 @@ namespace JwtSample;
 
 public class Startup
 {
-    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(16));
+    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32));
     private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
     public void ConfigureServices(IServiceCollection services)

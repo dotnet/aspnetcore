@@ -223,6 +223,20 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal(new[] { "test-metadata", "inner-metadata", "inner-metadata-2" }, metadata);
     }
 
+    [Fact]
+    public void WithOrder_Func_SetsOrder()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.WithOrder(47);
+
+        // Assert
+        var endpoint = builder.Build() as RouteEndpoint;
+        Assert.Equal(47, endpoint.Order);
+    }
+
     private TestEndpointConventionBuilder CreateBuilder()
     {
         var conventionBuilder = new DefaultEndpointConventionBuilder(new RouteEndpointBuilder(

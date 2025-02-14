@@ -3,8 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
-using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Shared;
@@ -16,42 +14,24 @@ namespace Microsoft.AspNetCore.Grpc.Swagger.Internal;
 internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
 {
     private readonly ISerializerDataContractResolver _innerContractResolver;
-    private readonly Dictionary<Type, MessageDescriptor> _messageTypeMapping;
-    private readonly Dictionary<Type, EnumDescriptor> _enumTypeMapping;
+    private readonly DescriptorRegistry _descriptorRegistry;
 
-    public GrpcDataContractResolver(ISerializerDataContractResolver innerContractResolver)
+    public GrpcDataContractResolver(ISerializerDataContractResolver innerContractResolver, DescriptorRegistry descriptorRegistry)
     {
         _innerContractResolver = innerContractResolver;
-        _messageTypeMapping = new Dictionary<Type, MessageDescriptor>();
-        _enumTypeMapping = new Dictionary<Type, EnumDescriptor>();
+        _descriptorRegistry = descriptorRegistry;
     }
 
     public DataContract GetDataContractForType(Type type)
     {
-        if (!_messageTypeMapping.TryGetValue(type, out var messageDescriptor))
+        var descriptor = _descriptorRegistry.FindDescriptorByType(type);
+        if (descriptor != null)
         {
-            if (typeof(IMessage).IsAssignableFrom(type))
+            if (descriptor is MessageDescriptor messageDescriptor)
             {
-                var property = type.GetProperty("Descriptor", BindingFlags.Public | BindingFlags.Static);
-                messageDescriptor = property?.GetValue(null) as MessageDescriptor;
-
-                if (messageDescriptor == null)
-                {
-                    throw new InvalidOperationException($"Couldn't resolve message descriptor for {type}.");
-                }
-
-                _messageTypeMapping[type] = messageDescriptor;
+                return ConvertMessage(messageDescriptor);
             }
-        }
-
-        if (messageDescriptor != null)
-        {
-            return ConvertMessage(messageDescriptor);
-        }
-
-        if (type.IsEnum)
-        {
-            if (_enumTypeMapping.TryGetValue(type, out var enumDescriptor))
+            else if (descriptor is EnumDescriptor enumDescriptor)
             {
                 return DataContract.ForPrimitive(type, DataType.String, dataFormat: null, value =>
                 {
@@ -67,7 +47,7 @@ internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
 
     private bool TryCustomizeMessage(MessageDescriptor messageDescriptor, [NotNullWhen(true)] out DataContract? dataContract)
     {
-        // The messages serialized here should be kept in sync with SericeDescriptionHelper.IsCustomType.
+        // The messages serialized here should be kept in sync with ServiceDescriptionHelper.IsCustomType.
         if (ServiceDescriptorHelpers.IsWellKnownType(messageDescriptor))
         {
             if (ServiceDescriptorHelpers.IsWrapperType(messageDescriptor))
@@ -125,28 +105,7 @@ internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
 
         foreach (var field in messageDescriptor.Fields.InFieldNumberOrder())
         {
-            // Enum type will later be used to call this contract resolver.
-            // Register the enum type so we know to resolve its names from the descriptor.
-            if (field.FieldType == FieldType.Enum)
-            {
-                _enumTypeMapping.TryAdd(field.EnumType.ClrType, field.EnumType);
-            }
-
-            Type fieldType;
-            if (field.IsMap)
-            {
-                var mapFields = field.MessageType.Fields.InFieldNumberOrder();
-                var valueType = MessageDescriptorHelpers.ResolveFieldType(mapFields[1]);
-                fieldType = typeof(IDictionary<,>).MakeGenericType(typeof(string), valueType);
-            }
-            else if (field.IsRepeated)
-            {
-                fieldType = typeof(IList<>).MakeGenericType(MessageDescriptorHelpers.ResolveFieldType(field));
-            }
-            else
-            {
-                fieldType = MessageDescriptorHelpers.ResolveFieldType(field);
-            }
+            var fieldType = MessageDescriptorHelpers.ResolveFieldType(field);
 
             var propertyName = ServiceDescriptorHelpers.FormatUnderscoreName(field.Name, pascalCase: true, preservePeriod: false);
             var propertyInfo = messageDescriptor.ClrType.GetProperty(propertyName);

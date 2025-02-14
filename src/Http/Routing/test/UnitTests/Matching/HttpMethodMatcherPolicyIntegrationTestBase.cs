@@ -319,6 +319,30 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
     }
 
+    [Fact]
+    public async Task Match_Custom_HttpMethod()
+    {
+        // Arrange
+        var endpoint1 = CreateEndpoint("/hello", httpMethods: new string[] { "GET", });
+        var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "GOT", });
+
+        var matcher = CreateMatcher(endpoint1, endpoint2);
+
+        // Act 1
+        var httpContext1 = CreateContext("/hello", "GET");
+        await matcher.MatchAsync(httpContext1);
+
+        // Assert 1
+        MatcherAssert.AssertMatch(httpContext1, endpoint1);
+
+        // Act 2
+        var httpContext2 = CreateContext("/hello", "GOT");
+        await matcher.MatchAsync(httpContext2);
+
+        // Assert 2
+        MatcherAssert.AssertMatch(httpContext2, endpoint2);
+    }
+
     private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)
     {
         var services = new ServiceCollection()

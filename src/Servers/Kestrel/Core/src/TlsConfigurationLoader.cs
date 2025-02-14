@@ -176,20 +176,8 @@ internal sealed class TlsConfigurationLoader
 
     private static bool IsDevelopmentCertificate(X509Certificate2 certificate)
     {
-        if (!string.Equals(certificate.Subject, "CN=localhost", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        foreach (var ext in certificate.Extensions)
-        {
-            if (string.Equals(ext.Oid?.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return string.Equals(certificate.Subject, CertificateManager.LocalhostHttpsDistinguishedName, StringComparison.Ordinal) &&
+            CertificateManager.IsHttpsDevelopmentCertificate(certificate);
     }
 
     private static bool TryGetCertificatePath(string applicationName, [NotNullWhen(true)] out string? path)

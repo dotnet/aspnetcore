@@ -271,6 +271,56 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
+    [Fact]
+    public async Task UseAuthorizationUsesCache()
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getPolicyCount = 0;
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(policy)
+            .Callback(() => getPolicyCount++);
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
+            .Callback(() => getFallbackPolicyCount++);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+
+        var req = new AssertionRequirement(_ => true);
+
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"), new ReqAttribute(req));
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(policyProvider.Object)  
+            .AddLogging()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+
+        var appBuilder = new ApplicationBuilder(services);
+        appBuilder.UseAuthorization();
+
+        var next = new TestRequestDelegate();
+        appBuilder.Run(next.Invoke);
+
+        var app = appBuilder.Build();
+
+        var context = GetHttpContext(anonymous: true, endpoint: endpoint);
+
+        // Act & Assert
+        await app.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(1, next.CalledCount);
+
+        await app.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(2, next.CalledCount);
+
+        await app.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(3, next.CalledCount);
+    }
+
     private class TestDefaultPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         public int GetFallbackPolicyCount;

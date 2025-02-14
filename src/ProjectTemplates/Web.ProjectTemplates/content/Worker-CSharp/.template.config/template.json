@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Common",
@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "9800",
-  "identity": "Microsoft.Worker.Empty.CSharp.8.0",
+  "precedence": "10000",
+  "identity": "Microsoft.Worker.Empty.CSharp.10.0",
   "shortName": "worker",
   "tags": {
     "language": "C#",
@@ -62,12 +62,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "copyrightYear": {
       "type": "generated",

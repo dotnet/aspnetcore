@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
@@ -14,6 +14,8 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 public class BaselineTest : LoggedTest
 {
@@ -89,9 +91,6 @@ public class BaselineTest : LoggedTest
             if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".props", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
-                relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                 relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
@@ -103,7 +102,7 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal) && !relativePath.EndsWith("Extensions.cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
                 var namespaceDeclaration = File.ReadLines(file)

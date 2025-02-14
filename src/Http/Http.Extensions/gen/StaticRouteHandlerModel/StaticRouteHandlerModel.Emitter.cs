@@ -5,49 +5,58 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelEmitter
 {
-    public static string EmitHandlerDelegateType(this Endpoint endpoint, bool considerOptionality = false)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint)
     {
+        // Emits a delegate type to use when casting the input that captures
+        // default parameter values.
+        //
+        // void (int arg0, Todo arg1) => throw null!
+        // IResult (int arg0, Todo arg1) => throw null!
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseTypeDisplayName} ()";
         }
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => considerOptionality
-            ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
-            : p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{EmitUnwrappedParameterType(p)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
 
         if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {
-            return $"System.Action<{parameterTypeList}>";
+            return $"void ({parameterTypeList})";
         }
-        return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
+        return $"{endpoint.Response.WrappedResponseTypeDisplayName} ({parameterTypeList})";
     }
 
-    public static string EmitSourceKey(this Endpoint endpoint)
+    private static string EmitUnwrappedParameterType(EndpointParameter p)
     {
-        return $@"(@""{endpoint.Location.File}"", {endpoint.Location.LineNumber})";
+        var type = p.UnwrapParameterType();
+        var isOptional = p.IsOptional || type.NullableAnnotation == NullableAnnotation.Annotated;
+        return type.ToDisplayString(isOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat);
     }
 
     public static string EmitVerb(this Endpoint endpoint)
     {
-        return endpoint.HttpMethod switch
+        (var verbSymbol, endpoint.EmitterContext.HttpMethod) = endpoint.HttpMethod switch
         {
-            "MapGet" => "GetVerb",
-            "MapPut" => "PutVerb",
-            "MapPost" => "PostVerb",
-            "MapDelete" => "DeleteVerb",
-            "MapPatch" => "PatchVerb",
-            "MapMethods" => "httpMethods",
-            "Map" => "null",
-            "MapFallback" => "null",
+            "MapGet" => ("GetVerb", "Get"),
+            "MapPut" => ("PutVerb", "Put"),
+            "MapPost" => ("PostVerb", "Post"),
+            "MapDelete" => ("DeleteVerb", "Delete"),
+            "MapPatch" => ("PatchVerb", "Patch"),
+            "MapMethods" => ("httpMethods", null),
+            "Map" => ("null", null),
+            "MapFallback" => ("null", null),
             _ => throw new ArgumentException($"Received unexpected HTTP method: {endpoint.HttpMethod}")
         };
+
+        return verbSymbol;
     }
 
     /*
@@ -64,7 +73,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
+            codeWriter.WriteLineNoTabs(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");
@@ -76,21 +85,28 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
+        if (endpoint.Response.IsAwaitable)
+        {
+            codeWriter.WriteLine($"var task = handler({endpoint.EmitArgumentList()});");
+        }
+        if (endpoint.Response.IsAwaitable && endpoint.Response.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            codeWriter.WriteLine("if (task == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("""throw new InvalidOperationException("The Task returned by the Delegate must not be null.");""");
+            codeWriter.EndBlock();
+        }
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
         }
-        if (endpoint.Response.IsAwaitable)
-        {
-            codeWriter.Write("await ");
-        }
-        codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+        codeWriter.WriteLine(endpoint.Response.IsAwaitable ? "await task;" : $"handler({endpoint.EmitArgumentList()});");
 
         endpoint.Response.EmitHttpResponseContentType(codeWriter);
 
         if (!endpoint.Response.HasNoResponse)
         {
-            codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
+            endpoint.Response.EmitResponseWritingCall(codeWriter, endpoint.IsAwaitable);
         }
         else if (!endpoint.IsAwaitable)
         {
@@ -117,33 +133,37 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
+    private static void EmitResponseWritingCall(this EndpointResponse endpointResponse, CodeWriter codeWriter, bool isAwaitable)
     {
         var returnOrAwait = isAwaitable ? "await" : "return";
 
         if (endpointResponse.IsIResult)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);";
+            codeWriter.WriteLine("if (result == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("""throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");""");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine($"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);");
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync(result);");
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);";
+            codeWriter.WriteLine($"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);");
         }
         else if (!endpointResponse.HasNoResponse)
         {
-            return $"{returnOrAwait} {endpointResponse.EmitJsonResponse()}";
+            codeWriter.WriteLine($"{returnOrAwait} {endpointResponse.EmitJsonResponse()}");
         }
         else if (!endpointResponse.IsAwaitable && endpointResponse.HasNoResponse)
         {
-            return $"{returnOrAwait} Task.CompletedTask;";
+            codeWriter.WriteLine($"{returnOrAwait} Task.CompletedTask;");
         }
         else
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync(result);");
         }
     }
 
@@ -163,7 +183,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
+            codeWriter.WriteLineNoTabs(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");
@@ -180,23 +200,28 @@ internal static class StaticRouteHandlerModelEmitter
 
     private static void EmitBuiltinResponseTypeMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        if (endpoint.Response is not { } response)
         {
             return;
         }
 
-        if (response.HasNoResponse || response.IsIResult)
+        if (!endpoint.Response.IsAwaitable && (response.HasNoResponse || response.IsIResult))
         {
             return;
         }
 
-        if (responseType.SpecialType == SpecialType.System_String)
+        endpoint.EmitterContext.HasResponseMetadata = true;
+        if (response.ResponseType?.SpecialType == SpecialType.System_String)
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
-        else
+        else if (response.IsAwaitable && response.ResponseType == null)
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(void), contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+        }
+        else if (response.ResponseType is { } responseType)
+        {
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
     }
 
@@ -264,11 +289,11 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (hasFormFiles)
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
         }
         else
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
         }
     }
 
@@ -292,7 +317,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (explicitBodyParameter != null)
         {
-            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
         else if (potentialImplicitBodyParameters.Count > 0)
         {
@@ -301,24 +326,26 @@ internal static class StaticRouteHandlerModelEmitter
 
             codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
             codeWriter.Indent++;
+            codeWriter.WriteLine("#nullable disable");
             foreach (var parameter in potentialImplicitBodyParameters)
             {
                 codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
             }
+            codeWriter.WriteLine("#nullable enable");
             codeWriter.Indent--;
             codeWriter.WriteLine("};");
             codeWriter.WriteLine("foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (!serviceProviderIsService.IsService(type))");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
             codeWriter.WriteLine("break;");
             codeWriter.EndBlock();
             codeWriter.EndBlock();
         }
         else
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
@@ -328,6 +355,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.EmitterContext.HasFormBody)
         {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);");
             endpoint.EmitFormAcceptsMetadata(codeWriter);
         }
         else if (hasJsonBody)
@@ -336,9 +364,45 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
+    public static void EmitParameterBindingMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        var emitParametersLocal = true;
+        foreach (var parameter in endpoint.Parameters)
+        {
+            endpoint.EmitterContext.RequiresParameterBindingMetadataClass = true;
+            if (parameter.EndpointParameters is not null)
+            {
+                foreach (var propertyAsParameter in parameter.EndpointParameters)
+                {
+                    EmitParameterBindingMetadataForParameter(propertyAsParameter, codeWriter);
+                }
+            }
+            else
+            {
+                if (emitParametersLocal)
+                {
+                    codeWriter.WriteLine("var parameters = methodInfo.GetParameters();");
+                    emitParametersLocal = false;
+                }
+                EmitParameterBindingMetadataForParameter(parameter, codeWriter);
+            }
+        }
+
+        static void EmitParameterBindingMetadataForParameter(EndpointParameter parameter, CodeWriter codeWriter)
+        {
+            var parameterName = SymbolDisplay.FormatLiteral(parameter.SymbolName, true);
+            var parameterInfo = parameter.IsProperty ? parameter.PropertyAsParameterInfoConstruction : $"parameters[{parameter.Ordinal}]";
+            var hasTryParse = parameter.IsParsable ? "true" : "false";
+            var hasBindAsync = parameter.Source == EndpointParameterSource.BindAsync ? "true" : "false";
+            var isOptional = parameter.IsOptional ? "true" : "false";
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata({parameterName}, {parameterInfo}, hasTryParse: {hasTryParse}, hasBindAsync: {hasBindAsync}, isOptional: {isOptional}));");
+        }
+    }
+
     public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
     {
         endpoint.EmitAcceptsMetadata(codeWriter);
+        endpoint.EmitParameterBindingMetadata(codeWriter);
         endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
         endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
         endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
@@ -357,7 +421,15 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpoint.Response?.IsAwaitable == true)
         {
-            codeWriter.WriteLine($"var result = await handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine($"var task = handler({endpoint.EmitFilteredArgumentList()});");
+            if (endpoint.Response?.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                codeWriter.WriteLine("if (task == null)");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("return (object?)Results.Empty;");
+                codeWriter.EndBlock();
+            }
+            codeWriter.WriteLine($"var result = await task;");
             codeWriter.WriteLine("return (object?)result;");
         }
         else
@@ -381,7 +453,7 @@ internal static class StaticRouteHandlerModelEmitter
             // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
             // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
             // suppression operator doesn't come into play - so its not worth worrying about.
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})!");
+            sb.Append($"ic.GetArgument<{EmitUnwrappedParameterType(endpoint.Parameters[i])}>({i})!");
 
             if (i < endpoint.Parameters.Length - 1)
             {
@@ -403,7 +475,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append(endpoint.Parameters[i].Type.ToDisplayString(endpoint.Parameters[i].IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat));
+            sb.Append(EmitUnwrappedParameterType(endpoint.Parameters[i]));
 
             if (i < endpoint.Parameters.Length - 1)
             {

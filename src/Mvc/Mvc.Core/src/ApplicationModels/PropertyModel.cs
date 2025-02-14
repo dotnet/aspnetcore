@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A type which is used to represent a property in a <see cref="ControllerModel"/>.
 /// </summary>
-[DebuggerDisplay("PropertyModel: Name={PropertyName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {PropertyName}")]
 public class PropertyModel : ParameterModelBase, ICommonModel, IBindingModel
 {
     /// <summary>

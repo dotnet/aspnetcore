@@ -23,7 +23,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<InteropComponent>();
     }
 
@@ -133,9 +133,6 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeThrowsSerializingCircularStructure"] = "Success",
             ["invokeThrowsUndefinedJSObjectReference"] = "Success",
             ["invokeThrowsNullJSObjectReference"] = "Success",
-            ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
-            ["jsToDotNetStreamReturnValueUnmarshalled"] = "Success",
-            ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",
             ["stringValueUpperSync"] = "MY STRING",
             ["testDtoNonSerializedValueSync"] = "99999",
             ["testDtoSync"] = "Same",
@@ -144,7 +141,6 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
-            ["disposeJSInProcessObjectReference"] = "Success",
         };
 
         // Include the sync assertions only when running under WebAssembly
@@ -190,7 +186,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             {
                 if (expectedValue.Value != actualValue)
                 {
-                    throw new AssertActualExpectedException(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
+                    throw EqualException.ForMismatchedValues(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
                 }
             }
         }

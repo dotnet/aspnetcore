@@ -352,11 +352,7 @@ public class BufferedReadStream : Stream
 
             while (!foundCRLF && EnsureBuffered())
             {
-                if (builder.Length > lengthLimit)
-                {
-                    throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                }
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
@@ -380,30 +376,37 @@ public class BufferedReadStream : Stream
 
             while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
             {
-                if (builder.Length > lengthLimit)
-                {
-                    throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                }
-
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
         }
     }
 
-    private void ProcessLineChar(MemoryStream builder, ref bool foundCR, ref bool foundCRLF)
+    private void ProcessLineChar(MemoryStream builder, int lengthLimit,  ref bool foundCR, ref bool foundCRLF)
     {
-        var b = _buffer[_bufferOffset];
-        builder.WriteByte(b);
-        _bufferOffset++;
-        _bufferCount--;
-        if (b == LF && foundCR)
+        var writeCount = 0;
+        while (_bufferCount > 0)
         {
-            foundCRLF = true;
-            return;
+            var b = _buffer[_bufferOffset];
+            _bufferOffset++;
+            _bufferCount--;
+            writeCount++;
+            if (b == LF && foundCR)
+            {
+                builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
+                foundCRLF = true;
+                return;
+            }
+            foundCR = b == CR;
+
+            if (writeCount > lengthLimit)
+            {
+                throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
+            }
         }
-        foundCR = b == CR;
+
+        builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
     }
 
     private static string DecodeLine(MemoryStream builder, bool foundCRLF)
@@ -415,6 +418,6 @@ public class BufferedReadStream : Stream
 
     private void CheckDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

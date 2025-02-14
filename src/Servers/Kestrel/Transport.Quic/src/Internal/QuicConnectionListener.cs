@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
@@ -124,12 +125,16 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         {
             _listener = await QuicListener.ListenAsync(_quicListenerOptions);
         }
-        catch (QuicException ex) when (ex.QuicError == QuicError.AddressInUse || ex.QuicError == QuicError.AlpnInUse)
+        catch (QuicException e) when (e.QuicError == QuicError.AlpnInUse)
         {
-            // System.Net.Quic has a different error status depending upon the address in use scenario.
-            // It has a status of AddressInUse when another process is using the UDP port.
-            // It has a status of AlpnInUse when the current process is using the UDP port _and_ the ALPN is the same.
-            throw new AddressInUseException(ex.Message, ex);
+            // System.Net.Quic throws different exceptions depending upon the address in use scenario.
+            // It throws a QuicException with a status of AlpnInUse when the current process is using the UDP port _and_ the ALPN is the same.
+            throw new AddressInUseException(e.Message, e);
+        }
+        catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+        {
+            // It throws a SocketException with a status of AddressAlreadyInUse when another process is using the UDP port.
+            throw new AddressInUseException(e.Message, e);
         }
 
         // EndPoint could be configured with an ephemeral port of 0.

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -284,12 +285,7 @@ namespace System.Net.Http.HPack
         }
 
         /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
-        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
-        {
-            return EncodeLiteralHeaderFieldWithoutIndexingNewName(name, values, separator, valueEncoding: null, destination, out bytesWritten);
-        }
-
-        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, ReadOnlySpan<string> values, string separator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, ReadOnlySpan<string> values, byte[] separator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
         {
             // From https://tools.ietf.org/html/rfc7541#section-6.2.2
             // ------------------------------------------------------
@@ -370,6 +366,8 @@ namespace System.Net.Http.HPack
             // |  String Data (Length octets)  |
             // +-------------------------------+
 
+            Debug.Assert(Ascii.IsValid(value));
+
             if (destination.Length != 0)
             {
                 destination[0] = 0; // TODO: Use Huffman encoding
@@ -380,11 +378,9 @@ namespace System.Net.Http.HPack
                     destination = destination.Slice(integerLength);
                     if (value.Length <= destination.Length)
                     {
-                        for (int i = 0; i < value.Length; i++)
-                        {
-                            char c = value[i];
-                            destination[i] = (byte)((uint)(c - 'A') <= ('Z' - 'A') ? c | 0x20 : c);
-                        }
+                        OperationStatus status = Ascii.ToLower(value, destination, out int valueBytesWritten);
+                        Debug.Assert(status == OperationStatus.Done);
+                        Debug.Assert(valueBytesWritten == value.Length);
 
                         bytesWritten = integerLength + value.Length;
                         return true;
@@ -400,16 +396,15 @@ namespace System.Net.Http.HPack
         {
             Debug.Assert(destination.Length >= value.Length);
 
-            for (int i = 0; i < value.Length; i++)
-            {
-                char c = value[i];
-                if ((c & 0xFF80) != 0)
-                {
-                    throw new HttpRequestException(SR.net_http_request_invalid_char_encoding);
-                }
+            OperationStatus status = Ascii.FromUtf16(value, destination, out int bytesWritten);
 
-                destination[i] = (byte)c;
+            if (status == OperationStatus.InvalidData)
+            {
+                throw new HttpRequestException(SR.net_http_request_invalid_char_encoding);
             }
+
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(bytesWritten == value.Length);
         }
 
         public static bool EncodeStringLiteral(ReadOnlySpan<byte> value, Span<byte> destination, out int bytesWritten)
@@ -515,12 +510,7 @@ namespace System.Net.Http.HPack
             return false;
         }
 
-        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string? separator, Span<byte> destination, out int bytesWritten)
-        {
-            return EncodeStringLiterals(values, separator, valueEncoding: null, destination, out bytesWritten);
-        }
-
-        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string? separator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, byte[]? separator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = 0;
 
@@ -536,23 +526,22 @@ namespace System.Net.Http.HPack
             if (destination.Length != 0)
             {
                 Debug.Assert(separator != null);
-                int valueLength;
+                Debug.Assert(Ascii.IsValid(separator));
+                int valueLength = checked((values.Length - 1) * separator.Length);
 
-                // Calculate length of all parts and separators.
+                // Calculate length of all values.
                 if (valueEncoding is null || ReferenceEquals(valueEncoding, Encoding.Latin1))
                 {
-                    valueLength = checked((int)(values.Length - 1) * separator.Length);
                     foreach (string part in values)
                     {
-                        valueLength = checked((int)(valueLength + part.Length));
+                        valueLength = checked(valueLength + part.Length);
                     }
                 }
                 else
                 {
-                    valueLength = checked((int)(values.Length - 1) * valueEncoding.GetByteCount(separator));
                     foreach (string part in values)
                     {
-                        valueLength = checked((int)(valueLength + valueEncoding.GetByteCount(part)));
+                        valueLength = checked(valueLength + valueEncoding.GetByteCount(part));
                     }
                 }
 
@@ -571,7 +560,7 @@ namespace System.Net.Http.HPack
 
                             for (int i = 1; i < values.Length; i++)
                             {
-                                EncodeValueStringPart(separator, destination);
+                                separator.CopyTo(destination);
                                 destination = destination.Slice(separator.Length);
 
                                 value = values[i];
@@ -586,8 +575,8 @@ namespace System.Net.Http.HPack
 
                             for (int i = 1; i < values.Length; i++)
                             {
-                                written = valueEncoding.GetBytes(separator, destination);
-                                destination = destination.Slice(written);
+                                separator.CopyTo(destination);
+                                destination = destination.Slice(separator.Length);
 
                                 written = valueEncoding.GetBytes(values[i], destination);
                                 destination = destination.Slice(written);

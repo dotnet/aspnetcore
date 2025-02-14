@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.HPack;
@@ -143,14 +144,9 @@ namespace System.Net.Http.QPack
         /// <summary>
         /// Encodes a Literal Header Field Without Name Reference, building the value by concatenating a collection of strings with separators.
         /// </summary>
-        public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, ReadOnlySpan<string> values, string valueSeparator, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, ReadOnlySpan<string> values, byte[] separator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
         {
-            return EncodeLiteralHeaderFieldWithoutNameReference(name, values, valueSeparator, valueEncoding: null, destination, out bytesWritten);
-        }
-
-        public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, ReadOnlySpan<string> values, string valueSeparator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
-        {
-            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(values, valueSeparator, valueEncoding, destination.Slice(nameLength), out int valueLength))
+            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(values, separator, valueEncoding, destination.Slice(nameLength), out int valueLength))
             {
                 bytesWritten = nameLength + valueLength;
                 return true;
@@ -221,12 +217,7 @@ namespace System.Net.Http.QPack
         /// <summary>
         /// Encodes a value by concatenating a collection of strings, separated by a separator string.
         /// </summary>
-        public static bool EncodeValueString(ReadOnlySpan<string> values, string? separator, Span<byte> buffer, out int length)
-        {
-            return EncodeValueString(values, separator, valueEncoding: null, buffer, out length);
-        }
-
-        public static bool EncodeValueString(ReadOnlySpan<string> values, string? separator, Encoding? valueEncoding, Span<byte> buffer, out int length)
+        public static bool EncodeValueString(ReadOnlySpan<string> values, byte[]? separator, Encoding? valueEncoding, Span<byte> buffer, out int length)
         {
             if (values.Length == 1)
             {
@@ -242,10 +233,11 @@ namespace System.Net.Http.QPack
             if (buffer.Length > 0)
             {
                 Debug.Assert(separator != null);
-                int valueLength;
+                Debug.Assert(Ascii.IsValid(separator));
+                int valueLength = separator.Length * (values.Length - 1);
+
                 if (valueEncoding is null || ReferenceEquals(valueEncoding, Encoding.Latin1))
                 {
-                    valueLength = separator.Length * (values.Length - 1);
                     foreach (string part in values)
                     {
                         valueLength += part.Length;
@@ -253,7 +245,6 @@ namespace System.Net.Http.QPack
                 }
                 else
                 {
-                    valueLength = valueEncoding.GetByteCount(separator) * (values.Length - 1);
                     foreach (string part in values)
                     {
                         valueLength += valueEncoding.GetByteCount(part);
@@ -274,7 +265,7 @@ namespace System.Net.Http.QPack
 
                             for (int i = 1; i < values.Length; i++)
                             {
-                                EncodeValueStringPart(separator, buffer);
+                                separator.CopyTo(buffer);
                                 buffer = buffer.Slice(separator.Length);
 
                                 value = values[i];
@@ -289,8 +280,8 @@ namespace System.Net.Http.QPack
 
                             for (int i = 1; i < values.Length; i++)
                             {
-                                written = valueEncoding.GetBytes(separator, buffer);
-                                buffer = buffer.Slice(written);
+                                separator.CopyTo(buffer);
+                                buffer = buffer.Slice(separator.Length);
 
                                 written = valueEncoding.GetBytes(values[i], buffer);
                                 buffer = buffer.Slice(written);
@@ -311,22 +302,20 @@ namespace System.Net.Http.QPack
         {
             Debug.Assert(buffer.Length >= s.Length);
 
-            for (int i = 0; i < s.Length; ++i)
+            OperationStatus status = Ascii.FromUtf16(s, buffer, out int bytesWritten);
+
+            if (status == OperationStatus.InvalidData)
             {
-                char ch = s[i];
-
-                if (ch > 127)
-                {
-                    throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
-                }
-
-                buffer[i] = (byte)ch;
+                throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
             }
+
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(bytesWritten == s.Length);
         }
 
         private static bool EncodeNameString(string s, Span<byte> buffer, out int length)
         {
-            const int toLowerMask = 0x20;
+            Debug.Assert(Ascii.IsValid(s));
 
             if (buffer.Length != 0)
             {
@@ -338,18 +327,9 @@ namespace System.Net.Http.QPack
 
                     if (buffer.Length >= s.Length)
                     {
-                        for (int i = 0; i < s.Length; ++i)
-                        {
-                            int ch = s[i];
-                            Debug.Assert(ch <= 127, "HttpHeaders prevents adding non-ASCII header names.");
-
-                            if ((uint)(ch - 'A') <= 'Z' - 'A')
-                            {
-                                ch |= toLowerMask;
-                            }
-
-                            buffer[i] = (byte)ch;
-                        }
+                        OperationStatus status = Ascii.ToLower(s, buffer, out int valueBytesWritten);
+                        Debug.Assert(status == OperationStatus.Done);
+                        Debug.Assert(valueBytesWritten == s.Length);
 
                         length = nameLength + s.Length;
                         return true;

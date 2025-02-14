@@ -32,6 +32,7 @@ Microsoft.AspNetCore.Builder.WebApplicationBuilder.Configuration.get -> Microsof
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Host.get -> Microsoft.AspNetCore.Builder.ConfigureHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder!
+Microsoft.AspNetCore.Builder.WebApplicationBuilder.Metrics.get -> Microsoft.Extensions.Diagnostics.Metrics.IMetricsBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.WebHost.get -> Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationOptions
@@ -52,6 +53,10 @@ static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]? args = null
 static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateEmptyBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
 static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder(string![]! args) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder<TStartup>(string![]! args) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

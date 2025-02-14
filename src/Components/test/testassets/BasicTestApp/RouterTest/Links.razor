@@ -38,6 +38,7 @@
     <li><NavLink>Null href never matches</NavLink></li>
     <li><custom-link-with-shadow-root target-url="Other"></custom-link-with-shadow-root></li>
     <li><NavLink href="/subdir/LongPageWithHash">Long page with hash</NavLink></li>
+    <li><NavLink href="/subdir/SVGNavigation">Anchor inside SVG Element</NavLink></li>
 </ul>
 
 <button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Discovery;
 
@@ -20,7 +22,7 @@ internal class PageComponentInfo
     /// <param name="metadata">The page metadata.</param>
     internal PageComponentInfo(
         string displayName,
-        Type type,
+        [DynamicallyAccessedMembers(Component)] Type type,
         string route,
         IReadOnlyList<object> metadata)
     {
@@ -38,6 +40,7 @@ internal class PageComponentInfo
     /// <summary>
     /// Gets the page type.
     /// </summary>
+    [DynamicallyAccessedMembers(Component)]
     public Type Type { get; }
 
     /// <summary>
@@ -52,6 +55,6 @@ internal class PageComponentInfo
 
     private string GetDebuggerDisplay()
     {
-        return $"{Type.FullName}: {DisplayName}";
+        return $"Type = {Type.FullName}, DisplayName = {DisplayName}";
     }
 }

@@ -7,9 +7,6 @@
     <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(TargetArchitecture)' != 'arm64'">true</SeleniumE2ETestsSupported>
     <SauceConnectProcessTrackingFolder Condition="'$(SauceConnectProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\sauceconnect\</SauceConnectProcessTrackingFolder>
 
-    <!-- Config that limits driver to chrome-->
-    <SeleniumConfigPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory)selenium-config.json))</SeleniumConfigPath>
-
     <!-- We want to enforce prerequisites when we build from the CI or within Visual Studio -->
     <EnforcedE2EBuildEnvironment Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(BuildingInsideVisualStudio)' == 'true'">true</EnforcedE2EBuildEnvironment>
 

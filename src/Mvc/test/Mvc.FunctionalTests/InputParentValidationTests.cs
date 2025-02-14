@@ -2,11 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -15,20 +19,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 /// </summary>
 public class InputParentValidationTests
 {
-    public abstract class BaseTests<TStartup> : IClassFixture<MvcTestFixture<TStartup>>
+    public abstract class BaseTests<TStartup> : LoggedTest
         where TStartup : class
     {
-        protected BaseTests(MvcTestFixture<TStartup> fixture)
+        protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder =>
-                builder.UseStartup<TStartup>());
-
-            Client = factory.CreateDefaultClient();
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+            Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(builder => builder.UseStartup<TStartup>());
+            Client = Factory.CreateDefaultClient();
         }
 
-        protected abstract bool ShouldParentBeValidatedWhenChildIsInvalid { get; }
+        public override void Dispose()
+        {
+            Factory.Dispose();
+            base.Dispose();
+        }
 
-        private HttpClient Client { get; }
+        public WebApplicationFactory<TStartup> Factory { get; private set; }
+        public HttpClient Client { get; private set; }
+
+        protected abstract bool ShouldParentBeValidatedWhenChildIsInvalid { get; }
 
         [Fact]
         public async Task ParentObjectValidation_RespectsMvcOptions_WhenChildIsInvalid()
@@ -102,11 +112,6 @@ public class InputParentValidationTests
     /// </summary>
     public class ParentValidationScenarios : BaseTests<FormatterWebSite.StartupWithComplexParentValidation>
     {
-        public ParentValidationScenarios(MvcTestFixture<FormatterWebSite.StartupWithComplexParentValidation> fixture)
-            : base(fixture)
-        {
-        }
-
         protected override bool ShouldParentBeValidatedWhenChildIsInvalid => true;
     }
 
@@ -116,11 +121,6 @@ public class InputParentValidationTests
     /// </summary>
     public class ParentNonValidationScenarios : BaseTests<FormatterWebSite.Startup>
     {
-        public ParentNonValidationScenarios(MvcTestFixture<FormatterWebSite.Startup> fixture)
-            : base(fixture)
-        {
-        }
-
         protected override bool ShouldParentBeValidatedWhenChildIsInvalid => false;
     }
 }

@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     private static ReadOnlySpan<byte> ContinueBytes => "HTTP/1.1 100 Continue\r\n\r\n"u8;
     private static ReadOnlySpan<byte> HttpVersion11Bytes => "HTTP/1.1 "u8;
     private static ReadOnlySpan<byte> EndHeadersBytes => "\r\n\r\n"u8;
@@ -30,11 +29,12 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private readonly MemoryPool<byte> _memoryPool;
     private readonly KestrelTrace _log;
     private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
+    private readonly ConnectionMetricsContext _connectionMetricsContext;
     private readonly IHttpOutputAborter _outputAborter;
     private readonly TimingPipeFlusher _flusher;
 
     // This locks access to all of the below fields
-    private readonly object _contextLock = new object();
+    private readonly Lock _contextLock = new();
 
     private bool _pipeWriterCompleted;
     private bool _aborted;
@@ -62,6 +62,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     // Fields needed to store writes before calling either startAsync or Write/FlushAsync
     // These should be cleared by the end of the request
     private List<CompletedBuffer>? _completedSegments;
+    private int _completedSegmentsByteCount;
     private Memory<byte> _currentSegment;
     private IMemoryOwner<byte>? _currentSegmentOwner;
     private int _position;
@@ -75,6 +76,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         KestrelTrace log,
         ITimeoutControl timeoutControl,
         IHttpMinResponseDataRateFeature minResponseDataRateFeature,
+        ConnectionMetricsContext connectionMetricsContext,
         IHttpOutputAborter outputAborter)
     {
         // Allow appending more data to the PipeWriter when a flush is pending.
@@ -84,6 +86,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         _memoryPool = memoryPool;
         _log = log;
         _minResponseDataRateFeature = minResponseDataRateFeature;
+        _connectionMetricsContext = connectionMetricsContext;
         _outputAborter = outputAborter;
 
         _flusher = new TimingPipeFlusher(timeoutControl, log);
@@ -274,6 +277,15 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
+    public long UnflushedBytes
+    {
+        get
+        {
+            var bytes = _position + _advancedBytesForChunk + _pipeWriter.UnflushedBytes + _completedSegmentsByteCount;
+            return bytes;
+        }
+    }
+
     public void CancelPendingFlush()
     {
         _pipeWriter.CancelPendingFlush();
@@ -373,6 +385,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 segment.Return();
             }
 
+            _completedSegmentsByteCount = 0;
             _completedSegments.Clear();
         }
 
@@ -445,7 +458,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
-    public void Abort(ConnectionAbortedException error)
+    public void Abort(ConnectionAbortedException error, ConnectionEndReason reason)
     {
         // Abort can be called after Dispose if there's a flush timeout.
         // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -455,6 +468,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return;
             }
+
+            KestrelMetrics.AddConnectionEndReason(_connectionMetricsContext, reason);
 
             _aborted = true;
             _connectionContext.Abort(error);
@@ -731,6 +746,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
             // ignore any empty space in it.
             _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+            _completedSegmentsByteCount += _position;
         }
 
         if (sizeHint <= _memoryPool.MaxBufferSize)
@@ -738,6 +754,14 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
             // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
             var owner = _memoryPool.Rent(sizeHint);
+            _currentSegment = owner.Memory;
+            _currentSegmentOwner = owner;
+        }
+        else if (sizeHint <= MemoryPool<byte>.Shared.MaxBufferSize)
+        {
+            // fallback to ArrayPool instead of the passed in memory pool (default is PinnedBlockMemoryPool)
+            // PinnedBlockMemoryPool currently defaults to a low (4k) max buffer size while ArrayPool is 2G
+            var owner = MemoryPool<byte>.Shared.Rent(sizeHint);
             _currentSegment = owner.Memory;
             _currentSegmentOwner = owner;
         }

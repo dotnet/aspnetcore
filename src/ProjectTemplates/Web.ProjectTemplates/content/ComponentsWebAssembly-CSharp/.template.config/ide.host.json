@@ -1,7 +1,7 @@
 {
-  "$schema": "http://json.schemastore.org/ide.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 610,
-  "icon": "icon.png",
+  "icon": "ide/icon.ico",
   "disableHttpsSymbol": "NoHttps",
   "symbolInfo": [
     {
@@ -11,6 +11,12 @@
     },
     {
       "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "IncludeSampleContent",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"

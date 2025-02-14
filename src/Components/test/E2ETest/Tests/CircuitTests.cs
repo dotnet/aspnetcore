@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -24,7 +24,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
     }
 
     [Theory]
@@ -35,7 +35,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     [InlineData("render-throw")]
     [InlineData("afterrender-sync-throw")]
     [InlineData("afterrender-async-throw")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46836")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57588")]
     public void ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
     {
         Browser.MountTestComponent<ReliabilityComponent>();
@@ -54,7 +54,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46836")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57588")]
     public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
     {
         Browser.MountTestComponent<ReliabilityComponent>();

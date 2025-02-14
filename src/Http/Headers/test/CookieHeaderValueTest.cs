@@ -172,8 +172,8 @@ public class CookieHeaderValueTest
     public void CookieHeaderValue_Ctor1_InitializesCorrectly()
     {
         var header = new CookieHeaderValue("cookie");
-        Assert.Equal("cookie", header.Name);
-        Assert.Equal(string.Empty, header.Value);
+        Assert.Equal("cookie", header.Name.AsSpan());
+        Assert.Equal(string.Empty, header.Value.AsSpan());
     }
 
     [Theory]
@@ -183,18 +183,18 @@ public class CookieHeaderValueTest
     public void CookieHeaderValue_Ctor2InitializesCorrectly(string name, string value)
     {
         var header = new CookieHeaderValue(name, value);
-        Assert.Equal(name, header.Name);
-        Assert.Equal(value, header.Value);
+        Assert.Equal(name, header.Name.AsSpan());
+        Assert.Equal(value, header.Value.AsSpan());
     }
 
     [Fact]
     public void CookieHeaderValue_Value()
     {
         var cookie = new CookieHeaderValue("name");
-        Assert.Equal(string.Empty, cookie.Value);
+        Assert.Equal(string.Empty, cookie.Value.AsSpan());
 
         cookie.Value = "value1";
-        Assert.Equal("value1", cookie.Value);
+        Assert.Equal("value1", cookie.Value.AsSpan());
     }
 
     [Theory]
@@ -278,7 +278,7 @@ public class CookieHeaderValueTest
 
     [Theory]
     [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
-    public void CookieHeaderValue_ParseList_ExcludesInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
+    public void CookieHeaderValue_ParseList_ExcludesInvalidValues(IList<CookieHeaderValue>? cookies, string[] input)
     {
         var results = CookieHeaderValue.ParseList(input);
         // ParseList always returns a list, even if empty. TryParseList may return null (via out).
@@ -287,7 +287,7 @@ public class CookieHeaderValueTest
 
     [Theory]
     [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
-    public void CookieHeaderValue_TryParseList_ExcludesInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
+    public void CookieHeaderValue_TryParseList_ExcludesInvalidValues(IList<CookieHeaderValue>? cookies, string[] input)
     {
         var result = CookieHeaderValue.TryParseList(input, out var results);
         Assert.Equal(cookies, results);
@@ -298,7 +298,7 @@ public class CookieHeaderValueTest
     [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
     public void CookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-            IList<CookieHeaderValue> cookies,
+            IList<CookieHeaderValue>? cookies,
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
             string[] input)
     {
@@ -309,7 +309,7 @@ public class CookieHeaderValueTest
     [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
     public void CookieHeaderValue_TryParseStrictList_FailsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-            IList<CookieHeaderValue> cookies,
+            IList<CookieHeaderValue>? cookies,
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
             string[] input)
     {

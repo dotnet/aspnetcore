@@ -19,7 +19,7 @@
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
     <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <CommonFilesToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+    <CommonFilesToSign Include="$(ArtifactsDir)packages\$(Configuration)\**\*.zip" />
     <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
   </ItemGroup>
   <Choose>
@@ -63,10 +63,7 @@
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cab" CertificateName="None" />
-    <!-- If doing post build sign, explicitly give MSIs a cert. If doing in build signing,
-         this is handled by the wix targets, and .msi should be "None" -->
-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" Condition="'$(PostBuildSign)' == 'true'" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileSignInfo Include="aspnetcore.dll" CertificateName="MicrosoftDotNet500" />
@@ -100,7 +97,7 @@
   <ItemGroup Label="Code sign exclusions">
     <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
-    <!-- We don't produce font files. We rebundle some for using the web brower, so they do not need to be signed. -->
+    <!-- We don't produce font files. We rebundle some for using the web browser, so they do not need to be signed. -->
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
     <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->

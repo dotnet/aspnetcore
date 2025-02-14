@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Moq;
 
@@ -136,6 +136,8 @@ internal class WebTransportTestUtilities
         {
             return GetMemory(sizeHint).Span;
         }
+
+        public long UnflushedBytes => 0;
 
         public ValueTask<FlushResult> ProduceContinueAsync()
         {

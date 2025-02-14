@@ -65,6 +65,22 @@ public class DependencyInjectionTest
     }
 
     [Fact]
+    public void ThrowsIfNoSuchKeyedServiceIsRegistered()
+    {
+        var serviceInstance = new MyServiceImplementation();
+        _serviceProvider.AddKeyedService<IMyService>(serviceInstance, "mismatched-key");
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            InstantiateComponent<HasKeyedInjectableProperty>();
+        });
+
+        Assert.Equal($"Cannot provide a value for property '{nameof(HasKeyedInjectableProperty.MyService)}' " +
+            $"on type '{typeof(HasKeyedInjectableProperty).FullName}'. There is no registered keyed service " +
+            $"of type '{typeof(IMyService).FullName}' with key '{HasKeyedInjectableProperty.ServiceKey}'.", ex.Message);
+    }
+
+    [Fact]
     public void SetsInjectablePropertyValueIfServiceIsRegistered()
     {
         // Arrange
@@ -73,6 +89,20 @@ public class DependencyInjectionTest
 
         // Act
         var instance = InstantiateComponent<HasInjectableProperty>();
+
+        // Assert
+        Assert.Same(serviceInstance, instance.MyService);
+    }
+
+    [Fact]
+    public void SetsKeyedInjectablePropertyValueIfKeyedServiceIsRegistered()
+    {
+        // Arrange
+        var serviceInstance = new MyServiceImplementation();
+        _serviceProvider.AddKeyedService<IMyService>(serviceInstance, HasKeyedInjectableProperty.ServiceKey);
+
+        // Act
+        var instance = InstantiateComponent<HasKeyedInjectableProperty>();
 
         // Assert
         Assert.Same(serviceInstance, instance.MyService);
@@ -88,6 +118,7 @@ public class DependencyInjectionTest
         _serviceProvider.AddService<IMyService>(serviceInstance);
         _serviceProvider.AddService<IMyOtherService>(otherServiceInstance);
         _serviceProvider.AddService(concreteServiceInstance);
+        _serviceProvider.AddKeyedService<IMyService>(serviceInstance, HasManyInjectableProperties.ServiceKey);
 
         // Act
         var instance = InstantiateComponent<HasManyInjectableProperties>();
@@ -98,6 +129,7 @@ public class DependencyInjectionTest
         Assert.Same(serviceInstance, instance.PrivateValue);
         Assert.Same(otherServiceInstance, instance.DifferentServiceType);
         Assert.Same(concreteServiceInstance, instance.ConcreteServiceType);
+        Assert.Same(serviceInstance, instance.KeyedService);
     }
 
     [Fact]
@@ -154,6 +186,13 @@ public class DependencyInjectionTest
         [Inject] public IMyService MyService { get; set; }
     }
 
+    class HasKeyedInjectableProperty : TestComponent
+    {
+        public const string ServiceKey = "my-service";
+
+        [Inject(Key = ServiceKey)] public IMyService MyService { get; set; }
+    }
+
     class HasPrivateInjectableProperty : TestComponent
     {
         [Inject] private IMyService MyService { get; set; }
@@ -165,11 +204,14 @@ public class DependencyInjectionTest
 
     class HasManyInjectableProperties : TestComponent
     {
+        public const string ServiceKey = "my-service";
+
         [Inject] public IMyService PublicReadWrite { get; set; }
         [Inject] public IMyService PublicReadOnly { get; private set; }
         [Inject] private IMyService Private { get; set; }
         [Inject] public IMyOtherService DifferentServiceType { get; set; }
         [Inject] public MyConcreteService ConcreteServiceType { get; set; }
+        [Inject(Key = ServiceKey)] public IMyService KeyedService { get; set; }
 
         public IMyService PrivateValue => Private;
     }

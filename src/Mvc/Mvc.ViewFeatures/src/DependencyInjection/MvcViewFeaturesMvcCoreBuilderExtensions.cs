@@ -200,6 +200,8 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         //
         services.TryAddSingleton<ValidateAntiforgeryTokenAuthorizationFilter>();
         services.TryAddSingleton<AutoValidateAntiforgeryTokenAuthorizationFilter>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IApplicationModelProvider, AntiforgeryApplicationModelProvider>());
 
         // These are stateless so their lifetime isn't really important.
         services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal sealed class WebAssemblyComponentSerializer
 {
-    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+    public static void SerializeInvocation(ref ComponentMarker marker, Type type, ParameterView parameters)
     {
         var assembly = type.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name");
         var typeFullName = type.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name");
@@ -19,29 +19,6 @@ internal sealed class WebAssemblyComponentSerializer
         var serializedDefinitions = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(definitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
         var serializedValues = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(values, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
 
-        return prerendered ? WebAssemblyComponentMarker.Prerendered(assembly, typeFullName, serializedDefinitions, serializedValues) :
-            WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
-    }
-
-    internal static void AppendPreamble(TextWriter writer, WebAssemblyComponentMarker record)
-    {
-        var serializedStartRecord = JsonSerializer.Serialize(
-            record,
-            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-
-        writer.Write("<!--Blazor:");
-        writer.Write(serializedStartRecord);
-        writer.Write("-->");
-    }
-
-    internal static void AppendEpilogue(TextWriter writer, WebAssemblyComponentMarker record)
-    {
-        var endRecord = JsonSerializer.Serialize(
-            record.GetEndRecord(),
-            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-
-        writer.Write("<!--Blazor:");
-        writer.Write(endRecord);
-        writer.Write("-->");
+        marker.WriteWebAssemblyData(assembly, typeFullName, serializedDefinitions, serializedValues);
     }
 }

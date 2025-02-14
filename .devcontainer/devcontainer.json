@@ -5,12 +5,6 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      // The VARIANT here must align with a dotnet container image that
-      // is publicly available on https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list.
-      // We'll default to `latest` as the default. Generally, the .NET version that is baked
-      // into the image by default doesn't matter since we end up installing our own
-      // local version and using that by default in the container environment.
-      "VARIANT": "latest",
       // Options
       "INSTALL_NODE": "true",
       "NODE_VERSION": "lts/*"
@@ -18,7 +12,7 @@
   },
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
-    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit",
     "EditorConfig.EditorConfig",
     "k--kato.docomment",
     "dbaeumer.vscode-eslint"
@@ -37,9 +31,12 @@
   "remoteEnv": {
     "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
     "DOTNET_MULTILEVEL_LOOKUP": "0",
-    "TARGET": "net8.0",
+    "TARGET": "net10.0",
     "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "true"
   },
   // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 8
+  }
 }

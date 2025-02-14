@@ -1,16 +1,16 @@
 {
-  "name": "microsoft.aspnetcore.projecttemplates.tests",
+  "name": "@microsoft/microsoft.aspnetcore.projecttemplates.tests",
   "version": "0.0.1",
   "description": "Not a real package. This file exists only to declare dependencies.",
   "main": "index.js",
   "private": true,
   "scripts": {
-    "selenium-standalone": "selenium-standalone",
-    "prepare": "selenium-standalone install --config ../../../Shared/E2ETesting/selenium-config.json"
+    "selenium-standalone": "selenium-standalone"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "selenium-standalone": "^7.1.0"
+    "selenium-standalone": "^7.1.0",
+    "string_decoder": ">=1.3.0"
   }
 }

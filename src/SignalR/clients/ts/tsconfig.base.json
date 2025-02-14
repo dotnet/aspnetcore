@@ -17,15 +17,8 @@
         "skipLibCheck": true,
         "stripInternal": true,
         "strict": true,
+        "types": ["jest", "jasmine", "node"],
         "lib": [ "es2019", "dom" ],
-        "baseUrl": ".",
-        "paths": {
-            "@microsoft/signalr": [
-                "./signalr"
-            ],
-            "@microsoft/signalr-protocol-msgpack": [
-                "./signalr-protocol-msgpack"
-            ]
-        }
+        "baseUrl": "."
     }
 }

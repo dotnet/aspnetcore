@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -106,29 +106,33 @@ public class ControllerBaseTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void Redirect_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void Redirect_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.Redirect(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.Redirect(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPreserveMethod(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPreserveMethod(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Fact]
@@ -200,68 +204,78 @@ public class ControllerBaseTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirect_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirect_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirect(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirect(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirectPreserveMethod(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirectPreserveMethod(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirectPermanentPreserveMethod(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirectPermanentPreserveMethod(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPermanent(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPermanent(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPermanentPreserveMethod(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPermanentPreserveMethod(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Fact]
@@ -2416,6 +2430,27 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ValidationProblemDetails_UsesSpecifiedExtensions()
+    {
+        // Arrange
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+        };
+
+        // Act
+        var actionResult = controller.ValidationProblem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
+
+        // Assert
+        var objectResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+        Assert.Equal(1, problemDetails.Extensions["ext1"]);
+        Assert.Equal(2, problemDetails.Extensions["ext2"]);
+    }
+
+    [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
@@ -2469,6 +2504,27 @@ public class ControllerBaseTest
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal(detail, problemDetails.Detail);
+    }
+
+    [Fact]
+    public void ProblemDetails_UsesPassedInExtensions()
+    {
+        // Arrange
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+        };
+
+        // Act
+        var actionResult = controller.Problem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+        Assert.Equal(1, problemDetails.Extensions["ext1"]);
+        Assert.Equal(2, problemDetails.Extensions["ext2"]);
     }
 
     [Fact]

@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -24,11 +20,12 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60371")]
+    public async Task HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
@@ -42,7 +39,7 @@ public class HeartbeatTests : LoggedTest
             {
                 sw = Stopwatch.StartNew();
             }
-            else
+            else if (heartbeatCallCount <= 5)
             {
                 var split = sw.Elapsed;
                 splits.Add(split);
@@ -50,6 +47,12 @@ public class HeartbeatTests : LoggedTest
                 Logger.LogInformation($"Heartbeat split: {split.TotalMilliseconds}ms");
 
                 sw.Restart();
+            }
+            else
+            {
+                // If shutdown takes too long there could be more OnHeartbeat calls, but that shouldn't fail the test,
+                // so we ignore them. See https://github.com/dotnet/aspnetcore/issues/55297
+                Logger.LogInformation("Extra OnHeartbeat call().");
             }
 
             if (heartbeatCallCount == 5)
@@ -98,7 +101,7 @@ public class HeartbeatTests : LoggedTest
     [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsWarning()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
@@ -141,7 +144,7 @@ public class HeartbeatTests : LoggedTest
     [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedIfDebuggerAttached()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
@@ -174,13 +177,13 @@ public class HeartbeatTests : LoggedTest
 
         heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
-        Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "HeartbeatSlow");
     }
 
     [Fact]
     public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var ex = new Exception();

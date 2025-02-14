@@ -143,22 +143,26 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             }
         }
 
-        // If we receive a request at this point.
-        // OutOfProcess: we will create a new application with new configuration
-        // InProcess: the request would have to be rejected, as we are about to call g_HttpServer->RecycleProcess
-        // on the worker process
-
         if (!applicationsToRecycle.empty())
         {
             for (auto& application : applicationsToRecycle)
             {
                 try
                 {
-                    application->ShutDownApplication(/* fServerInitiated */ false);
+                    if (UseLegacyShutdown())
+                    {
+                        application->ShutDownApplication(/* fServerInitiated */ false);
+                    }
+                    else
+                    {
+                        // Recycle the process to trigger OnGlobalStopListening
+                        // which will shutdown the server and stop listening for new requests for this app
+                        m_pHttpServer.RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+                    }
                 }
                 catch (...)
                 {
-                    LOG_ERRORF(L"Failed to stop application '%ls'", application->QueryApplicationInfoKey().c_str());
+                    LOG_ERRORF(L"Failed to recycle application '%ls'", application->QueryApplicationInfoKey().c_str());
                     OBSERVE_CAUGHT_EXCEPTION()
 
                     // Failed to recycle an application. Log an event
@@ -175,25 +179,31 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 }
             }
         }
-        {
-            SRWExclusiveLock lock(m_srwLock);
-            const std::wstring configurationPath = pszApplicationId;
 
+        if (UseLegacyShutdown())
+        {
             // Remove apps after calling shutdown on each of them
-            // This is exclusive to in-process, as the shutdown of an inprocess app recycles
+            // This is exclusive to in-process, as the shutdown of an in-process app recycles
             // the entire worker process.
-            auto itr = m_pApplicationInfoHash.begin();
-            while (itr != m_pApplicationInfoHash.end())
+            if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
             {
-                if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath))
+                SRWExclusiveLock lock(m_srwLock);
+                const std::wstring configurationPath = pszApplicationId;
+
+                auto itr = m_pApplicationInfoHash.begin();
+                while (itr != m_pApplicationInfoHash.end())
                 {
-                    itr = m_pApplicationInfoHash.erase(itr);
+                    if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
+                        && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
+                    {
+                        itr = m_pApplicationInfoHash.erase(itr);
+                    }
+                    else
+                    {
+                        ++itr;
+                    }
                 }
-                else
-                {
-                    ++itr;
-                }
-            }
+            } // Release Exclusive m_srwLock
         }
     }
     CATCH_RETURN()
@@ -208,14 +218,19 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
 VOID
 APPLICATION_MANAGER::ShutDown()
 {
+    // During shutdown we lock until we delete the application
+    SRWExclusiveLock lock(m_srwLock);
+
     // We are guaranteed to only have one outstanding OnGlobalStopListening event at a time
     // However, it is possible to receive multiple OnGlobalStopListening events
     // Protect against this by checking if we already shut down.
+    if (g_fInShutdown)
+    {
+        return;
+    }
+
     g_fInShutdown = TRUE;
     g_fInAppOfflineShutdown = true;
-
-    // During shutdown we lock until we delete the application
-    SRWExclusiveLock lock(m_srwLock);
     for (auto & [str, applicationInfo] : m_pApplicationInfoHash)
     {
         applicationInfo->ShutDownApplication(/* fServerInitiated */ true);

@@ -3,12 +3,14 @@
 
 /* eslint-disable array-element-newline */
 import { Blazor } from './GlobalExports';
-import { Module } from './Platform/Mono/MonoPlatform';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { startWebAssembly } from './Boot.WebAssembly.Common';
+import { setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Common';
 import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
+import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
+import { JSEventRegistry } from './Services/JSEventRegistry';
+import { printErr } from './Platform/Mono/MonoPlatform';
 
 let started = false;
 
@@ -18,21 +20,17 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
+  setWebAssemblyOptions(Promise.resolve(options || {}));
+
+  JSEventRegistry.create(Blazor);
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-  await startWebAssembly(options, webAssemblyComponents);
+  const components = new InitialRootComponentsList(webAssemblyComponents);
+  await startWebAssembly(components);
 }
 
 Blazor.start = boot;
 window['DotNet'] = DotNet;
 
 if (shouldAutoStart()) {
-  boot().catch(error => {
-    if (typeof Module !== 'undefined' && Module.printErr) {
-      // Logs it, and causes the error UI to appear
-      Module.printErr(error);
-    } else {
-      // The error must have happened so early we didn't yet set up the error UI, so just log to console
-      console.error(error);
-    }
-  });
+  boot().catch(printErr);
 }

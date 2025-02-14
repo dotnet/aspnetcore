@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing.Patterns;
+#endif
+
 internal static class RouteParameterParser
 {
     // This code parses the inside of the route parameter
@@ -93,7 +97,11 @@ internal static class RouteParameterParser
         int currentIndex,
         int endIndex)
     {
+#if !COMPONENTS
         var constraints = new ArrayBuilder<RoutePatternParameterPolicyReference>(0);
+#else
+        var constraints = new List<RoutePatternParameterPolicyReference>();
+#endif
         var state = ParseState.Start;
         var startIndex = currentIndex;
         do

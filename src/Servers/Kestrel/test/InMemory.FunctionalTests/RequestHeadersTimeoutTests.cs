@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -25,7 +23,10 @@ public class RequestHeadersTimeoutTests : LoggedTest
     [InlineData("Host:\r\nContent-Length: 1\r\n\r")]
     public async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(string headers)
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -38,18 +39,23 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     headers);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await ReceiveTimeoutResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     [Fact]
     public async Task RequestHeadersTimeoutCanceledAfterHeadersReceived()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -65,7 +71,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     "");
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.Send(
@@ -74,6 +80,9 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
             }
         }
+
+        
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -81,7 +90,10 @@ public class RequestHeadersTimeoutTests : LoggedTest
     [InlineData("POST / HTTP/1.1\r")]
     public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(string requestLine)
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -92,18 +104,23 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 await connection.Send(requestLine);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await ReceiveTimeoutResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     [Fact]
     public async Task TimeoutNotResetOnEachRequestLineCharacterReceived()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         // Disable response rate, so we can finish the send loop without timing out the response.
         testContext.ServerOptions.Limits.MinResponseDataRate = null;
@@ -118,7 +135,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 {
                     await connection.Send(ch.ToString());
 
-                    testContext.MockTimeProvider.Advance(ShortDelay);
+                    testContext.FakeTimeProvider.Advance(ShortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -127,6 +144,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
     private TestServer CreateServer(TestServiceContext context)

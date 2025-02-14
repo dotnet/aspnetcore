@@ -36,6 +36,7 @@
     <Compile Include="Bundle.wxs" />
     <Compile Include="DotNetCore.wxs" />
     <Compile Include="SharedFramework.wxs" />
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,10 +61,6 @@
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\HostOptions\HostOptions.wixproj">
       <Name>HostOptions</Name>
       <Project>20248cd1-c5aa-4f42-ad88-bc260d64deea</Project>
@@ -102,18 +99,27 @@
     <BundleRegName>$(BundleNameFull)</BundleRegName>
   </PropertyGroup>
 
+  <!-- CrossArchitectureInstallerBasePath is a global property, so use a new property instead of modifying it -->
+  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' == 'true'">
+    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime', '$(SharedFxMsiVersion)'))</CrossArchitectureInstallerBasePathNormalized>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' != 'true'">
+    <CrossArchitectureInstallerBasePathNormalized>$(CrossArchitectureInstallerBasePath)</CrossArchitectureInstallerBasePathNormalized>
+  </PropertyGroup>
+
   <ItemGroup>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.exe">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.exe">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-arm64.exe">
+    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
       <TargetPlatform>arm64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
@@ -130,6 +136,7 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePathNormalized)</DefineConstants>
   </PropertyGroup>
 
   <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
@@ -139,39 +146,10 @@
       <Output TaskParameter="Value" PropertyName="%(SharedFxInstallers.BundleNameProperty)"/>
     </CreateProperty>
 
-    <ItemGroup>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
-        <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
-        <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
-      </SharedFxPayload>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
-        <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
-        <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
-      </SharedFxPayload>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
-        <ProductVersionProperty>SharedFxInstallerProductVersionarm64</ProductVersionProperty>
-        <ProductCodeProperty>SharedFxInstallerProductCodearm64</ProductCodeProperty>
-      </SharedFxPayload>
-    </ItemGroup>
-
-    <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
-      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
-    </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
-      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
-    </GetMsiProperty>
-
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx64=$(SharedFxRedistInstallerx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx64=$(SharedFxInstallerProductVersionx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex64=$(SharedFxInstallerProductCodex64)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx86=$(SharedFxInstallerProductVersionx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex86=$(SharedFxInstallerProductCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerarm64=$(SharedFxRedistInstallerarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionarm64=$(SharedFxInstallerProductVersionarm64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodearm64=$(SharedFxInstallerProductCodearm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

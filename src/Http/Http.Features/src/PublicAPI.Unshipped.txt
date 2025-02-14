@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!

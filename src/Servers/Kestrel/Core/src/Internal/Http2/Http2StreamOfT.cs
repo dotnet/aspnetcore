@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <inheritdoc />
 internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext> where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
@@ -20,7 +21,7 @@ internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer
     public override void Execute()
     {
         KestrelEventSource.Log.RequestQueuedStop(this, AspNetCore.Http.HttpProtocol.Http2);
-        ServiceContext.Metrics.RequestQueuedStop(MetricsContext, AspNetCore.Http.HttpProtocol.Http2);
+        ServiceContext.Metrics.RequestQueuedStop(MetricsContext, KestrelMetrics.Http2);
 
         // REVIEW: Should we store this in a field for easy debugging?
         _ = ProcessRequestsAsync(_application);

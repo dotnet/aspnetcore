@@ -4,6 +4,7 @@
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Http.Connections;
 
@@ -91,7 +92,7 @@ public class HttpConnectionDispatcherOptions
     }
 
     /// <summary>
-    /// Gets or sets the minimum protocol verison supported by the server.
+    /// Gets or sets the minimum protocol version supported by the server.
     /// The default value is 0, the lowest possible protocol version.
     /// </summary>
     public int MinimumProtocolVersion { get; set; }
@@ -111,7 +112,6 @@ public class HttpConnectionDispatcherOptions
             ArgumentOutOfRangeException.ThrowIfEqual(value, TimeSpan.Zero);
 
             _transportSendTimeout = value;
-            TransportSendTimeoutTicks = value.Ticks;
         }
     }
 
@@ -125,14 +125,13 @@ public class HttpConnectionDispatcherOptions
     public bool CloseOnAuthenticationExpiration { get; set; }
 
     /// <summary>
-    /// Set to allow connections to ack messages, helps enable reconnects that keep connection state.
+    /// Set to allow connections to reconnect with the same <see cref="BaseConnectionContext.ConnectionId"/>.
     /// </summary>
     /// <remarks>
-    /// Keeps messages in memory until acked (up to a limit), and keeps connections around for a short time to allow stateful reconnects.
+    /// Client still has to negotiate this option.
     /// </remarks>
-    public bool AllowAcks { get; set; }
+    public bool AllowStatefulReconnects { get; set; }
 
-    internal long TransportSendTimeoutTicks { get; private set; }
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.

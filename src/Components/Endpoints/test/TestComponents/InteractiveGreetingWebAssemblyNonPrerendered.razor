@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
-@attribute [RenderModeWebAssembly(false)]
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 <p>Hello @(Name ?? "(null)")!</p>
 

@@ -57,7 +57,7 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
     {
@@ -94,17 +94,18 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="policyName">The name of the policy to check against a specific context.</param>
     /// <returns>
     /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
     {
-        ArgumentNullThrowHelper.ThrowIfNull(policyName);
-
-        var policy = await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false);
-        if (policy == null)
-        {
-            throw new InvalidOperationException($"No policy found: {policyName}.");
-        }
+        var policy = await GetPolicyAsync(policyName).ConfigureAwait(false);
         return await this.AuthorizeAsync(user, resource, policy).ConfigureAwait(false);
+    }
+
+    // For use in DefaultAuthorizationServiceImpl.
+    private protected async Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(policyName);
+        return await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false) ?? throw new InvalidOperationException($"No policy found: {policyName}.");
     }
 }

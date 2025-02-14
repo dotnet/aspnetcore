@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
   <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
@@ -27,7 +27,7 @@
     </ItemGroup>
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.DefaultUIProjectPath</_Parameter1>
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentityUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>

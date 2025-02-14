@@ -51,6 +51,6 @@ public sealed class BadRequest : IResult, IEndpointMetadataProvider, IStatusCode
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(void)));
     }
 }

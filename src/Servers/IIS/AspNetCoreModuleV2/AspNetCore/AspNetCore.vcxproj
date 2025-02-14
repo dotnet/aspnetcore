@@ -35,6 +35,7 @@
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="DisconnectHandler.h" />
+    <ClInclude Include="ModuleEnvironment.h" />
     <ClInclude Include="ShimOptions.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="resource.h" />
@@ -49,6 +50,7 @@
     <ClCompile Include="AppOfflineApplication.cpp" />
     <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="DisconnectHandler.cpp" />
+    <ClCompile Include="ModuleEnvironment.cpp" />
     <ClCompile Include="ShimOptions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />

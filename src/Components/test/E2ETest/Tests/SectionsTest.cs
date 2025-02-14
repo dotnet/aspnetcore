@@ -26,7 +26,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         _appElement = Browser.MountTestComponent<BasicTestApp.SectionsTest.ParentComponentWithTwoChildren>();
     }
 
@@ -256,7 +256,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void SectionOutletGetsDisposed_NoContentsRendered()
     {
-        // Render Counter and TextComponent SectionContents with same Name      
+        // Render Counter and TextComponent SectionContents with same Name
         _appElement.FindElement(By.Id("counter-render-section-content")).Click();
         _appElement.FindElement(By.Id("text-render-section-content")).Click();
 

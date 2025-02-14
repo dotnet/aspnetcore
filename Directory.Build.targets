@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <!-- Disable IsTrimmable on non-DefaultNetCoreTargetFrameworks even if explicitly enabled or else we'll get NETSDK1195 and NETSDK1210 errors -->
+    <IsTrimmable Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"></IsTrimmable>
     <EnableAOTAnalyzer Condition=" '$(EnableAOTAnalyzer)' == '' ">$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
     <!-- TODO: Remove when analyzer is enabled by default with AOT in SDK. See https://github.com/dotnet/sdk/issues/31284 -->
     <EnableSingleFileAnalyzer Condition=" '$(EnableSingleFileAnalyzer)' == '' ">$(EnableAOTAnalyzer)</EnableSingleFileAnalyzer>
@@ -167,8 +169,8 @@
   </PropertyGroup>
 
   <!-- Properties for Package Validation -->
-  <PropertyGroup Condition="'$(ExcludeFromSourceBuild)' != 'true'">
-    <EnablePackageValidation>true</EnablePackageValidation>
+  <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
+    <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
     <DisablePackageBaselineValidation Condition="'$(IsServicingBuild)' != 'true'">true</DisablePackageBaselineValidation>
     <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>
   </PropertyGroup>
@@ -182,6 +184,17 @@
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
   </Target>
 
+  <!--
+    Remove the implicit package reference for Microsoft.AspNetCore.App.Internal.Assets.
+    Projects within the repo will consume framework assets by importing
+    Microsoft.AspNetCore.App.Internal.Assets.targets directly
+  -->
+  <Target Name="_RemoveAspNetCoreAppInternalAssetsReference" AfterTargets="ProcessFrameworkReferences">
+    <ItemGroup>
+      <PackageReference Remove="Microsoft.AspNetCore.App.Internal.Assets" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="eng\Workarounds.targets" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -189,8 +202,8 @@
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
-  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\targets\Sfx.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.sfxproj'" />
   <Import Project="eng\testing\linker\trimmingTests.targets" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.targets" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets"

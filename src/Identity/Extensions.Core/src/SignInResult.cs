@@ -80,7 +80,7 @@ public class SignInResult
     /// <returns>A string representation of value of the current <see cref="SignInResult"/> object.</returns>
     public override string ToString()
     {
-        return IsLockedOut ? "Lockedout" :
+        return IsLockedOut ? "LockedOut" :
                IsNotAllowed ? "NotAllowed" :
                RequiresTwoFactor ? "RequiresTwoFactor" :
                Succeeded ? "Succeeded" : "Failed";

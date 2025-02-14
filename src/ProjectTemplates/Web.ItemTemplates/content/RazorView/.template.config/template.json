@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [ "Web", "ASP.NET" ],
   "name": "Razor View",
@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorView",
-  "precedence": "9800",
-  "identity": "Microsoft.AspNetCore.Mvc.RazorView.8.0",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Mvc.RazorView.10.0",
   "shortName": "view",
   "sourceName": "Index",
   "primaryOutputs": [

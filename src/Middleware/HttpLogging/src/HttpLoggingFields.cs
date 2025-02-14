@@ -136,6 +136,11 @@ public enum HttpLoggingFields : long
     ResponseBody = 0x800,
 
     /// <summary>
+    /// Flag for logging how long it took to process the request and response in milliseconds.
+    /// </summary>
+    Duration = 0x1000,
+
+    /// <summary>
     /// Flag for logging a collection of HTTP Request properties,
     /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
     /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
@@ -158,7 +163,7 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging HTTP Response properties and headers.
-    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>
+    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>.
     /// </summary>
     ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
 
@@ -180,11 +185,11 @@ public enum HttpLoggingFields : long
     /// Logging the response body has performance implications, as it requires buffering
     /// the entire response body up to <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
-    Response = ResponseStatusCode | ResponseHeaders | ResponseBody,
+    Response = ResponsePropertiesAndHeaders | ResponseBody,
 
     /// <summary>
     /// Flag for logging both the HTTP Request and Response.
-    /// Includes <see cref="Request"/> and <see cref="Response"/>.
+    /// Includes <see cref="Request"/>, <see cref="Response"/>, and <see cref="Duration"/>.
     /// Logging the request and response body has performance implications, as it requires buffering
     /// the entire request and response body up to the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
@@ -193,5 +198,5 @@ public enum HttpLoggingFields : long
     /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
     /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
     /// </remarks>
-    All = Request | Response
+    All = Request | Response | Duration
 }

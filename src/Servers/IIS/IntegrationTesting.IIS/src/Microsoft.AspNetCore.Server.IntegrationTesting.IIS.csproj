@@ -72,6 +72,7 @@
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Security.Cryptography.X509Certificates" />
+    <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 

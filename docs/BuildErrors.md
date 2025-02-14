@@ -2,6 +2,8 @@
 
 This document is for common build errors and how to resolve them.
 
+NB: Some problems might be due to older build assets that conflict with newer commits. It's recommended to run `git clean -xddff` between checkouts. If this command fails due to locked files you can try to stop any existing `dotnet` or `.NET Host` process and retry.
+
 ## Warning BUILD001
 
 > warning BUILD001: Reference to '&hellip;' was removed since the last stable release of this package. &hellip;
@@ -33,7 +35,7 @@ The cause of this problem is that the solution filter you are using does not inc
 ### You can fix this in one of three ways
 
 1. Build the project on command line. In most cases, running `build.cmd` on command line solves this problem.
-2. If the project is missing from the .sln file entirely, you can use `dotnet sln add` to add it, or else right click on the solution/folder in Visual Studio and choose Add->Existing Project, and adding it.
+2. If the project is missing from the .sln file entirely, you can use `dotnet sln add` to add it, or else right click on the solution/folder in Visual Studio and choose Add->Existing Project.
 3. If it is present in the .sln, but not the .slnf, you can update the solution filter to include the missing project. You can either do this one by right-clicking on project in Visual Studio and choosing to load it's direct dependencies, and then saving.  Alternatively, you can hand edit the .slnf file - it's a fairly simple json format.
 
 ## Error MSB4019: The imported project "&hellip;\artifacts\bin\GenerateFiles\Directory.Build.props" was not found
@@ -64,7 +66,7 @@ In most cases, this is because the option _Use previews of the .NET Core SDK_ in
 
 Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
 
-```
+```text
 C:\git\aspnetcore\src\Servers\IIS\build\Build.Common.Settings(12,3): error MSB4019: The imported project "C:\git\aspnet
 core\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found. Confirm that the
  expression in the Import declaration "C:\git\aspnetcore\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\\Microso
@@ -77,7 +79,22 @@ ft.Cpp.Default.props" is correct, and that the file exists on disk. [C:\git\aspn
 V2\IISLib\IISLib.vcxproj]
 ```
 
-To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document.
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
+
+## Error MSB4018: The "InstallDotNetCore" task failed unexpectedly.
+
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
+
+```text
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: The "InstallDotNetCore" task failed unexpectedly. [C:\.nuget\packages\microsoft.dotnet.a
+rcade.sdk\8.0.0-beta.23364.2\tools\Tools.proj]
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: System.MissingMethodException: Method not found: 'System.Text.Json.JsonDocument System.Text.Json.JsonDo
+cument.Parse(System.ReadOnlyMemory`1<Byte>, System.Text.Json.JsonDocumentOptions)'.
+```
+
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
 
 ## Error: HTTP Error 500.33 - ANCM Request Handler Load Failure
 

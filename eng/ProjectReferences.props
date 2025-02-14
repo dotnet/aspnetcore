@@ -5,6 +5,7 @@
 -->
 <Project>
   <ItemGroup>
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.App.Internal.Assets" ProjectPath="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.SqlServer" ProjectPath="$(RepoRoot)src\Caching\SqlServer\src\Microsoft.Extensions.Caching.SqlServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Caching\StackExchangeRedis\src\Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
@@ -37,7 +38,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" ProjectPath="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity" ProjectPath="$(RepoRoot)src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" ProjectPath="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Identity.Core" ProjectPath="$(RepoRoot)src\Identity\Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj" />
@@ -90,6 +90,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepoRoot)src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepoRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepoRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Middleware\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\src\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.MiddlewareAnalysis" ProjectPath="$(RepoRoot)src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.OutputCaching" ProjectPath="$(RepoRoot)src\Middleware\OutputCaching\src\Microsoft.AspNetCore.OutputCaching.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.RateLimiting" ProjectPath="$(RepoRoot)src\Middleware\RateLimiting\src\Microsoft.AspNetCore.RateLimiting.csproj" />
@@ -138,6 +139,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepoRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticAssets" ProjectPath="$(RepoRoot)src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj" />
@@ -162,7 +164,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.InternalTesting" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />

@@ -7,14 +7,16 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
+using Windows.Win32;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -26,7 +28,7 @@ internal unsafe class NativeRequestContext : IDisposable
     private const int DefaultBufferSize = 4096 - AlignmentPadding;
     private IntPtr _originalBufferAddress;
     private readonly bool _useLatin1;
-    private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
+    private HTTP_REQUEST_V1* _nativeRequest;
     private readonly IMemoryOwner<byte>? _backingBuffer;
     private MemoryHandle _memoryHandle;
     private readonly int _bufferAlignment;
@@ -62,14 +64,14 @@ internal unsafe class NativeRequestContext : IDisposable
         }
         _backingBuffer.Memory.Span.Clear();
         _memoryHandle = _backingBuffer.Memory.Pin();
-        _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
+        _nativeRequest = (HTTP_REQUEST_V1*)((long)_memoryHandle.Pointer + _bufferAlignment);
 
         RequestId = requestId;
         _useLatin1 = useLatin1;
     }
 
     // To be used by IIS Integration.
-    internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request, bool useLatin1)
+    internal NativeRequestContext(HTTP_REQUEST_V1* request, bool useLatin1)
     {
         _useLatin1 = useLatin1;
         _nativeRequest = request;
@@ -95,7 +97,7 @@ internal unsafe class NativeRequestContext : IDisposable
                 } HTTP_REQUEST_TIMING_INFO, *PHTTP_REQUEST_TIMING_INFO;
             */
 
-            if (!RequestInfo.TryGetValue((int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming, out var timingInfo))
+            if (!RequestInfo.TryGetValue((int)HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming, out var timingInfo))
             {
                 return ReadOnlySpan<long>.Empty;
             }
@@ -105,12 +107,12 @@ internal unsafe class NativeRequestContext : IDisposable
             // Note that even though RequestTimingCount is an int, the compiler enforces alignment of data in the struct which causes 4 bytes
             // of padding to be added after RequestTimingCount, so we need to skip 64-bits before we get to the start of the RequestTiming array
             return MemoryMarshal.CreateReadOnlySpan(
-                ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
+                ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span[sizeof(long)..])),
                 timingCount);
         }
     }
 
-    internal HttpApiTypes.HTTP_REQUEST* NativeRequest
+    internal HTTP_REQUEST_V1* NativeRequest
     {
         get
         {
@@ -119,12 +121,12 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    internal HttpApiTypes.HTTP_REQUEST_V2* NativeRequestV2
+    internal HTTP_REQUEST_V2* NativeRequestV2
     {
         get
         {
             Debug.Assert(_nativeRequest != null || _backingBuffer == null, "native request accessed after ReleasePins().");
-            return (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest;
+            return (HTTP_REQUEST_V2*)_nativeRequest;
         }
     }
 
@@ -138,7 +140,7 @@ internal unsafe class NativeRequestContext : IDisposable
 
     internal ulong RawConnectionId => NativeRequest->RawConnectionId;
 
-    internal HttpApiTypes.HTTP_VERB VerbId => NativeRequest->Verb;
+    internal HTTP_VERB VerbId => NativeRequest->Verb;
 
     internal ulong UrlContext => NativeRequest->UrlContext;
 
@@ -154,9 +156,9 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
+    internal bool IsHttp2 => (NativeRequest->Flags & PInvoke.HTTP_REQUEST_FLAG_HTTP2) != 0;
 
-    internal bool IsHttp3 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http3);
+    internal bool IsHttp3 => (NativeRequest->Flags & PInvoke.HTTP_REQUEST_FLAG_HTTP3) != 0;
 
     // Assumes memory isn't pinned. Will fail if called by IIS.
     internal uint Size
@@ -195,7 +197,7 @@ internal unsafe class NativeRequestContext : IDisposable
 
     public bool TryGetElapsedTime(HttpSysRequestTimingType startingTimestampType, HttpSysRequestTimingType endingTimestampType, out TimeSpan elapsed)
     {
-        if (TryGetTimestamp(startingTimestampType, out long startTimestamp) && TryGetTimestamp(endingTimestampType, out long endTimestamp))
+        if (TryGetTimestamp(startingTimestampType, out var startTimestamp) && TryGetTimestamp(endingTimestampType, out var endTimestamp))
         {
             elapsed = Stopwatch.GetElapsedTime(startTimestamp, endTimestamp);
             return true;
@@ -221,11 +223,12 @@ internal unsafe class NativeRequestContext : IDisposable
     internal string? GetVerb()
     {
         var verb = NativeRequest->Verb;
-        if (verb > HttpApiTypes.HTTP_VERB.HttpVerbUnknown && verb < HttpApiTypes.HTTP_VERB.HttpVerbMaximum)
+        Debug.Assert((int)HTTP_VERB.HttpVerbMaximum == HttpVerbs.Length);
+        if (verb > HTTP_VERB.HttpVerbUnknown && verb < HTTP_VERB.HttpVerbMaximum)
         {
-            return HttpApiTypes.HttpVerbs[(int)verb];
+            return HttpVerbs[(int)verb];
         }
-        else if (verb == HttpApiTypes.HTTP_VERB.HttpVerbUnknown && NativeRequest->pUnknownVerb != null)
+        else if (verb == HTTP_VERB.HttpVerbUnknown && !NativeRequest->pUnknownVerb.Equals(null))
         {
             // Never use Latin1 for the VERB
             return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, useLatin1: false);
@@ -234,18 +237,43 @@ internal unsafe class NativeRequestContext : IDisposable
         return null;
     }
 
+    // Maps HTTP_VERB to strings
+    internal static readonly string?[] HttpVerbs =
+    [
+        null,
+        "Unknown",
+        "Invalid",
+        HttpMethods.Options,
+        HttpMethods.Get,
+        HttpMethods.Head,
+        HttpMethods.Post,
+        HttpMethods.Put,
+        HttpMethods.Delete,
+        HttpMethods.Trace,
+        HttpMethods.Connect,
+        "TRACK",
+        "MOVE",
+        "COPY",
+        "PROPFIND",
+        "PROPPATCH",
+        "MKCOL",
+        "LOCK",
+        "UNLOCK",
+        "SEARCH",
+    ];
+
     internal string? GetRawUrl()
     {
-        if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
+        if (!NativeRequest->pRawUrl.Equals(null) && NativeRequest->RawUrlLength > 0)
         {
-            return Marshal.PtrToStringAnsi((IntPtr)NativeRequest->pRawUrl, NativeRequest->RawUrlLength);
+            return Marshal.PtrToStringAnsi((IntPtr)NativeRequest->pRawUrl.Value, NativeRequest->RawUrlLength);
         }
         return null;
     }
 
     internal Span<byte> GetRawUrlInBytes()
     {
-        if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
+        if (!NativeRequest->pRawUrl.Equals(null) && NativeRequest->RawUrlLength > 0)
         {
             return new Span<byte>(NativeRequest->pRawUrl, NativeRequest->RawUrlLength);
         }
@@ -286,14 +314,14 @@ internal unsafe class NativeRequestContext : IDisposable
         var requestInfo = NativeRequestV2->pRequestInfo;
         var infoCount = NativeRequestV2->RequestInfoCount;
 
-        for (int i = 0; i < infoCount; i++)
+        for (var i = 0; i < infoCount; i++)
         {
             var info = &requestInfo[i];
             if (info != null
-                && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
+                && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
             {
-                var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
-                if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                var authInfo = (HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                if (authInfo->AuthStatus == HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
                     return true;
                 }
@@ -307,20 +335,20 @@ internal unsafe class NativeRequestContext : IDisposable
         var requestInfo = NativeRequestV2->pRequestInfo;
         var infoCount = NativeRequestV2->RequestInfoCount;
 
-        for (int i = 0; i < infoCount; i++)
+        for (var i = 0; i < infoCount; i++)
         {
             var info = &requestInfo[i];
             if (info != null
-                && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
+                && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
             {
-                var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
-                if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                var authInfo = (HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                if (authInfo->AuthStatus == HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
                     // Duplicates AccessToken
                     var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
 
                     // Close the original
-                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(authInfo->AccessToken);
+                    PInvoke.CloseHandle(authInfo->AccessToken);
 
                     return new WindowsPrincipal(identity);
                 }
@@ -330,18 +358,18 @@ internal unsafe class NativeRequestContext : IDisposable
         return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
     }
 
-    internal HttpApiTypes.HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
+    internal HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
     {
         var requestInfo = NativeRequestV2->pRequestInfo;
         var infoCount = NativeRequestV2->RequestInfoCount;
 
-        for (int i = 0; i < infoCount; i++)
+        for (var i = 0; i < infoCount; i++)
         {
             var info = &requestInfo[i];
             if (info != null
-                && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
+                && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
             {
-                var authInfo = *((HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo);
+                var authInfo = *(HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
                 SetSslProtocol(&authInfo);
                 return authInfo;
             }
@@ -350,7 +378,7 @@ internal unsafe class NativeRequestContext : IDisposable
         return default;
     }
 
-    private static void SetSslProtocol(HttpApiTypes.HTTP_SSL_PROTOCOL_INFO* protocolInfo)
+    private static void SetSslProtocol(HTTP_SSL_PROTOCOL_INFO* protocolInfo)
     {
         var protocol = protocolInfo->Protocol;
         // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
@@ -358,54 +386,48 @@ internal unsafe class NativeRequestContext : IDisposable
         // https://learn.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
         // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
 #pragma warning disable CS0618 // Type or member is obsolete
-        if ((protocol & SslProtocols.Ssl2) != 0)
+        if ((protocol & (uint)SslProtocols.Ssl2) != 0)
         {
-            protocol |= SslProtocols.Ssl2;
+            protocol |= (uint)SslProtocols.Ssl2;
         }
-        if ((protocol & SslProtocols.Ssl3) != 0)
+        if ((protocol & (uint)SslProtocols.Ssl3) != 0)
         {
-            protocol |= SslProtocols.Ssl3;
+            protocol |= (uint)SslProtocols.Ssl3;
         }
 #pragma warning restore CS0618 // Type or Prmember is obsolete
 #pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
-        if ((protocol & SslProtocols.Tls) != 0)
+        if ((protocol & (uint)SslProtocols.Tls) != 0)
         {
-            protocol |= SslProtocols.Tls;
+            protocol |= (uint)SslProtocols.Tls;
         }
-        if ((protocol & SslProtocols.Tls11) != 0)
+        if ((protocol & (uint)SslProtocols.Tls11) != 0)
         {
-            protocol |= SslProtocols.Tls11;
+            protocol |= (uint)SslProtocols.Tls11;
         }
 #pragma warning restore SYSLIB0039
-        if ((protocol & SslProtocols.Tls12) != 0)
+        if ((protocol & (uint)SslProtocols.Tls12) != 0)
         {
-            protocol |= SslProtocols.Tls12;
+            protocol |= (uint)SslProtocols.Tls12;
         }
-        if ((protocol & SslProtocols.Tls13) != 0)
+        if ((protocol & (uint)SslProtocols.Tls13) != 0)
         {
-            protocol |= SslProtocols.Tls13;
+            protocol |= (uint)SslProtocols.Tls13;
         }
 
         protocolInfo->Protocol = protocol;
     }
 
-    private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)
+    private static string GetAuthTypeFromRequest(HTTP_REQUEST_AUTH_TYPE input)
     {
-        switch (input)
+        return input switch
         {
-            case HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
-                return "Basic";
-            case HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
-                return "NTLM";
-            // case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
-            //  return "Digest";
-            case HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
-                return "Negotiate";
-            case HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
-                return "Kerberos";
-            default:
-                throw new NotImplementedException(input.ToString());
-        }
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic => "Basic",
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM => "NTLM",
+            // case HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest => "Digest";
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate => "Negotiate",
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos => "Kerberos",
+            _ => throw new NotImplementedException(input.ToString()),
+        };
     }
 
     internal bool HasKnownHeader(HttpSysRequestHeader header)
@@ -418,21 +440,21 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 return HasKnowHeaderHelper(header, fixup, request);
             }
         }
     }
 
-    private bool HasKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+    private bool HasKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HTTP_REQUEST_V1* request)
     {
-        int headerIndex = (int)header;        
+        var headerIndex = (int)header;
 
-        HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
+        var pKnownHeader = request->Headers.KnownHeaders.AsSpan()[headerIndex];
         // For known headers, when header value is empty, RawValueLength will be 0 and
         // pRawValue will point to empty string ("\0")
-        if (pKnownHeader->RawValueLength > 0)
+        if (pKnownHeader.RawValueLength > 0)
         {
             return true;
         }
@@ -453,24 +475,24 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 return GetKnowHeaderHelper(header, fixup, request);
             }
         }
     }  
 
-    private string? GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+    private string? GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HTTP_REQUEST_V1* request)
     {
-        int headerIndex = (int)header;
+        var headerIndex = (int)header;
         string? value = null;
 
-        HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
+        var pKnownHeader = request->Headers.KnownHeaders.AsSpan()[headerIndex];
         // For known headers, when header value is empty, RawValueLength will be 0 and
         // pRawValue will point to empty string ("\0")
-        if (pKnownHeader->RawValueLength > 0)
+        if (pKnownHeader.RawValueLength > 0)
         {
-            value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength, _useLatin1);
+            value = HeaderEncoding.GetString((byte*)pKnownHeader.pRawValue + fixup, pKnownHeader.RawValueLength, _useLatin1);
         }
 
         return value;
@@ -486,25 +508,25 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 PopulateUnknownKeys(request, fixup, destination);
             }
         }
     }
 
-    private void PopulateUnknownKeys(HttpApiTypes.HTTP_REQUEST* request, long fixup, Span<string> destination)
+    private void PopulateUnknownKeys(HTTP_REQUEST_V1* request, long fixup, Span<string> destination)
     {
         if (request->Headers.UnknownHeaderCount == 0)
         {
             return;
         }
-        var pUnknownHeader = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
-        for (int index = 0; index < request->Headers.UnknownHeaderCount; index++)
+        var pUnknownHeader = (HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
+        for (var index = 0; index < request->Headers.UnknownHeaderCount; index++)
         {
-            if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
+            if (!pUnknownHeader->pName.Equals(null) && pUnknownHeader->NameLength > 0)
             {
-                var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
+                var headerName = HeaderEncoding.GetString((byte*)pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
                 destination[index] = headerName;
             }
             pUnknownHeader++;
@@ -521,26 +543,26 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 return CountUnknownHeaders(request, fixup);
             }
         }
     }
 
-    private int CountUnknownHeaders(HttpApiTypes.HTTP_REQUEST* request, long fixup)
+    private int CountUnknownHeaders(HTTP_REQUEST_V1* request, long fixup)
     {
         if (request->Headers.UnknownHeaderCount == 0)
         {
             return 0;
         }
-        int count = 0;
-        var pUnknownHeader = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
-        for (int index = 0; index < request->Headers.UnknownHeaderCount; index++)
+        var count = 0;
+        var pUnknownHeader = (HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
+        for (var index = 0; index < request->Headers.UnknownHeaderCount; index++)
         {
             // For unknown headers, when header value is empty, RawValueLength will be 0 and
             // pRawValue will be null.
-            if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
+            if (!pUnknownHeader->pName.Equals(null) && pUnknownHeader->NameLength > 0)
             {
                 count++;
             }
@@ -560,32 +582,32 @@ internal unsafe class NativeRequestContext : IDisposable
             // Return value.
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 GetUnknownHeadersHelper(unknownHeaders, fixup, request);
             }
         }
     }
 
-    private void GetUnknownHeadersHelper(IDictionary<string, StringValues> unknownHeaders, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+    private void GetUnknownHeadersHelper(IDictionary<string, StringValues> unknownHeaders, long fixup, HTTP_REQUEST_V1* request)
     {
         int index;
 
         // unknown headers
         if (request->Headers.UnknownHeaderCount != 0)
         {
-            var pUnknownHeader = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
+            var pUnknownHeader = (HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
             for (index = 0; index < request->Headers.UnknownHeaderCount; index++)
             {
                 // For unknown headers, when header value is empty, RawValueLength will be 0 and
                 // pRawValue will be null.
-                if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
+                if (!pUnknownHeader->pName.Equals(null) && pUnknownHeader->NameLength > 0)
                 {
-                    var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
+                    var headerName = HeaderEncoding.GetString((byte*)pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
                     string headerValue;
-                    if (pUnknownHeader->pRawValue != null && pUnknownHeader->RawValueLength > 0)
+                    if (!pUnknownHeader->pRawValue.Equals(null) && pUnknownHeader->RawValueLength > 0)
                     {
-                        headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength, _useLatin1);
+                        headerValue = HeaderEncoding.GetString((byte*)pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength, _useLatin1);
                     }
                     else
                     {
@@ -620,13 +642,13 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
                 return GetEndPointHelper(localEndpoint, request, pMemoryBlob);
             }
         }
     }
 
-    private SocketAddress? GetEndPointHelper(bool localEndpoint, HttpApiTypes.HTTP_REQUEST* request, byte* pMemoryBlob)
+    private SocketAddress? GetEndPointHelper(bool localEndpoint, HTTP_REQUEST_V1* request, byte* pMemoryBlob)
     {
         var source = localEndpoint ? (byte*)request->Address.pLocalAddress : (byte*)request->Address.pRemoteAddress;
 
@@ -635,38 +657,7 @@ internal unsafe class NativeRequestContext : IDisposable
             return null;
         }
         var address = (IntPtr)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
-        return CopyOutAddress(address);
-    }
-
-    private static SocketAddress? CopyOutAddress(IntPtr address)
-    {
-        ushort addressFamily = *((ushort*)address);
-        if (addressFamily == (ushort)AddressFamily.InterNetwork)
-        {
-            var v4address = new SocketAddress(AddressFamily.InterNetwork, SocketAddress.IPv4AddressSize);
-            fixed (byte* pBuffer = v4address.Buffer)
-            {
-                for (int index = 2; index < SocketAddress.IPv4AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v4address;
-        }
-        if (addressFamily == (ushort)AddressFamily.InterNetworkV6)
-        {
-            var v6address = new SocketAddress(AddressFamily.InterNetworkV6, SocketAddress.IPv6AddressSize);
-            fixed (byte* pBuffer = v6address.Buffer)
-            {
-                for (int index = 2; index < SocketAddress.IPv6AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v6address;
-        }
-
-        return null;
+        return SocketAddress.CopyOutAddress(address);
     }
 
     internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
@@ -680,28 +671,28 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                var request = (HTTP_REQUEST_V1*)(pMemoryBlob + _bufferAlignment);
+                var fixup = pMemoryBlob - (byte*)_originalBufferAddress;
                 return GetChunksHelper(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size, fixup, request);
             }
         }
     }
 
-    private uint GetChunksHelper(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+    private uint GetChunksHelper(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size, long fixup, HTTP_REQUEST_V1* request)
     {
         uint dataRead = 0;
 
         if (request->EntityChunkCount > 0 && dataChunkIndex < request->EntityChunkCount && dataChunkIndex != -1)
         {
-            var pDataChunk = (HttpApiTypes.HTTP_DATA_CHUNK*)(fixup + (byte*)&request->pEntityChunks[dataChunkIndex]);
+            var pDataChunk = (HTTP_DATA_CHUNK*)(fixup + (byte*)&request->pEntityChunks[dataChunkIndex]);
 
             fixed (byte* pReadBuffer = buffer)
             {
-                byte* pTo = &pReadBuffer[offset];
+                var pTo = &pReadBuffer[offset];
 
                 while (dataChunkIndex < request->EntityChunkCount && dataRead < size)
                 {
-                    if (dataChunkOffset >= pDataChunk->fromMemory.BufferLength)
+                    if (dataChunkOffset >= pDataChunk->Anonymous.FromMemory.BufferLength)
                     {
                         dataChunkOffset = 0;
                         dataChunkIndex++;
@@ -709,9 +700,9 @@ internal unsafe class NativeRequestContext : IDisposable
                     }
                     else
                     {
-                        byte* pFrom = (byte*)pDataChunk->fromMemory.pBuffer + dataChunkOffset + fixup;
+                        var pFrom = (byte*)pDataChunk->Anonymous.FromMemory.pBuffer + dataChunkOffset + fixup;
 
-                        uint bytesToRead = pDataChunk->fromMemory.BufferLength - (uint)dataChunkOffset;
+                        var bytesToRead = pDataChunk->Anonymous.FromMemory.BufferLength - (uint)dataChunkOffset;
                         if (bytesToRead > (uint)size)
                         {
                             bytesToRead = (uint)size;
@@ -738,19 +729,19 @@ internal unsafe class NativeRequestContext : IDisposable
     {
         if (PermanentlyPinned)
         {
-            return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            return GetRequestInfo((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
         }
         else
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                 return GetRequestInfo(_originalBufferAddress, request);
             }
         }
     }
 
-    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
     {
         var count = nativeRequest->RequestInfoCount;
         if (count == 0)
@@ -760,9 +751,12 @@ internal unsafe class NativeRequestContext : IDisposable
 
         var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
 
+        var fixup = (byte*)nativeRequest - (byte*)baseAddress;
+        var pRequestInfo = (HTTP_REQUEST_INFO*)((byte*)nativeRequest->pRequestInfo + fixup);
+
         for (var i = 0; i < count; i++)
         {
-            var requestInfo = nativeRequest->pRequestInfo[i];
+            var requestInfo = pRequestInfo[i];
 
             var memory = PermanentlyPinned
                 ? new PointerMemoryManager<byte>((byte*)requestInfo.pInfo, (int)requestInfo.InfoLength).Memory
@@ -778,42 +772,42 @@ internal unsafe class NativeRequestContext : IDisposable
     {
         if (PermanentlyPinned)
         {
-            return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            return GetClientCertificate((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
         }
         else
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                 return GetClientCertificate(_originalBufferAddress, request);
             }
         }
     }
 
     // Throws CryptographicException
-    private X509Certificate2? GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+    private X509Certificate2? GetClientCertificate(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
     {
-        var request = nativeRequest->Request;
-        long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+        var request = nativeRequest->Base;
+        var fixup = (byte*)nativeRequest - (byte*)baseAddress;
         if (request.pSslInfo == null)
         {
             return null;
         }
 
-        var sslInfo = (HttpApiTypes.HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
+        var sslInfo = (HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
         if (sslInfo->SslClientCertNegotiated == 0 || sslInfo->pClientCertInfo == null)
         {
             return null;
         }
 
-        var clientCertInfo = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
+        var clientCertInfo = (HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
         if (clientCertInfo->pCertEncoded == null)
         {
             return null;
         }
 
         var clientCert = clientCertInfo->pCertEncoded + fixup;
-        byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
+        var certEncoded = new byte[clientCertInfo->CertEncodedSize];
         Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
         return new X509Certificate2(certEncoded);
     }

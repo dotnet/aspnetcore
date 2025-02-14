@@ -56,7 +56,9 @@ public class AuthorizationPolicyBuilder
     /// </summary>
     /// <param name="schemes">The schemes to add.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] schemes)
+    public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] schemes) => AddAuthenticationSchemesCore(schemes);
+
+    private AuthorizationPolicyBuilder AddAuthenticationSchemesCore(IEnumerable<string> schemes)
     {
         foreach (var authType in schemes)
         {
@@ -71,7 +73,9 @@ public class AuthorizationPolicyBuilder
     /// </summary>
     /// <param name="requirements">The authorization requirements to add.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public AuthorizationPolicyBuilder AddRequirements(params IAuthorizationRequirement[] requirements)
+    public AuthorizationPolicyBuilder AddRequirements(params IAuthorizationRequirement[] requirements) => AddRequirementsCore(requirements);
+
+    private AuthorizationPolicyBuilder AddRequirementsCore(IEnumerable<IAuthorizationRequirement> requirements)
     {
         foreach (var req in requirements)
         {
@@ -89,8 +93,8 @@ public class AuthorizationPolicyBuilder
     {
         ArgumentNullThrowHelper.ThrowIfNull(policy);
 
-        AddAuthenticationSchemes(policy.AuthenticationSchemes.ToArray());
-        AddRequirements(policy.Requirements.ToArray());
+        AddAuthenticationSchemesCore(policy.AuthenticationSchemes);
+        AddRequirementsCore(policy.Requirements);
         return this;
     }
 

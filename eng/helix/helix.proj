@@ -21,7 +21,7 @@
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
     <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
-    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open','')->Replace('.open',''))" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -52,13 +52,18 @@
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
     <!--
-      Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+      Use the Microsoft.Internal.Runtime.AspNetCore.Transport transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
     -->
-    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+    <AdditionalDotNetPackage Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
-    
-    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+
+    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
+                                 Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+      <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
+    </AdditionalDotNetPackageFeed>
+
+    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
@@ -69,7 +74,7 @@
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net8.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net10.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
 
@@ -110,22 +115,19 @@
 
   <!--
     In inner (per-queue) builds, tell the Helix SDK to pack up our just-built App.Ref / App.Runtime layouts w/
-    the current versions. Warning: When using RunHelix.ps1, .dotnet/ folder may contain older App.Ref and
-    App.Runtime layouts.
+    the current versions.
   -->
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
+        Targets="ReturnProductVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="SharedFxVersion" />
     </MSBuild>
 
     <PropertyGroup>
-      <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
-      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRefSubPath)'))</_AppRefPath>
-      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
+      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'TargetingPack.Layout', '$(Configuration)', '$(_AppRefSubPath)'))</_AppRefPath>
+      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'SharedFx.Layout', '$(Configuration)', '$(TargetRuntimeIdentifier)', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
 
       <!--
         Don't bother checking for App.Runtime layout because we want both and App.Ref project depends on the
@@ -142,7 +144,7 @@
     <Error Text="Targeting path location '$(_AppRefPath)' does not exist and some tests are guaranteed to fail."
         Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' != true " />
 
-    <!-- Grab only the portions of the .dotnet/ tree built in this run and have Helix zip that up. -->
+    <!-- Grab the ref pack and runtime pack that were just built and have Helix zip that up. -->
     <ItemGroup Condition=" $(_AppRefPathExists) ">
       <HelixCorrelationPayload Include="$(_AppRefPath)"
           Condition=" $(IsWindowsHelixQueue) "

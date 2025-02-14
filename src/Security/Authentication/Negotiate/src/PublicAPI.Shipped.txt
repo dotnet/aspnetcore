@@ -49,6 +49,7 @@ Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.Events.get -> Microsoft.AspNetCore.Authentication.Negotiate.NegotiateEvents!
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.Events.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.NegotiateHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.NegotiateHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions.EnableLdap(string! domain) -> void

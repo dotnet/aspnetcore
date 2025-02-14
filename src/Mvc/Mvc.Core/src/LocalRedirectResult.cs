@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,10 +45,7 @@ public class LocalRedirectResult : ActionResult
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request's method.</param>
     public LocalRedirectResult([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent, bool preserveMethod)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         Permanent = permanent;
         PreserveMethod = preserveMethod;
@@ -76,10 +72,7 @@ public class LocalRedirectResult : ActionResult
         [MemberNotNull(nameof(_localUrl))]
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
 
             _localUrl = value;
         }

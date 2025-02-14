@@ -310,6 +310,10 @@ public sealed class AfterViewEventData : EventData
 /// </summary>
 public sealed class ViewFoundEventData : EventData
 {
+    // Reuse boxed object for common values
+    private static readonly object BoxedTrue = true;
+    private static readonly object BoxedFalse = false;
+
     /// <summary>
     /// The name of the event.
     /// </summary>
@@ -364,7 +368,7 @@ public sealed class ViewFoundEventData : EventData
     protected override KeyValuePair<string, object> this[int index] => index switch
     {
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
-        1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage),
+        1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage ? BoxedTrue : BoxedFalse),
         2 => new KeyValuePair<string, object>(nameof(Result), Result),
         3 => new KeyValuePair<string, object>(nameof(ViewName), ViewName),
         4 => new KeyValuePair<string, object>(nameof(View), View),
@@ -377,6 +381,10 @@ public sealed class ViewFoundEventData : EventData
 /// </summary>
 public sealed class ViewNotFoundEventData : EventData
 {
+    // Reuse boxed object for common values
+    private static readonly object BoxedTrue = true;
+    private static readonly object BoxedFalse = false;
+
     /// <summary>
     /// The name of the event.
     /// </summary>
@@ -431,7 +439,7 @@ public sealed class ViewNotFoundEventData : EventData
     protected override KeyValuePair<string, object> this[int index] => index switch
     {
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
-        1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage),
+        1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage ? BoxedTrue : BoxedFalse),
         2 => new KeyValuePair<string, object>(nameof(Result), Result),
         3 => new KeyValuePair<string, object>(nameof(ViewName), ViewName),
         4 => new KeyValuePair<string, object>(nameof(SearchedLocations), SearchedLocations),

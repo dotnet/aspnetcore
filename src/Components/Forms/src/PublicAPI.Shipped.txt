@@ -10,6 +10,8 @@ Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationMessages(System.L
 Microsoft.AspNetCore.Components.Forms.EditContext.IsModified() -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsModified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsModified(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValid(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValid(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified() -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.Model.get -> object!
@@ -19,6 +21,8 @@ Microsoft.AspNetCore.Components.Forms.EditContext.OnFieldChanged -> System.Event
 Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationRequested -> System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!>?
 Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationStateChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs!>?
 Microsoft.AspNetCore.Components.Forms.EditContext.Properties.get -> Microsoft.AspNetCore.Components.Forms.EditContextProperties!
+Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.get -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.set -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.Validate() -> bool
 Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions
 Microsoft.AspNetCore.Components.Forms.EditContextProperties

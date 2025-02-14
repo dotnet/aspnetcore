@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,12 @@ public class SignInManager<TUser> where TUser : class
 {
     private const string LoginProviderKey = "LoginProvider";
     private const string XsrfKey = "XsrfId";
+
+    private readonly IHttpContextAccessor _contextAccessor;
+    private readonly IAuthenticationSchemeProvider _schemes;
+    private readonly IUserConfirmation<TUser> _confirmation;
+    private HttpContext? _context;
+    private TwoFactorAuthenticationInfo? _twoFactorInfo;
 
     /// <summary>
     /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
@@ -51,11 +58,6 @@ public class SignInManager<TUser> where TUser : class
         _confirmation = confirmation;
     }
 
-    private readonly IHttpContextAccessor _contextAccessor;
-    private readonly IAuthenticationSchemeProvider _schemes;
-    private readonly IUserConfirmation<TUser> _confirmation;
-    private HttpContext? _context;
-
     /// <summary>
     /// Gets the <see cref="ILogger"/> used to log messages from the manager.
     /// </summary>
@@ -78,6 +80,11 @@ public class SignInManager<TUser> where TUser : class
     /// The <see cref="IdentityOptions"/> used.
     /// </summary>
     public IdentityOptions Options { get; set; }
+
+    /// <summary>
+    /// The authentication scheme to sign in with. Defaults to <see cref="IdentityConstants.ApplicationScheme"/>.
+    /// </summary>
+    public string AuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
 
     /// <summary>
     /// The <see cref="HttpContext"/> used.
@@ -115,7 +122,7 @@ public class SignInManager<TUser> where TUser : class
     {
         ArgumentNullException.ThrowIfNull(principal);
         return principal.Identities != null &&
-            principal.Identities.Any(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
+            principal.Identities.Any(i => i.AuthenticationType == AuthenticationScheme);
     }
 
     /// <summary>
@@ -154,7 +161,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
-        var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+        var auth = await Context.AuthenticateAsync(AuthenticationScheme);
         IList<Claim> claims = Array.Empty<Claim>();
 
         var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
@@ -230,9 +237,12 @@ public class SignInManager<TUser> where TUser : class
         {
             userPrincipal.Identities.First().AddClaim(claim);
         }
-        await Context.SignInAsync(IdentityConstants.ApplicationScheme,
+        await Context.SignInAsync(AuthenticationScheme,
             userPrincipal,
             authenticationProperties ?? new AuthenticationProperties());
+
+        // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+        Context.User = userPrincipal;
     }
 
     /// <summary>
@@ -240,9 +250,16 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     public virtual async Task SignOutAsync()
     {
-        await Context.SignOutAsync(IdentityConstants.ApplicationScheme);
-        await Context.SignOutAsync(IdentityConstants.ExternalScheme);
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+        await Context.SignOutAsync(AuthenticationScheme);
+
+        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+        {
+            await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+        {
+            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+        }
     }
 
     /// <summary>
@@ -370,7 +387,14 @@ public class SignInManager<TUser> where TUser : class
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
-                await ResetLockout(user);
+                var resetLockoutResult = await ResetLockoutWithResult(user);
+                if (!resetLockoutResult.Succeeded)
+                {
+                    // ResetLockout got an unsuccessful result that could be caused by concurrency failures indicating an
+                    // attacker could be trying to bypass the MaxFailedAccessAttempts limit. Return the same failure we do
+                    // when failing to increment the lockout to avoid giving an attacker extra guesses at the password.
+                    return SignInResult.Failed;
+                }
             }
 
             return SignInResult.Success;
@@ -380,7 +404,13 @@ public class SignInManager<TUser> where TUser : class
         if (UserManager.SupportsUserLockout && lockoutOnFailure)
         {
             // If lockout is requested, increment access failed count which might lock out the user
-            await UserManager.AccessFailedAsync(user);
+            var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+            if (!incrementLockoutResult.Succeeded)
+            {
+                // Return the same failure we do when resetting the lockout fails after a correct password.
+                return SignInResult.Failed;
+            }
+
             if (await UserManager.IsLockedOutAsync(user))
             {
                 return await LockedOut(user);
@@ -400,6 +430,11 @@ public class SignInManager<TUser> where TUser : class
     /// </returns>
     public virtual async Task<bool> IsTwoFactorClientRememberedAsync(TUser user)
     {
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorRememberMeScheme) == null)
+        {
+            return false;
+        }
+
         var userId = await UserManager.GetUserIdAsync(user);
         var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorRememberMeScheme);
         return (result?.Principal != null && result.Principal.FindFirstValue(ClaimTypes.Name) == userId);
@@ -436,48 +471,55 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
-        var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(user, recoveryCode);
+        var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(twoFactorInfo.User, recoveryCode);
         if (result.Succeeded)
         {
-            await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent: false, rememberClient: false);
-            return SignInResult.Success;
+            return await DoTwoFactorSignInAsync(twoFactorInfo.User, twoFactorInfo, isPersistent: false, rememberClient: false);
         }
 
         // We don't protect against brute force attacks since codes are expected to be random.
         return SignInResult.Failed;
     }
 
-    private async Task DoTwoFactorSignInAsync(TUser user, TwoFactorAuthenticationInfo twoFactorInfo, bool isPersistent, bool rememberClient)
+    private async Task<SignInResult> DoTwoFactorSignInAsync(TUser user, TwoFactorAuthenticationInfo twoFactorInfo, bool isPersistent, bool rememberClient)
     {
-        // When token is verified correctly, clear the access failed count used for lockout
-        await ResetLockout(user);
+        var resetLockoutResult = await ResetLockoutWithResult(user);
+        if (!resetLockoutResult.Succeeded)
+        {
+            // ResetLockout got an unsuccessful result that could be caused by concurrency failures indicating an
+            // attacker could be trying to bypass the MaxFailedAccessAttempts limit. Return the same failure we do
+            // when failing to increment the lockout to avoid giving an attacker extra guesses at the two factor code.
+            return SignInResult.Failed;
+        }
 
         var claims = new List<Claim>();
         claims.Add(new Claim("amr", "mfa"));
 
-        // Cleanup external cookie
         if (twoFactorInfo.LoginProvider != null)
         {
             claims.Add(new Claim(ClaimTypes.AuthenticationMethod, twoFactorInfo.LoginProvider));
+        }
+        // Cleanup external cookie
+        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+        {
             await Context.SignOutAsync(IdentityConstants.ExternalScheme);
         }
         // Cleanup two factor user id cookie
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
-        if (rememberClient)
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
         {
-            await RememberTwoFactorClientAsync(user);
+            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            if (rememberClient)
+            {
+                await RememberTwoFactorClientAsync(user);
+            }
         }
         await SignInWithClaimsAsync(user, isPersistent, claims);
+        return SignInResult.Success;
     }
 
     /// <summary>
@@ -492,16 +534,12 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
+        var user = twoFactorInfo.User;
         var error = await PreSignInCheck(user);
         if (error != null)
         {
@@ -510,13 +548,23 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.VerifyTwoFactorTokenAsync(user, Options.Tokens.AuthenticatorTokenProvider, code))
         {
-            await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
-            return SignInResult.Success;
+            return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
         }
         // If the token is incorrect, record the failure which also may cause the user to be locked out
         if (UserManager.SupportsUserLockout)
         {
-            await UserManager.AccessFailedAsync(user);
+            var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+            if (!incrementLockoutResult.Succeeded)
+            {
+                // Return the same failure we do when resetting the lockout fails after a correct two factor code.
+                // This is currently redundant, but it's here in case the code gets copied elsewhere.
+                return SignInResult.Failed;
+            }
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
         return SignInResult.Failed;
     }
@@ -534,16 +582,12 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
+        var user = twoFactorInfo.User;
         var error = await PreSignInCheck(user);
         if (error != null)
         {
@@ -551,13 +595,23 @@ public class SignInManager<TUser> where TUser : class
         }
         if (await UserManager.VerifyTwoFactorTokenAsync(user, provider, code))
         {
-            await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
-            return SignInResult.Success;
+            return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
         }
         // If the token is incorrect, record the failure which also may cause the user to be locked out
         if (UserManager.SupportsUserLockout)
         {
-            await UserManager.AccessFailedAsync(user);
+            var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+            if (!incrementLockoutResult.Succeeded)
+            {
+                // Return the same failure we do when resetting the lockout fails after a correct two factor code.
+                // This is currently redundant, but it's here in case the code gets copied elsewhere.
+                return SignInResult.Failed;
+            }
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
         return SignInResult.Failed;
     }
@@ -575,7 +629,7 @@ public class SignInManager<TUser> where TUser : class
             return null;
         }
 
-        return await UserManager.FindByIdAsync(info.UserId!);
+        return info.User;
     }
 
     /// <summary>
@@ -615,9 +669,9 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Gets a collection of <see cref="AuthenticationScheme"/>s for the known external login providers.
+    /// Gets a collection of <see cref="Authentication.AuthenticationScheme"/>s for the known external login providers.
     /// </summary>
-    /// <returns>A collection of <see cref="AuthenticationScheme"/>s for the known external login providers.</returns>
+    /// <returns>A collection of <see cref="Authentication.AuthenticationScheme"/>s for the known external login providers.</returns>
     public virtual async Task<IEnumerable<AuthenticationScheme>> GetExternalAuthenticationSchemesAsync()
     {
         var schemes = await _schemes.GetAllSchemesAsync();
@@ -768,9 +822,21 @@ public class SignInManager<TUser> where TUser : class
         {
             if (!await IsTwoFactorClientRememberedAsync(user))
             {
-                // Store the userId for use after two factor check
-                var userId = await UserManager.GetUserIdAsync(user);
-                await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                // Allow the two-factor flow to continue later within the same request with or without a TwoFactorUserIdScheme in
+                // the event that the two-factor code or recovery code has already been provided as is the case for MapIdentityApi.
+                _twoFactorInfo = new()
+                {
+                    User = user,
+                    LoginProvider = loginProvider,
+                };
+
+                if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+                {
+                    // Store the userId for use after two factor check
+                    var userId = await UserManager.GetUserIdAsync(user);
+                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                }
+
                 return SignInResult.TwoFactorRequired;
             }
         }
@@ -792,16 +858,34 @@ public class SignInManager<TUser> where TUser : class
 
     private async Task<TwoFactorAuthenticationInfo?> RetrieveTwoFactorInfoAsync()
     {
-        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
-        if (result?.Principal != null)
+        if (_twoFactorInfo != null)
         {
-            return new TwoFactorAuthenticationInfo
-            {
-                UserId = result.Principal.FindFirstValue(ClaimTypes.Name),
-                LoginProvider = result.Principal.FindFirstValue(ClaimTypes.AuthenticationMethod)
-            };
+            return _twoFactorInfo;
         }
-        return null;
+
+        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+        if (result?.Principal == null)
+        {
+            return null;
+        }
+
+        var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
+        if (userId == null)
+        {
+            return null;
+        }
+
+        var user = await UserManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        return new TwoFactorAuthenticationInfo
+        {
+            User = user,
+            LoginProvider = result.Principal.FindFirstValue(ClaimTypes.AuthenticationMethod),
+        };
     }
 
     /// <summary>
@@ -848,18 +932,82 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     /// <param name="user">The user</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
-    protected virtual Task ResetLockout(TUser user)
+    protected virtual async Task ResetLockout(TUser user)
     {
         if (UserManager.SupportsUserLockout)
         {
-            return UserManager.ResetAccessFailedCountAsync(user);
+            // The IdentityResult should not be null according to the annotations, but our own tests return null and I'm trying to limit breakages.
+            var result = await UserManager.ResetAccessFailedCountAsync(user) ?? IdentityResult.Success;
+
+            if (!result.Succeeded)
+            {
+                throw new IdentityResultException(result);
+            }
         }
-        return Task.CompletedTask;
+    }
+
+    private async Task<IdentityResult> ResetLockoutWithResult(TUser user)
+    {
+        // Avoid relying on throwing an exception if we're not in a derived class.
+        if (GetType() == typeof(SignInManager<TUser>))
+        {
+            if (!UserManager.SupportsUserLockout)
+            {
+                return IdentityResult.Success;
+            }
+
+            return await UserManager.ResetAccessFailedCountAsync(user) ?? IdentityResult.Success;
+        }
+
+        try
+        {
+            var resetLockoutTask = ResetLockout(user);
+
+            if (resetLockoutTask is Task<IdentityResult> resultTask)
+            {
+                return await resultTask ?? IdentityResult.Success;
+            }
+
+            await resetLockoutTask;
+            return IdentityResult.Success;
+        }
+        catch (IdentityResultException ex)
+        {
+            return ex.IdentityResult;
+        }
+    }
+
+    private sealed class IdentityResultException : Exception
+    {
+        internal IdentityResultException(IdentityResult result) : base()
+        {
+            IdentityResult = result;
+        }
+
+        internal IdentityResult IdentityResult { get; set; }
+
+        public override string Message
+        {
+            get
+            {
+                var sb = new StringBuilder("ResetLockout failed.");
+
+                foreach (var error in IdentityResult.Errors)
+                {
+                    sb.AppendLine();
+                    sb.Append(error.Code);
+                    sb.Append(": ");
+                    sb.Append(error.Description);
+                }
+
+                return sb.ToString();
+            }
+        }
     }
 
     internal sealed class TwoFactorAuthenticationInfo
     {
-        public string? UserId { get; set; }
-        public string? LoginProvider { get; set; }
+        public required TUser User { get; init; }
+        public string? LoginProvider { get; init; }
     }
 }

@@ -20,19 +20,13 @@ internal static class CacheEntryHelpers
             long size = sizeof(int);
 
             // Headers
-            if (cachedResponse.Headers != null)
+            foreach (var item in cachedResponse.Headers.Span)
             {
-                foreach (var item in cachedResponse.Headers)
-                {
-                    size += (item.Key.Length * sizeof(char)) + EstimateStringValuesSize(item.Value);
-                }
+                size += (item.Name.Length * sizeof(char)) + EstimateStringValuesSize(item.Value);
             }
 
             // Body
-            if (cachedResponse.Body != null)
-            {
-                size += cachedResponse.Body.Length;
-            }
+            size += cachedResponse.Body.Length;
 
             return size;
         }

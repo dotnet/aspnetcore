@@ -1,20 +1,13 @@
 version: 2
-registries:
-  dev.azure.com:
-    token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
-    type: npm-registry
-    url: https://pkgs.dev.azure.com/
 
 updates:
-  - package-ecosystem: npm
+  - package-ecosystem: nuget
     directory: "/"
     # Perform only security updates of our npm dependencies.
     open-pull-requests-limit: 0
-    registries:
-    - dev.azure.com
     # Schedule should be ignored for security updates.
     schedule:
-      interval: monthly
+      interval: weekly
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -26,6 +19,9 @@ updates:
     commit-message:
       prefix: "[main] "
       include: scope
+    ignore:
+      # Ignore updates to the update-dotnet-sdk action
+      - dependency-name: "martincostello*"
     labels:
       - area-infrastructure
 
@@ -66,11 +62,11 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "[release/6.0] "
+      prefix: "[release/8.0] "
       include: scope
     labels:
       - area-infrastructure
-    target-branch: "release/6.0"
+    target-branch: "release/8.0"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
@@ -78,8 +74,8 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "[release/7.0] "
+      prefix: "[release/9.0] "
       include: scope
     labels:
       - area-infrastructure
-    target-branch: "release/7.0"
+    target-branch: "release/9.0"

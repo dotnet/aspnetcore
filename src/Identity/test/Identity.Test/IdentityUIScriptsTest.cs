@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -44,19 +44,24 @@ public class IdentityUIScriptsTest : IDisposable
     private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
     {
         var isSha256 = scriptTag.Integrity.StartsWith("sha256", StringComparison.Ordinal);
-        var prefix = isSha256 ? "sha256" : "sha384";
+        var isSha384 = scriptTag.Integrity.StartsWith("sha384", StringComparison.Ordinal);
+        var prefix = isSha256 ? "sha256" : (isSha384 ? "sha384" : "sha512");
         using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
         using (var alg256 = SHA256.Create())
         using (var alg384 = SHA384.Create())
+        using (var alg512 = SHA512.Create())
         {
             byte[] hash;
             if (isSha256)
             {
                 hash = alg256.ComputeHash(respStream);
+            }else if(isSha384)
+            {
+                hash = alg384.ComputeHash(respStream);
             }
             else
             {
-                hash = alg384.ComputeHash(respStream);
+                hash = alg512.ComputeHash(respStream);
             }
             return $"{prefix}-" + Convert.ToBase64String(hash);
         }
@@ -157,7 +162,7 @@ public class IdentityUIScriptsTest : IDisposable
     private static string GetProjectBasePath()
     {
         var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
+            .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.DefaultUIProjectPath").Value;
         return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
     }
 

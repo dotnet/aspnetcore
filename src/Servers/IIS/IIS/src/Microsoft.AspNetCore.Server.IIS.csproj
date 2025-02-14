@@ -13,19 +13,30 @@
     <IsTrimmable>true</IsTrimmable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <!-- Ignore warnings about 'ref' vs 'in' in generated code. -->
+    <NoWarn>$(NoWarn);CA1416;CS9195</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" LinkBase="Shared\RequestProcessing\" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" Link="Shared\Obsoletions.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Remove="SourceBuildStubs.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <Compile Remove="**\*.cs" />
+    <Compile Include="SourceBuildStubs.cs" />
   </ItemGroup>
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
@@ -49,7 +60,10 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </Reference>
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />

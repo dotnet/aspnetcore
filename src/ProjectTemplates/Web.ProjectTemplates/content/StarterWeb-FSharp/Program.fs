@@ -35,11 +35,13 @@ module Program =
         let app = builder.Build()
 
         if not (builder.Environment.IsDevelopment()) then
-            app.UseExceptionHandler("/Home/Error")
 #if (HasHttpsProfile)
+            app.UseExceptionHandler("/Home/Error")
             app.UseHsts() |> ignore // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 
         app.UseHttpsRedirection()
+#else
+            app.UseExceptionHandler("/Home/Error") |> ignore
 #endif
 
         app.UseStaticFiles()

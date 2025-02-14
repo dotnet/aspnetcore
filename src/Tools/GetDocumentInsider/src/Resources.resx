@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -193,5 +193,26 @@
   </data>
   <data name="QuietDescription" xml:space="preserve">
     <value>Suppresses all output except warnings and errors.</value>
+  </data>
+  <data name="OpenApiVersionDescription" xml:space="preserve">
+    <value>The OpenAPI spec version to use when generating the document. Optional.</value>
+  </data>
+  <data name="DocumentNameDescription" xml:space="preserve">
+    <value>The name of the OpenAPI document to generate. Optional.</value>
+  </data>
+  <data name="InvalidOpenApiVersion" xml:space="preserve">
+    <value>Invalid OpenAPI spec version '{0}' provided. Falling back to default: v3.0.</value>
+  </data>
+  <data name="DocumentNotFound" xml:space="preserve">
+    <value>Document with name '{0}' not found.</value>
+  </data>
+  <data name="VersionedGenerateMethod" xml:space="preserve">
+    <value>Using discovered `GenerateAsync` overload with version parameter.</value>
+  </data>
+  <data name="FileNameDescription" xml:space="preserve">
+    <value>The name of the generated OpenAPI document. When the default document (v1) is generated, this maps to {FileName}.json. For custom file names, this maps to {FileName}_{DocumentName}.json.</value>
+  </data>
+  <data name="FileNameFormatInvalid" xml:space="preserve">
+    <value>FileName format invalid, only Alphanumeric and "_ -" authorized</value>
   </data>
 </root>

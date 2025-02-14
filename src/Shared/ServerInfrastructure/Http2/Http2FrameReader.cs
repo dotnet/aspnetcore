@@ -9,6 +9,12 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Deserializes a binary buffer into an <see cref="Http2Frame"/>.
+/// </summary>
+/// <remarks>
+/// Populates an existing <see cref="Http2Frame"/> instance, rather than creating a new one.
+/// </remarks>
 internal static class Http2FrameReader
 {
     /* https://tools.ietf.org/html/rfc7540#section-4.1
@@ -45,7 +51,7 @@ internal static class Http2FrameReader
         var payloadLength = (int)Bitshifter.ReadUInt24BigEndian(header);
         if (payloadLength > maxFrameSize)
         {
-            throw new Http2ConnectionErrorException(SharedStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR);
+            throw new Http2ConnectionErrorException(SharedStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.MaxFrameLengthExceeded);
         }
 
         // Make sure the whole frame is buffered
@@ -77,7 +83,7 @@ internal static class Http2FrameReader
         if (extendedHeaderLength > frame.PayloadLength)
         {
             throw new Http2ConnectionErrorException(
-                SharedStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR);
+                SharedStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.InvalidFrameLength);
         }
 
         var extendedHeaders = readableBuffer.Slice(HeaderLength, extendedHeaderLength).ToSpan();

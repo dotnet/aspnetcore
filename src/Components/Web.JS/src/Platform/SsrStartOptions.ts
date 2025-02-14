@@ -7,4 +7,10 @@ export interface SsrStartOptions {
    * (for example, during enhanced navigation or streaming rendering).
    */
   disableDomPreservation?: boolean;
+
+  /**
+   * Configures how long to wait after all Blazor Server components have been removed from the document
+   * before closing the circuit.
+   */
+  circuitInactivityTimeoutMs?: number;
 }

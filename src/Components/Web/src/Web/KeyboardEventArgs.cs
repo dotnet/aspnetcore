@@ -56,4 +56,9 @@ public class KeyboardEventArgs : EventArgs
     /// Gets or sets the type of the event.
     /// </summary>
     public string Type { get; set; } = default!;
+
+    /// <summary>
+    /// true if the event is fired within a composition session, otherwise false.
+    /// </summary>
+    public bool IsComposing { get; set; }
 }

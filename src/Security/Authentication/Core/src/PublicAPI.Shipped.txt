@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AuthenticationBuilder(
 Microsoft.AspNetCore.Authentication.AuthenticationConfigurationProviderExtensions
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.BuildRedirectUri(string! targetPath) -> string!
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
@@ -36,6 +37,7 @@ Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.OriginalPath
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.Request.get -> Microsoft.AspNetCore.Http.HttpRequest!
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.Response.get -> Microsoft.AspNetCore.Http.HttpResponse!
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.Scheme.get -> Microsoft.AspNetCore.Authentication.AuthenticationScheme!
+Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.TimeProvider.get -> System.TimeProvider!
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.UrlEncoder.get -> System.Text.Encodings.Web.UrlEncoder!
 Microsoft.AspNetCore.Authentication.AuthenticationMiddleware
 Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.AuthenticationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider! schemes) -> void
@@ -64,6 +66,8 @@ Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignIn.ge
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignIn.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignOut.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignOut.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.TimeProvider.get -> System.TimeProvider?
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.TimeProvider.set -> void
 Microsoft.AspNetCore.Authentication.Base64UrlTextEncoder
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.BaseContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options) -> void
@@ -94,6 +98,7 @@ Microsoft.AspNetCore.Authentication.ISystemClock
 Microsoft.AspNetCore.Authentication.ISystemClock.UtcNow.get -> System.DateTimeOffset
 Microsoft.AspNetCore.Authentication.JsonDocumentAuthExtensions
 Microsoft.AspNetCore.Authentication.PolicySchemeHandler
+Microsoft.AspNetCore.Authentication.PolicySchemeHandler.PolicySchemeHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.PolicySchemeOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.PolicySchemeHandler.PolicySchemeHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.PolicySchemeOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.PolicySchemeOptions
 Microsoft.AspNetCore.Authentication.PolicySchemeOptions.PolicySchemeOptions() -> void
@@ -127,6 +132,7 @@ Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.RemoteAuthenticat
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.Events.get -> Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents!
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.Events.set -> void
+Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.RemoteAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.RemoteAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.SignInScheme.get -> string?
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions
@@ -171,7 +177,7 @@ Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.get -> Sys
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.set -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Properties.set -> void
-Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.ResultContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options) -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Success() -> void
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>
@@ -181,8 +187,10 @@ Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.SecureDataFormat(Mic
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText) -> TData?
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText, string? purpose) -> TData?
 Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.SignInAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.SignInAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.SignOutAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.SignOutAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.SystemClock
 Microsoft.AspNetCore.Authentication.SystemClock.SystemClock() -> void
