@@ -35,6 +35,19 @@
     <dialog id="components-reconnect-modal">
         Rejoining the server...
     </dialog>
+
+    <script>
+        const reconnectModal = document.getElementById("components-reconnect-modal");
+        reconnectModal.addEventListener("components-reconnect-state-changed", handleReconnectStateChanged);
+
+        function handleReconnectStateChanged(event) {
+            if (event.detail.state === "show") {
+                reconnectModal.showModal();
+            } else if (event.detail.state === "hide") {
+                reconnectModal.close();
+            }
+        }
+    </script>
 }
 
 @code {
