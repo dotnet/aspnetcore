@@ -57,16 +57,132 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file record XmlResponseComment(string Code, string? Description, string? Example);
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed record MemberKey(
+        Type? DeclaringType,
+        MemberType MemberKind,
+        string? Name,
+        Type? ReturnType,
+        Type[]? Parameters) : IEquatable<MemberKey>
+    {
+        public bool Equals(MemberKey? other)
+        {
+            if (other is null) return false;
+
+            // Check member kind
+            if (MemberKind != other.MemberKind) return false;
+
+            // Check declaring type, handling generic types
+            if (!TypesEqual(DeclaringType, other.DeclaringType)) return false;
+
+            // Check name
+            if (Name != other.Name) return false;
+
+            // For methods, check return type and parameters
+            if (MemberKind == MemberType.Method)
+            {
+                if (!TypesEqual(ReturnType, other.ReturnType)) return false;
+                if (Parameters is null || other.Parameters is null) return false;
+                if (Parameters.Length != other.Parameters.Length) return false;
+
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    if (!TypesEqual(Parameters[i], other.Parameters[i])) return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TypesEqual(Type? type1, Type? type2)
+        {
+            if (type1 == type2) return true;
+            if (type1 == null || type2 == null) return false;
+
+            if (type1.IsGenericType && type2.IsGenericType)
+            {
+                return type1.GetGenericTypeDefinition() == type2.GetGenericTypeDefinition();
+            }
+
+            return type1 == type2;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(GetTypeHashCode(DeclaringType));
+            hash.Add(MemberKind);
+            hash.Add(Name);
+
+            if (MemberKind == MemberType.Method)
+            {
+                hash.Add(GetTypeHashCode(ReturnType));
+                if (Parameters is not null)
+                {
+                    foreach (var param in Parameters)
+                    {
+                        hash.Add(GetTypeHashCode(param));
+                    }
+                }
+            }
+
+            return hash.ToHashCode();
+        }
+
+        private static int GetTypeHashCode(Type? type)
+        {
+            if (type == null) return 0;
+            return type.IsGenericType ? type.GetGenericTypeDefinition().GetHashCode() : type.GetHashCode();
+        }
+
+        public static MemberKey FromMethodInfo(MethodInfo method)
+        {
+            return new MemberKey(
+                method.DeclaringType,
+                MemberType.Method,
+                method.Name,
+                method.ReturnType.IsGenericParameter ? typeof(object) : method.ReturnType,
+                method.GetParameters().Select(p => p.ParameterType.IsGenericParameter ? typeof(object) : p.ParameterType).ToArray());
+        }
+
+        public static MemberKey FromPropertyInfo(PropertyInfo property)
+        {
+            return new MemberKey(
+                property.DeclaringType,
+                MemberType.Property,
+                property.Name,
+                null,
+                null);
+        }
+
+        public static MemberKey FromTypeInfo(Type type)
+        {
+            return new MemberKey(
+                type,
+                MemberType.Type,
+                null,
+                null,
+                null);
+        }
+    }
+
+    file enum MemberType
+    {
+        Type,
+        Property,
+        Method
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class XmlCommentCache
     {
-        private static Dictionary<(Type?, string?), XmlComment>? _cache;
-        public static Dictionary<(Type?, string?), XmlComment> Cache => _cache ??= GenerateCacheEntries();
+        private static Dictionary<MemberKey, XmlComment>? _cache;
+        public static Dictionary<MemberKey, XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
-        private static Dictionary<(Type?, string?), XmlComment> GenerateCacheEntries()
+        private static Dictionary<MemberKey, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<(Type?, string?), XmlComment>();
+            var _cache = new Dictionary<MemberKey, XmlComment>();
 
-            _cache.Add((typeof(global::ExampleClass), null), new XmlComment(@"Every class and member should have a one sentence
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Type, null, null, []), new XmlComment(@"Every class and member should have a one sentence
 summary describing its purpose.", null, @"     You can expand on that one sentence summary to
      provide more information for readers. In this case,
      the `ExampleClass` provides different C#
@@ -110,56 +226,56 @@ would typically use the ""term"" element.
 
 Note: paragraphs are double spaced. Use the *br*
 tag for single spaced lines.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::Person), null), new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
+            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Type, null, null, []), new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
 created for positional records, yet. The language
 design team is still considering what tags should
 be supported, and where. Currently, you can use
 the ""param"" tag to describe the parameters to the
 primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
-            _cache.Add((typeof(global::MainClass), null), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            _cache.Add(new MemberKey(typeof(global::MainClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::DerivedClass), null), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            _cache.Add(new MemberKey(typeof(global::DerivedClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::ITestInterface), null), new XmlComment(@"This interface would describe all the methods in
+            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::ImplementingClass), null), new XmlComment(@"This interface would describe all the methods in
+            _cache.Add(new MemberKey(typeof(global::ImplementingClass), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::InheritOnlyReturns), null), new XmlComment(@"This class shows hows you can ""inherit"" the doc
+            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Type, null, null, []), new XmlComment(@"This class shows hows you can ""inherit"" the doc
 comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
 represented by an xpath expression.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::InheritAllButRemarks), null), new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
-            _cache.Add((typeof(global::GenericClass<>), null), new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
+            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Type, null, null, []), new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericClass<>), MemberType.Type, null, null, []), new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
 type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
-            _cache.Add((typeof(global::ParamsAndParamRefs), null), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add((typeof(global::ExampleClass), "Label"), new XmlComment(null, null, @"    The ExampleClass.Label is a <see langword=""string"" />
+            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The ExampleClass.Label is a <see langword=""string"" />
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
 for this instance.", false, null, null, null));
-            _cache.Add((typeof(global::Person), "FirstName"), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add((typeof(global::Person), "LastName"), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add((typeof(global::ExampleClass), "Add"), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "FirstName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "LastName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "Add", typeof(global::System.Int32), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add((typeof(global::ITestInterface), "Method"), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Method, "Method", typeof(global::System.Int32), [typeof(global::System.Int32)]), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            _cache.Add((typeof(global::InheritOnlyReturns), "MyParentMethod"), new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add((typeof(global::InheritOnlyReturns), "MyChildMethod"), new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add((typeof(global::InheritAllButRemarks), "MyParentMethod"), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
-            _cache.Add((typeof(global::InheritAllButRemarks), "MyChildMethod"), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add((typeof(global::ParamsAndParamRefs), "GetGenericValue"), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T)
+            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
@@ -167,14 +283,19 @@ T", null, null, false, null, null, null));
             return _cache;
         }
 
-        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        internal static bool TryGetXmlComment(Type? type, MethodInfo? methodInfo, [NotNullWhen(true)] out XmlComment? xmlComment)
         {
-            if (type is not null && type.IsGenericType)
+            if (methodInfo is null)
             {
-                type = type.GetGenericTypeDefinition();
+                return Cache.TryGetValue(new MemberKey(type, MemberType.Property, null, null, null), out xmlComment);
             }
 
-            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
+            return Cache.TryGetValue(MemberKey.FromMethodInfo(methodInfo), out xmlComment);
+        }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            return Cache.TryGetValue(new MemberKey(type, memberName is null ? MemberType.Type : MemberType.Property, memberName, null, null), out xmlComment);
         }
     }
 
@@ -191,7 +312,7 @@ T", null, null, false, null, null, null));
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -246,7 +367,6 @@ T", null, null, false, null, null, null));
                         {
                             response.Value.Description = responseComment.Description;
                         }
-
                     }
                 }
             }
@@ -271,8 +391,7 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
-            System.Diagnostics.Debugger.Break();
-            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, (string?)null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)

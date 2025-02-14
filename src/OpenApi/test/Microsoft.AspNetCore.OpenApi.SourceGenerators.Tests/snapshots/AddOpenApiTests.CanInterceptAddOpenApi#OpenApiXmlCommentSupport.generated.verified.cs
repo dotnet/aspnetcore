@@ -57,27 +57,148 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file record XmlResponseComment(string Code, string? Description, string? Example);
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed record MemberKey(
+        Type? DeclaringType,
+        MemberType MemberKind,
+        string? Name,
+        Type? ReturnType,
+        Type[]? Parameters) : IEquatable<MemberKey>
+    {
+        public bool Equals(MemberKey? other)
+        {
+            if (other is null) return false;
+
+            // Check member kind
+            if (MemberKind != other.MemberKind) return false;
+
+            // Check declaring type, handling generic types
+            if (!TypesEqual(DeclaringType, other.DeclaringType)) return false;
+
+            // Check name
+            if (Name != other.Name) return false;
+
+            // For methods, check return type and parameters
+            if (MemberKind == MemberType.Method)
+            {
+                if (!TypesEqual(ReturnType, other.ReturnType)) return false;
+                if (Parameters is null || other.Parameters is null) return false;
+                if (Parameters.Length != other.Parameters.Length) return false;
+
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    if (!TypesEqual(Parameters[i], other.Parameters[i])) return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TypesEqual(Type? type1, Type? type2)
+        {
+            if (type1 == type2) return true;
+            if (type1 == null || type2 == null) return false;
+
+            if (type1.IsGenericType && type2.IsGenericType)
+            {
+                return type1.GetGenericTypeDefinition() == type2.GetGenericTypeDefinition();
+            }
+
+            return type1 == type2;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(GetTypeHashCode(DeclaringType));
+            hash.Add(MemberKind);
+            hash.Add(Name);
+
+            if (MemberKind == MemberType.Method)
+            {
+                hash.Add(GetTypeHashCode(ReturnType));
+                if (Parameters is not null)
+                {
+                    foreach (var param in Parameters)
+                    {
+                        hash.Add(GetTypeHashCode(param));
+                    }
+                }
+            }
+
+            return hash.ToHashCode();
+        }
+
+        private static int GetTypeHashCode(Type? type)
+        {
+            if (type == null) return 0;
+            return type.IsGenericType ? type.GetGenericTypeDefinition().GetHashCode() : type.GetHashCode();
+        }
+
+        public static MemberKey FromMethodInfo(MethodInfo method)
+        {
+            return new MemberKey(
+                method.DeclaringType,
+                MemberType.Method,
+                method.Name,
+                method.ReturnType.IsGenericParameter ? typeof(object) : method.ReturnType,
+                method.GetParameters().Select(p => p.ParameterType.IsGenericParameter ? typeof(object) : p.ParameterType).ToArray());
+        }
+
+        public static MemberKey FromPropertyInfo(PropertyInfo property)
+        {
+            return new MemberKey(
+                property.DeclaringType,
+                MemberType.Property,
+                property.Name,
+                null,
+                null);
+        }
+
+        public static MemberKey FromTypeInfo(Type type)
+        {
+            return new MemberKey(
+                type,
+                MemberType.Type,
+                null,
+                null,
+                null);
+        }
+    }
+
+    file enum MemberType
+    {
+        Type,
+        Property,
+        Method
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class XmlCommentCache
     {
-        private static Dictionary<(Type?, string?), XmlComment>? _cache;
-        public static Dictionary<(Type?, string?), XmlComment> Cache => _cache ??= GenerateCacheEntries();
+        private static Dictionary<MemberKey, XmlComment>? _cache;
+        public static Dictionary<MemberKey, XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
-        private static Dictionary<(Type?, string?), XmlComment> GenerateCacheEntries()
+        private static Dictionary<MemberKey, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<(Type?, string?), XmlComment>();
+            var _cache = new Dictionary<MemberKey, XmlComment>();
 
 
             return _cache;
         }
 
-        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        internal static bool TryGetXmlComment(Type? type, MethodInfo? methodInfo, [NotNullWhen(true)] out XmlComment? xmlComment)
         {
-            if (type is not null && type.IsGenericType)
+            if (methodInfo is null)
             {
-                type = type.GetGenericTypeDefinition();
+                return Cache.TryGetValue(new MemberKey(type, MemberType.Property, null, null, null), out xmlComment);
             }
 
-            return XmlCommentCache.Cache.TryGetValue((type, memberName), out xmlComment);
+            return Cache.TryGetValue(MemberKey.FromMethodInfo(methodInfo), out xmlComment);
+        }
+
+        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        {
+            return Cache.TryGetValue(new MemberKey(type, memberName is null ? MemberType.Type : MemberType.Property, memberName, null, null), out xmlComment);
         }
     }
 
@@ -94,7 +215,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo.Name, out var methodComment))
+            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo, out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -149,7 +270,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         {
                             response.Value.Description = responseComment.Description;
                         }
-
                     }
                 }
             }
@@ -174,8 +294,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            System.Diagnostics.Debugger.Break();
-            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, null, out var typeComment))
+            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, (string?)null, out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -236,25 +355,27 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
             });
         }
+        
         [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
         {
             return services.AddOpenApi("v1", options =>
             {
-                configureOptions(options);
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
+                configureOptions(options);
             });
         }
+        [InterceptsLocation]
         [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
         {
             // This overload is not intercepted.
             return OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
             {
-                configureOptions(options);
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
+                configureOptions(options);
             });
         }
 

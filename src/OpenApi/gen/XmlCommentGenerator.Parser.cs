@@ -3,24 +3,17 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.OpenApi.SourceGenerators.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Text;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators;
 
 public sealed partial class XmlCommentGenerator
 {
-    private static readonly SymbolDisplayFormat _typeKeyFormat = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
-
     internal static List<(string, string)> ParseXmlFile(AdditionalText additionalText, CancellationToken cancellationToken)
     {
         var text = additionalText.GetText(cancellationToken);
@@ -28,12 +21,20 @@ public sealed partial class XmlCommentGenerator
         {
             return [];
         }
-        var xml = XDocument.Parse(text.ToString());
+        XElement xml;
+        try
+        {
+            xml = XElement.Parse(text.ToString());
+        }
+        catch
+        {
+            return [];
+        }
         var members = xml.Descendants("member");
         var comments = new List<(string, string)>();
         foreach (var member in members)
         {
-            var name = member.Attribute("name")?.Value;
+            var name = member.Attribute(DocumentationCommentXmlNames.NameAttributeName)?.Value;
             if (name is not null)
             {
                 comments.Add((name, member.ToString()));
@@ -82,41 +83,12 @@ public sealed partial class XmlCommentGenerator
         return comments;
     }
 
-    // Type names are used in a `typeof()` expression, so we need to replace generic arguments
-    // with empty strings to avoid compiler errors.
-    private static string ReplaceGenericArguments(string typeName)
-    {
-        var stack = new Stack<int>();
-        var result = new StringBuilder(typeName);
-
-        for (var i = 0; i < result.Length; i++)
-        {
-            if (result[i] == '<')
-            {
-                stack.Push(i);
-            }
-            else if (result[i] == '>' && stack.Count > 0)
-            {
-                var start = stack.Pop();
-                // Replace everything between < and > with empty strings separated by commas
-                var segment = result.ToString(start + 1, i - start - 1);
-                var commaCount = segment.Count(c => c == ',');
-                var replacement = new string(',', commaCount);
-                result.Remove(start + 1, i - start - 1);
-                result.Insert(start + 1, replacement);
-                i = start + replacement.Length + 1;
-            }
-        }
-
-        return result.ToString();
-    }
-
-    internal static IEnumerable<(string, string?, XmlComment?)> ParseComments(
+    internal static IEnumerable<(MemberKey, XmlComment?)> ParseComments(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
     {
         var compilation = input.Compilation;
-        var comments = new List<(string, string?, XmlComment?)>();
+        var comments = new List<(MemberKey, XmlComment?)>();
         foreach (var (name, value) in input.RawComments)
         {
             if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol)
@@ -124,13 +96,17 @@ public sealed partial class XmlCommentGenerator
                 var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
                 if (parsedComment is not null)
                 {
-                    var typeInfo = symbol is IPropertySymbol or IMethodSymbol
-                    ? ReplaceGenericArguments(symbol.ContainingType.OriginalDefinition.ToDisplayString(_typeKeyFormat))
-                    : ReplaceGenericArguments(symbol.OriginalDefinition.ToDisplayString(_typeKeyFormat));
-                    var propertyInfo = symbol is IPropertySymbol or IMethodSymbol
-                        ? symbol.Name
-                        : null;
-                    comments.Add((typeInfo, propertyInfo, parsedComment));
+                    var memberKey = symbol switch
+                    {
+                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol),
+                        IPropertySymbol propertySymbol => MemberKey.FromPropertySymbol(propertySymbol),
+                        INamedTypeSymbol typeSymbol => MemberKey.FromTypeSymbol(typeSymbol),
+                        _ => null
+                    };
+                    if (memberKey is not null)
+                    {
+                        comments.Add((memberKey, parsedComment));
+                    }
                 }
             }
         }
@@ -174,9 +150,13 @@ public sealed partial class XmlCommentGenerator
             {
                 return new(AddOpenApiOverloadVariant.AddOpenApiDocumentName, invocationExpression, interceptableLocation);
             }
-            else
+            else if (argument.Expression is LambdaExpressionSyntax)
             {
                 return new(AddOpenApiOverloadVariant.AddOpenApiConfigureOptions, invocationExpression, interceptableLocation);
+            }
+            else
+            {
+                return new(AddOpenApiOverloadVariant.Unknown, invocationExpression, null);
             }
         }
     }

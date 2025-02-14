@@ -58,6 +58,13 @@ public class Test2Controller : ControllerBase
         return $"Hello, {name}!";
     }
 
+    /// <param name="id">The id associated with the request.</param>
+    [HttpGet("HelloByInt")]
+    public string Get(int id)
+    {
+        return $"Hello, {id}!";
+    }
+
     /// <param name="todo">The todo to insert into the database.</param>
     [HttpPost]
     public string Post(Todo todo)
@@ -81,6 +88,9 @@ public record Todo(int Id, string Title, bool Completed);
             var path2 = document.Paths["/Test2"].Operations[OperationType.Get];
             Assert.Equal("The name of the person.", path2.Parameters[0].Description);
             Assert.Equal("Returns the greeting.", path2.Responses["200"].Description);
+
+            var path2again = document.Paths["/Test2/HelloByInt"].Operations[OperationType.Get];
+            Assert.Equal("The id associated with the request.", path2again.Parameters[0].Description);
 
             var path3 = document.Paths["/Test2"].Operations[OperationType.Post];
             Assert.Equal("The todo to insert into the database.", path3.RequestBody.Description);

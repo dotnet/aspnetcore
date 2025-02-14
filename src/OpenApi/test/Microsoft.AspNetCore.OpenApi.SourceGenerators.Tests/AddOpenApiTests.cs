@@ -21,6 +21,8 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddOpenApi();
 // Name parameter
 builder.Services.AddOpenApi("v2");
+var documentName = "v4";
+builder.Services.AddOpenApi(documentName); // Should not be intercepted
 // Configure options parameter
 builder.Services.AddOpenApi(options =>
 {
@@ -30,6 +32,12 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddOpenApi("v2", options =>
 {
     options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
+});
+// Another name and configure options invocation that should be covered
+// by the same interceptor method as the previous one
+builder.Services.AddOpenApi("v3", options =>
+{
+    options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
 });
 
 var app = builder.Build();

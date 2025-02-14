@@ -328,8 +328,8 @@ public class ParamsAndParamRefs
         {
             var path = document.Paths["/example-class"].Operations[OperationType.Post];
             var exampleClass = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("Every class and member should have a one sentence\nsummary describing its purpose.", exampleClass.Description);
-            Assert.Equal("The `Label` property represents a label\nfor this instance.", exampleClass.Properties["label"].Description);
+            Assert.Equal("Every class and member should have a one sentence\nsummary describing its purpose.", exampleClass.Description, ignoreLineEndingDifferences: true);
+            Assert.Equal("The `Label` property represents a label\nfor this instance.", exampleClass.Properties["label"].Description, ignoreLineEndingDifferences: true);
 
             path = document.Paths["/person"].Operations[OperationType.Post];
             var person = path.RequestBody.Content["application/json"].Schema;
@@ -347,11 +347,11 @@ public class ParamsAndParamRefs
 
             path = document.Paths["/implementing-class"].Operations[OperationType.Post];
             var implementingClass = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("This interface would describe all the methods in\nits contract.", implementingClass.Description);
+            Assert.Equal("This interface would describe all the methods in\nits contract.", implementingClass.Description, ignoreLineEndingDifferences: true);
 
             path = document.Paths["/inherit-only-returns"].Operations[OperationType.Post];
             var inheritOnlyReturns = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("This class shows hows you can \"inherit\" the doc\ncomments from one method in another method.", inheritOnlyReturns.Description);
+            Assert.Equal("This class shows hows you can \"inherit\" the doc\ncomments from one method in another method.", inheritOnlyReturns.Description, ignoreLineEndingDifferences: true);
 
             path = document.Paths["/inherit-all-but-remarks"].Operations[OperationType.Post];
             var inheritAllButRemarks = path.RequestBody.Content["application/json"].Schema;
