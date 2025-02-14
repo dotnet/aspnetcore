@@ -33,7 +33,7 @@ var todosApi = app.MapGroup("/todos");
 todosApi.MapGet("/", () => sampleTodos)
         #if (EnableOpenAPI)
         .WithName("GetTodos");
-        #elif
+        #else
         ;
         #endif
 
@@ -45,7 +45,7 @@ todosApi.MapGet("/{id}", (int id) =>
     .WithName("GetTodoById")
     .Produces<Todo>(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status404NotFound);
-    #elif
+    #else
     ;
     #endif
 

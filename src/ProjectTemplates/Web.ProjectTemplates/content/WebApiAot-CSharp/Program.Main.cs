@@ -27,7 +27,7 @@ public class Program
         todosApi.MapGet("/", () => sampleTodos)
                 #if (EnableOpenAPI)
                 .WithName("GetTodos");
-                #elif
+                #else
                 ;
                 #endif
 
@@ -39,7 +39,7 @@ public class Program
             .WithName("GetTodoById")
             .Produces<Todo>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
-            #elif
+            #else
             ;
             #endif
 
