@@ -25,6 +25,13 @@
 
 @if (useCustomReconnectModal)
 {
+    // We set stricter CSP for styles as we want to check that the application is CSP compliant
+    // when using a custom reconnect modal.
+    // (We know that it is not compliant with the JS-created default reconnect UI.)
+    <HeadContent>
+        <meta http-equiv="Content-Security-Policy" content="style-src 'self';">
+    </HeadContent>
+
     <dialog id="components-reconnect-modal">
         Rejoining the server...
     </dialog>
