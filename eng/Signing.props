@@ -63,10 +63,7 @@
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cab" CertificateName="None" />
-    <!-- If doing post build sign, explicitly give MSIs a cert. If doing in build signing,
-         this is handled by the wix targets, and .msi should be "None" -->
-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" Condition="'$(PostBuildSign)' == 'true'" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileSignInfo Include="aspnetcore.dll" CertificateName="MicrosoftDotNet500" />

@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "Sample | v1",
     "version": "1.0.0"
@@ -136,19 +136,24 @@
         "properties": {
           "id": {
             "type": "integer",
+            "description": "The unique identifier of the to-do item.",
             "format": "int32"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "The title of the to-do item."
           },
           "completed": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
           },
           "createdAt": {
             "type": "string",
+            "description": "The date and time when the to-do item was created.",
             "format": "date-time"
           }
-        }
+        },
+        "description": "Represents a to-do item."
       },
       "TodoWithDueDate": {
         "required": [
@@ -162,23 +167,29 @@
         "properties": {
           "dueDate": {
             "type": "string",
+            "description": "The due date of the to-do item.",
             "format": "date-time"
           },
           "id": {
             "type": "integer",
+            "description": "The unique identifier of the to-do item.",
             "format": "int32"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "The title of the to-do item."
           },
           "completed": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
           },
           "createdAt": {
             "type": "string",
+            "description": "The date and time when the to-do item was created.",
             "format": "date-time"
           }
-        }
+        },
+        "description": "Represents a to-do item with a due date."
       }
     },
     "securitySchemes": {

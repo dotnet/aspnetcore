@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! currentUriAbsolute) -> bool

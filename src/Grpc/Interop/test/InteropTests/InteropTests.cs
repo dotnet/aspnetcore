@@ -55,12 +55,14 @@ public class InteropTests
     public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60245")]
     public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
 
     [Fact]
     public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
     [Fact]
