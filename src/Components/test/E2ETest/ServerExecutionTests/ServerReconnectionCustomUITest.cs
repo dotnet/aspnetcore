@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
-public class ServerReconnectionCustomUITest : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartupWithCsp>>
+public class ServerReconnectionCustomUITest : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
 {
     public ServerReconnectionCustomUITest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<ServerStartupWithCsp> serverFixture,
+        BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -38,7 +38,7 @@ public class ServerReconnectionCustomUITest : ServerTestBase<BasicTestAppServerS
     /// JS fallback code (see 'DefaultReconnectDisplay.ts').
     /// </summary>
     [Fact]
-    public void CustomReconnectUIIsDisplayed()
+    public void ReconnectionUI_CustomDialog_IsDisplayed()
     {
         Browser.Exists(By.Id("increment")).Click();
 
@@ -66,7 +66,7 @@ public class ServerReconnectionCustomUITest : ServerTestBase<BasicTestAppServerS
     /// Tests that when the custom reconnect UI is used, there are no style-related CSP errors.
     /// </summary>
     [Fact]
-    public void StyleSrcCSPIsNotViolated()
+    public void ReconnectionUI_WorksWith_StrictStyleCspPolicy()
     {
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("Blazor._internal.forceCloseConnection()");
