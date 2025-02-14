@@ -27,23 +27,19 @@ public class Program
         #if (EnableOpenAPI)
         todosApi.MapGet("/", () => sampleTodos)
                 .WithName("GetTodos");
+
+        todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
+            sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
+                ? TypedResults.Ok(todo)
+                : TypedResults.NotFound())
+            .WithName("GetTodoById");
         #else
         todosApi.MapGet("/", () => sampleTodos);
-        #endif
 
-        #if (EnableOpenAPI)
-        todosApi.MapGet("/{id}", (int id) =>
+        todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
             sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-                ? Results.Ok(todo)
-                : Results.NotFound())
-            .WithName("GetTodoById")
-            .Produces<Todo>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
-        #else
-        todosApi.MapGet("/{id}", (int id) =>
-            sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-                ? Results.Ok(todo)
-                : Results.NotFound());
+                ? TypedResults.Ok(todo)
+                : TypedResults.NotFound());
         #endif
 
         app.Run();
