@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi.Models;
+    using Microsoft.OpenApi.Models.References;
     using Microsoft.OpenApi.Any;
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -249,12 +250,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
-                            operationParameter.Description = parameterComment.Description;
+                            var targetOperationParameter = operationParameter is OpenApiParameterReference reference
+                                ? reference.Target
+                                : (OpenApiParameter)operationParameter;
+                            targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
-                                operationParameter.Example = jsonString.Parse();
+                                targetOperationParameter.Example = jsonString.Parse();
                             }
-                            operationParameter.Deprecated = parameterComment.Deprecated;
+                            targetOperationParameter.Deprecated = parameterComment.Deprecated;
                         }
                         else
                         {

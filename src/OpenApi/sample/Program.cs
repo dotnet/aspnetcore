@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using Sample.Transformers;
 
@@ -10,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 #pragma warning restore IL2026
 builder.Services.AddAuthentication().AddJwtBearer();
+
+// Supports representing integer formats as strictly numerically values
+// inside the schema.
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+});
 
 builder.Services.AddOpenApi("v1", options =>
 {
