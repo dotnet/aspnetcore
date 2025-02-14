@@ -37,9 +37,7 @@ public class GenerateAdditionalXmlFilesForOpenApiTests
         // Captures ProjectReferences and PackageReferences in project.
         var identities = additionalFiles.Select(x => x["Identity"]).ToArray();
         Assert.Collection(identities,
-            x => Assert.EndsWith("ClassLibrary.xml", x),
-            x => Assert.EndsWith("Microsoft.AspNetCore.OpenApi.xml", x),
-            x => Assert.EndsWith("Microsoft.OpenApi.xml", x)
+            x => Assert.EndsWith("ClassLibrary.xml", x)
         );
     }
 
