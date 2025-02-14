@@ -59,9 +59,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="System.Private.Uri" Version="4.3.2" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
     <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
