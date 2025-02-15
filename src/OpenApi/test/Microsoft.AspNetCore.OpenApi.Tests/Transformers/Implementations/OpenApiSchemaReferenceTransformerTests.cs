@@ -509,6 +509,58 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     }
 
     [Fact]
+    public async Task SupportsListOfNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/list", (List<LocationContainer> items) => { });
+        builder.MapPost("/array", (LocationContainer[] items) => { });
+        builder.MapPost("/dictionary", (Dictionary<string, LocationContainer> items) => { });
+        builder.MapPost("/", (LocationContainer item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var listOperation = document.Paths["/list"].Operations[OperationType.Post];
+            var listRequestSchema = listOperation.RequestBody.Content["application/json"].Schema;
+
+            var arrayOperation = document.Paths["/array"].Operations[OperationType.Post];
+            var arrayRequestSchema = arrayOperation.RequestBody.Content["application/json"].Schema;
+
+            var dictionaryOperation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            var dictionaryRequestSchema = dictionaryOperation.RequestBody.Content["application/json"].Schema;
+
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("LocationContainer", listRequestSchema.Items.Reference.Id);
+            Assert.Equal("LocationContainer", arrayRequestSchema.Items.Reference.Id);
+            Assert.Equal("LocationContainer", dictionaryRequestSchema.AdditionalProperties.Reference.Id);
+            Assert.Equal("LocationContainer", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested LocationDto
+            var locationContainerSchema = requestSchema.GetEffective(document);
+            Assert.Equal("LocationDto", locationContainerSchema.Properties["location"].Reference.Id);
+
+            // Assert that $ref is used for nested AddressDto
+            var locationSchema = locationContainerSchema.Properties["location"].GetEffective(document);
+            Assert.Equal("AddressDto", locationSchema.Properties["address"].Reference.Id);
+
+            // Assert that $ref is used for related LocationDto
+            var addressSchema = locationSchema.Properties["address"].GetEffective(document);
+            Assert.Equal("LocationDto", addressSchema.Properties["relatedLocation"].Reference.Id);
+
+            // Assert that only expected schemas are generated at the top-level
+            Assert.Equal(3, document.Components.Schemas.Count);
+            Assert.Collection(document.Components.Schemas.Keys,
+                key => Assert.Equal("AddressDto", key),
+                key => Assert.Equal("LocationContainer", key),
+                key => Assert.Equal("LocationDto", key));
+        });
+    }
+
+    [Fact]
     public async Task SupportsListNestedSchemasWithSelfReference()
     {
         // Arrange
