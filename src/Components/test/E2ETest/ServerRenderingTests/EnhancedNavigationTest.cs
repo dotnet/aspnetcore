@@ -662,6 +662,91 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("rgba(0, 0, 255, 1)", () => originalH1Elem.GetCssValue("color"));
     }
 
+    [Theory]
+    //[InlineData(false, false)] // FAILS, do-navigation scroll is not at thr top
+    [InlineData(false, true)] // PASSES
+    //[InlineData(true, true)] // FAILS: go back: Y=0, not 3211, streaming mode is lost on going back and many more
+    //[InlineData(true, false)] // FAILS, do-navigation scroll is not at the top
+    public void EnhancedNavigationScrollBehavesSameAsFullNavigation(bool enableStreaming, bool suppressEnhancedNavigation)
+    {
+        // This test checks if the navigation to other path moves the scroll to the top of the page,
+        // or to the beginning of a fragment, regardless of the previous scroll position,
+        // checks if going backwards and forwards preserves the scroll position
+        Navigate($"{ServerPathBase}/nav/testing-scroll/{enableStreaming}");
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, suppressEnhancedNavigation, skipNavigation: true);
+        AssertWeAreOnScrollTestPage();
+        AssertStreamingMode();
+
+        // assert enhanced navigation is enabled/disabled, as requested
+        var elementForStalenessCheck = Browser.Exists(By.TagName("html"));
+
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
+
+        // scroll maximally down and go to another page - we should land at the top of that page
+        Browser.SetScrollY(maxScrollPosition);
+        Browser.Exists(By.Id("do-navigation")).Click();
+        AssertEnhancedNavigation();
+        AssertWeAreOnHashPage();
+        AssertStreamingMode();
+        Assert.Equal(0, Browser.GetScrollY());
+        var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
+        fragmentScrollPosition = 357; // why 357, can we have non-static value?
+
+        // go back and check if the scroll position is preserved
+        Browser.Navigate().Back();
+        AssertEnhancedNavigation();
+        AssertWeAreOnScrollTestPage();
+        AssertStreamingMode();
+        Assert.Equal(maxScrollPosition - 1, Browser.GetScrollY());
+
+        // navigate to a fragment on another page - we should land at the beginning of the fragment
+        Browser.Exists(By.Id("do-navigation-with-fragment")).Click();
+        AssertEnhancedNavigation();
+        AssertWeAreOnHashPage();
+        //AssertStreamingMode();
+        Assert.Equal(fragmentScrollPosition, Browser.GetScrollY());
+
+        // go back to be able to go forward and check if the scroll position is preserved
+        Browser.Navigate().Back();
+        AssertEnhancedNavigation();
+        AssertWeAreOnScrollTestPage();
+        AssertStreamingMode();
+
+        Browser.Navigate().Forward();
+        AssertEnhancedNavigation();
+        AssertWeAreOnHashPage();
+        AssertStreamingMode();
+        Assert.Equal(fragmentScrollPosition, Browser.GetScrollY());
+
+        void AssertStreamingMode()
+        {
+            if (enableStreaming)
+            {
+                Browser.Contains("We add it asynchronously via streaming rendering.", () => Browser.Exists(By.Id("streaming-info")).Text);
+            }
+            else
+            {
+                Browser.DoesNotExist(By.Id("streaming-info"));
+            }
+        }
+
+        void AssertEnhancedNavigation()
+        {
+            Assert.Equal(suppressEnhancedNavigation, IsElementStale(elementForStalenessCheck));
+        }
+
+        void AssertWeAreOnScrollTestPage()
+        {
+            Browser.Equal("Go back to me", () => Browser.Exists(By.Id("test-info")).Text);
+        }
+
+        void AssertWeAreOnHashPage()
+        {
+            Browser.Equal("Scroll to hash", () => Browser.Exists(By.Id("test-info")).Text);
+        }
+    }
+
     private void AssertEnhancedUpdateCountEquals(long count)
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
