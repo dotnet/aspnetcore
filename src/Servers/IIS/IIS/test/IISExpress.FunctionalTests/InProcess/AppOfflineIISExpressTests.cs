@@ -19,6 +19,7 @@ public class AppOfflineIISExpressTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [Repeat(100)]
     public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
     {
         // This test often hits a race between debug logging and stdout redirection closing the handle
