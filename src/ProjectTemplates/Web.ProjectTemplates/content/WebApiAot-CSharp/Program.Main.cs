@@ -24,11 +24,23 @@ public class Program
         };
 
         var todosApi = app.MapGroup("/todos");
-        todosApi.MapGet("/", () => sampleTodos);
-        todosApi.MapGet("/{id}", (int id) =>
+        #if (EnableOpenAPI)
+        todosApi.MapGet("/", () => sampleTodos)
+                .WithName("GetTodos");
+
+        todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
             sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-                ? Results.Ok(todo)
-                : Results.NotFound());
+                ? TypedResults.Ok(todo)
+                : TypedResults.NotFound())
+            .WithName("GetTodoById");
+        #else
+        todosApi.MapGet("/", () => sampleTodos);
+
+        todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
+            sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
+                ? TypedResults.Ok(todo)
+                : TypedResults.NotFound());
+        #endif
 
         app.Run();
     }
