@@ -28,6 +28,7 @@ public class PartialTagHelper : TagHelper
 
     private readonly ICompositeViewEngine _viewEngine;
     private readonly IViewBufferScope _viewBufferScope;
+    private ViewDataDictionary _viewData;
 
     /// <summary>
     /// Creates a new <see cref="PartialTagHelper"/>.
@@ -91,7 +92,19 @@ public class PartialTagHelper : TagHelper
     /// <summary>
     /// A <see cref="ViewDataDictionary"/> to pass into the partial view.
     /// </summary>
-    public ViewDataDictionary ViewData { get; set; }
+    [HtmlAttributeName("view-data", DictionaryAttributePrefix = "view-data-")]
+    public ViewDataDictionary ViewData
+    {
+        get
+        {
+            if (_viewData == null)
+            {
+                _viewData = new ViewDataDictionary(ViewContext.ViewData);
+            }
+            return _viewData;
+        }
+        set => _viewData = value;
+    }
 
     /// <summary>
     /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
