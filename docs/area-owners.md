@@ -35,6 +35,8 @@ The below table lists all the `area-`labels used in the **dotnet/aspnetcore** re
 
 The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime/blob/main/docs/area-owners.md).
 
+## Community Triagers
+
 While not necessarily associated with a specific area, these community members have the power to assist with routing and labeling issues and pull requests, and are generally knowledgeable about how the repo works:
 
 - [@david-acker](https://github.com/david-acker)
@@ -44,8 +46,3 @@ While not necessarily associated with a specific area, these community members h
 - [@Kahbazi](https://github.com/Kahbazi)
 - [@marinasundstrom](https://github.com/marinasundstrom)
 - [@martincostello](https://github.com/martincostello)
-
-
-
-
-## Community Triagers
