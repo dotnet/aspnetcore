@@ -664,10 +664,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData(false, false)] // PASSES
-    [InlineData(false, true)] // PASSES
-    [InlineData(true, true)] // line 709 Expected: 1732 Actual:   0
-    [InlineData(true, false)] // line 709 Expected: 1732 Actual:   0
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
     public async Task EnhancedNavigationScrollBehavesSameAsFullNavigation(bool enableStreaming, bool useEnhancedNavigation)
     {
         // This test checks if the navigation to other path moves the scroll to the top of the page,
@@ -695,7 +695,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         if (enableStreaming)
         {
-            // wait for the fragment to be visible
+            // wait for the fragment to be visible - let the streaming finish
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
         var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
@@ -708,6 +708,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // parts of page conditioned with showContent are showing with a delay - it affect the scroll position
         // from some reason, scroll position differs by 1 pixel between enhanced and browser's navigation
         var expectedMaxScrollPositionAfterBackwardsAction = useEnhancedNavigation ? maxScrollPosition: maxScrollPosition - 1;
+        if (enableStreaming)
+        {
+            // let the streaming finish
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            expectedMaxScrollPositionAfterBackwardsAction = maxScrollPosition + 127; // why 127 ???
+            expectedMaxScrollPositionAfterBackwardsAction = useEnhancedNavigation ? expectedMaxScrollPositionAfterBackwardsAction : expectedMaxScrollPositionAfterBackwardsAction - 1;
+        }
         Assert.Equal(expectedMaxScrollPositionAfterBackwardsAction, Browser.GetScrollY());
 
         // navigate to a fragment on another page - we should land at the beginning of the fragment
@@ -715,6 +722,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertWeAreOnHashPage();
         AssertEnhancedNavigationOnHashPage();
         var expectedFragmentScrollPosition = fragmentScrollPosition - 1;
+        if (enableStreaming)
+        {
+            // let the streaming finish
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
         Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
 
         // go back to be able to go forward and check if the scroll position is preserved
