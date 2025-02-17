@@ -88,8 +88,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   }
 }
 
-function getCurrentScrollPosition()
-{
+function getCurrentScrollPosition() {
   const scrollPositionX = window.scrollX;
   const scrollPositionY = window.scrollY;
   return { X: scrollPositionX, Y: scrollPositionY };
@@ -98,9 +97,9 @@ function getCurrentScrollPosition()
 function saveScrollPosition() {
   const currentState = history.state || {};
   const scrollPosition = getCurrentScrollPosition();
-    // save the current scroll position
-    const updatedState = { ...currentState, scrollPosition: scrollPosition };
-    history.replaceState(updatedState, /* ignored title */ '', location.href);
+  // save the current scroll position
+  const updatedState = { ...currentState, scrollPosition: scrollPosition };
+  history.replaceState(updatedState, /* ignored title */ '', location.href);
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -139,9 +138,9 @@ function onPopState(state: PopStateEvent) {
   }
 
   // load the new page
+  const scrollPosition = history.state?.scrollPosition;
   saveScrollPosition();
   performEnhancedPageLoad(location.href, /* interceptedLink */ false).then(() => {
-    const scrollPosition = history.state?.scrollPosition;
     if (scrollPosition !== undefined &&
       (scrollPosition.X !== window.scrollX || scrollPosition.Y !== window.scrollY)) {
       window.scrollTo(scrollPosition.X, scrollPosition.Y);
