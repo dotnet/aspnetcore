@@ -3,7 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
-import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -88,6 +88,21 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   }
 }
 
+function getCurrentScrollPosition()
+{
+  const scrollPositionX = window.scrollX;
+  const scrollPositionY = window.scrollY;
+  return { X: scrollPositionX, Y: scrollPositionY };
+}
+
+function saveScrollPosition() {
+  const currentState = history.state || {};
+  const scrollPosition = getCurrentScrollPosition();
+    // save the current scroll position
+    const updatedState = { ...currentState, scrollPosition: scrollPosition };
+    history.replaceState(updatedState, /* ignored title */ '', location.href);
+}
+
 function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;
@@ -98,14 +113,23 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    saveScrollPosition();
     const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
+      let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
+      if (!isSelfNavigation) {
+        resetScrollAfterNextBatch();
+      }
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+      if (!isSelfNavigation) {
+        resetScrollIfNeeded();
+      }
     }
+
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   });
 }
 
@@ -114,7 +138,15 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
-  performEnhancedPageLoad(location.href, /* interceptedLink */ false);
+  // load the new page
+  saveScrollPosition();
+  performEnhancedPageLoad(location.href, /* interceptedLink */ false).then(() => {
+    const scrollPosition = history.state?.scrollPosition;
+    if (scrollPosition !== undefined &&
+      (scrollPosition.X !== window.scrollX || scrollPosition.Y !== window.scrollY)) {
+      window.scrollTo(scrollPosition.X, scrollPosition.Y);
+    }
+  })
 }
 
 function onDocumentSubmit(event: SubmitEvent) {
