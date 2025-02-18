@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.E2ETesting;
@@ -668,7 +669,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(false, true)]
     [InlineData(true, true)]
     [InlineData(true, false)]
-    public async Task EnhancedNavigationScrollBehavesSameAsFullNavigation(bool enableStreaming, bool useEnhancedNavigation)
+    public void EnhancedNavigationScrollBehavesSameAsFullNavigation(bool enableStreaming, bool useEnhancedNavigation)
     {
         // This test checks if the navigation to other path moves the scroll to the top of the page,
         // or to the beginning of a fragment, regardless of the previous scroll position,
@@ -683,6 +684,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
 
         var jsExecutor = (IJavaScriptExecutor)Browser;
+        WaitFullPageLoaded();
         var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
 
         // scroll maximally down and go to another page - we should land at the top of that page
@@ -693,11 +695,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.Equal(0, Browser.GetScrollY());
         var elementForStalenessCheckOnHashPage = Browser.Exists(By.TagName("html"));
 
-        if (enableStreaming)
-        {
-            // wait for the fragment to be visible - let the streaming finish
-            await Task.Delay(TimeSpan.FromSeconds(1));
-        }
+        WaitFullPageLoaded();
         var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
 
         // go back and check if the scroll position is preserved
@@ -708,13 +706,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // parts of page conditioned with showContent are showing with a delay - it affect the scroll position
         // from some reason, scroll position differs by 1 pixel between enhanced and browser's navigation
         var expectedMaxScrollPositionAfterBackwardsAction = useEnhancedNavigation ? maxScrollPosition: maxScrollPosition - 1;
-        if (enableStreaming)
-        {
-            // let the streaming finish
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            expectedMaxScrollPositionAfterBackwardsAction = maxScrollPosition + 127; // why 127 ???
-            expectedMaxScrollPositionAfterBackwardsAction = useEnhancedNavigation ? expectedMaxScrollPositionAfterBackwardsAction : expectedMaxScrollPositionAfterBackwardsAction - 1;
-        }
+        WaitFullPageLoaded();
         Assert.Equal(expectedMaxScrollPositionAfterBackwardsAction, Browser.GetScrollY());
 
         // navigate to a fragment on another page - we should land at the beginning of the fragment
@@ -722,11 +714,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertWeAreOnHashPage();
         AssertEnhancedNavigationOnHashPage();
         var expectedFragmentScrollPosition = fragmentScrollPosition - 1;
-        if (enableStreaming)
-        {
-            // let the streaming finish
-            await Task.Delay(TimeSpan.FromSeconds(1));
-        }
+        WaitFullPageLoaded();
         Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
 
         // go back to be able to go forward and check if the scroll position is preserved
@@ -737,6 +725,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Navigate().Forward();
         AssertWeAreOnHashPage();
         AssertEnhancedNavigationOnHashPage();
+        WaitFullPageLoaded();
         Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
 
         void AssertEnhancedNavigationOnHashPage() =>
@@ -764,6 +753,14 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         void AssertWeAreOnHashPage()
         {
             Browser.Equal("Scroll to hash", () => Browser.Exists(By.Id("test-info")).Text);
+        }
+
+        void WaitFullPageLoaded()
+        {
+            if (enableStreaming)
+            {
+                Browser.WaitForElementToBeVisible(By.Id("some-content"));
+            }
         }
     }
 
