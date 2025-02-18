@@ -130,12 +130,34 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("name", property.Key);
                     Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
+                    Assert.Null(property.Value.Default);
+                },
+                property =>
+                {
+                    Assert.Equal("description", property.Key);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
                 },
                 property =>
                 {
                     Assert.Equal("isPrivate", property.Key);
                     Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                     Assert.True(property.Value.Default.GetValue<bool>());
+                },
+                property =>
+                {
+                    Assert.Equal("items", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(10, property.Value.MaxItems);
+                },
+                property =>
+                {
+                    Assert.Equal("tags", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinItems);
+                    Assert.Equal(10, property.Value.MaxItems);
                 });
 
         });
