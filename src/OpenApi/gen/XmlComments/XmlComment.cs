@@ -191,7 +191,7 @@ internal sealed partial class XmlComment
             var symbol = DocumentationCommentId.GetFirstSymbolForDeclarationId(cref, compilation);
             if (symbol is not null)
             {
-                var type = symbol.ToDisplayString();
+                var type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 item.ReplaceWith(new XText(type));
             }
         }
