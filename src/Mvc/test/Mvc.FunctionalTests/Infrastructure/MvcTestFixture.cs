@@ -42,7 +42,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
                 });
     }
 
-    protected override ITestServer CreateServer(IWebHostBuilder builder)
+    protected override ITestServer CreateTestServer(IWebHostBuilder builder)
     {
         var originalCulture = CultureInfo.CurrentCulture;
         var originalUICulture = CultureInfo.CurrentUICulture;
@@ -50,7 +50,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
             CultureInfo.CurrentUICulture = new CultureInfo("en-US");
-            return base.CreateServer(builder);
+            return base.CreateTestServer(builder);
         }
         finally
         {

@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// </summary>
 /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
 /// Typically the Startup or Program classes can be used.</typeparam>
-/// <remarks>The default behavior of the <see cref="CreateServer(IWebHostBuilder)"/> implementation
+/// <remarks>The default behavior of the <see cref="CreateTestServer(IWebHostBuilder)"/> implementation
 /// creates a new <see cref="TestHost.TestServer"/> instance as an in-memory server to utilize for testing.
-/// If the developers wants, they can override the <see cref="CreateServer(IWebHostBuilder)"/> method to return a customer <see cref="ITestServer"/> implementation,
+/// If the developers wants, they can override the <see cref="CreateTestServer(IWebHostBuilder)"/> method to return a customer <see cref="ITestServer"/> implementation,
 /// and provide an adapter over a real web server, if needed. If done so, the <see cref="CreateClient()"/> and similar methods will
 /// create <see cref="HttpClient"/> instances configured to interact with the provided test server instead.</remarks>
 public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
@@ -86,7 +86,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
-    /// Gets the <see cref="ITestServer"/> instance created by the underyling <see cref="CreateServer(IWebHostBuilder)"/> call.
+    /// Gets the <see cref="ITestServer"/> instance created by the underyling <see cref="CreateTestServer(IWebHostBuilder)"/> call.
     /// </summary>
     public ITestServer? TestServer
     {
@@ -136,7 +136,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         var factory = new DelegatedWebApplicationFactory(
             ClientOptions,
-            CreateServer,
+            CreateTestServer,
             CreateHost,
             CreateWebHostBuilder,
             CreateHostBuilder,
@@ -218,7 +218,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             SetContentRoot(builder);
             _configuration(builder);
-            _server = CreateServer(builder);
+            _server = CreateTestServer(builder);
         }
     }
 
@@ -457,12 +457,25 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    protected virtual ITestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+    [Obsolete("This method is obsolete. Consider utilizing the CreateTestServer method instead.")]
+    protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+
+    /// <summary>
+    /// Creates the <see cref="ITestServer"/> with the bootstrapped application in <paramref name="builder"/>.
+    /// This is only called for applications using <see cref="IWebHostBuilder"/>. Applications based on
+    /// <see cref="IHostBuilder"/> will use <see cref="CreateHost"/> instead.
+    /// </summary>
+    /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
+    /// create the server.</param>
+    /// <returns>The <see cref="ITestServer"/> with the bootstrapped application.</returns>
+#pragma warning disable CS0618 // Type or member is obsolete
+    protected virtual ITestServer CreateTestServer(IWebHostBuilder builder) => CreateServer(builder);
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
     /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
-    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer"/> instead.
+    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateTestServer"/> instead.
     /// </summary>
     /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
     /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
@@ -664,7 +677,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        protected override ITestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
+        protected override ITestServer CreateTestServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 

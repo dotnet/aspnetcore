@@ -63,9 +63,9 @@ public class ServerFactory<TStartup, TContext> : WebApplicationFactory<TStartup>
         return result;
     }
 
-    protected override ITestServer CreateServer(IWebHostBuilder builder)
+    protected override ITestServer CreateTestServer(IWebHostBuilder builder)
     {
-        var result = base.CreateServer(builder);
+        var result = base.CreateTestServer(builder);
         EnsureDatabaseCreated(result.Host.Services);
         return result;
     }

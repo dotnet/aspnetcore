@@ -157,10 +157,10 @@ public class TestingInfrastructureInheritanceTests
             base.ConfigureWebHost(builder);
         }
 
-        protected override ITestServer CreateServer(IWebHostBuilder builder)
+        protected override ITestServer CreateTestServer(IWebHostBuilder builder)
         {
             CreateServerCalled = true;
-            return base.CreateServer(builder);
+            return base.CreateTestServer(builder);
         }
 
         protected override IHost CreateHost(IHostBuilder builder)
