@@ -1835,7 +1835,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
 
-        // Set the lockout time based on configuration
+        // Set the lockout time based on configuration.
         var now = DateTimeOffset.UtcNow;
         DateTimeOffset lockoutEnd = Options.Lockout.DefaultLockoutTimeSpan == TimeSpan.MaxValue
             ? DateTimeOffset.MaxValue
