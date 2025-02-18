@@ -1,3 +1,5 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? displayName) -> void
+Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? providerDisplayName) -> void
 Microsoft.AspNetCore.Identity.LockoutOptions.PermanentLockout.get -> bool
 Microsoft.AspNetCore.Identity.LockoutOptions.PermanentLockout.set -> void

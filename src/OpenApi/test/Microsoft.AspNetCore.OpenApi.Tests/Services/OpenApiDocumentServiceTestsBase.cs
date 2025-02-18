@@ -3,10 +3,12 @@
 
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -84,7 +86,11 @@ public abstract class OpenApiDocumentServiceTestBase
         var openApiOptions = new Mock<IOptionsMonitor<OpenApiOptions>>();
         openApiOptions.Setup(o => o.Get(It.IsAny<string>())).Returns(new OpenApiOptions());
 
-        var schemaService = new OpenApiSchemaService("Test", Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()), openApiOptions.Object);
+        var jsonOptions = new Microsoft.AspNetCore.Http.Json.JsonOptions();
+        // Set strict number handling by default to make integer type checks more straightforward
+        jsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+
+        var schemaService = new OpenApiSchemaService("Test", Options.Create(jsonOptions), openApiOptions.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, openApiOptions.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
@@ -125,7 +131,10 @@ public abstract class OpenApiDocumentServiceTestBase
         provider.OnProvidersExecuted(context);
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
-        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions());
+        var defaultJsonOptions = new Microsoft.AspNetCore.Http.Json.JsonOptions();
+        // Set strict number handling by default to make integer type checks more straightforward
+        defaultJsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(defaultJsonOptions);
 
         var schemaService = new OpenApiSchemaService("Test", jsonOptions, options.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
@@ -158,8 +167,13 @@ public abstract class OpenApiDocumentServiceTestBase
 
     internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
     {
+        serviceCollection ??= new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+        });
         var serviceProvider = new TestServiceProvider();
-        serviceProvider.SetInternalServiceProvider(serviceCollection ?? new ServiceCollection());
+        serviceProvider.SetInternalServiceProvider(serviceCollection);
         return new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
     }
 

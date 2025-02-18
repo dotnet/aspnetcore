@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

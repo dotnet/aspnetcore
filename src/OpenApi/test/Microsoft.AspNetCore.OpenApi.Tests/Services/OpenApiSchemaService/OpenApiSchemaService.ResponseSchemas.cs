@@ -80,7 +80,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -128,14 +128,36 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("name", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
+                    Assert.Null(property.Value.Default);
+                },
+                property =>
+                {
+                    Assert.Equal("description", property.Key);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
                 },
                 property =>
                 {
                     Assert.Equal("isPrivate", property.Key);
                     Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                     Assert.True(property.Value.Default.GetValue<bool>());
+                },
+                property =>
+                {
+                    Assert.Equal("items", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(10, property.Value.MaxItems);
+                },
+                property =>
+                {
+                    Assert.Equal("tags", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinItems);
+                    Assert.Equal(10, property.Value.MaxItems);
                 });
 
         });
@@ -172,7 +194,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -247,7 +269,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -257,8 +279,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    // DateTime schema appears twice in the document so we expect
-                    // this to map to a reference ID.
                     var dateTimeSchema = property.Value;
                     Assert.Equal(JsonSchemaType.String, dateTimeSchema.Type);
                     Assert.Equal("date-time", dateTimeSchema.Format);
@@ -304,7 +324,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     }, property =>
                     {
                         Assert.Equal("title", property.Key);
-                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     }, property =>
                     {
                         Assert.Equal("completed", property.Key);
@@ -328,7 +348,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     }, property =>
                     {
                         Assert.Equal("message", property.Key);
-                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     });
                 });
         });
@@ -369,7 +389,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("make", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 });
         });
     }
@@ -402,7 +422,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("name", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -419,7 +439,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                         property =>
                         {
                             Assert.Equal("title", property.Key);
-                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                         },
                         property =>
                         {
@@ -467,7 +487,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -545,7 +565,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                         property =>
                         {
                             Assert.Equal("title", property.Key);
-                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                         },
                         property =>
                         {
@@ -587,28 +607,28 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("type", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("status", property.Key);
-                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("detail", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("instance", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
@@ -646,7 +666,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("object", property.Key);
                     Assert.Null(property.Value.Type);
-                    Assert.False(property.Value.Nullable);
                 },
                 property =>
                 {
@@ -681,7 +700,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {

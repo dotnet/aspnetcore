@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 using Microsoft.OpenApi.Models.References;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -363,10 +364,10 @@ internal sealed class OpenApiGenerator
         return [new(controllerName, document)];
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
+    private List<IOpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache.Instance);
-        var openApiParameters = new List<OpenApiParameter>();
+        var openApiParameters = new List<IOpenApiParameter>();
 
         foreach (var parameter in parameters)
         {

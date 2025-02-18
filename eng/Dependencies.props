@@ -86,7 +86,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />
     <LatestPackageReference Include="System.Net.ServerSentEvents" />
-    <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Runtime.Caching" />
@@ -223,6 +222,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="StackExchange.Redis" />
     <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
+    <LatestPackageReference Include="Verify.SourceGenerators" />
     <LatestPackageReference Include="Verify.Xunit" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />

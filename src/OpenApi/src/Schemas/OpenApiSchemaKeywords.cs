@@ -12,7 +12,6 @@ internal class OpenApiSchemaKeywords
     public const string AnyOfKeyword = "anyOf";
     public const string EnumKeyword = "enum";
     public const string DefaultKeyword = "default";
-    public const string NullableKeyword = "nullable";
     public const string DescriptionKeyword = "description";
     public const string DiscriminatorKeyword = "discriminatorName";
     public const string DiscriminatorMappingKeyword = "discriminatorMapping";

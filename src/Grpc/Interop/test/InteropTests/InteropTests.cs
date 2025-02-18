@@ -62,6 +62,7 @@ public class InteropTests
     public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
     [Fact]
