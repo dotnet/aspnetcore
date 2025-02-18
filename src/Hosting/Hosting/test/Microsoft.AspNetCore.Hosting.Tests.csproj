@@ -26,7 +26,6 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
-    <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>
