@@ -56,8 +56,8 @@ public class AppOfflineIISExpressTests : IISFunctionalTestBase
                 {
                     // For IISExpress, we need to catch the exception because IISExpress will not restart a process if it crashed.
                     // RemoveAppOffline will fail due to a bad request exception as the server is down.
-                    Assert.Contains(TestSink.Writes, context => context.Message.Contains("Drained all requests, notifying managed."));
                     deploymentResult.AssertWorkerProcessStop();
+                    Assert.Contains(TestSink.Writes, context => context.Message.Contains("Drained all requests, notifying managed."));
                     return;
                 }
             }
