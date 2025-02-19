@@ -21,7 +21,7 @@ internal sealed record MemberKey(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
 
-    public static MemberKey FromMethodSymbol(IMethodSymbol method)
+    public static MemberKey FromMethodSymbol(IMethodSymbol method, Compilation compilation)
     {
         string returnType;
         if (method.ReturnsVoid)
@@ -40,7 +40,7 @@ internal sealed record MemberKey(
                 }
                 else
                 {
-                    returnType = "typeof(void)";
+                    actualReturnType = compilation.GetSpecialType(SpecialType.System_Void);
                 }
             }
 

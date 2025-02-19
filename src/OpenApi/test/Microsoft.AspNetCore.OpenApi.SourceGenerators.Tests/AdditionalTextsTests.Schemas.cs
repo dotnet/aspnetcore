@@ -83,7 +83,7 @@ public class TodoWithDescription
     /// </value>
     public string Name { get; set; }
     /// <summary>
-    /// A description of the the todo.
+    /// A description of the todo.
     /// </summary>
     /// <value>Another description of the todo.</value>
     public string Description { get; set; }

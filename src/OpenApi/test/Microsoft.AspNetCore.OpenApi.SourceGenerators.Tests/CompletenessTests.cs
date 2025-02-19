@@ -192,6 +192,15 @@ public class ExampleClass
     }
 
     /// <summary>
+    /// This method is an example of a method that
+    /// returns a Task which should map to a void return type.
+    /// </summary>
+    public static Task DoNothingAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// This method is an example of a method that consumes
     /// an params array.
     /// </summary>

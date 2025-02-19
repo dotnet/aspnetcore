@@ -270,6 +270,8 @@ if (c &gt; 10)
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<global::System.Int32>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
+returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddNumbers", typeof(global::System.Int32), [typeof(global::System.Int32[])]), new XmlComment(@"This method is an example of a method that consumes
 an params array.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Method, "Method", typeof(global::System.Int32), [typeof(global::System.Int32)]), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
