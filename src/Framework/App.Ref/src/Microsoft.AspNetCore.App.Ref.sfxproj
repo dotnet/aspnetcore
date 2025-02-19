@@ -72,7 +72,7 @@
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />

@@ -43,7 +43,7 @@
 
   <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- Required to bundle source generator related assets into build. -->
