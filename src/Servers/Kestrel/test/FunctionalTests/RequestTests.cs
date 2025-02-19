@@ -32,7 +32,6 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using System.Diagnostics.Metrics;
-using System.Linq.Expressions;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
