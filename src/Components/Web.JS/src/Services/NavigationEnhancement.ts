@@ -132,18 +132,25 @@ function onDocumentClick(event: MouseEvent) {
   });
 }
 
-function onPopState(state: PopStateEvent) {
+function removeScrollPositionFromState() {
+  const currentState = history.state || {};
+  const { scrollPosition, ...rest } = currentState;
+  history.replaceState(Object.keys(rest).length ? rest : null, /* ignored title */ '', location.href);
+}
+
+function onPopState(event: PopStateEvent) {
   if (hasInteractiveRouter()) {
     return;
   }
 
   // load the new page
-  const scrollPosition = history.state?.scrollPosition;
-  saveScrollPosition();
   performEnhancedPageLoad(location.href, /* interceptedLink */ false).then(() => {
+    const scrollPosition = event.state?.scrollPosition;
     if (scrollPosition !== undefined &&
       (scrollPosition.X !== window.scrollX || scrollPosition.Y !== window.scrollY)) {
       window.scrollTo(scrollPosition.X, scrollPosition.Y);
+      // let the browser handle scroll restoration for the history produced by forwards/backwards actions
+      removeScrollPositionFromState();
     }
   })
 }

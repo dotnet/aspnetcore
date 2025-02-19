@@ -15,6 +15,9 @@
     <NavLink id="do-navigation-with-fragment" href="@($"nav/scroll-to-hash#some-content")">
         Navigation to another page with fragment (scroll-to-hash#some-content)
     </NavLink>
+    <NavLink id="do-navigation" href="@($"nav/scroll-to-hash")">
+        Navigation to another page (scroll-to-hash)
+    </NavLink>
 }
 
 <div style="height: 2000px; border: 2px dashed red;">spacer bottom</div>
@@ -23,10 +26,6 @@
 {
     <h2 id="some-content">Some content</h2>
     <p>This is the content.</p>
-
-    <NavLink id="do-navigation" href="@($"nav/scroll-to-hash")">
-        Navigation to another page (scroll-to-hash)
-    </NavLink>
 }
 
 @code {
