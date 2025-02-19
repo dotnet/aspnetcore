@@ -537,8 +537,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Tests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.FunctionalTests", "src\DefaultBuilder\test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj", "{D708256C-4A68-4B15-AAE5-6EFA41223A70}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Grpc", "Grpc", "{8DAC59BE-CB96-4F04-909C-56C22E7665EB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E763DA15-8F4E-446C-99B8-309053C75598}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropTests", "src\Grpc\Interop\test\InteropTests\InteropTests.csproj", "{3ADC50B9-2EBB-422A-8424-F9FC67841CA1}"
@@ -1598,23 +1596,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.ShadowCopy.Tests", "src\Servers\IIS\IIS\test\IIS.ShadowCopy.Tests\IIS.ShadowCopy.Tests.csproj", "{93D3CC76-9FA9-4198-B49D-54BA918105EE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK-Analyzers", "SDK-Analyzers", "{6C06163A-80E9-49C1-817C-B391852BA563}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{CC45FA2D-128B-485D-BA6D-DFD9735CB3C3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.SdkAnalyzers", "src\Tools\SDK-Analyzers\Components\src\Microsoft.AspNetCore.Components.SdkAnalyzers.csproj", "{825BCF97-67A9-4834-B3A8-C3DC97A90E41}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.SdkAnalyzers.Tests", "src\Tools\SDK-Analyzers\Components\test\Microsoft.AspNetCore.Components.SdkAnalyzers.Tests.csproj", "{DC349A25-0DBF-4468-99E1-B95C22D3A7EF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OutputCaching", "OutputCaching", "{AA5ABFBC-177C-421E-B743-005E0FD1248B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching", "src\Middleware\OutputCaching\src\Microsoft.AspNetCore.OutputCaching.csproj", "{5D5A3B60-A014-447C-9126-B1FA6C821C8D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B5AC1D8B-9D43-4261-AE0F-6B7574656F2C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutputCachingSample", "src\Middleware\OutputCaching\samples\OutputCachingSample\OutputCachingSample.csproj", "{C3FFA4E4-0E7E-4866-A15F-034245BFD800}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RequestDecompression", "RequestDecompression", "{5465F96F-33D5-454E-9C40-494E58AEEE5D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestDecompression.Tests", "src\Middleware\RequestDecompression\test\Microsoft.AspNetCore.RequestDecompression.Tests.csproj", "{97996D39-7722-4AFC-A41A-AD61CA7A413D}"
 EndProject
@@ -1622,21 +1610,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestDecompressionSample"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestDecompression", "src\Middleware\RequestDecompression\src\Microsoft.AspNetCore.RequestDecompression.csproj", "{559FE354-7E08-4310-B4F3-AE30F34DEED5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LinkabilityChecker", "LinkabilityChecker", "{94F95276-7CDF-44A8-B159-D09702EF6794}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkabilityChecker", "src\Tools\LinkabilityChecker\LinkabilityChecker.csproj", "{EA7D844B-C180-41C7-9D55-273AD88BF71F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{7A331A1C-E2C4-4E37-B0A0-B5AA10661229}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonTranscoding", "JsonTranscoding", "{DD076DDA-7956-4361-A7D4-2B8025AB3DFD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{5CDB8ABC-9DD0-4A9F-8948-EED5FFE89F67}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{151E6F9E-107B-4DDC-A2B1-95115801FD14}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B43BE3EB-9846-4484-88D8-05165202A0FC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{9A8AE587-A3DB-4211-8354-430C4CCBEB9B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestsWebsite", "src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj", "{2E28881D-A188-47AF-800A-B5877AD8C288}"
 EndProject
@@ -1656,15 +1632,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.LongTests", "src\Servers\IIS\IIS\test\IIS.LongTests\IIS.LongTests.csproj", "{B7DAA48B-8E5E-4A5D-9FEB-E6D49AE76A04}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildAfterTargetingPack", "BuildAfterTargetingPack", "{489020F2-80D9-4468-A5D3-07E785837A5D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildAfterTargetingPack", "src\BuildAfterTargetingPack\BuildAfterTargetingPack.csproj", "{8FED7E65-A7DD-4F13-8980-BF03E77B6C85}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.Tests", "src\Middleware\OutputCaching\test\Microsoft.AspNetCore.OutputCaching.Tests.csproj", "{046F43BC-BEE4-48B7-8C09-ED0A1054A2D7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResultsOfTGenerator", "src\Http\Http.Results\tools\ResultsOfTGenerator\ResultsOfTGenerator.csproj", "{9716D0D0-2251-44DD-8596-67D253EEF41C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenApi", "OpenApi", "{2299CCD8-8F9C-4F2B-A633-9BF4DA81022B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OpenApi", "src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj", "{EFC8EA45-572D-4D8D-A597-9045A2D8EC40}"
 EndProject
@@ -1676,13 +1648,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelixTestRunner", "eng\tool
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.Abstractions.Tests", "src\Html.Abstractions\test\Microsoft.AspNetCore.Html.Abstractions.Tests.csproj", "{487EF7BE-5009-4C70-B79E-45519BDD9603}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RateLimiting", "RateLimiting", "{1D865E78-7A66-4CA9-92EE-2B350E45281F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestDecompression.Microbenchmarks", "src\Middleware\RequestDecompression\perf\Microbenchmarks\Microsoft.AspNetCore.RequestDecompression.Microbenchmarks.csproj", "{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Tools\dotnet-user-jwts\src\dotnet-user-jwts.csproj", "{B34CB502-0286-4939-B25F-45998528A802}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-jwts", "dotnet-user-jwts", "{AB4B9E75-719C-4589-B852-20FBFD727730}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
 EndProject
@@ -1702,8 +1670,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stress", "stress", "{A59464
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.CustomElements", "src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj", "{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomElements", "CustomElements", "{0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Tests\Templates.Blazor.WebAssembly.Tests.csproj", "{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimitingSample", "src\Middleware\RateLimiting\samples\RateLimitingSample\RateLimitingSample.csproj", "{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}"
@@ -1716,25 +1682,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportInteractiveSamp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Auth.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Auth.Tests\Templates.Blazor.WebAssembly.Auth.Tests.csproj", "{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{890B5210-48EF-488F-93A2-F13BCB07C780}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAppSample", "src\Framework\AspNetCoreAnalyzers\samples\WebAppSample\WebAppSample.csproj", "{A8E2AB77-8F57-47C2-A961-2F316793CAFF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F43CC5EA-6032-4A11-A9B2-6D48CB5EB082}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{74377D3E-E0C6-41A4-89ED-11A9C00142A9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks", "src\Servers\HttpSys\perf\Microbenchmarks\Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks.csproj", "{3C7C65BF-0C13-418E-90BD-EC9C3CD282CB}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport.NamedPipes", "Transport.NamedPipes", "{F057512B-55BF-4A8B-A027-A0505F8BA10C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes", "src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj", "{10173568-A65E-44E5-8C6F-4AA49D0577A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests", "src\Servers\Kestrel\Transport.NamedPipes\test\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests.csproj", "{97C7D2A4-87E5-4A4A-A170-D736427D5C21}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.RequestDelegateGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj", "{4730F56D-24EF-4BB2-AA75-862E31205F3A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickGrid", "QuickGrid", "{C406D9E0-1585-43F9-AA8F-D468AF84A996}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.QuickGrid", "src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj", "{7757E360-40F5-4C90-9D7F-E6B0E62BA9E2}"
 EndProject
@@ -1742,15 +1698,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazingPizza.Server", "src\Components\benchmarkapps\BlazingPizza.Server\BlazingPizza.Server.csproj", "{A05652B3-953E-4915-9D7F-0E361D988815}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Endpoints", "Endpoints", "{7BAEB9BF-28F4-4DFD-9A04-E5193683C261}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Endpoints", "src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj", "{AE4D272D-6F13-42C8-9404-C149188AFA33}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Endpoints.Tests", "src\Components\Endpoints\test\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj", "{5D438258-CB19-4282-814F-974ABBC71411}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp", "src\Components\Samples\BlazorUnitedApp\BlazorUnitedApp.csproj", "{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BearerToken", "BearerToken", "{56291265-B7BF-4756-92AB-FC30F09381D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.BearerToken", "src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj", "{66FA1041-5556-43A0-9CA3-F9937F085F6E}"
 EndProject
@@ -1780,17 +1732,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.WasmRemoteAuthen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "src\OpenApi\sample\Sample.csproj", "{6DEC24A8-A166-432F-8E3B-58FFCDA92F52}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicroBenchmarks", "MicroBenchmarks", "{6469F11E-8CEE-4292-820B-324DFFC88EBC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.MicroBenchmarks", "src\Caching\perf\MicroBenchmarks\Microsoft.Extensions.Caching.MicroBenchmarks\Microsoft.Extensions.Caching.MicroBenchmarks.csproj", "{8D2CC6ED-5105-4F52-8757-C21F4DE78589}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{9DC6B242-457B-4767-A84B-C3D23B76C642}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OpenApi.Microbenchmarks", "src\OpenApi\perf\Microbenchmarks\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj", "{D53F0EF7-0CDC-49B4-AA2D-229901B0A734}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyManagementSimulator", "src\DataProtection\samples\KeyManagementSimulator\KeyManagementSimulator.csproj", "{5B5F86CC-3598-463C-9F9B-F78FBB6642F4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StaticAssets", "StaticAssets", "{274100A5-5B2D-4EA2-AC42-A62257FC6BDC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticAssets", "src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj", "{4D8DE54A-4F32-4881-B07B-DDC79619E573}"
 EndProject
@@ -1802,13 +1748,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentSample", "src\To
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp.Client", "src\Components\Samples\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj", "{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B32FF7A7-9CB3-4DCD-AE97-3B2594DB9DAC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.OpenApi.Tests", "src\OpenApi\test\Microsoft.AspNetCore.OpenApi.Tests\Microsoft.AspNetCore.OpenApi.Tests.csproj", "{B9BBC1A8-7F58-4F43-94C3-5F3CB125CEF7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.App.SourceGenerators", "src\Framework\AspNetCoreAnalyzers\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj", "{C3928C15-1836-46DB-A09D-9EFBCCA33E08}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{2B858B82-5F0B-4A24-B3C0-5E99149F70D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.App.Internal.Assets", "src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj", "{2AAE7819-BC3E-48F4-9CFA-5DD4CD5FFD62}"
 EndProject
@@ -1823,6 +1765,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests", "src\OpenApi\test\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj", "{51BE4B37-D772-4BFA-8DAE-CF18730BEB89}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.OpenApi.Build.Tests", "src\OpenApi\test\Microsoft.AspNetCore.OpenApi.Build.Tests\Microsoft.AspNetCore.OpenApi.Build.Tests.csproj", "{10F96346-4215-4642-B837-0B5B08AC27AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gen", "gen", "{01A75167-DF5A-AF38-8700-C3FBB2C2CFF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.RequestDelegateGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj", "{E6D564C0-4CA5-411C-BF40-9802AF7900CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.ValidationsGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj", "{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10459,22 +10407,6 @@ Global
 		{97C7D2A4-87E5-4A4A-A170-D736427D5C21}.Release|x64.Build.0 = Release|Any CPU
 		{97C7D2A4-87E5-4A4A-A170-D736427D5C21}.Release|x86.ActiveCfg = Release|Any CPU
 		{97C7D2A4-87E5-4A4A-A170-D736427D5C21}.Release|x86.Build.0 = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|arm64.ActiveCfg = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|arm64.Build.0 = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|x64.Build.0 = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Debug|x86.Build.0 = Debug|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|arm64.ActiveCfg = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|arm64.Build.0 = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|x64.ActiveCfg = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|x64.Build.0 = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|x86.ActiveCfg = Release|Any CPU
-		{4730F56D-24EF-4BB2-AA75-862E31205F3A}.Release|x86.Build.0 = Release|Any CPU
 		{7757E360-40F5-4C90-9D7F-E6B0E62BA9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7757E360-40F5-4C90-9D7F-E6B0E62BA9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7757E360-40F5-4C90-9D7F-E6B0E62BA9E2}.Debug|arm64.ActiveCfg = Debug|Any CPU
@@ -11019,6 +10951,38 @@ Global
 		{10F96346-4215-4642-B837-0B5B08AC27AE}.Release|x64.Build.0 = Release|Any CPU
 		{10F96346-4215-4642-B837-0B5B08AC27AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{10F96346-4215-4642-B837-0B5B08AC27AE}.Release|x86.Build.0 = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|arm64.Build.0 = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Debug|x86.Build.0 = Debug|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|arm64.ActiveCfg = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|arm64.Build.0 = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|x64.Build.0 = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|x86.ActiveCfg = Release|Any CPU
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB}.Release|x86.Build.0 = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|arm64.Build.0 = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|x64.Build.0 = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Debug|x86.Build.0 = Debug|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|arm64.ActiveCfg = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|arm64.Build.0 = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x64.ActiveCfg = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x64.Build.0 = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x86.ActiveCfg = Release|Any CPU
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11281,7 +11245,6 @@ Global
 		{BCD032DD-D088-4F72-B80F-48D0EA845F87} = {881FE4C3-1553-4CA1-B430-DDD37B3493AB}
 		{58955E85-0D55-45FF-97EE-BDD096522954} = {BCD032DD-D088-4F72-B80F-48D0EA845F87}
 		{D708256C-4A68-4B15-AAE5-6EFA41223A70} = {BCD032DD-D088-4F72-B80F-48D0EA845F87}
-		{8DAC59BE-CB96-4F04-909C-56C22E7665EB} = {017429CC-C5FB-48B4-9C46-034E29EE2F06}
 		{E763DA15-8F4E-446C-99B8-309053C75598} = {7A331A1C-E2C4-4E37-B0A0-B5AA10661229}
 		{3ADC50B9-2EBB-422A-8424-F9FC67841CA1} = {E763DA15-8F4E-446C-99B8-309053C75598}
 		{05A169C7-4F20-4516-B10A-B13C5649D346} = {017429CC-C5FB-48B4-9C46-034E29EE2F06}
@@ -11811,6 +11774,9 @@ Global
 		{4C4590E4-54F5-3693-9633-60A8DCA89385} = {96EC4DD3-028E-6E27-5B14-08C21B07CE89}
 		{51BE4B37-D772-4BFA-8DAE-CF18730BEB89} = {4C4590E4-54F5-3693-9633-60A8DCA89385}
 		{10F96346-4215-4642-B837-0B5B08AC27AE} = {4C4590E4-54F5-3693-9633-60A8DCA89385}
+		{01A75167-DF5A-AF38-8700-C3FBB2C2CFF5} = {225AEDCF-7162-4A86-AC74-06B84660B379}
+		{E6D564C0-4CA5-411C-BF40-9802AF7900CB} = {01A75167-DF5A-AF38-8700-C3FBB2C2CFF5}
+		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157} = {01A75167-DF5A-AF38-8700-C3FBB2C2CFF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
