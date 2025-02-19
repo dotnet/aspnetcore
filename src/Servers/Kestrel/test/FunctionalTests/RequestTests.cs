@@ -400,6 +400,46 @@ public class RequestTests : LoggedTest
     }
 
     [Fact]
+    public async Task IncompleteRequestBodyDoesNotLogAsApplicationError()
+    {
+        var logMessageReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Listen for the expected log message
+        TestSink.MessageLogged += context =>
+        {
+            if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel"
+                && context.EventId.Id == 13
+                && context.LogLevel > LogLevel.Debug)
+            {
+                logMessageReceived.SetResult();
+            }
+        };
+
+        await using var server = new TestServer(async context =>
+        {
+            var buffer = new byte[1024];
+
+            // Attempt to read more of the body than will show up.
+            await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+        }, new TestServiceContext(LoggerFactory));
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Connection: keep-alive",
+                "Content-Type: application/json",
+                "Content-Length: 100",  // Declare a larger body than will be sent
+                "",
+                "");
+        }
+
+        // Log message should not have appeared.
+        await Assert.ThrowsAsync<TimeoutException>(() => logMessageReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
+    }
+
+    [Fact]
     public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
     {
         var connectionReset = new SemaphoreSlim(0);
