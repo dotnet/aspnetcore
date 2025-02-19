@@ -45,5 +45,6 @@
 
   <ItemGroup>
     <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" />
+    <HelixContent Include="$(MSBuildProjectDirectory)\ValidationsGenerator\snapshots\**" />
   </ItemGroup>
 </Project>

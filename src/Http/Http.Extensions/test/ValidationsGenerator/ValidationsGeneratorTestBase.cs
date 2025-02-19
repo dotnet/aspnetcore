@@ -61,7 +61,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
-                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
+                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
     }
 
