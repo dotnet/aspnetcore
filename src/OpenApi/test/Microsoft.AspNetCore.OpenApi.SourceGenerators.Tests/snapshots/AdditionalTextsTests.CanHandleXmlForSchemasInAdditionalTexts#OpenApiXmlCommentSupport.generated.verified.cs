@@ -182,110 +182,32 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         private static Dictionary<MemberKey, XmlComment> GenerateCacheEntries()
         {
             var _cache = new Dictionary<MemberKey, XmlComment>();
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Todo), MemberType.Type, null, null, []), new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Project), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Project), MemberType.Method, ".ctor", typeof(void), [typeof(global::System.String), typeof(global::System.String)]), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectBoard.BoardItem), MemberType.Type, null, null, []), new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Method, ".ctor", typeof(void), [typeof(global::System.String), typeof(global::System.String)]), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Property, "Name", null, []), new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Property, "Description", null, []), new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TodoWithDescription), MemberType.Property, "Id", null, []), new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TodoWithDescription), MemberType.Property, "Name", null, []), new XmlComment(null, null, null, null, @"The name of the todo.", false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TodoWithDescription), MemberType.Property, "Description", null, []), new XmlComment(@"A description of the todo.", null, null, null, @"Another description of the todo.", false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "BooleanType", null, []), new XmlComment(null, null, null, null, null, false, [@"true"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "IntegerType", null, []), new XmlComment(null, null, null, null, null, false, [@"42"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "LongType", null, []), new XmlComment(null, null, null, null, null, false, [@"1234567890123456789"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "DoubleType", null, []), new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "FloatType", null, []), new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "DateTimeType", null, []), new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "DateOnlyType", null, []), new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "StringType", null, []), new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "GuidType", null, []), new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "TimeOnlyType", null, []), new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "TimeSpanType", null, []), new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "ByteType", null, []), new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "DecimalType", null, []), new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "UriType", null, []), new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
 
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Type, null, null, []), new XmlComment(@"Every class and member should have a one sentence
-summary describing its purpose.", null, @"     You can expand on that one sentence summary to
-     provide more information for readers. In this case,
-     the `ExampleClass` provides different C#
-     elements to show how you would add documentation
-    comments for most elements in a typical class.
-     The remarks can add multiple paragraphs, so you can
-write detailed information for developers that use
-your work. You should add everything needed for
-readers to be successful. This class contains
-examples for the following:
-     * Summary
-
-This should provide a one sentence summary of the class or member.
-* Remarks
-
-This is typically a more detailed description of the class or member
-* para
-
-The para tag separates a section into multiple paragraphs
-* list
-
-Provides a list of terms or elements
-* returns, param
-
-Used to describe parameters and return values
-* value
-Used to describe properties
-* exception
-
-Used to describe exceptions that may be thrown
-* c, cref, see, seealso
-
-These provide code style and links to other
-documentation elements
-* example, code
-
-These are used for code examples
-     The list above uses the ""table"" style. You could
-also use the ""bullet"" or ""number"" style. Neither
-would typically use the ""term"" element.
-
-Note: paragraphs are double spaced. Use the *br*
-tag for single spaced lines.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Type, null, null, []), new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
-created for positional records, yet. The language
-design team is still considering what tags should
-be supported, and where. Currently, you can use
-the ""param"" tag to describe the parameters to the
-primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::MainClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
-In this example, these comments also explain the
-general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::DerivedClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
-In this example, these comments also explain the
-general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
-its contract.", null, @"While elided for brevity, each method or property
-in this interface would contain docs that you want
-to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ImplementingClass), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
-its contract.", null, @"While elided for brevity, each method or property
-in this interface would contain docs that you want
-to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Type, null, null, []), new XmlComment(@"This class shows hows you can ""inherit"" the doc
-comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
-represented by an xpath expression.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Type, null, null, []), new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::GenericClass<>), MemberType.Type, null, null, []), new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
-type as a cref attribute.
-In generic classes and methods, you'll often want to reference the
-generic type, or the type parameter.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
-    that you use for a label.
-    Note that there isn't a way to provide a ""cref"" to
-each accessor, only to the property itself.", null, @"The `Label` property represents a label
-for this instance.", false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "FirstName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "LastName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "Add", typeof(global::System.Int32), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
-if (c &gt; 10)
-{
-    Console.WriteLine(c);
-}```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<global::System.Int32>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
-returns an awaitable item.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
-returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddNumbers", typeof(global::System.Int32), [typeof(global::System.Int32[])]), new XmlComment(@"This method is an example of a method that consumes
-an params array.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Method, "Method", typeof(global::System.Int32), [typeof(global::System.Int32)]), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
-that implement this interface when the
-implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
-using the xpath expression.", @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
-method as a cref attribute.
-The parameter and return value are both of an arbitrary type,
-T", null, null, false, null, null, null));
 
             return _cache;
         }

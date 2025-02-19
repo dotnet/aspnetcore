@@ -98,7 +98,7 @@ public sealed partial class XmlCommentGenerator
                 {
                     var memberKey = symbol switch
                     {
-                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol),
+                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol, input.Compilation),
                         IPropertySymbol propertySymbol => MemberKey.FromPropertySymbol(propertySymbol),
                         INamedTypeSymbol typeSymbol => MemberKey.FromTypeSymbol(typeSymbol),
                         _ => null
