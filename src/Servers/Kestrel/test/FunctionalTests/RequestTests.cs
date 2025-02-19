@@ -32,6 +32,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using System.Diagnostics.Metrics;
+using System.Linq.Expressions;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -402,16 +403,34 @@ public class RequestTests : LoggedTest
     [Fact]
     public async Task IncompleteRequestBodyDoesNotLogAsApplicationError()
     {
-        var logMessageReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appErrorLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var badRequestLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionStoppedLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        const int badRequestEventId = 17;
+        const int appErrorEventId = 13;
+        const int connectionStopEventId = 2;
 
         // Listen for the expected log message
         TestSink.MessageLogged += context =>
         {
-            if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel"
-                && context.EventId.Id == 13
-                && context.LogLevel > LogLevel.Debug)
+            if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.BadRequests"
+                && context.EventId == badRequestEventId
+                && context.LogLevel == LogLevel.Debug)
             {
-                logMessageReceived.SetResult();
+                badRequestLogged.SetResult();
+            }
+            else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel"
+                    && context.EventId.Id == appErrorEventId
+                    && context.LogLevel > LogLevel.Debug)
+            {
+                appErrorLogged.SetResult();
+            }
+            else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Connections"
+                    && context.EventId == connectionStopEventId
+                    && context.Message.Contains("stopped."))
+            {
+                connectionStoppedLogged.SetResult();
             }
         };
 
@@ -435,8 +454,13 @@ public class RequestTests : LoggedTest
                 "");
         }
 
-        // Log message should not have appeared.
-        await Assert.ThrowsAsync<TimeoutException>(() => logMessageReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
+        await connectionStoppedLogged.Task.DefaultTimeout();
+
+        // Bad request log message should have fired.
+        await badRequestLogged.Task.DefaultTimeout();
+
+        // App error log message should not have fired.
+        Assert.False(appErrorLogged.Task.IsCompleted);
     }
 
     [Fact]
