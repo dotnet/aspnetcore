@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
@@ -33,7 +34,14 @@ internal sealed partial class HttpSysListener : IDisposable
     // 0.5 seconds per request.  Respond with a 400 Bad Request.
     private const int UnknownHeaderLimit = 1000;
 
-    internal MemoryPool<byte> MemoryPool { get; } = PinnedBlockMemoryPoolFactory.Create();
+    internal sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
+    }
+
+    internal MemoryPool<byte> MemoryPool { get; } = PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory());
 
     private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 

@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -18,10 +19,17 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal sealed class IISHttpServer : IServer
 {
+    internal sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
+    }
+
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
     private IISContextFactory? _iisContextFactory;
-    private readonly MemoryPool<byte> _memoryPool = new PinnedBlockMemoryPool();
+    private readonly MemoryPool<byte> _memoryPool = new PinnedBlockMemoryPool(new DummyMeterFactory());
     private GCHandle _httpServerHandle;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly ILogger<IISHttpServer> _logger;

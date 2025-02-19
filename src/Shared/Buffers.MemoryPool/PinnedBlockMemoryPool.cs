@@ -43,15 +43,17 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
     private readonly long _memoryLimit = 30_000;
 
-    private readonly PinnedBlockMemoryPoolMetrics _metrics;
+    //private readonly PinnedBlockMemoryPoolMetrics _metrics;
 
     private long _evictionDelays; // Total time eviction tasks were delayed (ms)
     private long _evictionDurations; // Total time spent on eviction (ms)
-    private long _currentMemory;
+    public long _currentMemory;
+    public long _evictedMemory;
 
-    private volatile bool _evictionInProgress;
-    private long _lastEvictionStartTimestamp;
-    private readonly EvictionWorkItem _evictionWorkItem;
+    private readonly long _lastEvictionStartTimestamp;
+    private readonly PeriodicTimer _timer;
+    private int _rentCount;
+    private int _returnCount;
 
     private readonly object _disposeSync = new object();
 
@@ -62,9 +64,10 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
     public PinnedBlockMemoryPool(IMeterFactory meterFactory)
     {
-        _metrics = new(meterFactory);
+        _ = meterFactory;
+        //_timeProvider = timeProvider;
+        //_metrics = new(meterFactory);
 
-        _evictionWorkItem = new EvictionWorkItem(this);
         var conserveMemory = Environment.GetEnvironmentVariable("DOTNET_GCConserveMemory")
             ?? Environment.GetEnvironmentVariable("COMPlus_GCConserveMemory")
             ?? "0";
@@ -80,6 +83,24 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         var conserveRatio = 1.0f - (conserveSetting / 10.0f);
         // Adjust memory limit to be between 100% and 10% of original value
         _memoryLimit = (long)(_memoryLimit * conserveRatio);
+
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        _ = RunTimer();
+    }
+
+    private async Task RunTimer()
+    {
+        try
+        {
+            while (await _timer.WaitForNextTickAsync())
+            {
+                PerformEviction();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
     }
 
     public override IMemoryOwner<byte> Rent(int size = AnySize)
@@ -94,18 +115,17 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
         }
 
+        Interlocked.Increment(ref _rentCount);
+
         if (_blocks.TryDequeue(out var block))
         {
-            _metrics.UpdateCurrentMemory(-block.Memory.Length);
             Interlocked.Add(ref _currentMemory, -block.Memory.Length);
-            _metrics.Rent(block.Memory.Length);
 
             // block successfully taken from the stack - return it
             return block;
         }
 
-        _metrics.IncrementTotalMemory(BlockSize);
-        _metrics.Rent(BlockSize);
+        Interlocked.Increment(ref _rentCount);
 
         return new MemoryPoolBlock(this, BlockSize);
     }
@@ -126,28 +146,13 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             block.IsLeased = false;
 #endif
 
+        Interlocked.Increment(ref _returnCount);
+
         if (!_isDisposed)
         {
-            _metrics.UpdateCurrentMemory(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, block.Memory.Length);
 
             _blocks.Enqueue(block);
-        }
-
-        TryScheduleEviction();
-    }
-
-    private void TryScheduleEviction()
-    {
-        if (_currentMemory > _memoryLimit && !_evictionInProgress)
-        {
-            if (Interlocked.CompareExchange(ref _evictionInProgress, true, false) == false)
-            {
-                _metrics.StartEviction();
-
-                _lastEvictionStartTimestamp = Stopwatch.GetTimestamp();
-                ThreadPool.UnsafeQueueUserWorkItem(_evictionWorkItem, preferLocal: false);
-            }
         }
     }
 
@@ -158,20 +163,43 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         try
         {
             // Measure delay since the eviction was triggered
-            
+
             var delayMs = Stopwatch.GetElapsedTime(_lastEvictionStartTimestamp).TotalMilliseconds;
             Interlocked.Add(ref _evictionDelays, (long)delayMs);
 
             long evictedMemoryThisPass = 0;
+            var currentCount = _blocks.Count;
+            var burstAmount = 0;
+            // If any activity
+            if (_rentCount + _returnCount > 0)
+            {
+                // Trending less traffic
+                if (_returnCount > _rentCount)
+                {
+                    burstAmount = currentCount / _returnCount - _rentCount;
+                }
+                // Traffic staying the same, try removing some blocks since we probably have excess
+                else if (_returnCount == _rentCount)
+                {
+                    burstAmount = Math.Min(10, currentCount / 20);
+                }
+            }
+            // If no activity
+            else
+            {
+                burstAmount = Math.Max(1, currentCount / 10);
+            }
+            _rentCount = 0;
+            _returnCount = 0;
 
             // Remove from queue and let GC clean the memory up
-            while (_currentMemory > _memoryLimit && _blocks.TryDequeue(out var block))
+            while (burstAmount > 0 && _blocks.TryDequeue(out var block))
             {
                 Interlocked.Add(ref _currentMemory, -block.Memory.Length);
-                _metrics.UpdateCurrentMemory(-block.Memory.Length);
-                _metrics.EvictBlock(block.Memory.Length);
+                Interlocked.Add(ref _evictedMemory, block.Memory.Length);
 
                 evictedMemoryThisPass += block.Memory.Length;
+                burstAmount--;
             }
 
             Debug.WriteLine($"Evicted {evictedMemoryThisPass} bytes.");
@@ -179,7 +207,6 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         finally
         {
             Interlocked.Add(ref _evictionDurations, (long)Stopwatch.GetElapsedTime(now).TotalMilliseconds);
-            _evictionInProgress = false;
         }
     }
 
@@ -196,27 +223,14 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
             if (disposing)
             {
+                _timer.Dispose();
+
                 // Discard blocks in pool
                 while (_blocks.TryDequeue(out _))
                 {
 
                 }
             }
-        }
-    }
-
-    private sealed class EvictionWorkItem : IThreadPoolWorkItem
-    {
-        private readonly PinnedBlockMemoryPool _pool;
-
-        public EvictionWorkItem(PinnedBlockMemoryPool pool)
-        {
-            _pool = pool;
-        }
-
-        public void Execute()
-        {
-            _pool.PerformEviction();
         }
     }
 }

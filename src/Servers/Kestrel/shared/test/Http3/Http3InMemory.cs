@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
@@ -70,11 +71,18 @@ internal class Http3InMemory
         }
     }
 
+    internal sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
+    }
+
     internal ServiceContext _serviceContext;
     private FakeTimeProvider _fakeTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
-    internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+    internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory());
     internal readonly ConcurrentQueue<TestStreamContext> _streamContextPool = new ConcurrentQueue<TestStreamContext>();
     protected Task _connectionTask;
     internal ILogger Logger { get; }

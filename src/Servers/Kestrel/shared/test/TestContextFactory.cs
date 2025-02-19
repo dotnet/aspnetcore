@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
@@ -73,6 +74,13 @@ internal static class TestContextFactory
         return context;
     }
 
+    internal sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
+    }
+
     public static HttpMultiplexedConnectionContext CreateHttp3ConnectionContext(
         MultiplexedConnectionContext connectionContext = null,
         ServiceContext serviceContext = null,
@@ -93,7 +101,7 @@ internal static class TestContextFactory
             connectionContext,
             serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures ?? new FeatureCollection(),
-            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
+            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory()),
             localEndPoint,
             remoteEndPoint,
             metricsContext)

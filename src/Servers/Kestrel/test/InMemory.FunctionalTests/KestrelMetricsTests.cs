@@ -273,7 +273,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
-            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool,
+            //MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool,
             ShutdownTimeout = TimeSpan.Zero
         };
 
@@ -612,7 +612,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ShutdownTimeout = TimeSpan.Zero,
-            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool
+            //MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool
         };
 
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
