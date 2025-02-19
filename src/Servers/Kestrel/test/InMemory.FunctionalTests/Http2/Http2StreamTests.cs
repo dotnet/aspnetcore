@@ -5664,7 +5664,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
-        trailerTcs.SetResult();
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
