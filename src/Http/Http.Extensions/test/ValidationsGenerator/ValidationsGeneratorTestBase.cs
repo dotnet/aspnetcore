@@ -5,106 +5,67 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
-using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
+namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 
 [UsesVerify]
-public static partial class SnapshotTestHelper
+public class ValidationsGeneratorTestBase : LoggedTestBase
 {
-    [GeneratedRegex(@"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\([^)]*\)\]")]
-    private static partial Regex InterceptsLocationRegex();
-
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
-        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.OpenApi.Generated")]);
+        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validations.Generated")]);
 
-    public static Task Verify(string source, IIncrementalGenerator generator, out Compilation compilation)
-        => Verify(source, generator, [], out compilation, out _);
-
-    public static Task Verify(string source, IIncrementalGenerator generator, Dictionary<string, List<string>> classLibrarySources, out Compilation compilation, out List<byte[]> generatedAssemblies)
+    internal static Task Verify(string source, out Compilation compilation)
     {
         var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
                 .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
                 .Concat(
                 [
-                    MetadataReference.CreateFromFile(typeof(Builder.WebApplicationBuilder).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(OpenApiOptions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Builder.EndpointRouteBuilderExtensions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Builder.IApplicationBuilder).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Mvc.ApiExplorer.IApiDescriptionProvider).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Mvc.ControllerBase).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(MvcServiceCollectionExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(WebApplicationBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(EndpointRouteBuilderExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IApplicationBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.ControllerBase).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(MvcCoreMvcBuilderExtensions).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Http.TypedResults).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(TypedResults).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Text.Json.Nodes.JsonArray).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
-                ])
-                .ToList();
-
-        var additionalTexts = new List<AdditionalText>();
-        generatedAssemblies = [];
-
-        foreach (var classLibrary in classLibrarySources)
-        {
-            var classLibraryCompilation = CSharpCompilation.Create(classLibrary.Key,
-                classLibrary.Value.Select((source, index) => CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: $"{classLibrary.Key}-{index}.cs")),
-                references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            var ms = new MemoryStream();
-            using var xmlStream = new MemoryStream();
-            var emitResult = classLibraryCompilation.Emit(ms, xmlDocumentationStream: xmlStream);
-
-            if (!emitResult.Success)
-            {
-                throw new InvalidOperationException($"Failed to compile class library {classLibrary.Key}: {string.Join(Environment.NewLine, emitResult.Diagnostics)}");
-            }
-
-            ms.Seek(0, SeekOrigin.Begin);
-            xmlStream.Seek(0, SeekOrigin.Begin);
-
-            var assembly = ms.ToArray();
-            generatedAssemblies.Add(assembly);
-            references.Add(MetadataReference.CreateFromImage(assembly));
-
-            var xmlText = Encoding.UTF8.GetString(xmlStream.ToArray());
-            additionalTexts.Add(new TestAdditionalText($"{classLibrary.Key}.xml", xmlText));
-        }
-
+                    MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.ValidationAttribute).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(RouteData).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IFeatureCollection).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location)
+                ]);
         var inputCompilation = CSharpCompilation.Create("OpenApiXmlCommentGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
-
-        var driver = CSharpGeneratorDriver.Create(
-            generators: [generator.AsSourceGenerator()],
-            additionalTexts: additionalTexts,
-            parseOptions: ParseOptions);
-
+        var generator = new ValidationsGenerator();
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
-            .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
-                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
+                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
     }
 
-    public static async Task VerifyOpenApi(Compilation compilation, Action<OpenApiDocument> verifyFunc)
-        => await VerifyOpenApi(compilation, [], verifyFunc);
-
-    public static async Task VerifyOpenApi(Compilation compilation, List<byte[]> generatedAssemblies, Action<OpenApiDocument> verifyFunc)
+    internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint> verifyFunc)
     {
         var assemblyName = compilation.AssemblyName;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -143,10 +104,6 @@ public static partial class SnapshotTestHelper
         pdb.Position = 0;
 
         var assembly = AssemblyLoadContext.Default.LoadFromStream(output, pdb);
-        foreach (var generatedAssembly in generatedAssemblies)
-        {
-            AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(generatedAssembly));
-        }
 
         void ConfigureHostBuilder(object hostBuilder)
         {
@@ -187,23 +144,18 @@ public static partial class SnapshotTestHelper
         using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(0)))
         {
             waitForStartTcs.Task.Wait();
-            var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Microsoft.AspNetCore.OpenApi");
-            var serviceType = targetAssembly.GetType("Microsoft.Extensions.ApiDescriptions.IDocumentProvider", throwOnError: false);
+            var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Microsoft.AspNetCore.Routing");
+            var serviceType = targetAssembly.GetType("Microsoft.AspNetCore.Routing.EndpointDataSource", throwOnError: false);
 
             if (serviceType == null)
             {
                 return;
             }
 
-            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IDocumentProvider service.");
-            using var stream = new MemoryStream();
-            var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-            using var writer = new StreamWriter(stream, encoding, bufferSize: 1024, leaveOpen: true);
-            var targetMethod = serviceType.GetMethod("GenerateAsync", [typeof(string), typeof(TextWriter)]) ?? throw new InvalidOperationException("Could not resolve GenerateAsync method.");
-            targetMethod.Invoke(service, ["v1", writer]);
-            stream.Position = 0;
-            var (document, _) = await OpenApiDocument.LoadAsync(stream, "json");
-            verifyFunc(document);
+            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
+            var endpoints = (IReadOnlyList<Endpoint>)serviceType.GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
+            var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
+            verifyFunc(endpoint);
         }
     }
 
@@ -558,13 +510,25 @@ public static partial class SnapshotTestHelper
         }
     }
 
-    private class TestAdditionalText(string path, string text) : AdditionalText
+    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider = null)
     {
-        public override string Path => path;
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = serviceProvider ?? CreateServiceProvider();
 
-        public override SourceText GetText(CancellationToken cancellationToken = default)
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        return httpContext;
+    }
+
+    internal ServiceProvider CreateServiceProvider(Action<IServiceCollection> configureServices = null)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        if (configureServices is not null)
         {
-            return SourceText.From(text, Encoding.UTF8);
+            configureServices(serviceCollection);
         }
+        return serviceCollection.BuildServiceProvider();
     }
 }

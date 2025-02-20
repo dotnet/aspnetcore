@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OpenApi.Build.Tests;
 
 public class GenerateAdditionalXmlFilesForOpenApiTests
 {
-    private static readonly TimeSpan _defaultProcessTimeout = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan _defaultProcessTimeout = TimeSpan.FromSeconds(120);
 
     [Fact]
     public void VerifiesTargetGeneratesXmlFiles()

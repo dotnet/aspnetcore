@@ -14,42 +14,20 @@
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
-  <!-- Files that should be always be signed between in-build and post-build signing -->
+  <!-- Files that should be always be signed -->
   <ItemGroup Label="Common Files to Sign">
-    <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-    <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
-    <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <CommonFilesToSign Include="$(ArtifactsDir)packages\$(Configuration)\**\*.zip" />
-    <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
+    <ItemsToSign Include="$(ArtifactsDir)packages\$(Configuration)\**\*.zip" />
+    <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
+    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
+    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
+    <ItemsToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" />
+    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*.wixpack.zip" />
+    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
   </ItemGroup>
-  <Choose>
-    <!-- When post build signing is false - Sign as normal.
-         When post build signing is true - Sign all of our signable artifacts
-          that we would publish. Use a different ItemGroup name so that
-          the signing stage signs nothing. We then set ItemToSign during
-          publishing to this ItemGroup.
-        -->
-    <When Condition="'$(PostBuildSign)' != 'true'">
-      <ItemGroup Label="Files To Sign">
-        <ItemsToSign Include="@(CommonFilesToSign)" />
-        <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
-      </ItemGroup>
-    </When>
-    <When Condition="'$(PostBuildSign)' == 'true'">
-      <PropertyGroup>
-        <AllowEmptySignList>true</AllowEmptySignList>
-      </PropertyGroup>
-      <ItemGroup Label="Files To Sign">
-        <!-- Sign symbol nupkgs so that shared files between layouts and msis end up identical. -->
-        <ItemsToSignPostBuild Include="@(CommonFilesToSign)" />
-        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
-        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
-        <!-- Wixlibs are signed because they are containers of other files -->
-        <ItemsToSignPostBuild Include="$(ArtifactsDir)installers\$(Configuration)\**\*.wixlib" />
-      </ItemGroup>
-    </When>
-  </Choose>
-
 
   <ItemGroup Label="File signing information">
     <!--

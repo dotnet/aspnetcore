@@ -1,7 +1,9 @@
 <Project>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- Microsoft tool packages are required to target both x64 and x86. -->
-    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' AND '$(DotNetBuildSourceOnly)' != 'true' ">win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- In VMR builds we only use the current RID. -->
+    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' AND '$(DotNetBuild)' != 'true' ">win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' AND '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' ">$(TargetRid)</PackAsToolShimRuntimeIdentifiers>
     <!-- None of the tool projects are project reference providers. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <!--
