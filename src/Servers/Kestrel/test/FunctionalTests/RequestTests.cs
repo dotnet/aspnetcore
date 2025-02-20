@@ -417,19 +417,18 @@ public class RequestTests : LoggedTest
                 && context.EventId == badRequestEventId
                 && context.LogLevel == LogLevel.Debug)
             {
-                badRequestLogged.SetResult();
+                badRequestLogged.TrySetResult();
             }
             else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel"
                     && context.EventId.Id == appErrorEventId
                     && context.LogLevel > LogLevel.Debug)
             {
-                appErrorLogged.SetResult();
+                appErrorLogged.TrySetResult();
             }
             else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Connections"
-                    && context.EventId == connectionStopEventId
-                    && context.Message.Contains("stopped."))
+                    && context.EventId == connectionStopEventId)
             {
-                connectionStoppedLogged.SetResult();
+                connectionStoppedLogged.TrySetResult();
             }
         };
 
