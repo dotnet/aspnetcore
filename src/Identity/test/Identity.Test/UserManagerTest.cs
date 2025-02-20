@@ -1018,25 +1018,34 @@ public class UserManagerTest
         // Arrange
         var user = new PocoUser() { UserName = "testuser" };
         var store = new Mock<IUserLockoutStore<PocoUser>>();
-        int failedCount = 1; // Simulated access failed count
+        int failedCount = 1;
+
+        store.Setup(x => x.SupportsUserLockout).Returns(true);
 
         store.Setup(x => x.GetAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
-             .ReturnsAsync(() => failedCount); // Return the updated value dynamically
+             .ReturnsAsync(() => failedCount);
 
         store.Setup(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()))
-             .ReturnsAsync(() => ++failedCount); // Increment and return the new count
+            .Callback(() => failedCount++)
+            .ReturnsAsync(() => failedCount);
+
+        store.Setup(x => x.UpdateAsync(user, It.IsAny<CancellationToken>()))
+        .ReturnsAsync(IdentityResult.Success);
 
         var manager = MockHelpers.TestUserManager(store.Object);
+        manager?.Options?.Lockout?.PermanentLockout = false;
 
         // Act
         var result = await manager.AccessFailedAsync(user);
 
         // Assert
-        IdentityResultAssert.IsSuccess(result);
+        Assert.NotNull(result);
+        Assert.True(result.Succeeded, "AccessFailedAsync should return success.");
+
         store.Verify(x => x.IncrementAccessFailedCountAsync(user, It.IsAny<CancellationToken>()), Times.Once);
 
         var newFailedCount = await manager.GetAccessFailedCountAsync(user);
-        Assert.Equal(2, newFailedCount); // Ensure the count was actually updated
+        Assert.Equal(2, newFailedCount);
     }
 
     [Fact]
