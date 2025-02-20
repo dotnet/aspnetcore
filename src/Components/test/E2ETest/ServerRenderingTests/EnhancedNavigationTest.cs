@@ -685,11 +685,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var elementForStalenessCheckOnHashPage = Browser.Exists(By.TagName("html"));
 
         var jsExecutor = (IJavaScriptExecutor)Browser;
-        var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
-        Browser.SetScrollY(maxScrollPosition);
+        var button1Pos = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('do-navigation').getBoundingClientRect().top + window.scrollY);");
+        Browser.SetScrollY(button1Pos);
         Browser.Exists(By.Id("do-navigation")).Click();
 
-        // "hash" page: check if we landed at 0, then navigate to "scroll" 
+        // "hash" page: check if we landed at 0, then navigate to "scroll"
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         AssertWeAreOnHashPage();
@@ -713,9 +713,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
     [Theory]
     [InlineData(false, false)]
-    [InlineData(false, true)] // ToDo: Forwards -> line 772, Expected: 3270 Actual: 1400
-    [InlineData(true, true)] // ToDo: Forwards -> line 772, Expected: 2400 Actual: 412
-    [InlineData(true, false)] // ToDo: why it requires a special condition?
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
     public void EnhancedNavigationScrollBehavesSameAsBrowserOnBackwardsForwardsAction(bool enableStreaming, bool useEnhancedNavigation)
     {
         // This test checks if the scroll position is preserved after backwards/forwards action
@@ -723,7 +723,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Navigate($"{ServerPathBase}/nav/testing-scroll{landingPageSuffix}");
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation, skipNavigation: true);
 
-        // "scroll" page: max scroll position on exiting it
+        // "scroll" page: scroll to pos1, navigate away
         AssertWeAreOnScrollTestPage();
         WaitStreamingRendersFullPage(enableStreaming);
 
@@ -731,47 +731,66 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var elementForStalenessCheckOnHashPage = Browser.Exists(By.TagName("html"));
 
         var jsExecutor = (IJavaScriptExecutor)Browser;
-        var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
-        Browser.SetScrollY(maxScrollPosition);
+        var scrollPagePos1 = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('do-navigation').getBoundingClientRect().top + window.scrollY);") - 100;
+        Browser.SetScrollY(scrollPagePos1);
         Browser.Exists(By.Id("do-navigation")).Click();
 
-        // "hash" page: scroll position at fragment on exiting it
+        // "hash" page: scroll to pos1, navigate away
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         AssertWeAreOnHashPage();
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
-        var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
-        Browser.SetScrollY(fragmentScrollPosition);
-        Browser.Navigate().Back();
+        var hashPagePos1 = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('do-navigation').getBoundingClientRect().top + window.scrollY);") - 100;
+        // make sure we are expecting different scroll positions on thr 1st and the 2nd page
+        Assert.NotEqual(scrollPagePos1, hashPagePos1);
+        Browser.SetScrollY(hashPagePos1);
+        Browser.Exists(By.Id("do-navigation")).Click();
 
-        // "scroll" page: check if the scroll position is preserved at the bottom
+        // "scroll" page: scroll to pos2, go backwards
         AssertWeAreOnScrollTestPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
+        var scrollPagePos2 = 500;
+        Browser.SetScrollY(scrollPagePos2);
+        Browser.Navigate().Back();
 
-        // from some reason, scroll position differs by 1 pixel between enhanced and browser's navigation
-        // browser's navigation is not precisely going backwards/forwards to the previous state
-        var expectedMaxScrollPositionAfterBackwardsAction = useEnhancedNavigation ? maxScrollPosition : maxScrollPosition - 1;
-        Assert.Equal(expectedMaxScrollPositionAfterBackwardsAction, Browser.GetScrollY());
-
-        // "scroll" page: go forwards to "hash" page, max scroll position on exiting
-        Browser.Navigate().Forward();
+        // "hash" page: check if we landed on pos1, move the scroll to pos2, go backwards
         AssertWeAreOnHashPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
-        // WHY is streaming with browser same as non-streaming with enhanced nav but different than non-streaming with browser?
-        var expectedFragmentScrollPosition = (useEnhancedNavigation || enableStreaming) ? fragmentScrollPosition : fragmentScrollPosition - 1;
-        Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
-
-        // "hash" page: go back to "scroll" page
+        // from some reason, scroll position differs by 1 pixel between enhanced and browser's navigation
+        // browser's navigation is not precisely going backwards/forwards to the previous state
+        var expectedHashPagePos1 = useEnhancedNavigation ? hashPagePos1 : hashPagePos1 - 1;
+        Assert.Equal(expectedHashPagePos1, Browser.GetScrollY());
+        var hashPagePos2 = 600;
+        Browser.SetScrollY(hashPagePos2);
         Browser.Navigate().Back();
+
+        // "scroll" page: check if we landed on pos1, move the scroll to pos3, go forwards
         AssertWeAreOnScrollTestPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
-        var expectedMaxScrollPositionAfterSecondBackwardsAction = useEnhancedNavigation
-            ? expectedMaxScrollPositionAfterBackwardsAction
-            : expectedMaxScrollPositionAfterBackwardsAction - 1;
-        Assert.Equal(expectedMaxScrollPositionAfterSecondBackwardsAction, Browser.GetScrollY());
+        var expectedScrollPagePos1 = useEnhancedNavigation ? scrollPagePos1 : scrollPagePos1 - 1;
+        Assert.Equal(expectedScrollPagePos1, Browser.GetScrollY());
+        var scrollPagePos3 = 700;
+        Browser.SetScrollY(scrollPagePos3);
+        Browser.Navigate().Forward();
+
+        // "hash" page: check if we landed on pos1, go forwards
+        AssertWeAreOnHashPage();
+        WaitStreamingRendersFullPage(enableStreaming);
+        AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
+        var expectedHashPagePos2 = useEnhancedNavigation ? hashPagePos2 : hashPagePos2 - 1;
+        Assert.Equal(expectedHashPagePos2, Browser.GetScrollY());
+        Browser.Navigate().Forward();
+
+        // "scroll" page: check if we landed on pos2
+        AssertWeAreOnScrollTestPage();
+        WaitStreamingRendersFullPage(enableStreaming);
+        AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
+        var expectedScrollPagePos2 = useEnhancedNavigation ? scrollPagePos2 : scrollPagePos2 - 1;
+        Assert.Equal(expectedScrollPagePos2, Browser.GetScrollY());
+
     }
 
     private void AssertEnhancedNavigation(bool useEnhancedNavigation, IWebElement elementForStalenessCheck)
