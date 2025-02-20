@@ -179,7 +179,6 @@ public class NullableConverterTests
         Assert.True(result.Value.WasEmptyOrNull);
     }
 
-
     [Fact]
     public void TryConvertValue_ForCustomParsableStruct_UsesParsableImplementation_ForGoodValue()
     {
