@@ -74,18 +74,17 @@ export function detachProgressivelyEnhancedNavigationListener() {
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
   let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
 
-  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
-
-  if (!isSelfNavigation) {
-    resetScrollAfterNextBatch();
-  }
-
-  // history update should be the last step - same as in client side routing
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }
+
+  if (!isSelfNavigation) {
+    resetScrollAfterNextBatch();
+  }
+
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
 function getCurrentScrollPosition() {
@@ -119,11 +118,9 @@ function onDocumentClick(event: MouseEvent) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
       let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
-      if (!isSelfNavigation) {
-        resetScrollAfterNextBatch();
-      }
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
+        resetScrollAfterNextBatch();
         resetScrollIfNeeded();
       }
     }
