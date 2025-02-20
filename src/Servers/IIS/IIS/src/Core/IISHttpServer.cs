@@ -28,7 +28,7 @@ internal sealed class IISHttpServer : IServer
     private readonly IISServerOptions _options;
     private readonly IISNativeApplication _nativeApplication;
     private readonly ServerAddressesFeature _serverAddressesFeature;
-    private readonly string? _virtualPath;
+    private string? _virtualPath;
 
     private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool? _websocketAvailable;
@@ -69,8 +69,6 @@ internal sealed class IISHttpServer : IServer
         _logger = logger;
         _options = options.Value;
         _serverAddressesFeature = new ServerAddressesFeature();
-        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
-        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         if (_options.ForwardWindowsAuthentication)
         {
@@ -105,6 +103,9 @@ internal sealed class IISHttpServer : IServer
             &OnRequestsDrained,
             (IntPtr)_httpServerHandle,
             (IntPtr)_httpServerHandle);
+
+        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
+        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
