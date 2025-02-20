@@ -1,10 +1,11 @@
 ﻿@page "/nav/scroll-to-hash-no-streaming"
 @inject NavigationManager NavigationManager
+@rendermode RenderMode.InteractiveServer
 @* This is a copy of PageForScrollingToHash, without StreamRendering *@
 
 <PageTitle>Page for scrolling to hash</PageTitle>
 
-<h1 id="test-info">Scroll to hash</h1>
+<h1 id="test-info-hash">Scroll to hash</h1>
 
 <p>If you scroll down a long way, you'll find more content.</p>
 
@@ -15,27 +16,25 @@
 
 <div style="height: 1000px; border: 2px dashed red;">top spacer</div>
 
-@if (showContent)
-{
-    <h2 id="some-content">Some content</h2>
-    <NavLink id="do-navigation" href="@($"nav/testing-scroll-no-streaming")">
-        Navigation to another page (testing-scroll)
-    </NavLink>
+<h2 id="some-content">Some content</h2>
+<NavLink id="do-navigation" href="@(scrollPagePath)">
+    Navigation to another page (testing-scroll)
+</NavLink>
+<button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(scrollPagePath))">
+    Programmatic navigation to another page (testing-scroll)
+</button>
 
-    <p>This is the content.</p>
-}
+<p>This is the content.</p>
 
 <div style="height: 2000px; border: 2px dashed red;">bottom spacer</div>
 
 @code {
-
-    bool showContent;
     string uriOnPageLoad;
+    string scrollPagePath = "nav/testing-scroll-no-streaming";
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         uriOnPageLoad = NavigationManager.Uri;
-        await Task.Delay(1000);
-        showContent = true;
+        return Task.CompletedTask;
     }
 }

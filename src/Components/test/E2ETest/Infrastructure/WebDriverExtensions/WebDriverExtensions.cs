@@ -24,11 +24,19 @@ internal static class WebDriverExtensions
             Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
             PollingInterval = TimeSpan.FromMilliseconds(100)
         };
-        wait.IgnoreExceptionTypes(typeof(NoSuchElementException));
+        wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         wait.Until(driver =>
         {
-            var element = driver.FindElement(by);
-            return element.Displayed;
+            try
+            {
+                var element = driver.FindElement(by);
+                return element.Displayed;
+            }
+            catch (StaleElementReferenceException)
+            {
+                // Retry finding the element
+                return false;
+            }
         });
     }
 }
