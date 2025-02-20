@@ -755,7 +755,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
         var hashPagePos1 = (long)jsExecutor.ExecuteScript($"return Math.round(document.getElementById('{buttonId}').getBoundingClientRect().top + window.scrollY);") - 100;
-        // make sure we are expecting different scroll positions on thr 1st and the 2nd page
+        // make sure we are expecting different scroll positions on the 1st and the 2nd page
         Assert.NotEqual(scrollPagePos1, hashPagePos1);
         Browser.SetScrollY(hashPagePos1);
         Browser.Exists(By.Id(buttonId)).Click();
