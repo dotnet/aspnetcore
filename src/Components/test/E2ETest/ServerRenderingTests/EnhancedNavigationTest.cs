@@ -679,11 +679,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // or to the beginning of a fragment, regardless of the previous scroll position
         string landingPageSuffix = enableStreaming ? "" : "-no-streaming";
         string buttonKeyword = programmaticNavigation ? "-programmatic" : "";
-        Navigate($"{ServerPathBase}/nav/testing-scroll{landingPageSuffix}");
+        Navigate($"{ServerPathBase}/nav/scroll-test{landingPageSuffix}");
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation, skipNavigation: true);
 
-        // "scroll" page: scroll maximally down and go to "hash" page - we should land at the top of that page
-        AssertWeAreOnScrollTestPage();
+        // "landing" page: scroll maximally down and go to "next" page - we should land at the top of that page
+        AssertWeAreOnLandingPage();
 
         // staleness check is used to assert enhanced navigation is enabled/disabled, as requested
         var elementForStalenessCheckOnHashPage = Browser.Exists(By.TagName("html"));
@@ -695,8 +695,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.SetScrollY(button1Pos);
         Browser.Exists(By.Id(button1Id)).Click();
 
-        // "hash" page: check if we landed at 0, then navigate to "scroll"
-        AssertWeAreOnHashPage();
+        // "next" page: check if we landed at 0, then navigate to "landing"
+        AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         Assert.Equal(0, Browser.GetScrollY());
@@ -705,14 +705,14 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
         Browser.Exists(By.Id(button1Id)).Click();
 
-        // "scroll" page: navigate to a fragment on another page - we should land at the beginning of the fragment
-        AssertWeAreOnScrollTestPage();
+        // "landing" page: navigate to a fragment on another page - we should land at the beginning of the fragment
+        AssertWeAreOnLandingPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
 
         var button2Id = $"do{buttonKeyword}-navigation-with-fragment";
         Browser.Exists(By.Id(button2Id)).Click();
-        AssertWeAreOnHashPage();
+        AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         var expectedFragmentScrollPosition = fragmentScrollPosition - 1;
@@ -733,11 +733,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // This test checks if the scroll position is preserved after backwards/forwards action
         string landingPageSuffix = enableStreaming ? "" : "-no-streaming";
         string buttonKeyword = programmaticNavigation ? "-programmatic" : "";
-        Navigate($"{ServerPathBase}/nav/testing-scroll{landingPageSuffix}");
+        Navigate($"{ServerPathBase}/nav/scroll-test{landingPageSuffix}");
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation, skipNavigation: true);
 
-        // "scroll" page: scroll to pos1, navigate away
-        AssertWeAreOnScrollTestPage();
+        // "landing" page: scroll to pos1, navigate away
+        AssertWeAreOnLandingPage();
         WaitStreamingRendersFullPage(enableStreaming);
 
         // staleness check is used to assert enhanced navigation is enabled/disabled, as requested
@@ -749,8 +749,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.SetScrollY(scrollPagePos1);
         Browser.Exists(By.Id(buttonId)).Click();
 
-        // "hash" page: scroll to pos1, navigate away
-        AssertWeAreOnHashPage();
+        // "next" page: scroll to pos1, navigate away
+        AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
@@ -760,16 +760,16 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.SetScrollY(hashPagePos1);
         Browser.Exists(By.Id(buttonId)).Click();
 
-        // "scroll" page: scroll to pos2, go backwards
-        AssertWeAreOnScrollTestPage();
+        // "landing" page: scroll to pos2, go backwards
+        AssertWeAreOnLandingPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
         var scrollPagePos2 = 500;
         Browser.SetScrollY(scrollPagePos2);
         Browser.Navigate().Back();
 
-        // "hash" page: check if we landed on pos1, move the scroll to pos2, go backwards
-        AssertWeAreOnHashPage();
+        // "next" page: check if we landed on pos1, move the scroll to pos2, go backwards
+        AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         AssertScrollPositionCorrect(useEnhancedNavigation, hashPagePos1);
@@ -778,8 +778,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.SetScrollY(hashPagePos2);
         Browser.Navigate().Back();
 
-        // "scroll" page: check if we landed on pos1, move the scroll to pos3, go forwards
-        AssertWeAreOnScrollTestPage();
+        // "landing" page: check if we landed on pos1, move the scroll to pos3, go forwards
+        AssertWeAreOnLandingPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
         AssertScrollPositionCorrect(useEnhancedNavigation, scrollPagePos1);
@@ -787,15 +787,15 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.SetScrollY(scrollPagePos3);
         Browser.Navigate().Forward();
 
-        // "hash" page: check if we landed on pos1, go forwards
-        AssertWeAreOnHashPage();
+        // "next" page: check if we landed on pos1, go forwards
+        AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         AssertScrollPositionCorrect(useEnhancedNavigation, hashPagePos2);
         Browser.Navigate().Forward();
 
         // "scroll" page: check if we landed on pos2
-        AssertWeAreOnScrollTestPage();
+        AssertWeAreOnLandingPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnScrollPage);
         AssertScrollPositionCorrect(useEnhancedNavigation, scrollPagePos2);
@@ -821,18 +821,18 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.Equal(useEnhancedNavigation, enhancedNavigationDetected);
     }
 
-    private void AssertWeAreOnScrollTestPage()
+    private void AssertWeAreOnLandingPage()
     {
-        string infoName = "test-info-scroll";
+        string infoName = "test-info-1";
         Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 20);
         Browser.Equal("Scroll tests landing page", () => Browser.Exists(By.Id(infoName)).Text);
     }
 
-    private void AssertWeAreOnHashPage()
+    private void AssertWeAreOnNextPage()
     {
-        string infoName = "test-info-hash";
+        string infoName = "test-info-2";
         Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 20);
-        Browser.Equal("Scroll to hash", () => Browser.Exists(By.Id(infoName)).Text);
+        Browser.Equal("Scroll tests next page", () => Browser.Exists(By.Id(infoName)).Text);
     }
 
     private void WaitStreamingRendersFullPage(bool enableStreaming)

@@ -1,11 +1,10 @@
 ﻿@page "/nav/scroll-to-hash"
-@inject NavigationManager NavigationManager
 @attribute [StreamRendering]
-@rendermode RenderMode.InteractiveServer
+@inject NavigationManager NavigationManager
 
 <PageTitle>Page for scrolling to hash</PageTitle>
 
-<h1 id="test-info-hash">Scroll to hash</h1>
+<h1>Scroll to hash</h1>
 
 <p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
 
@@ -14,27 +13,18 @@
     <div id="uri-on-page-load" style="display: none" data-value="@uriOnPageLoad"></div>
 </p>
 
-<div style="height: 2000px; border: 2px dashed red;">top spacer</div>
+<div style="height: 2000px; border: 2px dashed red;">spacer</div>
 
 @if (showContent)
 {
     <h2 id="some-content">Some content</h2>
-    <NavLink id="do-navigation" href="@(scrollPagePath)">
-        Navigation to another page (testing-scroll)
-    </NavLink>
-    <button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(scrollPagePath))">
-        Programmatic navigation to another page (testing-scroll)
-    </button>
 
     <p>This is the content.</p>
 }
 
-<div style="height: 2000px; border: 2px dashed red;">bottom spacer</div>
-
 @code {
     bool showContent;
     string uriOnPageLoad;
-    string scrollPagePath = "nav/testing-scroll";
 
     protected override async Task OnInitializedAsync()
     {

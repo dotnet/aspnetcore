@@ -1,11 +1,11 @@
-﻿@page "/nav/testing-scroll"
+﻿@page "/nav/scroll-test"
 @inject NavigationManager NavigationManager
 @attribute [StreamRendering]
 @rendermode RenderMode.InteractiveServer
 
 <PageTitle>Page for testing scroll position</PageTitle>
 
-<h1 id="test-info-scroll">Scroll tests landing page</h1>
+<h1 id="test-info-1">Scroll tests landing page</h1>
 
 <p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
 
@@ -14,16 +14,16 @@
 @if (showContent)
 {
     <NavLink id="do-navigation-with-fragment" href="@(hashPageFragmentPath)">
-        Navigation to another page with fragment (scroll-to-hash#some-content)
+        Navigation to another page with fragment
     </NavLink>
     <NavLink id="do-navigation" href="@(hashPagePath)">
-        Navigation to another page (scroll-to-hash)
+        Navigation to another page
     </NavLink>
     <button id="do-programmatic-navigation-with-fragment" @onclick="@(() => NavigationManager.NavigateTo(hashPageFragmentPath))">
-        Programmatic navigation to another page with fragment (scroll-to-hash#some-content)
+        Programmatic navigation to another page with fragment
     </button>
     <button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(hashPagePath))">
-        Programmatic navigation to another page (scroll-to-hash)
+        Programmatic navigation to another page
     </button>
 }
 
@@ -38,8 +38,8 @@
 @code {
     bool showContent;
     string uriOnPageLoad;
-    string hashPagePath = "nav/scroll-to-hash";
-    string hashPageFragmentPath = "nav/scroll-to-hash#some-content";
+    string hashPagePath = "nav/scroll-test-next";
+    string hashPageFragmentPath = "nav/scroll-test-next#some-content";
 
     protected override async Task OnInitializedAsync()
     {
