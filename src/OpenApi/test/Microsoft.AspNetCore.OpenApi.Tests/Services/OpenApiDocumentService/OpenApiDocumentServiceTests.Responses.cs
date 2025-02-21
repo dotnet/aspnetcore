@@ -315,11 +315,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         const string expectedBadRequestDescription = "Validation failed for the request";
 
         // Act
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
         () =>
-            { });
+            { return TypedResults.Ok(new Todo(1, "Lorem", true, DateTime.UtcNow)); }); // This code doesn't return Bad Request, but that doesn't matter for this test.
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -328,7 +328,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Collection(operation.Responses.OrderBy(r => r.Key),
                 response =>
                 {
-                    Assert.Equal("201", response.Key);
+                    Assert.Equal("200", response.Key);
                     Assert.Equal(expectedCreatedDescription, response.Value.Description);
                 },
                 response =>
@@ -346,11 +346,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = null)] // Explicitly set to NULL
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = null)] // Explicitly set to NULL
         [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
         () =>
-            { });
+            { return TypedResults.Ok(new Todo(1, "Lorem", true, DateTime.UtcNow)); }); // This code doesn't return Bad Request, but that doesn't matter for this test.
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -359,8 +359,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Collection(operation.Responses.OrderBy(r => r.Key),
                 response =>
                 {
-                    Assert.Equal("201", response.Key);
-                    Assert.Equal("Created", response.Value.Description);
+                    Assert.Equal("200", response.Key);
+                    Assert.Equal("OK", response.Value.Description);
                 },
                 response =>
                 {
