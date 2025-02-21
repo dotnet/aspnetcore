@@ -702,7 +702,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 // This has to be caught here so StatusCode is set properly before disposing the HttpContext
                 // (DisposeContext logs StatusCode).
                 SetBadRequestState(ex);
-                ReportApplicationError(ex);
+
+                if (!_connectionAborted)
+                {
+                    // Only report bad requests as error-level logs here if the connection hasn't been aborted. This
+                    // prevents noise in the logs for common types of client errors, and we already have a mechanism
+                    // for logging these at a higher level if needed by increasing the log level for
+                    // "Microsoft.AspNetCore.Server.Kestrel.BadRequests".
+                    ReportApplicationError(ex);
+                }
             }
             catch (Exception ex)
             {
