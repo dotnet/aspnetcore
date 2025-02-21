@@ -33,6 +33,23 @@ namespace Microsoft.AspNetCore.Mvc.Description;
 public class DefaultApiDescriptionProviderTest
 {
     [Fact]
+    public void CatchAllParameter_IsReportedAsOptional()
+    {
+        // Arrange: Create an action descriptor with a catch-all route template.
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = "{**catchAllParameter}" };
+
+        // Act: Get the API descriptions using the existing helper.
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert: There should be one description, with one parameter named "catchAllParameter"
+        // and its IsRequired property should be false.
+        var description = Assert.Single(descriptions);
+        var parameter = Assert.Single(description.ParameterDescriptions, p => p.Name == "catchAllParameter");
+        Assert.False(parameter.IsRequired);
+    }
+
+    [Fact]
     public void GetApiDescription_IgnoresNonControllerActionDescriptor()
     {
         // Arrange

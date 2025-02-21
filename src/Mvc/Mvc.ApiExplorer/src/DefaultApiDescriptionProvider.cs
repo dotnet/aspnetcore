@@ -315,9 +315,18 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 parameter.IsRequired = true;
             }
 
-            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null && !parameter.RouteInfo.IsOptional)
+            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null)
             {
-                parameter.IsRequired = true;
+                // If the route template contains a catch-all parameter marker ("{**"), treat it as optional.
+                var template = context.ActionDescriptor.AttributeRouteInfo?.Template;
+                if (!string.IsNullOrEmpty(template) && template.Contains("{**"))
+                {
+                    parameter.IsRequired = false;
+                }
+                else if (!parameter.RouteInfo.IsOptional)
+                {
+                    parameter.IsRequired = true;
+                }
             }
         }
     }
