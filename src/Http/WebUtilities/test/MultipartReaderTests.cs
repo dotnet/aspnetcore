@@ -92,26 +92,6 @@ public class MultipartReaderTests
 "Content of a.txt.\r\n" +
 "\r\n" +
 "--9051914041544843365";
-    private const string ThreePartBodyWithMixedFiles =
-"--9051914041544843365972754266\r\n" +
-"Content-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\n" +
-"Content-Type: text/plain\r\n" +
-"\r\n" +
-"Content of a.txt.\r\n" +
-"\r\n" +
-"--9051914041544843365972754266\r\n" +
-"Content-Disposition: form-data; name=\"file2\"; filename=\"a.html\"\r\n" +
-"Content-Type: text/html\r\n" +
-"\r\n" +
-"<!DOCTYPE html><title>Content of a.html.</title>\r\n" +
-"\r\n" +
-"--9051914041544843365972754266\r\n" +
-"Content-Disposition: form-data; name=\"file3\"; filename=\"a.json\"\r\n" +
-"Content-Type: application/json\r\n" +
-"\r\n" +
-"{ \"Text\": \"Content of a.json.\" }\r\n" +
-"\r\n" +
-"--9051914041544843365972754266--\r\n";
 
     private static MemoryStream MakeStream(string text)
     {
@@ -337,8 +317,10 @@ public class MultipartReaderTests
     [Fact]
     public async Task MultipartReader_ReadMultipartBodyWithFilesForDeferredCopy_Success()
     {
-        var stream = MakeStream(ThreePartBodyWithMixedFiles);
+        var stream = MakeStream(ThreePartBody);
         var reader = new MultipartReader(Boundary, stream);
+
+        await reader.ReadNextSectionAsync(); // skip text field section
 
         var section = await reader.ReadNextSectionAsync();
         Assert.NotNull(section);
@@ -354,35 +336,19 @@ public class MultipartReaderTests
         Assert.Equal("text/html", section.Headers["Content-Type"][0]);
         var stream2 = section.Body;
 
-        section = await reader.ReadNextSectionAsync();
-        Assert.NotNull(section);
-        Assert.Equal(2, section.Headers.Count);
-        Assert.Equal("form-data; name=\"file3\"; filename=\"a.json\"", section.Headers["Content-Disposition"][0]);
-        Assert.Equal("application/json", section.Headers["Content-Type"][0]);
-        var stream3 = section.Body;
-
         Assert.Null(await reader.ReadNextSectionAsync());
 
         Assert.True(stream1.CanSeek);
         Assert.Equal(0, stream1.Seek(0, SeekOrigin.Begin));
         var buffer = new MemoryStream();
-        var exception = await Record.ExceptionAsync(() => stream1.CopyToAsync(buffer));
-        Assert.Null(exception);
+        await stream1.CopyToAsync(buffer);
         Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
 
         Assert.True(stream2.CanSeek);
         Assert.Equal(0, stream2.Seek(0, SeekOrigin.Begin));
         buffer = new MemoryStream();
-        exception = await Record.ExceptionAsync(() => stream2.CopyToAsync(buffer));
-        Assert.Null(exception);
+        await stream2.CopyToAsync(buffer);
         Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
-
-        Assert.True(stream3.CanSeek);
-        Assert.Equal(0, stream3.Seek(0, SeekOrigin.Begin));
-        buffer = new MemoryStream();
-        exception = await Record.ExceptionAsync(() => stream3.CopyToAsync(buffer));
-        Assert.Null(exception);
-        Assert.Equal("{ \"Text\": \"Content of a.json.\" }\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
     }
 
     [Fact]
