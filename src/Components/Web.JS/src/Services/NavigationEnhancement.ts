@@ -72,7 +72,7 @@ export function detachProgressivelyEnhancedNavigationListener() {
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
-  let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
+  const originalLocation = location.href;
 
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
@@ -80,7 +80,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }
 
-  if (!isSelfNavigation) {
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
     resetScrollAfterNextBatch();
   }
 
