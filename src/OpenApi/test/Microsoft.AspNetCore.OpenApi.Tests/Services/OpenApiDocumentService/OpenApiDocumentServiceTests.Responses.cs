@@ -320,7 +320,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Act
         builder.MapPost("/api/todos",
             [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = expectedCreatedDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
         () =>
             { });
 
@@ -354,7 +354,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Act
         builder.MapPost("/api/todos",
             [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = expectedCreatedDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
         () =>
             { return TypedResults.Ok(new Todo(1, "Lorem", true, DateTime.UtcNow)); }); // This code doesn't return Bad Request, but that doesn't matter for this test.
 
