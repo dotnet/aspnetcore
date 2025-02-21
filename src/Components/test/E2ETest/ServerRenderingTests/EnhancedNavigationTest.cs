@@ -698,10 +698,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // "next" page: check if we landed at 0, then navigate to "landing"
         AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
+        Browser.WaitForElementToBeVisible(By.Id("some-content"));
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         Assert.Equal(0, Browser.GetScrollY());
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
-        Browser.WaitForElementToBeVisible(By.Id("some-content"));
         var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return Math.round(document.getElementById('some-content').getBoundingClientRect().top + window.scrollY);");
         Browser.Exists(By.Id(button1Id)).Click();
 
@@ -745,6 +745,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         var jsExecutor = (IJavaScriptExecutor)Browser;
         var buttonId = $"do{buttonKeyword}-navigation";
+        Browser.WaitForElementToBeVisible(By.Id(button1Id));
         var scrollPagePos1 = (long)jsExecutor.ExecuteScript($"return Math.round(document.getElementById('{buttonId}').getBoundingClientRect().top + window.scrollY);") - 100;
         Browser.SetScrollY(scrollPagePos1);
         Browser.Exists(By.Id(buttonId)).Click();
@@ -752,6 +753,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // "next" page: scroll to pos1, navigate away
         AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
+        Browser.WaitForElementToBeVisible(By.Id(button1Id));
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
         var hashPagePos1 = (long)jsExecutor.ExecuteScript($"return Math.round(document.getElementById('{buttonId}').getBoundingClientRect().top + window.scrollY);") - 100;
