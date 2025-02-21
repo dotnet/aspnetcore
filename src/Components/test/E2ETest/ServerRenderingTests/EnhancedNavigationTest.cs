@@ -669,10 +669,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(false, true, false)]
     [InlineData(true, true, false)]
     [InlineData(true, false, false)]
-    [InlineData(false, false, true)]
+    // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]
-    [InlineData(true, false, true)]
+    // [InlineData(true, false, true)] programmatic navigation doesn't work without enhanced navigation
     public void EnhancedNavigationScrollBehavesSameAsBrowserOnNavigation(bool enableStreaming, bool useEnhancedNavigation, bool programmaticNavigation)
     {
         // This test checks if the navigation to another path moves the scroll to the top of the page,
@@ -724,10 +724,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(false, true, false)]
     [InlineData(true, true, false)]
     [InlineData(true, false, false)]
-    [InlineData(false, false, true)]
+    // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]
-    [InlineData(true, false, true)]
+    // [InlineData(true, false, true)] programmatic navigation doesn't work without enhanced navigation
     public void EnhancedNavigationScrollBehavesSameAsBrowserOnBackwardsForwardsAction(bool enableStreaming, bool useEnhancedNavigation, bool programmaticNavigation)
     {
         // This test checks if the scroll position is preserved after backwards/forwards action
