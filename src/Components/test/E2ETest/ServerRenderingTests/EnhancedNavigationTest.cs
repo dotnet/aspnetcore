@@ -745,7 +745,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         var jsExecutor = (IJavaScriptExecutor)Browser;
         var buttonId = $"do{buttonKeyword}-navigation";
-        Browser.WaitForElementToBeVisible(By.Id(button1Id));
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
         var scrollPagePos1 = (long)jsExecutor.ExecuteScript($"return Math.round(document.getElementById('{buttonId}').getBoundingClientRect().top + window.scrollY);") - 100;
         Browser.SetScrollY(scrollPagePos1);
         Browser.Exists(By.Id(buttonId)).Click();
@@ -753,7 +753,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // "next" page: scroll to pos1, navigate away
         AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
-        Browser.WaitForElementToBeVisible(By.Id(button1Id));
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnHashPage);
         var elementForStalenessCheckOnScrollPage = Browser.Exists(By.TagName("html"));
         var hashPagePos1 = (long)jsExecutor.ExecuteScript($"return Math.round(document.getElementById('{buttonId}').getBoundingClientRect().top + window.scrollY);") - 100;
