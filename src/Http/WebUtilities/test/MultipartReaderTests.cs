@@ -80,7 +80,6 @@ public class MultipartReaderTests
 "<!DOCTYPE html><title>Content of a.html.</title>\r\n" +
 "\r\n" +
 "--9051914041544843365972754266--\r\n";
-
     private const string TwoPartBodyIncompleteBuffer =
 "--9051914041544843365972754266\r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
@@ -313,6 +312,43 @@ public class MultipartReaderTests
         {
             var reader = new MultipartReader(Boundary, stream, 5);
         });
+    }
+
+    [Fact]
+    public async Task MultipartReader_ReadMultipartBodyWithFilesForDeferredCopy_Success()
+    {
+        var stream = MakeStream(ThreePartBody);
+        var reader = new MultipartReader(Boundary, stream);
+
+        await reader.ReadNextSectionAsync(); // skip text field section
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal(2, section.Headers.Count);
+        Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
+        var stream1 = section.Body;
+
+        section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal(2, section.Headers.Count);
+        Assert.Equal("form-data; name=\"file2\"; filename=\"a.html\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("text/html", section.Headers["Content-Type"][0]);
+        var stream2 = section.Body;
+
+        Assert.Null(await reader.ReadNextSectionAsync());
+
+        Assert.True(stream1.CanSeek);
+        Assert.Equal(0, stream1.Seek(0, SeekOrigin.Begin));
+        var buffer = new MemoryStream();
+        await stream1.CopyToAsync(buffer);
+        Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+        Assert.True(stream2.CanSeek);
+        Assert.Equal(0, stream2.Seek(0, SeekOrigin.Begin));
+        buffer = new MemoryStream();
+        await stream2.CopyToAsync(buffer);
+        Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
     }
 
     [Fact]
