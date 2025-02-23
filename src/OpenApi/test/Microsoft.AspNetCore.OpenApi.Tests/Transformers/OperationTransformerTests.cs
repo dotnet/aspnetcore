@@ -478,6 +478,61 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal(4, Dependency.InstantiationCount);
     }
 
+    [Fact]
+    public async Task WithOpenApi_CanApplyTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description", operation.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task WithOpenApi_TransformerRunsAfterOtherTransformers()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            });
+
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            operation.Description = "Operation Description 2";
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description", operation.Description);
+                });
+        });
+    }
+
     private class ActivatedTransformer : IOpenApiOperationTransformer
     {
         public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
