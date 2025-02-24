@@ -317,9 +317,12 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 
             if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null)
             {
-                // If the route template contains a catch-all parameter marker ("{**"), treat it as optional.
-                var template = context.ActionDescriptor.AttributeRouteInfo?.Template;
-                if (!string.IsNullOrEmpty(template) && template.Contains("{**"))
+                // Locate the corresponding route parameter metadata.
+                var routeParam = context.RouteParameters
+                    .FirstOrDefault(rp => string.Equals(rp.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+
+                // If the parameter is defined as a catch-all, mark it as optional.
+                if (routeParam != null && routeParam.IsCatchAll)
                 {
                     parameter.IsRequired = false;
                 }
