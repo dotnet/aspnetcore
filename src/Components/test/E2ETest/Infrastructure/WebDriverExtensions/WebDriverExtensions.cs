@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest;
 
 internal static class WebDriverExtensions
 {
+    private static string GetFindPositionScript(string elementId) =>
+        $"return Math.round(document.getElementById('{elementId}').getBoundingClientRect().top + window.scrollY);";
+
     public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl)
     {
         var absoluteUrl = new Uri(baseUri, relativeUrl);
@@ -38,5 +41,31 @@ internal static class WebDriverExtensions
                 return false;
             }
         });
+    }
+
+    public static long GetElementPositionWithRetry(this IWebDriver browser, string elementId, int retryCount = 3, int delayBetweenRetriesMs = 100)
+    {
+        var jsExecutor = (IJavaScriptExecutor)browser;
+        string script = GetFindPositionScript(elementId);
+        browser.WaitForElementToBeVisible(By.Id(elementId));
+        for (int i = 0; i < retryCount; i++)
+        {
+            try
+            {
+                var result = jsExecutor.ExecuteScript(script);
+                if (result != null)
+                {
+                    return (long)result;
+                }
+            }
+            catch (OpenQA.Selenium.JavaScriptException)
+            {
+                // JavaScript execution failed, retry
+            }
+
+            Thread.Sleep(delayBetweenRetriesMs);
+        }
+
+        throw new Exception($"Failed to execute script after {retryCount} retries.");
     }
 }
