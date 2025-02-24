@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -34,7 +35,7 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
             {
                 route = $"{routePrefix}/{{**catchall}}";
             }
-            group.Map(route, _shortCircuitDelegate)
+            group.Map(RoutePatternFactory.Parse(route), _shortCircuitDelegate)
                 .ShortCircuit(statusCode)
                 .Add(endpoint =>
                 {

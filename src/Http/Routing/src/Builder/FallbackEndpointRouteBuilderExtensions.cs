@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -74,7 +75,7 @@ public static class FallbackEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(requestDelegate);
 
-        var conventionBuilder = endpoints.Map(pattern, requestDelegate);
+        var conventionBuilder = endpoints.Map(RoutePatternFactory.Parse(pattern), requestDelegate);
         conventionBuilder.WithDisplayName("Fallback " + pattern);
         conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
         conventionBuilder.WithMetadata(FallbackMetadata.Instance);

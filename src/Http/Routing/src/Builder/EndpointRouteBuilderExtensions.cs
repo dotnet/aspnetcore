@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -227,6 +228,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapGet(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -245,6 +247,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapPost(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -263,6 +266,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapPut(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -281,6 +285,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapDelete(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -299,6 +304,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapPatch(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -338,6 +344,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder Map(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -413,6 +420,7 @@ public static class EndpointRouteBuilderExtensions
     /// </remarks>
     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
+    [OverloadResolutionPriority(1)]
     public static RouteHandlerBuilder MapFallback(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
