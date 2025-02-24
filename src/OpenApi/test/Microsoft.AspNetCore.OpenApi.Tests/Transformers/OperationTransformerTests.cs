@@ -479,7 +479,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task WithOpenApi_CanApplyTransformer()
+    public async Task AddOpenApiOperationTransformer_CanApplyTransformer()
     {
         var builder = CreateBuilder();
 
@@ -503,7 +503,7 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task WithOpenApi_TransformerRunsAfterOtherTransformers()
+    public async Task AddOpenApiOperationTransformer_TransformerRunsAfterOtherTransformers()
     {
         var builder = CreateBuilder();
 
@@ -529,6 +529,44 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("/", path.Key);
                     var operation = Assert.Single(path.Value.Operations.Values);
                     Assert.Equal("Operation Description", operation.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task AddOpenApiOperationTransformer_SupportsMultipleTransformers()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description += " 2";
+                operation.Deprecated = true;
+                return Task.CompletedTask;
+            })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description += " 3";
+                operation.OperationId = "OperationId";
+                return Task.CompletedTask;
+            });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description 2 3", operation.Description);
+                    Assert.True(operation.Deprecated);
+                    Assert.Equal("OperationId", operation.OperationId);
                 });
         });
     }

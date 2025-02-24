@@ -271,10 +271,9 @@ internal sealed class OpenApiDocumentService(
 
             // Apply any endpoint-specific operation transformers registered via
             // the AddOpenApiOperationTransformer extension method.
-            var endpointOperationTransformer = description.ActionDescriptor.EndpointMetadata
-                .OfType<DelegateOpenApiOperationTransformer>()
-                .LastOrDefault();
-            if (endpointOperationTransformer is not null)
+            var endpointOperationTransformers = description.ActionDescriptor.EndpointMetadata
+                .OfType<DelegateOpenApiOperationTransformer>();
+            foreach (var endpointOperationTransformer in endpointOperationTransformers)
             {
                 await endpointOperationTransformer.TransformAsync(operation, operationContext, cancellationToken);
             }
