@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -99,7 +100,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         app.Run(c => dispatcher.ExecuteNegotiateAsync(c, options));
         var negotiateHandler = app.Build();
 
-        var negotiateBuilder = endpoints.Map(pattern + "/negotiate", negotiateHandler);
+        var negotiateBuilder = endpoints.Map(RoutePatternFactory.Parse(pattern + "/negotiate"), negotiateHandler);
         conventionBuilders.Add(negotiateBuilder);
         // Add the negotiate metadata so this endpoint can be identified
         negotiateBuilder.WithMetadata(_negotiateMetadata);
@@ -111,7 +112,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         app.Run(c => dispatcher.ExecuteAsync(c, options, connectionDelegate));
         var executehandler = app.Build();
 
-        var executeBuilder = endpoints.Map(pattern, executehandler);
+        var executeBuilder = endpoints.Map(RoutePatternFactory.Parse(pattern), executehandler);
         executeBuilder.WithMetadata(new DisableRequestTimeoutAttribute());
         conventionBuilders.Add(executeBuilder);
 
