@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -68,6 +69,6 @@ public static class HealthCheckEndpointRouteBuilderExtensions
            .UseMiddleware<HealthCheckMiddleware>(args)
            .Build();
 
-        return endpoints.Map(pattern, pipeline).WithDisplayName(DefaultDisplayName);
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), pipeline).WithDisplayName(DefaultDisplayName);
     }
 }
