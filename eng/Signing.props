@@ -24,8 +24,6 @@
     <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
-    <ItemsToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" />
-    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*.wixpack.zip" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
   </ItemGroup>
 
