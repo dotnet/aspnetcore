@@ -25,12 +25,11 @@
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <CodeSignDependsOn>
+      $(CodeSignDependsOn);
+      _FilterFilesToSign
+    </CodeSignDependsOn>
   </PropertyGroup>
-
-  <CodeSignDependsOn>
-    $(CodeSignDependsOn);
-    _FilterFilesToSign
-  </CodeSignDependsOn>
 
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
