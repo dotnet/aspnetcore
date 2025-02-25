@@ -927,7 +927,6 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal("First Second Third", schema.Description);
         });
 
-        await Task.Yield();
         tcs1.TrySetResult();
 
         await documentTask;

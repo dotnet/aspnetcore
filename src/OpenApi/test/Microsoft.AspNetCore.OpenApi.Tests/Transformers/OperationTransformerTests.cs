@@ -648,7 +648,6 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal("First Second Third", operation.Description);
         });
 
-        await Task.Yield();
         tcs1.TrySetResult();
 
         await documentTask;
