@@ -25,6 +25,10 @@
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <CodeSignDependsOn>
+      $(CodeSignDependsOn);
+      _FilterFilesToSign
+    </CodeSignDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
@@ -323,6 +327,15 @@
       <FilesToSign Include="$(DependencyPackageDir)**\*.jar" Certificate="MicrosoftJARSHA2" />
       <FilesToSign Include="$(ArtifactsDir)symbols\**\*.nupkg" Certificate="NuGet" />
       <FilesToSign Include="$(SharedFxOutputPath)**\*.zip" Certificate="None" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_FilterFilesToSign">
+    <ItemGroup>
+      <_FilesToSignFiltered Include="@(FilesToSign)" Condition="Exists(%(FilesToSign.Identity))" />
+
+      <FilesToSign Remove="@(FilesToSign)" />
+      <FilesToSign Include="@(_FilesToSignFiltered)" />
     </ItemGroup>
   </Target>
 
