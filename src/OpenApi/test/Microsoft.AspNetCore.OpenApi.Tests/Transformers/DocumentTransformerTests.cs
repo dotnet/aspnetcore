@@ -249,13 +249,14 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         var transformerCalled = false;
         var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
 
         options.AddDocumentTransformer(async (document, context, cancellationToken) =>
         {
             transformerCalled = true;
             try
             {
-                await Task.Delay(5000, cancellationToken);
+                await tcs.Task.WaitAsync(cancellationToken);
                 document.Info.Description = "Should not be set";
             }
             catch (OperationCanceledException)
@@ -266,7 +267,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         });
 
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
+        cts.CancelAfter(1);
 
         await Assert.ThrowsAsync<TaskCanceledException>(async () =>
         {
@@ -287,7 +288,6 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         var transformerOrder = new List<int>();
         var tcs1 = new TaskCompletionSource();
         var tcs2 = new TaskCompletionSource();
-        var tcs2Called = false;
 
         options.AddDocumentTransformer(async (document, context, cancellationToken) =>
         {
@@ -300,11 +300,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         {
             transformerOrder.Add(2);
             document.Info.Title += " Second";
-            if (!tcs2Called)
-            {
-                tcs2Called = true;
-                tcs2.TrySetResult();
-            }
+            tcs2.TrySetResult();
             return Task.CompletedTask;
         });
 
@@ -320,7 +316,7 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal("First Second Third", document.Info.Title);
         });
 
-        await Task.Delay(100);
+        await Task.Yield();
         tcs1.TrySetResult();
 
         await documentTask;

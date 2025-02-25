@@ -857,13 +857,15 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         var transformerCalled = false;
         var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
 
+        //Assert that transformers wait for completion signal from sibling tasks before running
         options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
         {
             transformerCalled = true;
             try
             {
-                await Task.Delay(5000, cancellationToken);
+                await tcs.Task.WaitAsync(cancellationToken);
                 schema.Description = "Should not be set";
             }
             catch (OperationCanceledException)
@@ -874,7 +876,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         });
 
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
+        cts.CancelAfter(1);
 
         await Assert.ThrowsAsync<TaskCanceledException>(async () =>
         {
@@ -896,7 +898,6 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var tcs1 = new TaskCompletionSource();
         var tcs2 = new TaskCompletionSource();
 
-        // Assert that transformers wait for completion signal from sibling tasks before running
         options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
         {
             await tcs1.Task;
@@ -926,7 +927,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal("First Second Third", schema.Description);
         });
 
-        await Task.Delay(100);
+        await Task.Yield();
         tcs1.TrySetResult();
 
         await documentTask;
