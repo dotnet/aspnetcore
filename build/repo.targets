@@ -331,10 +331,12 @@
   </Target>
 
   <Target Name="_FilterFilesToSign">
-    <_FilesToSignFiltered Include="@(FilesToSign)" Condition="Exists(%(FilesToSign.Identity))" />
+    <ItemGroup>
+      <_FilesToSignFiltered Include="@(FilesToSign)" Condition="Exists(%(FilesToSign.Identity))" />
 
-    <FilesToSign Remove="@(FilesToSign)" />
-    <FilesToSign Include="@(_FilesToSignFiltered)" />
+      <FilesToSign Remove="@(FilesToSign)" />
+      <FilesToSign Include="@(_FilesToSignFiltered)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_CopySignedFilesToArtifacts">
