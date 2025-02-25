@@ -27,6 +27,11 @@
     <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
+  <CodeSignDependsOn>
+    $(CodeSignDependsOn);
+    _FilterFilesToSign
+  </CodeSignDependsOn>
+
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
@@ -324,6 +329,13 @@
       <FilesToSign Include="$(ArtifactsDir)symbols\**\*.nupkg" Certificate="NuGet" />
       <FilesToSign Include="$(SharedFxOutputPath)**\*.zip" Certificate="None" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_FilterFilesToSign">
+    <_FilesToSignFiltered Include="@(FilesToSign)" Condition="Exists(%(FilesToSign.Identity))" />
+
+    <FilesToSign Remove="@(FilesToSign)" />
+    <FilesToSign Include="@(_FilesToSignFiltered)" />
   </Target>
 
   <Target Name="_CopySignedFilesToArtifacts">
