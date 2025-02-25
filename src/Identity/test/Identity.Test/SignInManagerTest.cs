@@ -548,38 +548,37 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(false, false)]
-        public async Task CanResignIn(
-            // Suppress warning that says theory methods should use all of their parameters.
-            // See comments below about why this isn't used.
-#pragma warning disable xUnit1026
-            bool isPersistent,
-#pragma warning restore xUnit1026
-            bool externalLogin)
+        public async Task CanResignIn(bool isPersistent, bool externalLogin)
         {
             // Setup
             var user = new PocoUser { UserName = "Foo" };
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
             var loginProvider = "loginprovider";
-            var id = new ClaimsIdentity();
+            var id = new ClaimsIdentity("authscheme");
             if (externalLogin)
             {
                 id.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
             }
-            // REVIEW: auth changes we lost the ability to mock is persistent
-            //var properties = new AuthenticationProperties { IsPersistent = isPersistent };
-            var authResult = AuthenticateResult.NoResult();
+
+            var claimsPrincipal = new ClaimsPrincipal(id);
+            var properties = new AuthenticationProperties { IsPersistent = isPersistent };
+            var authResult = AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, properties, "authscheme"));
             auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
                 .Returns(Task.FromResult(authResult)).Verifiable();
             var manager = SetupUserManager(user);
+            manager.Setup(m => m.GetUserId(claimsPrincipal)).Returns(user.Id.ToString());
             var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
                 new HttpContextAccessor { HttpContext = context },
                 new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
                 null, null, new Mock<IAuthenticationSchemeProvider>().Object)
             { CallBase = true };
-            //signInManager.Setup(s => s.SignInAsync(user, It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
-            //externalLogin? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();
-            signInManager.Setup(s => s.SignInAsync(user, It.IsAny<AuthenticationProperties>(), null)).Returns(Task.FromResult(0)).Verifiable();
+
+            signInManager.Setup(s => s.SignInAsync(user,
+                    It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
+                    externalLogin ? loginProvider : null))
+                .Returns(Task.FromResult(0)).Verifiable();
+
             signInManager.Object.Context = context;
 
             // Act
@@ -588,6 +587,58 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             auth.Verify();
             signInManager.Verify();
+        }
+
+        [Fact]
+        public async Task ResignInNoOpsAndLogsErrorIfNotAuthenticated()
+        {
+            var user = new PocoUser { UserName = "Foo" };
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            var manager = SetupUserManager(user);
+            var logger = new TestLogger<SignInManager<PocoUser>>();
+            var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
+                new HttpContextAccessor { HttpContext = context },
+                new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
+                null, logger, new Mock<IAuthenticationSchemeProvider>().Object)
+            { CallBase = true };
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
+                .Returns(Task.FromResult(AuthenticateResult.NoResult())).Verifiable();
+
+            await signInManager.Object.RefreshSignInAsync(user);
+
+            Assert.Contains("RefreshSignInAsync prevented because the user is not currently authenticated. Use SignInAsync instead for initial sign in.", logger.LogMessages);
+            auth.Verify();
+            signInManager.Verify(s => s.SignInAsync(It.IsAny<PocoUser>(), It.IsAny<AuthenticationProperties>(), It.IsAny<string>()),
+                Times.Never());
+        }
+
+        [Fact]
+        public async Task ResignInNoOpsAndLogsErrorIfAuthenticatedWithDifferentUser()
+        {
+            var user = new PocoUser { UserName = "Foo" };
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            var manager = SetupUserManager(user);
+            var logger = new TestLogger<SignInManager<PocoUser>>();
+            var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
+                new HttpContextAccessor { HttpContext = context },
+                new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
+                null, logger, new Mock<IAuthenticationSchemeProvider>().Object)
+            { CallBase = true };
+            var id = new ClaimsIdentity("authscheme");
+            var claimsPrincipal = new ClaimsPrincipal(id);
+            var authResult = AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, new AuthenticationProperties(), "authscheme"));
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
+                .Returns(Task.FromResult(authResult)).Verifiable();
+            manager.Setup(m => m.GetUserId(claimsPrincipal)).Returns("different");
+
+            await signInManager.Object.RefreshSignInAsync(user);
+
+            Assert.Contains("RefreshSignInAsync prevented because currently authenticated user has a different UserId. Use SignInAsync instead to change users.", logger.LogMessages);
+            auth.Verify();
+            signInManager.Verify(s => s.SignInAsync(It.IsAny<PocoUser>(), It.IsAny<AuthenticationProperties>(), It.IsAny<string>()),
+                Times.Never());
         }
 
         [Theory]
