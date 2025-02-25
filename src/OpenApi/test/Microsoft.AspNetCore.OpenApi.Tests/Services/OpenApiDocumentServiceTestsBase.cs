@@ -36,7 +36,7 @@ public abstract class OpenApiDocumentServiceTestBase
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, cancellationToken);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
