@@ -16,7 +16,7 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Xml;
 
 /// <remarks>
-/// Source code in this class is derived from Roslyn's Xml documentation comment processing
+/// Source code in this class is derived from Roslyn's XML documentation comment processing
 /// to support the full resolution of <inheritdoc /> tags.
 /// For the original code, see https://github.com/dotnet/roslyn/blob/ef1d7fe925c94e96a93e4c9af50983e0f675a9fd/src/Workspaces/Core/Portable/Shared/Extensions/ISymbolExtensions.cs.
 /// </remarks>

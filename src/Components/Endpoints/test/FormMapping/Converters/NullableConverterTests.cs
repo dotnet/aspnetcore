@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.Extensions.Primitives;
@@ -146,5 +147,94 @@ public class NullableConverterTests
         Assert.True(found);
         Assert.False(returnValue);
         Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForCustomParsableStruct_UsesParsableImplementation_ForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<ParsableTestStruct>(new ParsableConverter<ParsableTestStruct>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.NotNull(result);
+        Assert.True(result.Value.WasEmptyOrNull);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForCustomParsableStruct_UsesParsableImplementation_ForNull()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<ParsableTestStruct>(new ParsableConverter<ParsableTestStruct>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, null, out var result);
+
+        Assert.True(returnValue);
+        Assert.NotNull(result);
+        Assert.True(result.Value.WasEmptyOrNull);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForCustomParsableStruct_UsesParsableImplementation_ForGoodValue()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<ParsableTestStruct>(new ParsableConverter<ParsableTestStruct>());
+        var reader = new FormDataReader(default, culture, default)
+        {
+            ErrorHandler = (_, __, ___) => { }
+        };
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, "good value", out var result);
+
+        Assert.True(returnValue);
+        Assert.False(result.Value.WasEmptyOrNull);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForCustomParsableStruct_UsesParsableImplementation_ForBadValue()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<ParsableTestStruct>(new ParsableConverter<ParsableTestStruct>());
+        var reader = new FormDataReader(default, culture, default)
+        {
+            ErrorHandler = (_, __, ___) => { }
+        };
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, "bad value", out var result);
+
+        Assert.False(returnValue);
+    }
+
+    private struct ParsableTestStruct : IParsable<ParsableTestStruct>
+    {
+        public bool WasEmptyOrNull { get; set; }
+
+        public static ParsableTestStruct Parse(string s, IFormatProvider provider) => throw new NotImplementedException();
+
+        public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out ParsableTestStruct result)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                result = new ParsableTestStruct { WasEmptyOrNull = true };
+                return true;
+            }
+            else if (s == "good value")
+            {
+                result = new ParsableTestStruct { WasEmptyOrNull = false };
+                return true;
+            }
+            else
+            {
+                result = new();
+                return false;
+            }
+        }
     }
 }

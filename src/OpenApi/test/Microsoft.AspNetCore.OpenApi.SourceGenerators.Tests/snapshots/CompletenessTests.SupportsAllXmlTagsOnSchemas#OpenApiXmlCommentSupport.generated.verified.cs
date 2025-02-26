@@ -256,7 +256,7 @@ type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The ExampleClass.Label is a <see langword=""string"" />
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
@@ -268,6 +268,12 @@ if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<global::System.Int32>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
+returns an awaitable item.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
+returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddNumbers", typeof(global::System.Int32), [typeof(global::System.Int32[])]), new XmlComment(@"This method is an example of a method that consumes
+an params array.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Method, "Method", typeof(global::System.Int32), [typeof(global::System.Int32)]), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
@@ -276,7 +282,7 @@ implementing class uses ""inheritdoc""", @"The value of arg", null, false, null,
             _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T)
+            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));

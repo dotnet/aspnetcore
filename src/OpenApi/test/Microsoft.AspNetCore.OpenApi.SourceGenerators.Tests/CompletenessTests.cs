@@ -17,6 +17,7 @@ public class CompletenessTests
     {
         var source = """
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -179,6 +180,38 @@ public class ExampleClass
             throw new System.OverflowException();
 
         return left + right;
+    }
+
+    /// <summary>
+    /// This method is an example of a method that
+    /// returns an awaitable item.
+    /// </summary>
+    public static Task<int> AddAsync(int left, int right)
+    {
+        return Task.FromResult(Add(left, right));
+    }
+
+    /// <summary>
+    /// This method is an example of a method that
+    /// returns a Task which should map to a void return type.
+    /// </summary>
+    public static Task DoNothingAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// This method is an example of a method that consumes
+    /// an params array.
+    /// </summary>
+    public static int AddNumbers(params int[] numbers)
+    {
+        var sum = 0;
+        foreach (var number in numbers)
+        {
+            sum += number;
+        }
+        return sum;
     }
 }
 

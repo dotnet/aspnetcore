@@ -115,24 +115,20 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is MaxLengthAttribute maxLengthAttribute)
             {
-                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MaxItemsKeyword : OpenApiSchemaKeywords.MaxLengthKeyword;
-                schema[targetKey] = maxLengthAttribute.Length;
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var key = isArray ? OpenApiSchemaKeywords.MaxItemsKeyword : OpenApiSchemaKeywords.MaxLengthKeyword;
+                schema[key] = maxLengthAttribute.Length;
             }
             else if (attribute is MinLengthAttribute minLengthAttribute)
             {
-                if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
-                    schemaTypes.HasFlag(JsonSchemaType.Array))
-                {
-                    schema[OpenApiSchemaKeywords.MinItemsKeyword] = minLengthAttribute.Length;
-                }
-                else
-                {
-                    schema[OpenApiSchemaKeywords.MinLengthKeyword] = minLengthAttribute.Length;
-                }
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var key = isArray ? OpenApiSchemaKeywords.MinItemsKeyword : OpenApiSchemaKeywords.MinLengthKeyword;
+                schema[key] = minLengthAttribute.Length;
             }
             else if (attribute is LengthAttribute lengthAttribute)
             {
-                var targetKeySuffix = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? "Items" : "Length";
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var targetKeySuffix = isArray ? "Items" : "Length";
                 schema[$"min{targetKeySuffix}"] = lengthAttribute.MinimumLength;
                 schema[$"max{targetKeySuffix}"] = lengthAttribute.MaximumLength;
             }
