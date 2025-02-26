@@ -222,6 +222,7 @@ public class ServerSentEventsResultTests
         httpContext.RequestAborted = cts.Token;
         var firstEventReceived = new TaskCompletionSource();
         var secondEventAttempted = new TaskCompletionSource();
+        var cancellationObserved = new TaskCompletionSource();
 
         var events = GetEvents(cts.Token);
         var result = TypedResults.ServerSentEvents(events);
@@ -247,7 +248,8 @@ public class ServerSentEventsResultTests
             {
                 yield return "event1";
                 firstEventReceived.SetResult();
-                await Task.Delay(1, cancellationToken);
+                cancellationToken.Register(cancellationObserved.SetResult);
+                await cancellationObserved.Task;
                 yield return "event2";
             }
             finally
