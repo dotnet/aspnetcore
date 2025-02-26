@@ -371,10 +371,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var parentComponentState = GetOptionalComponentState(parentComponentId);
         var componentState = CreateComponentState(componentId, component, parentComponentState);
         Log.InitializingComponent(_logger, componentState, parentComponentState);
-        _componentStateById.Add(componentId, componentState);
-        _componentStateByComponent.Add(component, componentState);
         component.Attach(new RenderHandle(this, componentId));
         return componentState;
+    }
+
+    internal void RegisterComponentState(IComponent component, int componentId, ComponentState componentState)
+    {
+        _componentStateById.Add(componentId, componentState);
+        _componentStateByComponent.Add(component, componentState);
     }
 
     /// <summary>
