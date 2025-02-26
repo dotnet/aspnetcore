@@ -13,6 +13,8 @@ internal interface ICascadingValueSupplier
 
     object? GetCurrentValue(in CascadingParameterInfo parameterInfo);
 
+    object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo) => GetCurrentValue(parameterInfo);
+
     void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo);
 
     void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo);

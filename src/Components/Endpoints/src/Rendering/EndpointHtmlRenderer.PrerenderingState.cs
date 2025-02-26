@@ -134,7 +134,6 @@ internal partial class EndpointHtmlRenderer
         }
 
         var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
-
         // Now given the mode, we obtain a particular store for that mode
         // and persist the state and return the HTML content
         switch (serializationMode)

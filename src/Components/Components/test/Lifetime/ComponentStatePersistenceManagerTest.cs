@@ -25,7 +25,7 @@ public class ComponentStatePersistenceManagerTest
             ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(data)
         };
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
 
         // Act
         await lifetime.RestoreStateAsync(store);
@@ -45,7 +45,7 @@ public class ComponentStatePersistenceManagerTest
             ["MyState"] = [0, 1, 2, 3, 4]
         };
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
 
         await lifetime.RestoreStateAsync(store);
 
@@ -53,13 +53,16 @@ public class ComponentStatePersistenceManagerTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.RestoreStateAsync(store));
     }
 
+    private IServiceProvider CreateServiceProvider() =>
+        new ServiceCollection().BuildServiceProvider();
+
     [Fact]
     public async Task PersistStateAsync_ThrowsWhenCallbackRenerModeCannotBeInferred()
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new CompositeTestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
 
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
@@ -81,7 +84,7 @@ public class ComponentStatePersistenceManagerTest
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
 
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
@@ -106,7 +109,7 @@ public class ComponentStatePersistenceManagerTest
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
         var invoked = false;
@@ -126,7 +129,7 @@ public class ComponentStatePersistenceManagerTest
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
         var renderer = new TestRenderer();
 
         var sequence = new List<int> { };
@@ -154,7 +157,7 @@ public class ComponentStatePersistenceManagerTest
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance, CreateServiceProvider());
         var renderer = new TestRenderer();
 
         var sequence = new List<int> { };
@@ -188,7 +191,7 @@ public class ComponentStatePersistenceManagerTest
         var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(logger);
+        var lifetime = new ComponentStatePersistenceManager(logger, CreateServiceProvider());
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
         var invoked = false;
@@ -214,7 +217,7 @@ public class ComponentStatePersistenceManagerTest
         var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(logger);
+        var lifetime = new ComponentStatePersistenceManager(logger, CreateServiceProvider());
         var renderer = new TestRenderer();
         var invoked = false;
         var tcs = new TaskCompletionSource();

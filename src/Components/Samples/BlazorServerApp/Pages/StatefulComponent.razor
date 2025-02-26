@@ -1,0 +1,17 @@
+﻿<h3>StatefulComponent</h3>
+
+<p>My value is @Value</p>
+
+@code {
+    [Parameter] public Guid InitialValue { get; set; }
+
+    [SupplyParameterFromPersistentComponentState] public Guid Value { get; set; }
+
+    override protected void OnInitialized()
+    {
+        if (Value == Guid.Empty)
+        {
+            Value = InitialValue;
+        }
+    }
+}

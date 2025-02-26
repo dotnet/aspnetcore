@@ -17,11 +17,15 @@
     @RenderBody()
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
-    <script>
-        Blazor.start({
+
+    <script type="module">
+        window.start = async function start(){
+            await Blazor.start({
             logLevel: 1, // LogLevel.Debug
             configureSignalR: builder => builder.configureLogging("debug") // LogLevel.Debug
         });
+        document.getElementById("start-blazor").remove();
+    }
     </script>
 </body>
 </html>

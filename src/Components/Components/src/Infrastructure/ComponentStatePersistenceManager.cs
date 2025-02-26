@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -15,15 +16,28 @@ public class ComponentStatePersistenceManager
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
     private bool _stateIsPersisted;
+    private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
+    /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
         State = new PersistentComponentState(_currentState, _registeredCallbacks);
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="serviceProvider"></param>
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
+    {
+        _servicesRegistry = serviceProvider.GetService<PersistentServicesRegistry>();
+        _servicesRegistry?.RegisterForPersistence(State);
     }
 
     /// <summary>
@@ -40,6 +54,7 @@ public class ComponentStatePersistenceManager
     {
         var data = await store.GetPersistedStateAsync();
         State.InitializeExistingState(data);
+        _servicesRegistry?.Restore(State);
     }
 
     /// <summary>
