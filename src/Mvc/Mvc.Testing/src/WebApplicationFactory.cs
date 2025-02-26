@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -9,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,11 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// Typically the Startup or Program classes can be used.</typeparam>
 public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
 {
+    private bool _useKestrel;
     private bool _disposed;
     private bool _disposedAsync;
     private TestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
+    private IWebHost? _webHost;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
@@ -71,7 +73,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <summary>
     /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
-    public TestServer Server
+    public TestServer? Server
     {
         get
         {
@@ -88,7 +90,12 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         get
         {
             EnsureServer();
-            return _host?.Services ?? _server.Host.Services;
+            if (_useKestrel)
+            {
+                return _webHost!.Services;
+            }
+
+            return _host?.Services ?? _server!.Host.Services;
         }
     }
 
@@ -136,10 +143,24 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return factory;
     }
 
-    [MemberNotNull(nameof(_server))]
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    public void UseKestrel()
+    {
+        _useKestrel = true;
+    }
+
+    private static IWebHost CreateKestrelServer(IWebHostBuilder builder)
+    {
+        var host = builder.UseKestrel().Build();
+        host.Start();
+        return host;
+    }
+
     private void EnsureServer()
     {
-        if (_server != null)
+        if (_server != null || _webHost != null)
         {
             return;
         }
@@ -197,21 +218,37 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             SetContentRoot(builder);
             _configuration(builder);
-            _server = CreateServer(builder);
+            if (_useKestrel)
+            {
+                _webHost = CreateKestrelServer(builder);
+            }
+            else
+            {
+                _server = CreateServer(builder);
+            }
         }
     }
 
-    [MemberNotNull(nameof(_server))]
     private void ConfigureHostBuilder(IHostBuilder hostBuilder)
     {
         hostBuilder.ConfigureWebHost(webHostBuilder =>
         {
             SetContentRoot(webHostBuilder);
             _configuration(webHostBuilder);
-            webHostBuilder.UseTestServer();
+            if (!_useKestrel)
+            {
+                webHostBuilder.UseTestServer();
+            }
+            else
+            {
+                webHostBuilder.UseKestrel();
+            }
         });
         _host = CreateHost(hostBuilder);
-        _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        if (!_useKestrel)
+        {
+            _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        }
     }
 
     private void SetContentRoot(IWebHostBuilder builder)
@@ -481,7 +518,19 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         HttpClient client;
         if (handlers == null || handlers.Length == 0)
         {
-            client = _server.CreateClient();
+            if (_useKestrel)
+            {
+                client = new HttpClient();
+            }
+            else
+            {
+                if (_server is null)
+                {
+                    throw new InvalidOperationException(Resources.ServerNotInitialized);
+                }
+
+                client = _server.CreateClient();
+            }
         }
         else
         {
@@ -490,7 +539,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 handlers[i - 1].InnerHandler = handlers[i];
             }
 
-            var serverHandler = _server.CreateHandler();
+            var serverHandler = CreateHandler();
             handlers[^1].InnerHandler = serverHandler;
 
             client = new HttpClient(handlers[0]);
@@ -504,6 +553,25 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
+    /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
+    /// </summary>
+
+    protected virtual HttpMessageHandler CreateHandler()
+    {
+        if (_useKestrel)
+        {
+            return new HttpClientHandler();
+        }
+
+        if (_server is null)
+        {
+            throw new InvalidOperationException(Resources.ServerNotInitialized);
+        }
+
+        return _server.CreateHandler();
+    }
+
+    /// <summary>
     /// Configures <see cref="HttpClient"/> instances created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
     /// <param name="client">The <see cref="HttpClient"/> instance getting configured.</param>
@@ -511,7 +579,24 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        client.BaseAddress = new Uri("http://localhost");
+        if (_useKestrel)
+        {
+            if (_webHost is null)
+            {
+                throw new InvalidOperationException(Resources.ServerNotInitialized);
+            }
+
+            // The server should be started at this point already.
+            var serverAddressFeature = _webHost.ServerFeatures.Get<IServerAddressesFeature>();
+            if (serverAddressFeature?.Addresses.Count > 0)
+            {
+                client.BaseAddress = new Uri(serverAddressFeature.Addresses.Last());
+            }
+        }
+        else
+        {
+            client.BaseAddress = new Uri("http://localhost");
+        }
     }
 
     /// <summary>
