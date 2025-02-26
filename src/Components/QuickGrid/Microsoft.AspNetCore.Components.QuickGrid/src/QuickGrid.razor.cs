@@ -104,6 +104,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Optional. A callback to be invoked for each rendered row to specify a CSS class.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -268,6 +273,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Closes the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI that was previously displayed.
+    /// </summary>
+    public Task CloseColumnOptionsAsync()
+    {
+        _displayOptionsForColumn = null;
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -439,10 +454,5 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
-    }
-
-    private void CloseColumnOptions()
-    {
-        _displayOptionsForColumn = null;
     }
 }

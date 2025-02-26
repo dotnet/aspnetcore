@@ -47,6 +47,7 @@ public class ControllerEndpointFiltersTest : LoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60109")]
     public async Task CanCaptureMethodInfoFromControllerAction()
     {
         using var client = Factory.CreateClient();

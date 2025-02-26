@@ -36,6 +36,7 @@ export function afterServerStarted() {
     appendElement('classic-and-modern-after-server-started', 'Classic and modern "afterServerStarted"');
 }
 
+// Duplicated in Components.TestServer\wwwroot\Components.TestServer.lib.module.js
 function appendElement(id, text) {
     var content = document.getElementById('initializers-content');
     if (!content) {

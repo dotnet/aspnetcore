@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -118,11 +119,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public SslProtocols Protocol { get; private set; }
     public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
     public string SniHostName { get; private set; } = default!;
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int CipherStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public HashAlgorithmType HashAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int HashStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     public int KeyExchangeStrength { get; private set; }
 
     protected IAsyncIOEngine? AsyncIO { get; set; }
@@ -395,12 +402,14 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         var handshake = GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
         HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         var sni = GetClientSni();
         SniHostName = sni.Hostname.ToString();

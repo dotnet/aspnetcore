@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +109,11 @@ public class WebHostBuilderKestrelExtensionsTests
             .UseKestrel()
             .Configure(app => { });
 
-        Assert.IsType<KestrelServerImpl>(hostBuilder.Build().Services.GetService<IServer>());
+        var server = Assert.IsType<KestrelServerImpl>(hostBuilder.Build().Services.GetService<IServer>());
+
+        Assert.NotNull(server.ServiceContext.DiagnosticSource);
+        Assert.IsType<KestrelMetrics>(server.ServiceContext.Metrics);
+        Assert.Equal(PipeScheduler.ThreadPool, server.ServiceContext.Scheduler);
+        Assert.Equal(TimeProvider.System, server.ServiceContext.TimeProvider);
     }
 }

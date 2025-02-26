@@ -159,7 +159,6 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57944")]
     public async Task Http1Connection_RequestEndsWithIncompleteReadAsync()
     {
         var testMeterFactory = new TestMeterFactory();
@@ -391,7 +390,6 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58086")]
     public async Task Http1Connection_ServerAbort_HasErrorType()
     {
         var testMeterFactory = new TestMeterFactory();

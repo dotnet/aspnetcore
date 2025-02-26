@@ -32,7 +32,7 @@
     <!-- RequiresDelayedBuild Include="..." / -->
 
     <!-- Enforce build order. Need shared Fx before building the important projects. -->
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -41,7 +41,7 @@
   <!-- Cannot build in source-build because that does not create an App.Ref layout. -->
   <Target Name="BuildDelayedProjects"
       BeforeTargets="Build"
-      Condition=" '$(DotNetBuild)' != 'true' "
+      Condition=" '$(DotNetBuildSourceOnly)' != 'true' "
       Returns="@(TargetPathWithTargetPlatformMoniker)">
     <MSBuild Projects="@(RequiresDelayedBuild)"
         BuildInParallel="$(BuildInParallel)"
@@ -52,13 +52,13 @@
     </MSBuild>
   </Target>
 
-  <Target Name="CleanDelayedProjects" BeforeTargets="Clean" Condition=" '$(DotNetBuild)' != 'true' ">
+  <Target Name="CleanDelayedProjects" BeforeTargets="Clean" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Clean" />
   </Target>
 
   <Target Name="CreateHelixPayloadDelayedProjects"
       BeforeTargets="CreateHelixPayload"
-      Condition=" '$(DotNetBuild)' != 'true' "
+      Condition=" '$(DotNetBuildSourceOnly)' != 'true' "
       Returns="@(HelixWorkItem)">
     <MSBuild Projects="@(RequiresDelayedBuild)"
         BuildInParallel="$(BuildInParallel)"
@@ -76,19 +76,19 @@
     </MSBuild>
   </Target>
 
-  <Target Name="PackDelayedProjects" BeforeTargets="Pack" Condition=" '$(DotNetBuild)' != 'true' ">
+  <Target Name="PackDelayedProjects" BeforeTargets="Pack" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Pack" />
   </Target>
 
-  <Target Name="PublishDelayedProjects" BeforeTargets="Publish" Condition=" '$(DotNetBuild)' != 'true' ">
+  <Target Name="PublishDelayedProjects" BeforeTargets="Publish" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Publish" />
   </Target>
 
-  <Target Name="TestDelayedProjects" BeforeTargets="Test" Condition=" '$(DotNetBuild)' != 'true' ">
+  <Target Name="TestDelayedProjects" BeforeTargets="Test" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Test" />
   </Target>
 
-  <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuild)' != 'true' ">
+  <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="VSTest" />
   </Target>
 

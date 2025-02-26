@@ -3,6 +3,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -223,6 +224,32 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         var httpContext = CreateHttpContext(serviceProvider);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
         Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", exception.Message);
+    }
+
+    // See: https://github.com/dotnet/aspnetcore/issues/58633
+    [Fact]
+    public async Task RequestDelegateGeneratesCompilableCodeForKeyedServiceInNamespaceHttp()
+    {
+        var source = """
+app.MapGet("/hello", ([FromKeyedServices("example")] global::Http.ExampleService e) => e.Act("To be or not to be…"));
+""";
+        var (results, compilation) = await RunGeneratorAsync(source);
+
+        // Ironically, the same error this is testing would bite us here, so we must globally qualify the type name.
+        var serviceProvider = CreateServiceProvider((serviceCollection) => serviceCollection.AddKeyedSingleton<global::Http.ExampleService>("example"));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            var p = Assert.Single(endpointModel.Parameters);
+            Assert.Equal(EndpointParameterSource.KeyedService, p.Source);
+            Assert.Equal("e", p.SymbolName);
+        });
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "To be or not to be…");
     }
 
     private class MockServiceProvider : IServiceProvider, ISupportRequiredService

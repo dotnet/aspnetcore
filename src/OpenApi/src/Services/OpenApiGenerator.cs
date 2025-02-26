@@ -20,6 +20,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
+using Microsoft.OpenApi.Models.References;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -322,19 +324,22 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private List<OpenApiTagReference> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
+        var document = new OpenApiDocument();
 
         if (metadataList.Count > 0)
         {
-            var tags = new List<OpenApiTag>();
+            var tags = new List<OpenApiTagReference>();
 
             foreach (var metadataItem in metadataList)
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    tags.Add(new OpenApiTag() { Name = tag });
+                    document.Tags ??= [];
+                    document.Tags.Add(new OpenApiTag { Name = tag });
+                    tags.Add(new OpenApiTagReference(tag, document));
                 }
             }
 
@@ -354,13 +359,15 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
+        document.Tags ??= [];
+        document.Tags.Add(new OpenApiTag { Name = controllerName });
+        return [new(controllerName, document)];
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
+    private List<IOpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache.Instance);
-        var openApiParameters = new List<OpenApiParameter>();
+        var openApiParameters = new List<IOpenApiParameter>();
 
         foreach (var parameter in parameters)
         {

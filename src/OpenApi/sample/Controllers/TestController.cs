@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -15,6 +16,13 @@ public class TestController : ControllerBase
     public string GetByIdAndName(RouteParamsContainer paramsContainer)
     {
         return paramsContainer.Id + "_" + paramsContainer.Name;
+    }
+
+    [HttpGet]
+    [Route("/gettypedresult")]
+    public Ok<MvcTodo> GetTypedResult()
+    {
+        return TypedResults.Ok(new MvcTodo("Title", "Description", true));
     }
 
     [HttpPost]

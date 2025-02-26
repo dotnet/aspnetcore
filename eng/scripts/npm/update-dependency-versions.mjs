@@ -52,7 +52,7 @@ function applyPackageVersion(packagesToPack, defaultPackageVersion) {
     renames.push([`${packagePath}.bak`, packagePath]);
 
     process.chdir(packageDir);
-    execSync(`npm version ${packageVersion} --no-git-tag-version`, { stdio: 'inherit' });
+    execSync(`npm version ${packageVersion} --no-git-tag-version --allow-same-version`, { stdio: 'inherit' });
     process.chdir(currentDir);
     console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
   }

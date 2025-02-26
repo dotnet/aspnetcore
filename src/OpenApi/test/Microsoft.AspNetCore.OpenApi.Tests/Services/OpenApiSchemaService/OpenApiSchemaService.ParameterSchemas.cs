@@ -4,60 +4,62 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
 #nullable enable
     public static object?[][] RouteParametersWithPrimitiveTypes =>
     [
-        [(int id) => {}, "integer", "int32"],
-        [(long id) => {}, "integer", "int64"],
-        [(float id) => {}, "number", "float"],
-        [(double id) => {}, "number", "double"],
-        [(decimal id) => {}, "number", "double"],
-        [(bool id) => {}, "boolean", null],
-        [(string id) => {}, "string", null],
-        [(char id) => {}, "string", "char"],
-        [(byte id) => {}, "integer", "uint8"],
-        [(byte[] id) => {}, "string", "byte"],
-        [(short id) => {}, "integer", "int16"],
-        [(ushort id) => {}, "integer", "uint16"],
-        [(uint id) => {}, "integer", "uint32"],
-        [(ulong id) => {}, "integer", "uint64"],
-        [(Uri id) => {}, "string", "uri"],
-        [(TimeOnly id) => {}, "string", "time"],
-        [(DateOnly id) => {}, "string", "date"],
-        [(int? id) => {}, "integer", "int32"],
-        [(long? id) => {}, "integer", "int64"],
-        [(float? id) => {}, "number", "float"],
-        [(double? id) => {}, "number", "double"],
-        [(decimal? id) => {}, "number", "double"],
-        [(bool? id) => {}, "boolean", null],
-        [(string? id) => {}, "string", null],
-        [(char? id) => {}, "string", "char"],
-        [(byte? id) => {}, "integer", "uint8"],
-        [(byte[]? id) => {}, "string", "byte"],
-        [(short? id) => {}, "integer", "int16"],
-        [(ushort? id) => {}, "integer", "uint16"],
-        [(uint? id) => {}, "integer", "uint32"],
-        [(ulong? id) => {}, "integer", "uint64"],
-        [(Uri? id) => {}, "string", "uri"],
-        [(TimeOnly? id) => {}, "string", "time"],
-        [(DateOnly? id) => {}, "string", "date"]
+        [(int id) => {}, JsonSchemaType.Integer, "int32"],
+        [(long id) => {}, JsonSchemaType.Integer, "int64"],
+        [(float id) => {}, JsonSchemaType.Number, "float"],
+        [(double id) => {}, JsonSchemaType.Number, "double"],
+        [(decimal id) => {}, JsonSchemaType.Number, "double"],
+        [(bool id) => {}, JsonSchemaType.Boolean, null],
+        [(string id) => {}, JsonSchemaType.String, null],
+        [(char id) => {}, JsonSchemaType.String, "char"],
+        [(byte id) => {}, JsonSchemaType.Integer, "uint8"],
+        [(byte[] id) => {}, JsonSchemaType.String, "byte"],
+        [(short id) => {}, JsonSchemaType.Integer, "int16"],
+        [(ushort id) => {}, JsonSchemaType.Integer, "uint16"],
+        [(uint id) => {}, JsonSchemaType.Integer, "uint32"],
+        [(ulong id) => {}, JsonSchemaType.Integer, "uint64"],
+        [(Uri id) => {}, JsonSchemaType.String, "uri"],
+        [(TimeOnly id) => {}, JsonSchemaType.String, "time"],
+        [(DateOnly id) => {}, JsonSchemaType.String, "date"],
+        [(int? id) => {}, JsonSchemaType.Integer, "int32"],
+        [(long? id) => {}, JsonSchemaType.Integer, "int64"],
+        [(float? id) => {}, JsonSchemaType.Number, "float"],
+        [(double? id) => {}, JsonSchemaType.Number, "double"],
+        [(decimal? id) => {}, JsonSchemaType.Number, "double"],
+        [(bool? id) => {}, JsonSchemaType.Boolean, null],
+        [(string? id) => {}, JsonSchemaType.String, null],
+        [(char? id) => {}, JsonSchemaType.String, "char"],
+        [(byte? id) => {}, JsonSchemaType.Integer, "uint8"],
+        [(byte[]? id) => {}, JsonSchemaType.String, "byte"],
+        [(short? id) => {}, JsonSchemaType.Integer, "int16"],
+        [(ushort? id) => {}, JsonSchemaType.Integer, "uint16"],
+        [(uint? id) => {}, JsonSchemaType.Integer, "uint32"],
+        [(ulong? id) => {}, JsonSchemaType.Integer, "uint64"],
+        [(Uri? id) => {}, JsonSchemaType.String, "uri"],
+        [(TimeOnly? id) => {}, JsonSchemaType.String, "time"],
+        [(DateOnly? id) => {}, JsonSchemaType.String, "date"]
     ];
 #nullable restore
 
     [Theory]
     [MemberData(nameof(RouteParametersWithPrimitiveTypes))]
-    public async Task GetOpenApiParameters_HandlesRouteParameterWithPrimitiveType(Delegate requestHandler, string schemaType, string schemaFormat)
+    public async Task GetOpenApiParameters_HandlesRouteParameterWithPrimitiveType(Delegate requestHandler, JsonSchemaType schemaType, string schemaFormat)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -72,21 +74,20 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
-            Assert.False(parameter.Schema.Nullable);
         });
     }
 
     public static object[][] RouteParametersWithParsableTypes =>
     [
-        [(Guid id) => {}, "string", "uuid"],
-        [(DateTime id) => {}, "string", "date-time"],
-        [(DateTimeOffset id) => {}, "string", "date-time"],
-        [(Uri id) => {}, "string", "uri"]
+        [(Guid id) => {}, JsonSchemaType.String, "uuid"],
+        [(DateTime id) => {}, JsonSchemaType.String, "date-time"],
+        [(DateTimeOffset id) => {}, JsonSchemaType.String, "date-time"],
+        [(Uri id) => {}, JsonSchemaType.String, "uri"]
     ];
 
     [Theory]
     [MemberData(nameof(RouteParametersWithParsableTypes))]
-    public async Task GetOpenApiParameters_HandlesRouteParameterWithParsableType(Delegate requestHandler, string schemaType, string schemaFormat)
+    public async Task GetOpenApiParameters_HandlesRouteParameterWithParsableType(Delegate requestHandler, JsonSchemaType schemaType, string schemaFormat)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -105,36 +106,36 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Theory]
-    [InlineData("/api/{id:int}", "integer", "int32", null, null, null, null, null)]
-    [InlineData("/api/{id:bool}", "boolean", null, null, null, null, null, null)]
-    [InlineData("/api/{id:datetime}", "string", "date-time", null, null, null, null, null)]
-    [InlineData("/api/{id:decimal}", "number", "double", null, null, null, null, null)]
-    [InlineData("/api/{id:double}", "number", "double", null, null, null, null, null)]
-    [InlineData("/api/{id:float}", "number", "float", null, null, null, null, null)]
-    [InlineData("/api/{id:guid}", "string", "uuid", null, null, null, null, null)]
-    [InlineData("/api/{id:long}", "integer", "int64", null, null, null, null, null)]
-    [InlineData("/api/{id:minLength(4)}", "integer", "int32", null, null, 4, null, null)]
-    [InlineData("/api/{id:maxLength(8)}", "integer", "int32", null, null, null, 8, null)]
-    [InlineData("/api/{id:length(4, 8)}", "integer", "int32", null, null, 4, 8, null)]
-    [InlineData("/api/{id:min(4)}", "integer", "int32", 4, null, null, null, null)]
-    [InlineData("/api/{id:max(8)}", "integer", "int32", null, 8, null, null, null)]
-    [InlineData("/api/{id:range(4, 8)}", "integer", "int32", 4, 8, null, null, null)]
-    [InlineData("/api/{id:alpha}", "string", null, null, null, null, null, "^[A-Za-z]*$")]
-    [InlineData("/api/{id:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", "string", null, null, null, null, null, "^\\d{3}-\\d{2}-\\d{4}$")]
+    [InlineData("/api/{id:int}", JsonSchemaType.Integer, "int32", null, null, null, null, null)]
+    [InlineData("/api/{id:bool}", JsonSchemaType.Boolean, null, null, null, null, null, null)]
+    [InlineData("/api/{id:datetime}", JsonSchemaType.String, "date-time", null, null, null, null, null)]
+    [InlineData("/api/{id:decimal}", JsonSchemaType.Number, "double", null, null, null, null, null)]
+    [InlineData("/api/{id:double}", JsonSchemaType.Number, "double", null, null, null, null, null)]
+    [InlineData("/api/{id:float}", JsonSchemaType.Number, "float", null, null, null, null, null)]
+    [InlineData("/api/{id:guid}", JsonSchemaType.String, "uuid", null, null, null, null, null)]
+    [InlineData("/api/{id:long}", JsonSchemaType.Integer, "int64", null, null, null, null, null)]
+    [InlineData("/api/{id:minLength(4)}", JsonSchemaType.Integer, "int32", null, null, 4, null, null)]
+    [InlineData("/api/{id:maxLength(8)}", JsonSchemaType.Integer, "int32", null, null, null, 8, null)]
+    [InlineData("/api/{id:length(4, 8)}", JsonSchemaType.Integer, "int32", null, null, 4, 8, null)]
+    [InlineData("/api/{id:min(4)}", JsonSchemaType.Integer, "int32", 4, null, null, null, null)]
+    [InlineData("/api/{id:max(8)}", JsonSchemaType.Integer, "int32", null, 8, null, null, null)]
+    [InlineData("/api/{id:range(4, 8)}", JsonSchemaType.Integer, "int32", 4, 8, null, null, null)]
+    [InlineData("/api/{id:alpha}", JsonSchemaType.String, null, null, null, null, null, "^[A-Za-z]*$")]
+    [InlineData("/api/{id:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", JsonSchemaType.String, null, null, null, null, null, "^\\d{3}-\\d{2}-\\d{4}$")]
     // First route constraint wins
-    [InlineData("/api/{id:min(2):range(4, 8)}", "integer", "int32", 2, 8, null, null, null)]
-    [InlineData("/api/{id::double:float}", "number", "double", null, null, null, null, null)]
-    [InlineData("/api/{id::long:int}", "integer", "int64", null, null, null, null, null)]
+    [InlineData("/api/{id:min(2):range(4, 8)}", JsonSchemaType.Integer, "int32", 2, 8, null, null, null)]
+    [InlineData("/api/{id::double:float}", JsonSchemaType.Number, "double", null, null, null, null, null)]
+    [InlineData("/api/{id::long:int}", JsonSchemaType.Integer, "int64", null, null, null, null, null)]
     // Compatible route constraints are combined
-    [InlineData("/api/{id:max(8):min(4)}", "integer", "int32", 4, 8, null, null, null)]
-    [InlineData("/api/{id:maxLength(8):minLength(4)}", "integer", "int32", null, null, 4, 8, null)]
-    public async Task GetOpenApiParameters_HandlesRouteParameterWithRouteConstraint(string routeTemplate, string type, string format, int? minimum, int? maximum, int? minLength, int? maxLength, string pattern)
+    [InlineData("/api/{id:max(8):min(4)}", JsonSchemaType.Integer, "int32", 4, 8, null, null, null)]
+    [InlineData("/api/{id:maxLength(8):minLength(4)}", JsonSchemaType.Integer, "int32", null, null, 4, 8, null)]
+    public async Task GetOpenApiParameters_HandlesRouteParameterWithRouteConstraint(string routeTemplate, JsonSchemaType type, string format, int? minimum, int? maximum, int? minLength, int? maxLength, string pattern)
     {
         // Arrange
         var builder = CreateBuilder();
 
         // Act
-        builder.MapGet(routeTemplate, (int id) => {});
+        builder.MapGet(routeTemplate, (int id) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -155,30 +156,30 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 #nullable enable
     public static object[][] RouteParametersWithDefaultValues =>
     [
-        [(int id = 2) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
-        [(float id = 3f) => { }, (IOpenApiAny defaultValue) => Assert.Equal(3, ((OpenApiInteger)defaultValue).Value)],
-        [(string id = "test") => { }, (IOpenApiAny defaultValue) => Assert.Equal("test", ((OpenApiString)defaultValue).Value)],
-        [(bool id = true) => { }, (IOpenApiAny defaultValue) => Assert.True(((OpenApiBoolean)defaultValue).Value)],
-        [(TaskStatus status = TaskStatus.Canceled) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
+        [(int id = 2) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
+        [(float id = 3f) => { }, (JsonNode defaultValue) => Assert.Equal(3, defaultValue.GetValue<int>())],
+        [(string id = "test") => { }, (JsonNode defaultValue) => Assert.Equal("test", defaultValue.GetValue<string>())],
+        [(bool id = true) => { }, (JsonNode defaultValue) => Assert.True(defaultValue.GetValue<bool>())],
+        [(TaskStatus status = TaskStatus.Canceled) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
         // Default value for enums is serialized as string when a converter is registered.
-        [(Status status = Status.Pending) => { }, (IOpenApiAny defaultValue) => Assert.Equal("Pending", ((OpenApiString)defaultValue).Value)],
-        [([DefaultValue(2)] int id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
-        [([DefaultValue(3f)] float id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(3, ((OpenApiInteger)defaultValue).Value)],
-        [([DefaultValue("test")] string id) => { }, (IOpenApiAny defaultValue) => Assert.Equal("test", ((OpenApiString)defaultValue).Value)],
-        [([DefaultValue(true)] bool id) => { }, (IOpenApiAny defaultValue) => Assert.True(((OpenApiBoolean)defaultValue).Value)],
-        [([DefaultValue(TaskStatus.Canceled)] TaskStatus status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
-        [([DefaultValue(Status.Pending)] Status status) => { }, (IOpenApiAny defaultValue) => Assert.Equal("Pending", ((OpenApiString)defaultValue).Value)],
-        [([DefaultValue(null)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
-        [([DefaultValue(2)] int? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal(2, ((OpenApiInteger)defaultValue).Value)],
-        [([DefaultValue(null)] string? id) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
-        [([DefaultValue("foo")] string? id) => { }, (IOpenApiAny defaultValue) => Assert.Equal("foo", ((OpenApiString)defaultValue).Value)],
-        [([DefaultValue(null)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.True(defaultValue is OpenApiNull)],
-        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (IOpenApiAny defaultValue) => Assert.Equal(6, ((OpenApiInteger)defaultValue).Value)],
+        [(Status status = Status.Pending) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [([DefaultValue(2)] int id) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
+        [([DefaultValue(3f)] float id) => { }, (JsonNode defaultValue) => Assert.Equal(3, defaultValue.GetValue<int>())],
+        [([DefaultValue("test")] string id) => { }, (JsonNode defaultValue) => Assert.Equal("test", defaultValue.GetValue<string>())],
+        [([DefaultValue(true)] bool id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue.GetValue<bool>())],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        [([DefaultValue(Status.Pending)] Status status) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [([DefaultValue(null)] int? id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
+        [([DefaultValue(2)] int? id) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
+        [([DefaultValue(null)] string? id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
+        [([DefaultValue("foo")] string? id) => { }, (JsonNode defaultValue) => Assert.Equal("foo", defaultValue.GetValue<string>())],
+        [([DefaultValue(null)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
     ];
 
     [Theory]
     [MemberData(nameof(RouteParametersWithDefaultValues))]
-    public async Task GetOpenApiParameters_HandlesRouteParametersWithDefaultValue(Delegate requestHandler, Action<IOpenApiAny> assert)
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithDefaultValue(Delegate requestHandler, Action<JsonNode> assert)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -190,7 +191,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, document =>
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Post];
-            var parameter = Assert.Single(operation.Parameters);
+            var parameter = Assert.Single(operation.Parameters ?? []);
             var openApiDefault = parameter.Schema.Default;
             assert(openApiDefault);
         });
@@ -212,7 +213,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("integer", parameter.Schema.Type);
+            Assert.Equal(JsonSchemaType.Integer, parameter.Schema.Type);
             Assert.Empty(parameter.Schema.Enum);
         });
     }
@@ -236,18 +237,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(parameter.Schema.Enum,
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Pending", openApiString.Value);
+                Assert.Equal("Pending", value.GetValue<string>());
             },
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Approved", openApiString.Value);
+                Assert.Equal("Approved", value.GetValue<string>());
             },
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Rejected", openApiString.Value);
+                Assert.Equal("Rejected", value.GetValue<string>());
             });
         });
     }
@@ -259,7 +257,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         var builder = CreateBuilder();
 
         // Act
-        builder.MapGet("/api/{id}/{date}", ([AsParameters] RouteParamsContainer routeParams) => {});
+        builder.MapGet("/api/{id}/{date}", ([AsParameters] RouteParamsContainer routeParams) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -268,13 +266,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("id", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
             parameter =>
             {
                 Assert.Equal("date", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("date-time", parameter.Schema.Format);
             });
         });
@@ -293,13 +291,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("Id", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
             parameter =>
             {
                 Assert.Equal("Date", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("date-time", parameter.Schema.Format);
             });
         });
@@ -318,13 +316,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("Id", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
             parameter =>
             {
                 Assert.Equal("Name", parameter.Name);
-                Assert.Equal("string", parameter.Schema.Type);
+                Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal(5, parameter.Schema.MaxLength);
             });
         });
@@ -338,12 +336,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
         [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
         [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
         [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
         [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
-        [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); }],
+        [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); }],
         // Check that multiple attributes get applied correctly
-        [([Url][StringLength(10)] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
-        [([Base64String] string base64string) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("byte", schema.Format); }],
+        [([Url][StringLength(10)] string url) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
+        [([Base64String] string base64string) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("byte", schema.Format); }],
     ];
 
     [Theory]
@@ -361,7 +360,67 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            verifySchema(parameter.Schema);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes =>
+    [
+        [([Range(4, 8)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(int.MinValue, int.MaxValue)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(int.MinValue, schema.Minimum); Assert.Equal(int.MaxValue, schema.Maximum); }],
+        [([Range(0, double.MaxValue)] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(double), "0", "1.79769313486232E+308")] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(long), "-9223372036854775808", "9223372036854775807")] long id) => {}, (OpenApiSchema schema) => { Assert.Equal(long.MinValue, schema.Minimum); Assert.Equal(long.MaxValue, schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes))]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
+        });
+    }
+
+    public static object[][] RouteParametersWithRangeAttributes_CultureInfo =>
+    [
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99")] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(1.99m, schema.Minimum); Assert.Equal(3.99m, schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99", ParseLimitsInInvariantCulture = true)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(199, schema.Minimum); Assert.Equal(399, schema.Maximum); }],
+        [([Range(1000, 2000)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(1000, schema.Minimum); Assert.Equal(2000, schema.Maximum); }]
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithRangeAttributes_CultureInfo))]
+    [UseCulture("fr-FR")]
+    public async Task GetOpenApiParameters_HandlesRouteParametersWithRangeAttributes_CultureInfo(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
         });
     }
 
@@ -392,20 +451,20 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     public static object[][] ArrayBasedQueryParameters =>
     [
-        [(int[] id) => { }, "integer", false],
-        [(int?[] id) => { }, "integer", true],
-        [(Guid[] id) => { }, "string", false],
-        [(Guid?[] id) => { }, "string", true],
-        [(DateTime[] id) => { }, "string", false],
-        [(DateTime?[] id) => { }, "string", true],
-        [(DateTimeOffset[] id) => { }, "string", false],
-        [(DateTimeOffset?[] id) => { }, "string", true],
-        [(Uri[] id) => { }, "string", false],
+        [(int[] id) => { }, JsonSchemaType.Integer, false],
+        [(int?[] id) => { }, JsonSchemaType.Integer, true],
+        [(Guid[] id) => { }, JsonSchemaType.String, false],
+        [(Guid?[] id) => { }, JsonSchemaType.String, true],
+        [(DateTime[] id) => { }, JsonSchemaType.String, false],
+        [(DateTime?[] id) => { }, JsonSchemaType.String, true],
+        [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],
+        [(DateTimeOffset?[] id) => { }, JsonSchemaType.String, true],
+        [(Uri[] id) => { }, JsonSchemaType.String, false],
     ];
 
     [Theory]
     [MemberData(nameof(ArrayBasedQueryParameters))]
-    public async Task GetOpenApiParameters_HandlesArrayBasedTypes(Delegate requestHandler, string innerSchemaType, bool isNullable)
+    public async Task GetOpenApiParameters_HandlesArrayBasedTypes(Delegate requestHandler, JsonSchemaType innerSchemaType, bool isNullable)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -418,14 +477,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("array", parameter.Schema.Type);
-            Assert.Equal(innerSchemaType, parameter.Schema.Items.Type);
             // Array items can be serialized to nullable values when the element
             // type is nullable. For example, array-of-ints?ints=1&ints=2&ints=&ints=4
             // will produce [1, 2, null, 4] when the parameter is int?[] ints.
             // When the element type is not nullable (int[] ints), the binding
             // will produce [1, 2, 0, 4]
-            Assert.Equal(isNullable, parameter.Schema.Items.Nullable);
+            Assert.Equal(JsonSchemaType.Array, parameter.Schema.Type);
+
+            Assert.True(parameter.Schema.Items.Type?.HasFlag(innerSchemaType));
+            Assert.Equal(isNullable, parameter.Schema.Items.Type?.HasFlag(JsonSchemaType.Null));
         });
     }
 
@@ -561,24 +621,20 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api/with-enum"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
             var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
-            Assert.NotNull(parameter.Schema.Reference);
-            Assert.Equal(parameter.Schema.Reference.Id, response.Reference.Id);
-            var schema = parameter.Schema.GetEffective(document);
+            Assert.Equal(((OpenApiSchemaReference)parameter.Schema).Reference.Id, ((OpenApiSchemaReference)response).Reference.Id);
+            var schema = parameter.Schema;
             Assert.Collection(schema.Enum,
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Pending", openApiString.Value);
+                Assert.Equal("Pending", value.GetValue<string>());
             },
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Approved", openApiString.Value);
+                Assert.Equal("Approved", value.GetValue<string>());
             },
             value =>
             {
-                var openApiString = Assert.IsType<OpenApiString>(value);
-                Assert.Equal("Rejected", openApiString.Value);
+                Assert.Equal("Rejected", value.GetValue<string>());
             });
         }
     }
@@ -597,7 +653,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/with-ambient-route-param/{versionId}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("string", parameter.Schema.Type);
+            Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
         });
     }
 
@@ -630,17 +686,17 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Parameter is a plain-old string when it comes from the route or query
             var operation = document.Paths["/api/{student}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("string", parameter.Schema.Type);
+            Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
 
             // Type is fully serialized in the response
             var response = Assert.Single(operation.Responses).Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties, property =>
             {
                 Assert.Equal("name", property.Key);
-                Assert.Equal("string", property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
         }
     }

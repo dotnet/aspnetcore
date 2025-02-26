@@ -5239,10 +5239,10 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.CompleteAsync().DefaultTimeout();
 
-                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
-
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
+
+                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
                 appTcs.SetResult();
             }
             catch (Exception ex)
@@ -5432,6 +5432,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task AbortAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5453,6 +5454,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5484,6 +5488,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         // Stream should return an INTERNAL_ERROR. If there is an unexpected exception from app TCS instead, then throw it here to avoid timeout waiting for the stream error.
         await Task.WhenAny(WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null), appTcs.Task).Unwrap();
 
@@ -5512,6 +5517,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task AbortAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5535,7 +5541,10 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
-
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
+                
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 // RequestAborted will no longer fire after CompleteAsync.
@@ -5569,6 +5578,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null);
 
         clientTcs.SetResult();
@@ -5596,6 +5606,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task ResetAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5617,6 +5628,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5650,6 +5664,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
@@ -5678,6 +5693,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task ResetAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5701,6 +5717,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5737,6 +5756,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 

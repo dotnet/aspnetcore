@@ -776,7 +776,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("OPENSSLDIR:\\s*\"([^\"]+)\"")]
-    private static partial Regex OpenSslVersionRegex();
+    private static partial Regex OpenSslVersionRegex { get; }
 
     /// <remarks>
     /// It is the caller's responsibility to ensure that <see cref="OpenSslCommand"/> is available.
@@ -803,7 +803,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 return false;
             }
 
-            var match = OpenSslVersionRegex().Match(stdout);
+            var match = OpenSslVersionRegex.Match(stdout);
             if (!match.Success)
             {
                 Log.UnixOpenSslVersionParsingFailed();
@@ -858,14 +858,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("^[0-9a-f]+\\.[0-9]+$")]
-    private static partial Regex OpenSslHashFilenameRegex();
+    private static partial Regex OpenSslHashFilenameRegex { get; }
 
     /// <remarks>
     /// We only ever use .pem, but someone will eventually put their own cert in this directory,
     /// so we should handle the same extensions as c_rehash (other than .crl).
     /// </remarks>
     [GeneratedRegex("\\.(pem|crt|cer)$")]
-    private static partial Regex OpenSslCertificateExtensionRegex();
+    private static partial Regex OpenSslCertificateExtensionRegex { get; }
 
     /// <remarks>
     /// This is a simplified version of c_rehash from OpenSSL.  Using the real one would require
@@ -876,21 +876,17 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         try
         {
             // First, delete all the existing symlinks, so we don't have to worry about fragmentation or leaks.
-
-            var hashRegex = OpenSslHashFilenameRegex();
-            var extensionRegex = OpenSslCertificateExtensionRegex();
-
             var certs = new List<FileInfo>();
 
             var dirInfo = new DirectoryInfo(certificateDirectory);
             foreach (var file in dirInfo.EnumerateFiles())
             {
                 var isSymlink = (file.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-                if (isSymlink && hashRegex.IsMatch(file.Name))
+                if (isSymlink && OpenSslHashFilenameRegex.IsMatch(file.Name))
                 {
                     file.Delete();
                 }
-                else if (extensionRegex.IsMatch(file.Name))
+                else if (OpenSslCertificateExtensionRegex.IsMatch(file.Name))
                 {
                     certs.Add(file);
                 }

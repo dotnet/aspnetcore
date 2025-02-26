@@ -299,7 +299,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Other with query")).Click();
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Other", "Other with query");
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)", "Other with query");
     }
 
     [Fact]
@@ -310,7 +310,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with query")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with query");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default with query");
     }
 
     [Fact]
@@ -321,7 +324,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with query, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with query, no trailing slash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default, no trailing slash (matches all)",
+            "Default with query, no trailing slash");
     }
 
     [Fact]
@@ -332,7 +339,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Other with hash")).Click();
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Other", "Other with hash");
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)", "Other with hash");
     }
 
     [Fact]
@@ -343,7 +350,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with hash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with hash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default with hash");
     }
 
     [Fact]
@@ -354,7 +364,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default with hash, no trailing slash");
+        AssertHighlightedLinks(
+            "Default (matches all)",
+            "Default with base-relative URL (matches all)",
+            "Default, no trailing slash (matches all)",
+            "Default with hash, no trailing slash");
     }
 
     [Fact]
@@ -381,6 +395,28 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+    }
+
+    [Fact]
+    public void CanOverrideNavLinkToNotIgnoreFragment()
+    {
+        SetUrlViaPushState("/layout-overridden/for-hash");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with hash, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Override layout with hash, no trailing slash");
+    }
+
+    [Fact]
+    public void CanOverrideNavLinkToNotIgnoreQuery()
+    {
+        SetUrlViaPushState("/layout-overridden");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Override layout with query, no trailing slash")).Click();
+        Browser.Equal("This is the page with overridden layout.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Override layout with query, no trailing slash");
     }
 
     [Fact]
@@ -421,7 +457,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
 
         // Because this was client-side navigation, we didn't lose the state in the test selector
-        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetDomProperty("value"));
     }
 
     [Fact]
@@ -438,7 +474,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Because this was a full-page load, our element references should no longer be valid
         Assert.Throws<StaleElementReferenceException>(() =>
         {
-            testSelector.SelectedOption.GetAttribute("value");
+            testSelector.SelectedOption.GetDomProperty("value");
         });
     }
 
@@ -474,7 +510,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // We check if we had a force load
         Assert.Throws<StaleElementReferenceException>(() =>
-            testSelector.SelectedOption.GetAttribute("value"));
+            testSelector.SelectedOption.GetDomProperty("value"));
 
         // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
         Browser.Navigate().Back();
@@ -507,7 +543,44 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
 
         // Because this was all with client-side navigation, we didn't lose the state in the test selector
-        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void NavigationToSamePathDoesNotScrollToTheTop()
+    {
+        // This test checks if the navigation to same path or path with query appeneded,
+        // keeps the scroll in the position from before navigation
+        // but moves it when we navigate to a fragment
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        var testSelector = Browser.WaitUntilTestSelectorReady();
+
+        app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        var maxScrollPosition = (long)jsExecutor.ExecuteScript("return document.documentElement.scrollHeight - window.innerHeight;");
+        // scroll max up to find the position of fragment
+        BrowserScrollY = 0;
+        var fragmentScrollPosition = (long)jsExecutor.ExecuteScript("return document.getElementById('fragment').getBoundingClientRect().top + window.scrollY;");
+
+        // scroll maximally down
+        BrowserScrollY = maxScrollPosition;
+
+        app.FindElement(By.Id("do-self-navigate")).Click();
+        var scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+
+        app.FindElement(By.Id("do-self-navigate-with-query")).Click();
+        scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+
+        app.FindElement(By.Id("do-self-navigate-to-fragment")).Click();
+        scrollPosition = BrowserScrollY;
+        Assert.True(scrollPosition == fragmentScrollPosition, "Expected to scroll to the fragment.");
     }
 
     [Fact]
@@ -546,14 +619,14 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Programmatic navigation cases");
 
         // Because this was client-side navigation, we didn't lose the state in the test selector
-        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetDomProperty("value"));
 
         app.FindElement(By.Id("do-other-navigation-forced")).Click();
         Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
         // We check if we had a force load
         Assert.Throws<StaleElementReferenceException>(() =>
-            testSelector.SelectedOption.GetAttribute("value"));
+            testSelector.SelectedOption.GetDomProperty("value"));
 
         // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
         Browser.Navigate().Back();
@@ -585,7 +658,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
 
         // Because this was all with client-side navigation, we didn't lose the state in the test selector
-        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetDomProperty("value"));
     }
 
     [Fact]
@@ -606,7 +679,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // We check if we had a force load
         Assert.Throws<StaleElementReferenceException>(() =>
-            testSelector.SelectedOption.GetAttribute("value"));
+            testSelector.SelectedOption.GetDomProperty("value"));
 
         // After we press back, we should end up at the "/" page so we know browser history has been replaced
         Browser.Navigate().Back();

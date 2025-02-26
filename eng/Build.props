@@ -59,7 +59,7 @@
 
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
-    <When Condition="'$(ProjectToBuild)' != ''">
+    <When Condition="'$(ProjectToBuild)' != '' and '$(DotNetBuildPass)' != '2'">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -70,50 +70,16 @@
         </ProjectToBuild>
       </ItemGroup>
     </When>
+    <When Condition="'$(DotNetBuildPass)' == '2'">
+      <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
+          <AdditionalProperties>Platform=x86</AdditionalProperties>
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+      </ItemGroup>
+    </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
-        <!-- Build the ANCM custom action -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=ARM64" />
-
-        <!-- Build the ANCM msis -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=arm64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
-
-        <!-- Build the targeting pack installers -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
-        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
-        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
-
-        <!-- Build the SharedFramework installers -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
-
-        <!-- Build the SharedFramework wixlib -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
-
-        <!-- Windows hosting bundled -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-      </ItemGroup>
-
-      <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND ('$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64')">
-        <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'deb' "
-                        Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
-        <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'rpm' "
-                        Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
-      </ItemGroup>
-
+      <!-- BuildNative -->
       <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
@@ -121,9 +87,12 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" BuildStep="native" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
+      </ItemGroup>
 
+      <!-- BuildNode -->
+      <ItemGroup>
         <NodeJsProjects
           Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
                    $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj;"
@@ -134,24 +103,35 @@
 
         <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
 
-        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" BuildStep="node" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
+      </ItemGroup>
 
+      <!-- BuildJava -->
+      <ItemGroup>
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 
-        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
+      </ItemGroup>
 
+      <!-- BuildManaged (runs in parallel with BuildJava) -->
+      <ItemGroup>
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime.proj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-base-runtime.proj;
+                          $(RepoRoot)src\Framework\App.Runtime\bundle\aspnetcore-runtime-bundle.bundleproj;
                           $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
@@ -200,6 +180,7 @@
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="
+                          $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
                           $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
@@ -242,8 +223,47 @@
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
 
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
+      </ItemGroup>
+
+      <!-- BuildInstallers -->
+      <PropertyGroup>
+        <_BuildWindowsInstallers Condition="'$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">true</_BuildWindowsInstallers>
+
+        <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Win32</_VcxTargetPlatform>
+        <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'x64'">x64</_VcxTargetPlatform>
+        <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64'">ARM64</_VcxTargetPlatform>
+      </PropertyGroup>
+
+      <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
+        <!-- Build the ANCM custom action -->
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=ARM64" />
+
+        <!-- Build the ANCM msis -->
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=arm64" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
+
+        <!-- Windows hosting bundle -->
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+      </ItemGroup>
+
+      <!--
+        In a vertical build, only build the MSIs for the current vertical that aren't used in the hosting bundle in the first pass
+        and build the hosting bundle and its dependencies in the second pass.
+      -->
+      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" BuildStep="installer" />
       </ItemGroup>
     </Otherwise>
   </Choose>

@@ -54,7 +54,7 @@ warn_as_error=${warn_as_error:-true}
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
 
 # Enable repos to use a particular version of the on-line dotnet-install scripts.
-#    default URL: https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
+#    default URL: https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh
 dotnetInstallScriptVersion=${dotnetInstallScriptVersion:-'v1'}
 
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
@@ -232,7 +232,7 @@ function InstallDotNet {
   local public_location=("${installParameters[@]}")
   variations+=(public_location)
 
-  local dotnetbuilds=("${installParameters[@]}" --azure-feed "https://dotnetbuilds.azureedge.net/public")
+  local dotnetbuilds=("${installParameters[@]}" --azure-feed "https://ci.dot.net/public")
   variations+=(dotnetbuilds)
 
   if [[ -n "${6:-}" ]]; then
@@ -295,7 +295,7 @@ function with_retries {
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://dotnet.microsoft.com/download/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local install_script_url="https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh"
 
   if [[ ! -a "$install_script" ]]; then
     mkdir -p "$root"
@@ -339,12 +339,6 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  # use override if it exists - commonly set by source-build
-  if [[ "${_OverrideArcadeInitializeBuildToolFramework:-x}" == "x" ]]; then
-    _InitializeBuildToolFramework="net9.0"
-  else
-    _InitializeBuildToolFramework="${_OverrideArcadeInitializeBuildToolFramework}"
-  fi
 }
 
 # Set RestoreNoHttpCache as a workaround for https://github.com/NuGet/Home/issues/3116
@@ -454,10 +448,12 @@ function MSBuild {
     # new scripts need to work with old packages, so we need to look for the old names/versions
     local selectedPath=
     local possiblePaths=()
-    possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
-    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/net/Microsoft.DotNet.Arcade.Sdk.dll" )
+
+    # This list doesn't need to be updated anymore and can eventually be removed.
+    possiblePaths+=( "$toolset_dir/net9.0/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/net9.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
@@ -530,6 +526,12 @@ function GetDarc {
     fi
 
     "$eng_root/common/darc-init.sh" --toolpath "$darc_path" $version
+}
+
+# Returns a full path to an Arcade SDK task project file.
+function GetSdkTaskProject {
+  taskName=$1
+  echo "$(dirname $_InitializeToolset)/SdkTasks/$taskName.proj"
 }
 
 ResolvePath "${BASH_SOURCE[0]}"

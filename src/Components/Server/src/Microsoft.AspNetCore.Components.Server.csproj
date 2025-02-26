@@ -9,7 +9,6 @@
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <DefineConstants>$(DefineConstants);ENABLE_UNSAFE_MSGPACK;SPAN_BUILTIN;MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>
     <IsPackable>false</IsPackable>
-    <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -21,11 +20,9 @@
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <!-- Required for S.T.J source generation -->
-    <Reference Include="System.Text.Json" PrivateAssets="All" />
+    <Reference Include="System.Text.Json" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
@@ -38,13 +35,6 @@
   <PropertyGroup>
     <MessagePackRoot>$(RepoRoot)src\submodules\MessagePack-CSharp\src\MessagePack.UnityClient\Assets\Scripts\MessagePack\</MessagePackRoot>
   </PropertyGroup>
-
-  <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
-  <PropertyGroup>
-    <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
-  </PropertyGroup>
-
-  <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
@@ -97,28 +87,6 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <BlazorServerJSFilename>blazor.server.js</BlazorServerJSFilename>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
-    <BlazorServerJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
-    <BlazorServerJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
-  </PropertyGroup>
-
-  <!-- blazor.server.js should exist after eng/Npm.Workspace.nodeproj builds. Fall back if not. -->
-  <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorServerJSFile)') ">
-    <Warning Text="'$(BlazorServerJSFile)' does not exist. Falling back to checked-in copy." />
-    <PropertyGroup>
-      <BlazorServerJSFile>..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="_AddEmbeddedBlazor" AfterTargets="_CheckBlazorServerJSPath">
-    <ItemGroup>
-      <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/$(BlazorServerJSFilename)" />
-      <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/$(BlazorServerJSFilename).map" Condition="Exists('$(BlazorServerJSFile).map')" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.DevServer" />
