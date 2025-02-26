@@ -10,6 +10,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -42,6 +43,10 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
         httpContext.Response.ContentType = "text/event-stream";
         httpContext.Response.Headers.CacheControl = "no-cache,no-store";
         httpContext.Response.Headers.Pragma = "no-cache";
+        httpContext.Response.Headers.ContentEncoding = "identity";
+
+        var bufferingFeature = httpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
+        bufferingFeature.DisableBuffering();
 
         var jsonOptions = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
 
@@ -63,6 +68,13 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
         if (item.Data is null)
         {
             writer.Write([]);
+            return;
+        }
+
+        // Handle byte arrays byt writing them directly as strings.
+        if (item.Data is byte[] byteArray)
+        {
+            writer.Write(byteArray);
             return;
         }
 

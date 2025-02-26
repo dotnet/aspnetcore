@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Net.ServerSentEvents;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
@@ -31,6 +33,7 @@ public class ServerSentEventsResultTests
         Assert.Equal("text/event-stream", httpContext.Response.ContentType);
         Assert.Equal("no-cache,no-store", httpContext.Response.Headers.CacheControl);
         Assert.Equal("no-cache", httpContext.Response.Headers.Pragma);
+        Assert.Equal("identity", httpContext.Response.Headers.ContentEncoding);
     }
 
     [Fact]
@@ -257,6 +260,75 @@ public class ServerSentEventsResultTests
                 secondEventAttempted.SetResult();
             }
         }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DisablesBuffering()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var events = AsyncEnumerable.Empty<string>();
+        var result = TypedResults.ServerSentEvents(events);
+        var bufferingDisabled = false;
+
+        var mockBufferingFeature = new MockHttpResponseBodyFeature(
+            onDisableBuffering: () => bufferingDisabled = true);
+
+        httpContext.Features.Set<IHttpResponseBodyFeature>(mockBufferingFeature);
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.True(bufferingDisabled);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithByteArrayData_WritesDataDirectly()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var bytes = "event1"u8.ToArray();
+        var events = new[] { new SseItem<byte[]>(bytes) }.ToAsyncEnumerable();
+        var result = TypedResults.ServerSentEvents(events);
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(((MemoryStream)httpContext.Response.Body).ToArray());
+        Assert.Contains("data: event1\n\n", responseBody);
+
+        // Assert that string is not JSON serialized
+        Assert.DoesNotContain("data: \"event1", responseBody);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithByteArrayData_HandlesNullData()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var events = new[] { new SseItem<byte[]>(null) }.ToAsyncEnumerable();
+        var result = TypedResults.ServerSentEvents(events);
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(((MemoryStream)httpContext.Response.Body).ToArray());
+        Assert.Contains("data: \n\n", responseBody);
+    }
+
+    private class MockHttpResponseBodyFeature(Action onDisableBuffering) : IHttpResponseBodyFeature
+    {
+        public Stream Stream => new MemoryStream();
+        public PipeWriter Writer => throw new NotImplementedException();
+        public Task CompleteAsync() => throw new NotImplementedException();
+        public void DisableBuffering() => onDisableBuffering();
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+        public Task StartAsync(CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
     }
 
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
