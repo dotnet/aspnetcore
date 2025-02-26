@@ -5,8 +5,8 @@
     <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
     <ValidateBaseline>true</ValidateBaseline>
 
-    <PreReleaseLabel>rtm</PreReleaseLabel>
-    <PreReleaseBrandingLabel>RTM</PreReleaseBrandingLabel>
+    <PreReleaseLabel>servicing</PreReleaseLabel>
+    <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t000</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
