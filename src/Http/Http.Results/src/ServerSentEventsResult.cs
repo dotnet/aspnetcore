@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Net.ServerSentEvents;
-using System.Text;
 using Microsoft.AspNetCore.Http.Metadata;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
@@ -41,21 +40,26 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.ContentType = "text/event-stream";
+        httpContext.Response.Headers.CacheControl = "no-cache,no-store";
+        httpContext.Response.Headers.Pragma = "no-cache";
 
-        await SseFormatter.WriteAsync(_events, httpContext.Response.Body,
-            (item, writer) => FormatSseItem(item, writer, httpContext),
-            httpContext.RequestAborted);
-    }
+        var jsonOptions = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
 
-    private static void FormatSseItem(SseItem<T> item, IBufferWriter<byte> writer, HttpContext httpContext)
-    {
-        // Emit string and null values as-is
-        if (item.Data is string stringData)
+        // If the event type is string, we can skip JSON serialization
+        // and directly use the SseFormatter's WriteAsync overload for strings.
+        if (_events is IAsyncEnumerable<SseItem<string>> stringEvents)
         {
-            writer.Write(Encoding.UTF8.GetBytes(stringData));
+            await SseFormatter.WriteAsync(stringEvents, httpContext.Response.Body, httpContext.RequestAborted);
             return;
         }
 
+        await SseFormatter.WriteAsync(_events, httpContext.Response.Body,
+            (item, writer) => FormatSseItem(item, writer, jsonOptions),
+            httpContext.RequestAborted);
+    }
+
+    private static void FormatSseItem(SseItem<T> item, IBufferWriter<byte> writer, JsonOptions jsonOptions)
+    {
         if (item.Data is null)
         {
             writer.Write([]);
@@ -63,7 +67,6 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
         }
 
         // For non-string types, use JSON serialization with options from DI
-        var jsonOptions = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
         var runtimeType = item.Data.GetType();
         var jsonTypeInfo = jsonOptions.SerializerOptions.GetTypeInfo(typeof(T));
 
@@ -72,8 +75,8 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
             ? jsonTypeInfo
             : jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
 
-        var json = JsonSerializer.Serialize(item.Data, typeInfo);
-        writer.Write(Encoding.UTF8.GetBytes(json));
+        var json = JsonSerializer.SerializeToUtf8Bytes(item.Data, typeInfo);
+        writer.Write(json);
     }
 
     private static async IAsyncEnumerable<SseItem<T>> WrapEvents(IAsyncEnumerable<T> events, string? eventType = null)

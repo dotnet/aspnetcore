@@ -3,6 +3,7 @@
 
 using System.Net.ServerSentEvents;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 public class ServerSentEventsResultTests
 {
     [Fact]
-    public async Task ExecuteAsync_SetsContentType()
+    public async Task ExecuteAsync_SetsContentTypeAndHeaders()
     {
         // Arrange
         var httpContext = GetHttpContext();
@@ -28,6 +29,8 @@ public class ServerSentEventsResultTests
 
         // Assert
         Assert.Equal("text/event-stream", httpContext.Response.ContentType);
+        Assert.Equal("no-cache,no-store", httpContext.Response.Headers.CacheControl);
+        Assert.Equal("no-cache", httpContext.Response.Headers.Pragma);
     }
 
     [Fact]
@@ -52,11 +55,11 @@ public class ServerSentEventsResultTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WritesStringsEventsWithType()
+    public async Task ExecuteAsync_WritesStringsEventsWithEventType()
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var events = new[] { "event1" }.ToAsyncEnumerable();
+        var events = new[] { "event1", "event2" }.ToAsyncEnumerable();
         var result = TypedResults.ServerSentEvents(events, "test-event");
 
         // Act
@@ -64,8 +67,8 @@ public class ServerSentEventsResultTests
 
         // Assert
         var responseBody = Encoding.UTF8.GetString(((MemoryStream)httpContext.Response.Body).ToArray());
-        Assert.Contains("event: test-event\n", responseBody);
-        Assert.Contains("data: event1\n\n", responseBody);
+        Assert.Contains("event: test-event\ndata: event1\n\n", responseBody);
+        Assert.Contains("event: test-event\ndata: event2\n\n", responseBody);
     }
 
     [Fact]
@@ -207,7 +210,51 @@ public class ServerSentEventsResultTests
 
         // Assert
         var responseBody = Encoding.UTF8.GetString(((MemoryStream)httpContext.Response.Body).ToArray());
-        Assert.Contains(@"""extra"":""Additional""", responseBody);
+        Assert.Contains(@"data: {""extra"":""Additional"",""name"":""Test"",""value"":42}", responseBody);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ObservesCancellationViaRequestAborted()
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        var httpContext = GetHttpContext();
+        httpContext.RequestAborted = cts.Token;
+        var firstEventReceived = new TaskCompletionSource();
+        var secondEventAttempted = new TaskCompletionSource();
+
+        var events = GetEvents(cts.Token);
+        var result = TypedResults.ServerSentEvents(events);
+
+        // Act & Assert
+        var executeTask = result.ExecuteAsync(httpContext);
+
+        // Wait for first event to be processed then cancel the request and wait
+        // to observe the cancellation
+        await firstEventReceived.Task;
+        cts.Cancel();
+        await secondEventAttempted.Task;
+
+        // Verify the execution was cancelled and only the first event was written
+        await Assert.ThrowsAsync<TaskCanceledException>(() => executeTask);
+        var responseBody = Encoding.UTF8.GetString(((MemoryStream)httpContext.Response.Body).ToArray());
+        Assert.Contains("data: event1\n\n", responseBody);
+        Assert.DoesNotContain("data: event2\n\n", responseBody);
+
+        async IAsyncEnumerable<string> GetEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                yield return "event1";
+                firstEventReceived.SetResult();
+                await Task.Delay(1, cancellationToken);
+                yield return "event2";
+            }
+            finally
+            {
+                secondEventAttempted.SetResult();
+            }
+        }
     }
 
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
