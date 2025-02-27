@@ -87,20 +87,6 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
-function getCurrentScrollPosition() {
-  const scrollPositionX = window.scrollX;
-  const scrollPositionY = window.scrollY;
-  return { X: scrollPositionX, Y: scrollPositionY };
-}
-
-function saveScrollPosition() {
-  const currentState = history.state || {};
-  const scrollPosition = getCurrentScrollPosition();
-  // save the current scroll position
-  const updatedState = { ...currentState, scrollPosition: scrollPosition };
-  history.replaceState(updatedState, /* ignored title */ '', location.href);
-}
-
 function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;
@@ -112,7 +98,6 @@ function onDocumentClick(event: MouseEvent) {
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     const originalLocation = location.href;
-    saveScrollPosition();
 
     const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
@@ -130,27 +115,13 @@ function onDocumentClick(event: MouseEvent) {
   });
 }
 
-function removeScrollPositionFromState() {
-  const currentState = history.state || {};
-  const { scrollPosition, ...rest } = currentState;
-  history.replaceState(Object.keys(rest).length ? rest : null, /* ignored title */ '', location.href);
-}
-
-function onPopState(event: PopStateEvent) {
+function onPopState(state: PopStateEvent) {
   if (hasInteractiveRouter()) {
     return;
   }
 
   // load the new page
-  performEnhancedPageLoad(location.href, /* interceptedLink */ false).then(() => {
-    const scrollPosition = event.state?.scrollPosition;
-    if (scrollPosition !== undefined &&
-      (scrollPosition.X !== window.scrollX || scrollPosition.Y !== window.scrollY)) {
-      window.scrollTo(scrollPosition.X, scrollPosition.Y);
-      // let the browser handle scroll restoration for the history produced by forwards/backwards actions
-      removeScrollPositionFromState();
-    }
-  })
+  performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
 function onDocumentSubmit(event: SubmitEvent) {
