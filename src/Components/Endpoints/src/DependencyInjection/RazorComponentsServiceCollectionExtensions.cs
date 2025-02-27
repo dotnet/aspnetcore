@@ -80,7 +80,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.TryAddScoped(sp => (EndpointAntiforgeryStateProvider)sp.GetRequiredService<AntiforgeryStateProvider>());
-        services.AddPersistentService<AntiforgeryStateProvider>();
+        services.AddPersistentService<AntiforgeryStateProvider>(RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
