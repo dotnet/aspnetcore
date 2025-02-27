@@ -37,12 +37,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         private readonly ValidationAttribute[] _validationAttributes;
 
         public GeneratedValidatableMemberInfo(
+            Type parentType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isEnumerable, isNullable, hasValidatableType)
+            ValidationAttribute[] validationAttributes) : base(parentType, name, displayName, isEnumerable, isNullable, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
@@ -92,10 +93,10 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "complexType")
-                {
-                    return CreateParameterInfocomplexType();
-                }
+                        if (parameterInfo.Name == "complexType" && parameterInfo.ParameterType == typeof(ComplexType))
+            {
+                return CreateParameterInfocomplexType();
+            }
 
             return null;
         }
@@ -107,6 +108,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubType),
     name: "RequiredProperty",
     displayName: "RequiredProperty",
     isEnumerable: false,
@@ -117,6 +119,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubType),
     name: "StringWithLength",
     displayName: "StringWithLength",
     isEnumerable: false,
@@ -137,6 +140,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubTypeWithInheritance),
     name: "EmailString",
     displayName: "EmailString",
     isEnumerable: false,
@@ -161,6 +165,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "IntegerWithRange",
     displayName: "IntegerWithRange",
     isEnumerable: false,
@@ -171,6 +176,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "IntegerWithRangeAndDisplayName",
     displayName: "Valid identifier",
     isEnumerable: false,
@@ -181,6 +187,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "PropertyWithMemberAttributes",
     displayName: "PropertyWithMemberAttributes",
     isEnumerable: false,
@@ -191,6 +198,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "PropertyWithoutMemberAttributes",
     displayName: "PropertyWithoutMemberAttributes",
     isEnumerable: false,
@@ -201,6 +209,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "PropertyWithInheritance",
     displayName: "PropertyWithInheritance",
     isEnumerable: false,
@@ -211,6 +220,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "ListOfSubTypes",
     displayName: "ListOfSubTypes",
     isEnumerable: true,
@@ -221,6 +231,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "IntegerWithCustomValidationAttribute",
     displayName: "IntegerWithCustomValidationAttribute",
     isEnumerable: false,
@@ -231,6 +242,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
     name: "PropertyWithMultipleAttributes",
     displayName: "PropertyWithMultipleAttributes",
     isEnumerable: false,
@@ -247,18 +259,18 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
                 private ValidatableParameterInfo CreateParameterInfocomplexType()
+        {
+            return new GeneratedValidatableParameterInfo(
+                name: "complexType",
+                displayName: "complexType",
+                isOptional: false,
+                hasValidatableType: true,
+                isEnumerable: false,
+                validationAttributes: new ValidationAttribute[]
                 {
-                    return new GeneratedValidatableParameterInfo(
-                        name: "complexType",
-                        displayName: "complexType",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {
-                            
-                        });
-                }
+                    
+                });
+        }
 
     }
 

@@ -16,18 +16,26 @@ public class ValidatableMemberInfo
     /// Creates a new instance of <see cref="ValidatableMemberInfo"/>.
     /// </summary>
     public ValidatableMemberInfo(
+        Type parentType,
         string name,
         string displayName,
         bool isEnumerable,
         bool isNullable,
         bool hasValidatableType)
     {
+        ParentType = parentType;
         Name = name;
         DisplayName = displayName;
         IsEnumerable = isEnumerable;
         IsNullable = isNullable;
         HasValidatableType = hasValidatableType;
     }
+
+    /// <summary>
+    /// Gets the member type.
+    /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+    public Type ParentType { get; }
 
     /// <summary>
     /// Gets the member name.
@@ -68,12 +76,9 @@ public class ValidatableMemberInfo
     /// <param name="validationErrors">The dictionary to add validation errors to.</param>
     /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
     /// <param name="serviceProvider"></param>
-    [RequiresUnreferencedCode("Validation requires unreferenced code")]
-    public void Validate(object obj, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    public Task Validate(object obj, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
-#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
-        var property = obj.GetType().GetProperty(Name)!;
-#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
+        var property = ParentType.GetProperty(Name)!;
         var value = property.GetValue(obj);
 
         // If this is an enumerable type, validate each item
@@ -104,7 +109,9 @@ public class ValidatableMemberInfo
             }
         }
 
-        [RequiresUnreferencedCode("Calls System.ComponentModel.DataAnnotations.ValidationContext.ValidationContext(Object)")]
+        return Task.CompletedTask;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "DisplayName is set on ValidationContext which avoids trim unfriendly paths in implementation.")]
         void ValidateValue(object? val, string errorPrefix)
         {
             foreach (var attribute in GetValidationAttributes())

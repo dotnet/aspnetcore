@@ -72,8 +72,35 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
                 : "snapshots");
     }
 
+    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidatableTypeInfo> verifyFunc)
+    {
+        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver", out var services, out var serviceType, out var outputAssemblyName) is false)
+        {
+            throw new InvalidOperationException("Could not resolve services from compilation.");
+        }
+        var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == outputAssemblyName);
+        var type = targetAssembly.GetType(typeName, throwOnError: false);
+        var service = (IValidatableInfoResolver)services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IValidatableInfoResolver.");
+        verifyFunc(service.GetValidatableTypeInfo(type));
+    }
+
     internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint, IServiceProvider> verifyFunc)
     {
+        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Routing", typeName: "Microsoft.AspNetCore.Routing.EndpointDataSource", out var services, out var serviceType, out var outputAssemblyName) is false)
+        {
+            throw new InvalidOperationException("Could not resolve services from compilation.");
+        }
+        var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
+        var endpoints = (IReadOnlyList<Endpoint>)service.GetType().GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
+        var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
+        verifyFunc(endpoint, services);
+    }
+
+    private static bool TryResolveServicesFromCompilation(Compilation compilation, string targetAssemblyName, string typeName, out IServiceProvider serviceProvider, out Type serviceType, out string outputAssemblyName)
+    {
+        serviceProvider = null;
+        serviceType = null;
+        outputAssemblyName = $"TestProject-{Guid.NewGuid()}";
         var assemblyName = compilation.AssemblyName;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
 
@@ -83,7 +110,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var emitOptions = new EmitOptions(
             debugInformationFormat: DebugInformationFormat.PortablePdb,
             pdbFilePath: symbolsName,
-            outputNameOverride: $"TestProject-{Guid.NewGuid()}");
+            outputNameOverride: outputAssemblyName);
 
         var embeddedTexts = new List<EmbeddedText>();
 
@@ -142,28 +169,24 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
 
         if (factory == null)
         {
-            return;
+            return false;
         }
 
         var services = ((IHost)factory([$"--{HostDefaults.ApplicationKey}={assemblyName}"])).Services;
 
         var applicationLifetime = services.GetRequiredService<IHostApplicationLifetime>();
-        using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(0)))
+        using var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(0));
+        waitForStartTcs.Task.Wait();
+        var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == targetAssemblyName);
+        serviceType = targetAssembly.GetType(typeName, throwOnError: false);
+
+        if (serviceType == null)
         {
-            waitForStartTcs.Task.Wait();
-            var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Microsoft.AspNetCore.Routing");
-            var serviceType = targetAssembly.GetType("Microsoft.AspNetCore.Routing.EndpointDataSource", throwOnError: false);
-
-            if (serviceType == null)
-            {
-                return;
-            }
-
-            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
-            var endpoints = (IReadOnlyList<Endpoint>)serviceType.GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
-            var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
-            verifyFunc(endpoint, services);
+            return false;
         }
+
+        serviceProvider = services;
+        return true;
     }
 
     private sealed class NoopHostLifetime : IHostLifetime

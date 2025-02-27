@@ -37,12 +37,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         private readonly ValidationAttribute[] _validationAttributes;
 
         public GeneratedValidatableMemberInfo(
+            Type parentType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isEnumerable, isNullable, hasValidatableType)
+            ValidationAttribute[] validationAttributes) : base(parentType, name, displayName, isEnumerable, isNullable, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
@@ -100,18 +101,18 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "model1")
-                {
-                    return CreateParameterInfomodel1();
-                }
-            if (parameterInfo.Name == "model2")
-                {
-                    return CreateParameterInfomodel2();
-                }
-            if (parameterInfo.Name == "model3")
-                {
-                    return CreateParameterInfomodel3();
-                }
+                        if (parameterInfo.Name == "model1" && parameterInfo.ParameterType == typeof(BaseType))
+            {
+                return CreateParameterInfomodel1();
+            }
+            if (parameterInfo.Name == "model2" && parameterInfo.ParameterType == typeof(BaseValidatableType))
+            {
+                return CreateParameterInfomodel2();
+            }
+            if (parameterInfo.Name == "model3" && parameterInfo.ParameterType == typeof(ContainerType))
+            {
+                return CreateParameterInfomodel3();
+            }
 
             return null;
         }
@@ -123,6 +124,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::DerivedType),
     name: "Value3",
     displayName: "Value3",
     isEnumerable: false,
@@ -147,6 +149,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::BaseType),
     name: "Value1",
     displayName: "Value 1",
     isEnumerable: false,
@@ -157,6 +160,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::BaseType),
     name: "Value2",
     displayName: "Value2",
     isEnumerable: false,
@@ -178,6 +182,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::DerivedValidatableType),
     name: "Value3",
     displayName: "Value3",
     isEnumerable: false,
@@ -202,6 +207,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::BaseValidatableType),
     name: "Value1",
     displayName: "Value 1",
     isEnumerable: false,
@@ -222,6 +228,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ContainerType),
     name: "BaseType",
     displayName: "BaseType",
     isEnumerable: false,
@@ -232,6 +239,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ContainerType),
     name: "BaseValidatableType",
     displayName: "BaseValidatableType",
     isEnumerable: false,
@@ -247,44 +255,44 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
                 private ValidatableParameterInfo CreateParameterInfomodel1()
+        {
+            return new GeneratedValidatableParameterInfo(
+                name: "model1",
+                displayName: "model1",
+                isOptional: false,
+                hasValidatableType: true,
+                isEnumerable: false,
+                validationAttributes: new ValidationAttribute[]
                 {
-                    return new GeneratedValidatableParameterInfo(
-                        name: "model1",
-                        displayName: "model1",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {
-                            
-                        });
-                }
+                    
+                });
+        }
         private ValidatableParameterInfo CreateParameterInfomodel2()
+        {
+            return new GeneratedValidatableParameterInfo(
+                name: "model2",
+                displayName: "model2",
+                isOptional: false,
+                hasValidatableType: true,
+                isEnumerable: false,
+                validationAttributes: new ValidationAttribute[]
                 {
-                    return new GeneratedValidatableParameterInfo(
-                        name: "model2",
-                        displayName: "model2",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {
-                            
-                        });
-                }
+                    
+                });
+        }
         private ValidatableParameterInfo CreateParameterInfomodel3()
+        {
+            return new GeneratedValidatableParameterInfo(
+                name: "model3",
+                displayName: "model3",
+                isOptional: false,
+                hasValidatableType: true,
+                isEnumerable: false,
+                validationAttributes: new ValidationAttribute[]
                 {
-                    return new GeneratedValidatableParameterInfo(
-                        name: "model3",
-                        displayName: "model3",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {
-                            
-                        });
-                }
+                    
+                });
+        }
 
     }
 

@@ -37,12 +37,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         private readonly ValidationAttribute[] _validationAttributes;
 
         public GeneratedValidatableMemberInfo(
+            Type parentType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isEnumerable, isNullable, hasValidatableType)
+            ValidationAttribute[] validationAttributes) : base(parentType, name, displayName, isEnumerable, isNullable, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
@@ -84,10 +85,10 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "model")
-                {
-                    return CreateParameterInfomodel();
-                }
+                        if (parameterInfo.Name == "model" && parameterInfo.ParameterType == typeof(RecursiveType))
+            {
+                return CreateParameterInfomodel();
+            }
 
             return null;
         }
@@ -99,6 +100,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 members: new[]
                 {
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::RecursiveType),
     name: "Value",
     displayName: "Value",
     isEnumerable: false,
@@ -109,6 +111,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
     }),
                     new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::RecursiveType),
     name: "Next",
     displayName: "Next",
     isEnumerable: false,
@@ -124,18 +127,18 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
                 private ValidatableParameterInfo CreateParameterInfomodel()
+        {
+            return new GeneratedValidatableParameterInfo(
+                name: "model",
+                displayName: "model",
+                isOptional: false,
+                hasValidatableType: true,
+                isEnumerable: false,
+                validationAttributes: new ValidationAttribute[]
                 {
-                    return new GeneratedValidatableParameterInfo(
-                        name: "model",
-                        displayName: "model",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {
-                            
-                        });
-                }
+                    
+                });
+        }
 
     }
 

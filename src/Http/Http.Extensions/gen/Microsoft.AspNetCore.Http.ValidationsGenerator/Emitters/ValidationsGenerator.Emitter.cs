@@ -60,12 +60,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         private readonly ValidationAttribute[] _validationAttributes;
 
         public GeneratedValidatableMemberInfo(
+            Type parentType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isEnumerable, isNullable, hasValidatableType)
+            ValidationAttribute[] validationAttributes) : base(parentType, name, displayName, isEnumerable, isNullable, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
@@ -264,9 +265,10 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         var sb = new StringBuilder();
         foreach (var validatableType in validatableTypes)
         {
-            sb.AppendLine($@"            if (type == typeof({validatableType.Name}))
+            var typeName = validatableType.Name;
+            sb.AppendLine($@"            if (type == typeof({typeName}))
             {{
-                return Create{SanitizeTypeName(validatableType.Name)}();
+                return Create{SanitizeTypeName(typeName)}();
             }}");
         }
         return sb.ToString();
@@ -277,10 +279,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         var sb = new StringBuilder();
         foreach (var validatableParameter in validatableParameters)
         {
-            sb.AppendLine($@"            if (parameterInfo.Name == ""{validatableParameter.Name}"")
-                {{
-                    return CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}();
-                }}");
+            var parameterTypeName = validatableParameter.Type.ToDisplayString();
+            sb.AppendLine($@"            if (parameterInfo.Name == ""{validatableParameter.Name}"" && parameterInfo.ParameterType == typeof({parameterTypeName}))
+            {{
+                return CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}();
+            }}");
         }
         return sb.ToString();
     }
@@ -290,10 +293,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         var sb = new StringBuilder();
         foreach (var validatableType in validatableTypes)
         {
-            sb.AppendLine($@"        private ValidatableTypeInfo Create{SanitizeTypeName(validatableType.Name)}()
+            var typeName = validatableType.Name;
+            sb.AppendLine($@"        private ValidatableTypeInfo Create{SanitizeTypeName(typeName)}()
         {{
             return new ValidatableTypeInfo(
-                type: typeof({validatableType.Name}),
+                type: typeof({typeName}),
                 members: new[]
                 {{
                     {string.Join(",\n                    ", validatableType.Members.Select(EmitValidatableMemberForCreate))}
@@ -314,25 +318,27 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         var sb = new StringBuilder();
         foreach (var validatableParameter in validatableParameters)
         {
+            var parameterTypeName = validatableParameter.Type.ToDisplayString();
             sb.AppendLine($@"        private ValidatableParameterInfo CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}()
+        {{
+            return new GeneratedValidatableParameterInfo(
+                name: ""{validatableParameter.Name}"",
+                displayName: ""{validatableParameter.DisplayName}"",
+                isOptional: false,
+                hasValidatableType: {validatableParameter.HasValidatableType.ToString().ToLowerInvariant()},
+                isEnumerable: {validatableParameter.IsEnumerable.ToString().ToLowerInvariant()},
+                validationAttributes: new ValidationAttribute[]
                 {{
-                    return new GeneratedValidatableParameterInfo(
-                        name: ""{validatableParameter.Name}"",
-                        displayName: ""{validatableParameter.DisplayName}"",
-                        isOptional: false,
-                        hasValidatableType: true,
-                        isEnumerable: false,
-                        validationAttributes: new ValidationAttribute[]
-                        {{
-                            {string.Join(",\n                        ", validatableParameter.Attributes.Select(EmitValidationAttributeForCreate))}
-                        }});
-                }}");
-        }
-        return sb.ToString();
+                    {string.Join(",\n                    ", validatableParameter.Attributes.Select(EmitValidationAttributeForCreate))}
+                }});
+        }}");
     }
+    return sb.ToString();
+}
 
     private static string EmitValidatableMemberForCreate(ValidatableMember member) => $$"""
 new GeneratedValidatableMemberInfo(
+    parentType: typeof({{member.ParentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
     name: "{{member.Name}}",
     displayName: "{{member.DisplayName}}",
     isEnumerable: {{member.IsEnumerable.ToString().ToLowerInvariant()}},

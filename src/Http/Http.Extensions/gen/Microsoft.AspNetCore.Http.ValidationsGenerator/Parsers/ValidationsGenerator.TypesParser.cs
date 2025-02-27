@@ -99,6 +99,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             var hasValidatableType = TryExtractValidatableType(member.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
             members.Add(new ValidatableMember(
+                ParentType: member.ContainingType,
                 Name: member.Name,
                 DisplayName: member.GetDisplayName(requiredSymbols.DisplayAttribute),
                 IsEnumerable: member.Type.IsEnumerable(requiredSymbols.IEnumerable),

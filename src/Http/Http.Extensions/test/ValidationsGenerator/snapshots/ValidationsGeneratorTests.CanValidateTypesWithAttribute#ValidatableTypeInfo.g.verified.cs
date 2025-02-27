@@ -75,110 +75,192 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
         {
-            
+                        if (type == typeof(SubType))
+            {
+                return CreateSubType();
+            }
+            if (type == typeof(SubTypeWithInheritance))
+            {
+                return CreateSubTypeWithInheritance();
+            }
+            if (type == typeof(ComplexType))
+            {
+                return CreateComplexType();
+            }
+
             return null;
         }
 
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "value1" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfovalue1();
-            }
-            if (parameterInfo.Name == "value2" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfovalue2();
-            }
-            if (parameterInfo.Name == "value3" && parameterInfo.ParameterType == typeof(string))
-            {
-                return CreateParameterInfovalue3();
-            }
-            if (parameterInfo.Name == "value4" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfovalue4();
-            }
-            if (parameterInfo.Name == "value5" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfovalue5();
-            }
-
+            
             return null;
         }
 
+                private ValidatableTypeInfo CreateSubType()
+        {
+            return new ValidatableTypeInfo(
+                type: typeof(SubType),
+                members: new[]
+                {
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubType),
+    name: "RequiredProperty",
+    displayName: "RequiredProperty",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubType),
+    name: "StringWithLength",
+    displayName: "StringWithLength",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.StringLengthAttribute), new string[] { "10" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.StringLengthAttribute")
+    })
+                },
+                implementsIValidatableObject: false
+            );
+        }
+        private ValidatableTypeInfo CreateSubTypeWithInheritance()
+        {
+            return new ValidatableTypeInfo(
+                type: typeof(SubTypeWithInheritance),
+                members: new[]
+                {
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::SubTypeWithInheritance),
+    name: "EmailString",
+    displayName: "EmailString",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.EmailAddressAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.EmailAddressAttribute")
+    })
+                },
+                implementsIValidatableObject: false,
+                validatableSubTypes: new[]
+                {
+                    typeof(SubType)
+                }
+            );
+        }
+        private ValidatableTypeInfo CreateComplexType()
+        {
+            return new ValidatableTypeInfo(
+                type: typeof(ComplexType),
+                members: new[]
+                {
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "IntegerWithRange",
+    displayName: "IntegerWithRange",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "IntegerWithRangeAndDisplayName",
+    displayName: "Valid identifier",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "PropertyWithMemberAttributes",
+    displayName: "PropertyWithMemberAttributes",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: true,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "PropertyWithoutMemberAttributes",
+    displayName: "PropertyWithoutMemberAttributes",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: true,
+    validationAttributes: new ValidationAttribute[]
+    {
         
-                private ValidatableParameterInfo CreateParameterInfovalue1()
-        {
-            return new GeneratedValidatableParameterInfo(
-                name: "value1",
-                displayName: "value1",
-                isOptional: false,
-                hasValidatableType: false,
-                isEnumerable: false,
-                validationAttributes: new ValidationAttribute[]
-                {
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
-                });
-        }
-        private ValidatableParameterInfo CreateParameterInfovalue2()
-        {
-            return new GeneratedValidatableParameterInfo(
-                name: "value2",
-                displayName: "Valid identifier",
-                isOptional: false,
-                hasValidatableType: false,
-                isEnumerable: false,
-                validationAttributes: new ValidationAttribute[]
-                {
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
-                });
-        }
-        private ValidatableParameterInfo CreateParameterInfovalue3()
-        {
-            return new GeneratedValidatableParameterInfo(
-                name: "value3",
-                displayName: "value3",
-                isOptional: false,
-                hasValidatableType: false,
-                isEnumerable: false,
-                validationAttributes: new ValidationAttribute[]
-                {
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")
-                });
-        }
-        private ValidatableParameterInfo CreateParameterInfovalue4()
-        {
-            return new GeneratedValidatableParameterInfo(
-                name: "value4",
-                displayName: "value4",
-                isOptional: false,
-                hasValidatableType: false,
-                isEnumerable: false,
-                validationAttributes: new ValidationAttribute[]
-                {
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute")
-                });
-        }
-        private ValidatableParameterInfo CreateParameterInfovalue5()
-        {
-            return new GeneratedValidatableParameterInfo(
-                name: "value5",
-                displayName: "value5",
-                isOptional: false,
-                hasValidatableType: false,
-                isEnumerable: false,
-                validationAttributes: new ValidationAttribute[]
-                {
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute"),
-                    ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
-                });
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "PropertyWithInheritance",
+    displayName: "PropertyWithInheritance",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: true,
+    validationAttributes: new ValidationAttribute[]
+    {
+        
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "ListOfSubTypes",
+    displayName: "ListOfSubTypes",
+    isEnumerable: true,
+    isNullable: false,
+    hasValidatableType: true,
+    validationAttributes: new ValidationAttribute[]
+    {
+        
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "IntegerWithCustomValidationAttribute",
+    displayName: "IntegerWithCustomValidationAttribute",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute")
+    }),
+                    new GeneratedValidatableMemberInfo(
+    parentType: typeof(global::ComplexType),
+    name: "PropertyWithMultipleAttributes",
+    displayName: "PropertyWithMultipleAttributes",
+    isEnumerable: false,
+    isNullable: false,
+    hasValidatableType: false,
+    validationAttributes: new ValidationAttribute[]
+    {
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute"),
+        ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")
+    })
+                },
+                implementsIValidatableObject: false
+            );
         }
 
+        
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "85TK7bWNSSMP7r/P9i3t43YBAABQcm9ncmFtLmNz")]
+        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "1zHOloYrguEmrREVCu+15nYBAABQcm9ncmFtLmNz")]
         public static IServiceCollection AddValidation(this IServiceCollection services)
         {
             services.AddSingleton<global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver>(new GeneratedValidatableInfoResolver());

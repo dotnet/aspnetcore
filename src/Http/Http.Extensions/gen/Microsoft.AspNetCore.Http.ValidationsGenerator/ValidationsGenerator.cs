@@ -10,10 +10,20 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Resolve the symbols that will be required when making comparisons
+        // in future steps.
+        var requiredSymbols = context.CompilationProvider.Select(ExtractRequiredSymbols);
+
         // Find the builder.Services.AddValidation() call in the application.
         var addValidation = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: FindAddValidation,
             transform: TransformAddValidation
+        );
+        // Extract types that have been marked with [ValidatableType].
+        var validatableTypesWithAttribute = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "Microsoft.AspNetCore.Http.Validation.ValidatableTypeAttribute",
+            predicate: ShouldTransformSymbolWithAttribute,
+            transform: TransformValidatableTypeWithAttribute
         );
         // Extract all minimal API endpoints in the application.
         var endpoints = context.SyntaxProvider
@@ -21,9 +31,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 predicate: FindEndpoints,
                 transform: TransformEndpoints)
             .Where(endpoint => endpoint is not null);
-        // Resolve the symbols that will be required when making comparisons
-        // in future steps.
-        var requiredSymbols = context.CompilationProvider.Select(ExtractRequiredSymbols);
         // Extract all validatable endpoints encountered in the type graph.
         var validatableEndpoints = endpoints
             .Combine(requiredSymbols)
@@ -31,6 +38,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Extract all validatable types encountered in the type graph.
         var validatableTypes = validatableEndpoints
             .SelectMany((endpoint, ct) => endpoint.ValidatableTypes)
+            .Concat(validatableTypesWithAttribute)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
         // Extract all validatable parameters encountered in minimal endpoints.

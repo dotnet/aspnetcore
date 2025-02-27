@@ -59,12 +59,12 @@ public class ValidatableTypeInfo
     /// <param name="validationErrors">The dictionary to add validation errors to.</param>
     /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
     /// <param name="serviceProvider">The service provider to use for validation context.</param>
-    [RequiresUnreferencedCode("Validation requires unreferenced code")]
-    public virtual void Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    public virtual Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
         if (value == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var actualType = value.GetType();
@@ -115,5 +115,7 @@ public class ValidatableTypeInfo
                 }
             }
         }
+
+        return Task.CompletedTask;
     }
 }

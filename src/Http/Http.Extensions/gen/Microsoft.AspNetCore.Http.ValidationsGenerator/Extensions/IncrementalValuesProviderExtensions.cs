@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
@@ -32,6 +33,30 @@ internal static class IncrementalValuesProviderExtensions
                     }
                 }
 
+                return results.DrainToImmutable();
+            });
+    }
+
+    public static IncrementalValuesProvider<T> Concat<T>(
+        this IncrementalValuesProvider<T> first,
+        IncrementalValuesProvider<ImmutableArray<T>> second)
+    {
+        return first
+            .Collect()
+            .Combine(second.Collect())
+            .SelectMany((tuple, _) =>
+            {
+                if (tuple.Left.IsEmpty && tuple.Right.IsEmpty)
+                {
+                    return [];
+                }
+
+                var results = ImmutableArray.CreateBuilder<T>(tuple.Left.Length + tuple.Right.Length);
+                results.AddRange(tuple.Left);
+                for (var i = 0; i < tuple.Right.Length; i++)
+                {
+                    results.AddRange(tuple.Right[i]);
+                }
                 return results.DrainToImmutable();
             });
     }

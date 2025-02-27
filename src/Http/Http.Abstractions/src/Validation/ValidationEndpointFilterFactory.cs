@@ -26,13 +26,11 @@ internal static class ValidationEndpointFilterFactory
                 var validatableParameter = validatableParameters.ElementAt(i);
 
                 var argument = context.Arguments[i];
-                if (argument is null)
+                if (argument is null || validatableParameter is null)
                 {
                     continue;
                 }
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-                validatableParameter?.Validate(argument, "", validationErrors, validatableTypeInfoResolver, context.HttpContext.RequestServices);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+                await validatableParameter.Validate(argument, "", validationErrors, validatableTypeInfoResolver, context.HttpContext.RequestServices);
             }
 
             if (validationErrors.Count > 0)
