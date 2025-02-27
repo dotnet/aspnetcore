@@ -1,0 +1,24 @@
+name: Update Selenium and Playwright dependencies
+
+on:
+  schedule:
+  - cron: '0 0 1-7 * 1' # Run on the first monday of the month
+  workflow_dispatch:  # Allow manual runs
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  update-selenium-and-playwright:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update dependencies
+        run: pwsh eng/scripts/update-selenium-and-playwright-versions.ps1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

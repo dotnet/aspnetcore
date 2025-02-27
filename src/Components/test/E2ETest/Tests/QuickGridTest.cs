@@ -118,7 +118,76 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     public void AdditionalAttributesApplied()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
-        Assert.Equal("somevalue", grid.GetAttribute("custom-attrib"));
-        Assert.Contains("custom-class-attrib", grid.GetAttribute("class")?.Split(" "));
+        Assert.Equal("somevalue", grid.GetDomAttribute("custom-attrib"));
+        Assert.Contains("custom-class-attrib", grid.GetDomAttribute("class")?.Split(" "));
+    }
+
+    [Fact]
+    public void RowClassApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var rows = grid.FindElements(By.CssSelector("tbody > tr"));
+
+        bool isJulieRowFound = false;
+        foreach (var row in rows)
+        {
+            var firstName = row.FindElement(By.CssSelector("td:nth-child(2)")).Text;
+            if (firstName == "Julie")
+            {
+                isJulieRowFound = true;
+                Assert.Equal("highlight", row.GetDomAttribute("class"));
+            }
+            else
+            {
+                Assert.Null(row.GetDomAttribute("class"));
+            }
+        }
+
+        if (!isJulieRowFound)
+        {
+            Assert.Fail("No row found for Julie to highlight.");
+        }
+    }
+
+    [Fact]
+    public void CanOpenColumnOptions()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.Exists(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByBlurring()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click outside the column options to close
+        grid.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByCloseColumnOptionsAsync()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click the button inside the column options popup to close, which calls QuickGrid.CloseColumnOptionsAsync
+        grid.FindElement(By.CssSelector("#close-column-options")).Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
     }
 }

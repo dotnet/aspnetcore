@@ -1,21 +1,11 @@
 ﻿<Project>
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false'">
     <BlazorWebAssemblyJSPath
         Condition=" '$(Configuration)' == 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorWebAssemblyJSPath
         Condition=" '$(Configuration)' != 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorWebAssemblyJSMapPath>$(BlazorWebAssemblyJSPath).map</BlazorWebAssemblyJSMapPath>
-
-    <_BlazorDevServerPath>$(ArtifactsDir)bin/Microsoft.AspNetCore.Components.WebAssembly.DevServer/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
-    <RunCommand>dotnet</RunCommand>
-    <_RunExtraArguments Condition="'$(WasmEnableThreads)' == 'true'">--apply-cop-headers</_RunExtraArguments>
-    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; --applicationpath &quot;$(TargetPath)&quot; $(_RunExtraArguments) $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
-
-  <Target Name="_CheckBlazorWebAssemblyJSPath" AfterTargets="ResolveProjectReferences"
-    Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND !EXISTS('$(BlazorWebAssemblyJSPath)') ">
-    <Error Text="'$(BlazorWebAssemblyJSPath)' does not exist. Enable NodeJS to build this project." />
-  </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 </Project>

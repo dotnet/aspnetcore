@@ -4,7 +4,7 @@
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine318>(Alpine.318.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.18-helix-amd64</HelixQueueAlpine318>
     <HelixQueueDebian12>(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64</HelixQueueDebian12>
-    <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
+    <HelixQueueFedora41>(Fedora.41.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41-helix</HelixQueueFedora41>
     <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix-amd64</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8</HelixQueueArmDebian12>
 
@@ -29,7 +29,7 @@
       <!-- aspnetcore-quarantined-pr (quarantined-pr.yml) -->
       <ItemGroup>
         <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="OSX.13.Amd64.Open" Platform="OSX" />
+        <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
       </ItemGroup>
     </When>
@@ -43,12 +43,12 @@
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine318)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian12)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueFedora41)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
 
         <!-- Mac -->
-        <HelixAvailableTargetQueue Include="OSX.1200.Amd64.Open" Platform="OSX" />
+        <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
 
         <!-- Windows -->
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />

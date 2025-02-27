@@ -19,7 +19,7 @@
       $(HelixQueueAlmaLinux8);
       $(HelixQueueAlpine318);
       $(HelixQueueDebian12);
-      $(HelixQueueFedora38);
+      $(HelixQueueFedora40);
       $(HelixQueueMariner);
       Ubuntu.2004.Amd64.Open;
     </SkipHelixQueues>

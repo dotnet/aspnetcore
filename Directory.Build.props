@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="eng\Common.props" />
 
   <PropertyGroup>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -48,15 +47,6 @@
         '$(IsBenchmarkProject)' == 'true' OR
         '$(IsPublishedAppTestProject)' == 'true' OR
         $(IsUnitTestProject) ">false</IsShipping>
-
-    <!--
-      Following logic mimics core-setup approach as well as
-      https://github.com/dotnet/arcade/blob/694d59f090b743f894779d04a7ffe11cbaf352e7/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj#L30-L31
-      $(DotNetFinalVersionKind) is set globally when doing final aka stable builds. Arcade infrastructure should pick
-      up $(IsStableBuild) automatically; property is also used to control prerelease branding.
-    -->
-    <IsStableBuild>false</IsStableBuild>
-    <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
   </PropertyGroup>
 
   <!-- Disable logging of some task parameters or metadata to reduce binlog size.
@@ -98,6 +88,7 @@
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\QuarantinedTests.AfterArcade.props" />
+  <Import Project="eng\Common.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -243,6 +234,38 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+    <!-- Allow overriding the public base URL for Unified Build scenarios to pull assets from a local build. -->
+    <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.blob.core.windows.net/public/</PublicBaseURL>
+    <InternalBaseURL>https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+    <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
+    <AddVersionToCrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' != ''">true</AddVersionToCrossArchitectureInstallerBasePath>
+    <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(ArtifactsShippingPackagesDir)</CrossArchitectureInstallerBasePath>
+  </PropertyGroup>
+
+  <!-- Try various places to find the runtime. It's either released (use official version),
+        public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
+    <RemoteAssetBaseURL Include="$(OfficialBaseURL)" />
+    <RemoteAssetBaseURL Include="$(PublicBaseURL)" />
+    <!-- Include the token here as we'll generate the URLs to download based on this item group. -->
+    <RemoteAssetBaseURL Include="$(InternalBaseURL)"
+                        Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+      <token>$(DotnetRuntimeSourceFeedKey)</token>
+    </RemoteAssetBaseURL>
+  </ItemGroup>
+
+  <!--
+    Only try downloading from the "public" base URL when doing a vertical build.
+    In a vertical build, the public URL will be overwritten to point to local build artifacts.
+  -->
+  <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
+    <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
+    <RemoteAssetBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'" Include="$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))" />
+    <RemoteAssetBaseURL Condition="!$(PublicBaseURL.StartsWith('file:')) or '$(OS)' == 'Windows_NT'" Include="$(PublicBaseURL)" />
+  </ItemGroup>
+
+  <PropertyGroup>
     <!-- PackageReadmeFile specifies the package readme file name in the package. PackageReadmeFilePath points to the package readme file on disk. -->
     <EnableDefaultPackageReadmeFile Condition="'$(EnableDefaultPackageReadmeFile)' == '' and '$(IsShipping)' != 'false'">true</EnableDefaultPackageReadmeFile>
     <PackageReadmeFilePath Condition="'$(PackageReadmeFilePath)' == '' and '$(EnableDefaultPackageReadmeFile)' == 'true'">PACKAGE.md</PackageReadmeFilePath>
@@ -255,9 +278,9 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it. -->
-    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonTargets>
-    <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonCrossTargetingTargets>
+    <!-- Set the before common targets so we compute ExcludeFromBuild before arcade uses it. -->
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets;$(CustomBeforeMicrosoftCommonTargets)</CustomBeforeMicrosoftCommonTargets>
+    <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets;$(CustomBeforeMicrosoftCommonCrossTargetingTargets)</CustomBeforeMicrosoftCommonCrossTargetingTargets>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />

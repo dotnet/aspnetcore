@@ -29,7 +29,7 @@ public sealed class AddExternalDocsTransformer(IConfiguration configuration) : I
     {
         if (Uri.TryCreate(configuration["DocumentationBaseUrl"], UriKind.Absolute, out var baseUri))
         {
-            var url = new Uri(baseUri, $"/api/docs/schemas/{Uri.EscapeDataString(schema.Type)}");
+            var url = new Uri(baseUri, $"/api/docs/schemas/{Uri.EscapeDataString(schema.Type.ToString()!.ToLowerInvariant())}");
 
             schema.ExternalDocs = new OpenApiExternalDocs
             {

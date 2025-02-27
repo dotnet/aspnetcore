@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
-[Collection(IISTestSiteCollection.Name)]
+[Collection(IISTestSiteCollectionInProc.Name)]
 [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class RequestResponseTests
 {

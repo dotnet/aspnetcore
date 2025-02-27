@@ -80,7 +80,7 @@ public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithou
         foreach (var cookieTempDataProviderCookie in cookieTempDataProviderCookies)
         {
             Assert.NotNull(cookieTempDataProviderCookie.Value.Value);
-            Assert.Equal("/", cookieTempDataProviderCookie.Path);
+            Assert.Equal("/", cookieTempDataProviderCookie.Path.AsSpan());
             Assert.Null(cookieTempDataProviderCookie.Domain.Value);
             Assert.False(cookieTempDataProviderCookie.Secure);
         }
@@ -97,8 +97,8 @@ public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithou
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeader => setCookieHeader.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeaderValue);
-        Assert.Equal(string.Empty, setCookieHeaderValue.Value);
-        Assert.Equal("/", setCookieHeaderValue.Path);
+        Assert.Equal(string.Empty, setCookieHeaderValue.Value.AsSpan());
+        Assert.Equal("/", setCookieHeaderValue.Path.AsSpan());
         Assert.Null(setCookieHeaderValue.Domain.Value);
         Assert.NotNull(setCookieHeaderValue.Expires);
         Assert.True(setCookieHeaderValue.Expires < DateTimeOffset.Now); // expired cookie
@@ -130,7 +130,7 @@ public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithou
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.False(setCookieHeader.Secure);
         Assert.Null(setCookieHeader.Expires);
@@ -153,8 +153,8 @@ public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithou
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal(string.Empty, setCookieHeader.Value);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal(string.Empty, setCookieHeader.Value.AsSpan());
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.NotNull(setCookieHeader.Expires);
         Assert.True(setCookieHeader.Expires < DateTimeOffset.Now); // expired cookie
@@ -183,7 +183,7 @@ public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithou
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.False(setCookieHeader.Secure);
         Assert.Null(setCookieHeader.Expires);

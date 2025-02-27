@@ -198,6 +198,17 @@ internal sealed class Http2FrameWriter
                     // Now check the connection window
                     actual = CheckConnectionWindow(actual);
 
+                    // actual is negative means window size has become negative
+                    // this can usually happen if the receiver decreases window size before receiving the previous data frame
+                    // in this case, reset to 0 and continue, no data will be sent but will wait for window update
+                    // RFC 9113 section 6.9.2 specifically calls out that the window size can go negative.  As required,
+                    // we continue to track the negative value but use 0 for the remainder of this write to avoid 
+                    // out-of-range errors.
+                    if (actual < 0)
+                    {
+                        actual = 0;
+                    }
+
                     // Write what we can
                     if (actual < buffer.Length)
                     {

@@ -2,485 +2,488 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>8.0.0</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>9.0.0</AspNetCoreBaselineVersion>
   </PropertyGroup>
-  <!-- Package: AspNetCoreRuntime.8.0.x64-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.8.0.x64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+  <!-- Package: AspNetCoreRuntime.9.0.x64-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.9.0.x64' ">
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: AspNetCoreRuntime.8.0.x86-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.8.0.x86' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+  <!-- Package: AspNetCoreRuntime.9.0.x86-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.9.0.x86' ">
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: dotnet-sql-cache-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Ref-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Ref' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-arm-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-arm' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-arm64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-musl-arm-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-musl-arm' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-musl-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-musl-arm64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-musl-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-musl-x64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-x64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.osx-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.osx-arm64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.osx-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.osx-x64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-arm64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x64' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x86-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x86' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Certificate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Facebook-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Facebook' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.JwtBearer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[7.0.3, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[8.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.MicrosoftAccount-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Negotiate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.DirectoryServices.Protocols" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.DirectoryServices.Protocols" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.OpenIdConnect-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[7.0.3, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[8.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Twitter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.WsFederation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[7.0.3, )" />
-    <BaselinePackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[7.0.3, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[8.0.1, )" />
+    <BaselinePackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[8.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authorization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.SiteExtension-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.SiteExtension' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Analyzers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Analyzers' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Authorization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.CustomElements-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.CustomElements' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.CustomElements' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.CustomElements' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Forms-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.QuickGrid-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Web-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.JSInterop.WebAssembly" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.JSInterop.WebAssembly" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Authentication-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.DevServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.DevServer' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Server-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Server' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebView-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebView' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebView' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebView' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ConcurrencyLimiter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.RateLimiting" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Threading.RateLimiting" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Features" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Cryptography.Internal-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Cryptography.KeyDerivation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Grpc.JsonTranscoding-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Grpc.JsonTranscoding' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Grpc.JsonTranscoding' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Google.Api.CommonProtos" Version="[2.5.0, )" />
-    <BaselinePackageReference Include="Google.Protobuf" Version="[3.23.1, )" />
-    <BaselinePackageReference Include="Grpc.AspNetCore.Server" Version="[2.57.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Grpc.JsonTranscoding' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Google.Api.CommonProtos" Version="[2.15.0, )" />
+    <BaselinePackageReference Include="Google.Protobuf" Version="[3.27.0, )" />
+    <BaselinePackageReference Include="Grpc.AspNetCore.Server" Version="[2.64.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HeaderPropagation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.WindowsServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.Net.Http" Version="[4.3.4, )" />
+    <BaselinePackageReference Include="System.Net.ServerSentEvents" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Net.ServerSentEvents" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Net.ServerSentEvents" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Net.ServerSentEvents" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
@@ -490,505 +493,510 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Metadata-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.MiddlewareAnalysis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Testing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.TestHost" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.TestHost" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.OpenApi-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OpenApi' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OpenApi' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.OpenApi" Version="[1.4.3, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OpenApi' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.OpenApi" Version="[1.6.17, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.OutputCaching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OutputCaching.StackExchangeRedis' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OutputCaching.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OutputCaching.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.Channels" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.Channels" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.Channels" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.Channels" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.TimeProvider" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.Net.Sockets" Version="[4.3.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[2.5.108, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[2.5.187, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[2.5.108, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[2.5.187, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[2.5.108, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[2.5.187, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Specification.Tests-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[9.0.0, )" />
     <BaselinePackageReference Include="xunit.assert" Version="[2.4.2, )" />
     <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.4.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="MessagePack" Version="[2.5.108, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="MessagePack" Version="[2.5.187, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaProxy-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaProxy' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.TestHost-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebUtilities-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Authentication.WebAssembly.Msal-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.dotnet-openapi-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.dotnet-openapi' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.Client.ItemTemplates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.Client.ItemTemplates' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.DotNet.Web.ItemTemplates.8.0-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ItemTemplates.8.0' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+  <!-- Package: Microsoft.DotNet.Web.ItemTemplates.9.0-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ItemTemplates.9.0' ">
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.DotNet.Web.ProjectTemplates.8.0-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ProjectTemplates.8.0' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+  <!-- Package: Microsoft.DotNet.Web.ProjectTemplates.9.0-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ProjectTemplates.9.0' ">
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.ApiDescription.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ApiDescription.Client' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.ApiDescription.Server-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ApiDescription.Server' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.SqlServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Azure.Identity" Version="[1.11.4, )" />
+    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Azure.Identity" Version="[1.11.4, )" />
+    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Azure.Identity" Version="[1.11.4, )" />
+    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[4.0.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'net8.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.27, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Features-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Features' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Embedded-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Http.Polly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Polly" Version="[7.2.4, )" />
     <BaselinePackageReference Include="Polly.Extensions.Http" Version="[3.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Identity.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[5.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Identity.Stores-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization.Abstractions' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Logging.AzureAppServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.Net.Http" Version="[4.3.4, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[9.0.0, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.WebEncoders-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'net462' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[9.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[8.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.JSInterop-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.JSInterop.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[9.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
-    <BaselinePackageVersion>8.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[8.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[9.0.0, )" />
   </ItemGroup>
 </Project>

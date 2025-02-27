@@ -1,12 +1,7 @@
 version: 2
-registries:
-  dev.azure.com:
-    token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
-    type: npm-registry
-    url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/
 
 updates:
-  - package-ecosystem: NuGet
+  - package-ecosystem: nuget
     directory: "/"
     # Perform only security updates of our npm dependencies.
     open-pull-requests-limit: 0
@@ -60,18 +55,6 @@ updates:
     labels:
       - area-infrastructure
     target-branch: "release/2.1"
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    allow:
-      - dependency-type: "all"
-    commit-message:
-      prefix: "[release/6.0] "
-      include: scope
-    labels:
-      - area-infrastructure
-    target-branch: "release/6.0"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:

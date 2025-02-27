@@ -13,8 +13,8 @@ PROCESS_MANAGER::Initialize(
     VOID
 )
 {
-    WSADATA                              wsaData;
-    int                                  result;
+    WSADATA                              wsaData{};
+    int                                  result = 0;
 
     if( !sm_fWSAStartupDone )
     {

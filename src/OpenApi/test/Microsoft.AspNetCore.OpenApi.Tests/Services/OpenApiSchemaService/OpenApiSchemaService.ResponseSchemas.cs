@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,26 +13,26 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
     public static object[][] ResponsesWithPrimitiveTypes =>
     [
-        [() => 12, "application/json", "integer", "int32"],
-        [() => Int64.MaxValue, "application/json", "integer", "int64"],
-        [() => 12.0f, "application/json", "number", "float"],
-        [() => 12.0, "application/json", "number", "double"],
-        [() => 12.0m, "application/json", "number", "double"],
-        [() => false, "application/json", "boolean", null],
-        [() => "test", "text/plain", "string", null],
-        [() => 't', "application/json", "string", "char"],
-        [() => byte.MaxValue, "application/json", "integer", "uint8"],
-        [() => new byte[] { }, "application/json", "string", "byte"],
-        [() => short.MaxValue, "application/json", "integer", "int16"],
-        [() => ushort.MaxValue, "application/json", "integer", "uint16"],
-        [() => uint.MaxValue, "application/json", "integer", "uint32"],
-        [() => ulong.MaxValue, "application/json", "integer", "uint64"],
-        [() => new Uri("http://example.com"), "application/json", "string", "uri"]
+        [() => 12, "application/json", JsonSchemaType.Integer, "int32"],
+        [() => Int64.MaxValue, "application/json", JsonSchemaType.Integer, "int64"],
+        [() => 12.0f, "application/json", JsonSchemaType.Number, "float"],
+        [() => 12.0, "application/json", JsonSchemaType.Number, "double"],
+        [() => 12.0m, "application/json", JsonSchemaType.Number, "double"],
+        [() => false, "application/json", JsonSchemaType.Boolean, null],
+        [() => "test", "text/plain", JsonSchemaType.String, null],
+        [() => 't', "application/json", JsonSchemaType.String, "char"],
+        [() => byte.MaxValue, "application/json", JsonSchemaType.Integer, "uint8"],
+        [() => new byte[] { }, "application/json", JsonSchemaType.String, "byte"],
+        [() => short.MaxValue, "application/json", JsonSchemaType.Integer, "int16"],
+        [() => ushort.MaxValue, "application/json", JsonSchemaType.Integer, "uint16"],
+        [() => uint.MaxValue, "application/json", JsonSchemaType.Integer, "uint32"],
+        [() => ulong.MaxValue, "application/json", JsonSchemaType.Integer, "uint64"],
+        [() => new Uri("http://example.com"), "application/json", JsonSchemaType.String, "uri"]
     ];
 
     [Theory]
     [MemberData(nameof(ResponsesWithPrimitiveTypes))]
-    public async Task GetOpenApiResponse_HandlesResponsesWithPrimitiveTypes(Delegate requestHandler, string contentType, string schemaType, string schemaFormat)
+    public async Task GetOpenApiResponse_HandlesResponsesWithPrimitiveTypes(Delegate requestHandler, string contentType, JsonSchemaType schemaType, string schemaFormat)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -67,29 +68,29 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("completed", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
@@ -114,28 +115,49 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var content = Assert.Single(response.Content);
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema);
-            var schema = content.Value.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = content.Value.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal(1, property.Value.Minimum);
                     Assert.Equal(100, property.Value.Maximum);
                 },
                 property =>
                 {
                     Assert.Equal("name", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
+                    Assert.Null(property.Value.Default);
+                },
+                property =>
+                {
+                    Assert.Equal("description", property.Key);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinLength);
+                    Assert.Equal(10, property.Value.MaxLength);
                 },
                 property =>
                 {
                     Assert.Equal("isPrivate", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
-                    var defaultValue = Assert.IsAssignableFrom<OpenApiBoolean>(property.Value.Default);
-                    Assert.True(defaultValue.Value);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
+                    Assert.True(property.Value.Default.GetValue<bool>());
+                },
+                property =>
+                {
+                    Assert.Equal("items", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(10, property.Value.MaxItems);
+                },
+                property =>
+                {
+                    Assert.Equal("tags", property.Key);
+                    Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(5, property.Value.MinItems);
+                    Assert.Equal(10, property.Value.MaxItems);
                 });
 
         });
@@ -160,29 +182,29 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("completed", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
@@ -203,7 +225,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
             var response = operation.Responses["200"];
             var content = Assert.Single(response.Content);
-            var schema = content.Value.Schema.GetEffective(document);
+            var schema = content.Value.Schema;
             Assert.Collection(schema.Required,
                 property => Assert.Equal("title", property),
                 property => Assert.Equal("completed", property));
@@ -226,41 +248,39 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("dueDate", property.Key);
                     // DateTime schema appears twice in the document so we expect
                     // this to map to a reference ID.
-                    var dateTimeSchema = property.Value.GetEffective(document);
-                    Assert.Equal("string", dateTimeSchema.Type);
+                    var dateTimeSchema = property.Value;
+                    Assert.Equal(JsonSchemaType.String, dateTimeSchema.Type);
                     Assert.Equal("date-time", dateTimeSchema.Format);
                 },
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("completed", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    // DateTime schema appears twice in the document so we expect
-                    // this to map to a reference ID.
-                    var dateTimeSchema = property.Value.GetEffective(document);
-                    Assert.Equal("string", dateTimeSchema.Type);
+                    var dateTimeSchema = property.Value;
+                    Assert.Equal(JsonSchemaType.String, dateTimeSchema.Type);
                     Assert.Equal("date-time", dateTimeSchema.Format);
                 });
         });
@@ -282,53 +302,53 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("isSuccessful", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("value", property.Key);
-                    var propertyValue = property.Value.GetEffective(document);
-                    Assert.Equal("object", propertyValue.Type);
+                    var propertyValue = property.Value;
+                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties,
                     property =>
                     {
                         Assert.Equal("id", property.Key);
-                        Assert.Equal("integer", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                         Assert.Equal("int32", property.Value.Format);
                     }, property =>
                     {
                         Assert.Equal("title", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     }, property =>
                     {
                         Assert.Equal("completed", property.Key);
-                        Assert.Equal("boolean", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                     }, property =>
                     {
                         Assert.Equal("createdAt", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                         Assert.Equal("date-time", property.Value.Format);
                     });
                 },
                 property =>
                 {
                     Assert.Equal("error", property.Key);
-                    var propertyValue = property.Value.GetEffective(document);
-                    Assert.Equal("object", propertyValue.Type);
+                    var propertyValue = property.Value;
+                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties, property =>
                     {
                         Assert.Equal("code", property.Key);
-                        Assert.Equal("integer", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     }, property =>
                     {
                         Assert.Equal("message", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     });
                 });
         });
@@ -350,26 +370,26 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Empty(schema.AnyOf);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("length", property.Key);
-                    Assert.Equal("number", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Number, property.Value.Type);
                     Assert.Equal("double", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("wheels", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("make", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 });
         });
     }
@@ -390,47 +410,46 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("name", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("todo", property.Key);
-                    Assert.NotNull(property.Value.Reference);
-                    var propertyValue = property.Value.GetEffective(document);
-                    Assert.Equal("object", propertyValue.Type);
+                    var propertyValue = property.Value;
+                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);
-                            Assert.Equal("integer", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             Assert.Equal("int32", property.Value.Format);
                         },
                         property =>
                         {
                             Assert.Equal("title", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                         },
                         property =>
                         {
                             Assert.Equal("completed", property.Key);
-                            Assert.Equal("boolean", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                         },
                         property =>
                         {
                             Assert.Equal("createdAt", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             Assert.Equal("date-time", property.Value.Format);
                         });
                 });
@@ -453,32 +472,32 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("array", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Array, schema.Type);
             Assert.NotNull(schema.Items);
-            var effectiveItemsSchema = schema.Items.GetEffective(document);
-            Assert.Equal("object", effectiveItemsSchema.Type);
+            var effectiveItemsSchema = schema.Items;
+            Assert.Equal(JsonSchemaType.Object, effectiveItemsSchema.Type);
             Assert.Collection(effectiveItemsSchema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("completed", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
@@ -502,62 +521,61 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("pageIndex", property.Key);
-                    Assert.Equal("integer", property.Value.GetEffective(document).Type);
-                    Assert.Equal("int32", property.Value.GetEffective(document).Format);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                    Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("pageSize", property.Key);
-                    Assert.Equal("integer", property.Value.GetEffective(document).Type);
-                    Assert.Equal("int32", property.Value.GetEffective(document).Format);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                    Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("totalItems", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     Assert.Equal("int64", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("totalPages", property.Key);
-                    Assert.Equal("integer", property.Value.GetEffective(document).Type);
-                    Assert.Equal("int32", property.Value.GetEffective(document).Format);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                    Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("items", property.Key);
-                    Assert.Equal("array", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Array, property.Value.Type);
                     Assert.NotNull(property.Value.Items);
-                    Assert.NotNull(property.Value.Items.Reference);
-                    Assert.Equal("object", property.Value.Items.GetEffective(document).Type);
-                    var itemsValue = property.Value.Items.GetEffective(document);
+                    Assert.Equal(JsonSchemaType.Object, property.Value.Items.Type);
+                    var itemsValue = property.Value.Items;
                     Assert.Collection(itemsValue.Properties,
                         property =>
                         {
                             Assert.Equal("id", property.Key);
-                            Assert.Equal("integer", property.Value.GetEffective(document).Type);
-                            Assert.Equal("int32", property.Value.GetEffective(document).Format);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
                         },
                         property =>
                         {
                             Assert.Equal("title", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                         },
                         property =>
                         {
                             Assert.Equal("completed", property.Key);
-                            Assert.Equal("boolean", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                         },
                         property =>
                         {
                             Assert.Equal("createdAt", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             Assert.Equal("date-time", property.Value.Format);
                         });
                 });
@@ -583,43 +601,43 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/problem+json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("type", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("status", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.Null, property.Value.Type);
                     Assert.Equal("int32", property.Value.Format);
                 },
                 property =>
                 {
                     Assert.Equal("detail", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("instance", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("errors", property.Key);
-                    Assert.Equal("object", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Object, property.Value.Type);
                     // The errors object is a dictionary of string[]. Use `additionalProperties`
                     // to indicate that the payload can be arbitrary keys with string[] values.
-                    Assert.Equal("array", property.Value.AdditionalProperties.Type);
-                    Assert.Equal("string", property.Value.AdditionalProperties.Items.GetEffective(document).Type);
+                    Assert.Equal(JsonSchemaType.Array, property.Value.AdditionalProperties.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.AdditionalProperties.Items.Type);
                 });
         });
     }
@@ -641,20 +659,20 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("object", property.Key);
                     Assert.Null(property.Value.Type);
-                    Assert.False(property.Value.Nullable);
                 },
                 property =>
                 {
                     Assert.Equal("anotherObject", property.Key);
                     Assert.Null(property.Value.Type);
-                    Assert.Equal(32, ((OpenApiInteger)property.Value.Default).Value);
+                    var defaultValue = Assert.IsAssignableFrom<JsonNode>(property.Value.Default);
+                    Assert.Equal(32, defaultValue.GetValue<int>());
                     Assert.Equal("This is a description", property.Value.Description);
                 });
         });
@@ -671,28 +689,28 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
                 {
                     Assert.Equal("id", property.Key);
-                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("title", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("completed", property.Key);
-                    Assert.Equal("boolean", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });

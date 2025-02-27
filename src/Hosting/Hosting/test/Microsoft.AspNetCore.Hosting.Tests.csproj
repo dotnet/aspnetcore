@@ -11,6 +11,7 @@
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+    <Compile Include="$(SharedSourceRoot)AsyncEnumerableExtensions.cs" LinkBase="shared" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Microsoft.AspNetCore.Hosting.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

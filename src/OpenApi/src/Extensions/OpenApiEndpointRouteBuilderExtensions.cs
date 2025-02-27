@@ -30,27 +30,43 @@ public static class OpenApiEndpointRouteBuilderExtensions
         var options = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
         return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApiConstants.DefaultDocumentName) =>
             {
+                // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
+                // The document service is registered with a key equal to the document name, but in lowercase.
+                // The GetRequiredKeyedService() method is case-sensitive, which doesn't work well for OpenAPI document names here,
+                // as the document name is also used as the route to retrieve the document, so we need to ensure this is lowercased to achieve consistency with ASP.NET Core routing.
+                // The same goes for the document options below, which is also case-sensitive, and thus we need to pass in a case-insensitive document name.
+                // See OpenApiServiceCollectionExtensions.cs for more info.
+                var lowercasedDocumentName = documentName.ToLowerInvariant();
+
                 // It would be ideal to use the `HttpResponseStreamWriter` to
                 // asynchronously write to the response stream here but Microsoft.OpenApi
                 // does not yet support async APIs on their writers.
                 // See https://github.com/microsoft/OpenAPI.NET/issues/421 for more info.
-                var documentService = context.RequestServices.GetKeyedService<OpenApiDocumentService>(documentName);
+                var documentService = context.RequestServices.GetKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
                 if (documentService is null)
                 {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
                     context.Response.ContentType = "text/plain;charset=utf-8";
-                    await context.Response.WriteAsync($"No OpenAPI document with the name '{documentName}' was found.");
+                    await context.Response.WriteAsync($"No OpenAPI document with the name '{lowercasedDocumentName}' was found.");
                 }
                 else
                 {
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.RequestAborted);
-                    var documentOptions = options.Get(documentName);
+                    var documentOptions = options.Get(lowercasedDocumentName);
                     using var output = MemoryBufferWriter.Get();
                     using var writer = Utf8BufferTextWriter.Get(output);
                     try
                     {
-                        document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                        context.Response.ContentType = "application/json;charset=utf-8";
+                        if (UseYaml(pattern))
+                        {
+                            await document.SerializeAsync(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
+                            context.Response.ContentType = "text/plain+yaml;charset=utf-8";
+                        }
+                        else
+                        {
+                            await document.SerializeAsync(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
+                            context.Response.ContentType = "application/json;charset=utf-8";
+                        }
                         await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
                         await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                     }
@@ -63,4 +79,8 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 }
             }).ExcludeFromDescription();
     }
+
+    private static bool UseYaml(string pattern) =>
+        pattern.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase) ||
+        pattern.EndsWith(".yml", StringComparison.OrdinalIgnoreCase);
 }

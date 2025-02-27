@@ -42,7 +42,7 @@ public class ContentDispositionHeaderValueTest
     public void Ctor_ContentDispositionValidFormat_SuccessfullyCreated()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
-        Assert.Equal("inline", contentDisposition.DispositionType);
+        Assert.Equal("inline", contentDisposition.DispositionType.AsSpan());
         Assert.Empty(contentDisposition.Parameters);
         Assert.Null(contentDisposition.Name.Value);
         Assert.Null(contentDisposition.FileName.Value);
@@ -63,10 +63,10 @@ public class ContentDispositionHeaderValueTest
     public void ContentDisposition_SetAndGetContentDisposition_MatchExpectations()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
-        Assert.Equal("inline", contentDisposition.DispositionType);
+        Assert.Equal("inline", contentDisposition.DispositionType.AsSpan());
 
         contentDisposition.DispositionType = "attachment";
-        Assert.Equal("attachment", contentDisposition.DispositionType);
+        Assert.Equal("attachment", contentDisposition.DispositionType.AsSpan());
     }
 
     [Fact]
@@ -74,9 +74,9 @@ public class ContentDispositionHeaderValueTest
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
         contentDisposition.Name = "myname";
-        Assert.Equal("myname", contentDisposition.Name);
+        Assert.Equal("myname", contentDisposition.Name.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("name", contentDisposition.Parameters.First().Name);
+        Assert.Equal("name", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Name = null;
         Assert.Null(contentDisposition.Name.Value);
@@ -93,12 +93,12 @@ public class ContentDispositionHeaderValueTest
         NameValueHeaderValue name = new NameValueHeaderValue("NAME", "old_name");
         contentDisposition.Parameters.Add(name);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("NAME", contentDisposition.Parameters.First().Name);
+        Assert.Equal("NAME", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Name = "new_name";
-        Assert.Equal("new_name", contentDisposition.Name);
+        Assert.Equal("new_name", contentDisposition.Name.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("NAME", contentDisposition.Parameters.First().Name);
+        Assert.Equal("NAME", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(name);
         Assert.Null(contentDisposition.Name.Value);
@@ -113,12 +113,12 @@ public class ContentDispositionHeaderValueTest
         var fileName = new NameValueHeaderValue("FILENAME", "old_name");
         contentDisposition.Parameters.Add(fileName);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
+        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.FileName = "new_name";
-        Assert.Equal("new_name", contentDisposition.FileName);
+        Assert.Equal("new_name", contentDisposition.FileName.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
+        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(fileName);
         Assert.Null(contentDisposition.FileName.Value);
@@ -130,10 +130,10 @@ public class ContentDispositionHeaderValueTest
         var contentDisposition = new ContentDispositionHeaderValue("inline");
 
         contentDisposition.FileName = "FileÃName.bat";
-        Assert.Equal("FileÃName.bat", contentDisposition.FileName);
+        Assert.Equal("FileÃName.bat", contentDisposition.FileName.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("filename", contentDisposition.Parameters.First().Name);
-        Assert.Equal("\"=?utf-8?B?RmlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value);
+        Assert.Equal("filename", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("\"=?utf-8?B?RmlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value.AsSpan());
 
         contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
         Assert.Null(contentDisposition.FileName.Value);
@@ -145,10 +145,10 @@ public class ContentDispositionHeaderValueTest
         var contentDisposition = new ContentDispositionHeaderValue("inline");
 
         contentDisposition.FileName = "File\nName.bat";
-        Assert.Equal("File\nName.bat", contentDisposition.FileName);
+        Assert.Equal("File\nName.bat", contentDisposition.FileName.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("filename", contentDisposition.Parameters.First().Name);
-        Assert.Equal("\"=?utf-8?B?RmlsZQpOYW1lLmJhdA==?=\"", contentDisposition.Parameters.First().Value);
+        Assert.Equal("filename", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("\"=?utf-8?B?RmlsZQpOYW1lLmJhdA==?=\"", contentDisposition.Parameters.First().Value.AsSpan());
 
         contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
         Assert.Null(contentDisposition.FileName.Value);
@@ -163,14 +163,14 @@ public class ContentDispositionHeaderValueTest
         var fileName = new NameValueHeaderValue("FILENAME", "\"=?utf-99?Q?R=mlsZcODTmFtZS5iYXQ=?=\"");
         contentDisposition.Parameters.Add(fileName);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
-        Assert.Equal("\"=?utf-99?Q?R=mlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value);
-        Assert.Equal("=?utf-99?Q?R=mlsZcODTmFtZS5iYXQ=?=", contentDisposition.FileName);
+        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("\"=?utf-99?Q?R=mlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value.AsSpan());
+        Assert.Equal("=?utf-99?Q?R=mlsZcODTmFtZS5iYXQ=?=", contentDisposition.FileName.AsSpan());
 
         contentDisposition.FileName = "new_name";
-        Assert.Equal("new_name", contentDisposition.FileName);
+        Assert.Equal("new_name", contentDisposition.FileName.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
+        Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(fileName);
         Assert.Null(contentDisposition.FileName.Value);
@@ -185,14 +185,14 @@ public class ContentDispositionHeaderValueTest
         var fileNameStar = new NameValueHeaderValue("FILENAME*", "old_name");
         contentDisposition.Parameters.Add(fileNameStar);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
+        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name.AsSpan());
         Assert.Null(contentDisposition.FileNameStar.Value); // Decode failure
 
         contentDisposition.FileNameStar = "new_name";
-        Assert.Equal("new_name", contentDisposition.FileNameStar);
+        Assert.Equal("new_name", contentDisposition.FileNameStar.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
-        Assert.Equal("UTF-8\'\'new_name", contentDisposition.Parameters.First().Value);
+        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("UTF-8\'\'new_name", contentDisposition.Parameters.First().Value.AsSpan());
 
         contentDisposition.Parameters.Remove(fileNameStar);
         Assert.Null(contentDisposition.FileNameStar.Value);
@@ -204,10 +204,10 @@ public class ContentDispositionHeaderValueTest
         var contentDisposition = new ContentDispositionHeaderValue("inline");
 
         contentDisposition.FileNameStar = "FileÃName.bat";
-        Assert.Equal("FileÃName.bat", contentDisposition.FileNameStar);
+        Assert.Equal("FileÃName.bat", contentDisposition.FileNameStar.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("filename*", contentDisposition.Parameters.First().Name);
-        Assert.Equal("UTF-8\'\'File%C3%83Name.bat", contentDisposition.Parameters.First().Value);
+        Assert.Equal("filename*", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("UTF-8\'\'File%C3%83Name.bat", contentDisposition.Parameters.First().Value.AsSpan());
 
         contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
         Assert.Null(contentDisposition.FileNameStar.Value);
@@ -218,7 +218,7 @@ public class ContentDispositionHeaderValueTest
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
         contentDisposition.FileNameStar = "a\u0080b";
-        Assert.Equal($"UTF-8\'\'a%C2%80b", contentDisposition.Parameters.First().Value); //%C2 added because the value in UTF-8 is encoded on 2 bytes.
+        Assert.Equal($"UTF-8\'\'a%C2%80b", contentDisposition.Parameters.First().Value.AsSpan()); //%C2 added because the value in UTF-8 is encoded on 2 bytes.
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class ContentDispositionHeaderValueTest
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
         contentDisposition.FileNameStar = new string('a', 400); // 400 is larger to the max stackallow size
-        Assert.Equal($"UTF-8\'\'{new string('a', 400)}", contentDisposition.Parameters.First().Value);
+        Assert.Equal($"UTF-8\'\'{new string('a', 400)}", contentDisposition.Parameters.First().Value.AsSpan());
     }
 
     [Fact]
@@ -250,11 +250,11 @@ public class ContentDispositionHeaderValueTest
                 || b >= 0x7F)
             {
                 var hexC = Convert.ToHexString([b]);
-                Assert.Equal($"UTF-8\'\'a%{hexC}b", contentDisposition.Parameters.First().Value);
+                Assert.Equal($"UTF-8\'\'a%{hexC}b", contentDisposition.Parameters.First().Value.AsSpan());
             }
             else
             {
-                Assert.Equal($"UTF-8\'\'a{(char)b}b", contentDisposition.Parameters.First().Value);
+                Assert.Equal($"UTF-8\'\'a{(char)b}b", contentDisposition.Parameters.First().Value.AsSpan());
             }
             contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
         }
@@ -269,14 +269,14 @@ public class ContentDispositionHeaderValueTest
         var fileNameStar = new NameValueHeaderValue("FILENAME*", "utf-99'lang'File%CZName.bat");
         contentDisposition.Parameters.Add(fileNameStar);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
-        Assert.Equal("utf-99'lang'File%CZName.bat", contentDisposition.Parameters.First().Value);
+        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("utf-99'lang'File%CZName.bat", contentDisposition.Parameters.First().Value.AsSpan());
         Assert.Null(contentDisposition.FileNameStar.Value); // Decode failure
 
         contentDisposition.FileNameStar = "new_name";
-        Assert.Equal("new_name", contentDisposition.FileNameStar);
+        Assert.Equal("new_name", contentDisposition.FileNameStar.AsSpan());
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
+        Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(fileNameStar);
         Assert.Null(contentDisposition.FileNameStar.Value);
@@ -294,8 +294,8 @@ public class ContentDispositionHeaderValueTest
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
         contentDisposition.SetHttpFileName(httpFileName);
-        Assert.Equal(expectedFileName, contentDisposition.FileName);
-        Assert.Equal(httpFileName, contentDisposition.FileNameStar); // Should roundtrip through FileNameStar encoding
+        Assert.Equal(expectedFileName.AsSpan(), contentDisposition.FileName);
+        Assert.Equal(httpFileName.AsSpan(), contentDisposition.FileNameStar); // Should roundtrip through FileNameStar encoding
     }
 
     [Fact]
@@ -310,7 +310,7 @@ public class ContentDispositionHeaderValueTest
         var dateParameter = new NameValueHeaderValue("Creation-DATE", validDateString);
         contentDisposition.Parameters.Add(dateParameter);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("Creation-DATE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("Creation-DATE", contentDisposition.Parameters.First().Name.AsSpan());
 
         Assert.Equal(validDate, contentDisposition.CreationDate);
 
@@ -318,8 +318,8 @@ public class ContentDispositionHeaderValueTest
         contentDisposition.CreationDate = newDate;
         Assert.Equal(newDate, contentDisposition.CreationDate);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("Creation-DATE", contentDisposition.Parameters.First().Name);
-        Assert.Equal("\"Tue, 15 Nov 1994 08:12:32 GMT\"", contentDisposition.Parameters.First().Value);
+        Assert.Equal("Creation-DATE", contentDisposition.Parameters.First().Name.AsSpan());
+        Assert.Equal("\"Tue, 15 Nov 1994 08:12:32 GMT\"", contentDisposition.Parameters.First().Value.AsSpan());
 
         contentDisposition.Parameters.Remove(dateParameter);
         Assert.Null(contentDisposition.CreationDate);
@@ -336,7 +336,7 @@ public class ContentDispositionHeaderValueTest
         var dateParameter = new NameValueHeaderValue("read-DATE", invalidDateString);
         contentDisposition.Parameters.Add(dateParameter);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("read-DATE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("read-DATE", contentDisposition.Parameters.First().Name.AsSpan());
 
         Assert.Null(contentDisposition.ReadDate);
 
@@ -354,13 +354,13 @@ public class ContentDispositionHeaderValueTest
         var sizeParameter = new NameValueHeaderValue("SIZE", "279172874239");
         contentDisposition.Parameters.Add(sizeParameter);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name.AsSpan());
         Assert.Equal(279172874239, contentDisposition.Size);
 
         contentDisposition.Size = 279172874240;
         Assert.Equal(279172874240, contentDisposition.Size);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(sizeParameter);
         Assert.Null(contentDisposition.Size);
@@ -375,14 +375,14 @@ public class ContentDispositionHeaderValueTest
         var sizeParameter = new NameValueHeaderValue("SIZE", "-279172874239");
         contentDisposition.Parameters.Add(sizeParameter);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name.AsSpan());
         Assert.Null(contentDisposition.Size);
 
         // Negatives not allowed
         Assert.Throws<ArgumentOutOfRangeException>(() => contentDisposition.Size = -279172874240);
         Assert.Null(contentDisposition.Size);
         Assert.Single(contentDisposition.Parameters);
-        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name);
+        Assert.Equal("SIZE", contentDisposition.Parameters.First().Name.AsSpan());
 
         contentDisposition.Parameters.Remove(sizeParameter);
         Assert.Null(contentDisposition.Size);
@@ -645,8 +645,8 @@ public class ContentDispositionHeaderValueTest
 
         var result = ContentDispositionHeaderValue.Parse(contentDispositionLine);
 
-        Assert.Equal(expectedName, result.Name);
-        Assert.Equal(expectedFileName, result.FileName);
+        Assert.Equal(expectedName.AsSpan(), result.Name);
+        Assert.Equal(expectedFileName.AsSpan(), result.FileName);
     }
 
     [Fact]
@@ -655,9 +655,9 @@ public class ContentDispositionHeaderValueTest
         var contentDisposition = new ContentDispositionHeaderValue("attachment");
 
         contentDisposition.SetHttpFileName("File 🤩 name.txt");
-        Assert.Equal("File __ name.txt", contentDisposition.FileName);
+        Assert.Equal("File __ name.txt", contentDisposition.FileName.AsSpan());
         Assert.Equal(2, contentDisposition.Parameters.Count);
-        Assert.Equal("UTF-8\'\'File%20%F0%9F%A4%A9%20name.txt", contentDisposition.Parameters[1].Value);
+        Assert.Equal("UTF-8\'\'File%20%F0%9F%A4%A9%20name.txt", contentDisposition.Parameters[1].Value.AsSpan());
     }
 
     public class ContentDispositionValue

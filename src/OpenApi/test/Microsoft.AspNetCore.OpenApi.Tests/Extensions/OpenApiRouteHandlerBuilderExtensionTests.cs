@@ -74,7 +74,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         _ = builder.MapDelete("/{id}", GetString)
             .WithOpenApi(operation => new(operation)
             {
-                Parameters = new List<OpenApiParameter>() { new() { Schema = new() { Type = "number" } } }
+                Parameters = [new OpenApiParameter() { Schema = new OpenApiSchema() { Type = JsonSchemaType.Number } }]
             });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
@@ -84,7 +84,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
         Assert.NotNull(operation);
         var parameter = Assert.Single(operation.Parameters);
-        Assert.Equal("number", parameter.Schema.Type);
+        Assert.Equal(JsonSchemaType.Number, parameter.Schema.Type);
     }
 
     [Fact]

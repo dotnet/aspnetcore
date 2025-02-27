@@ -1,7 +1,6 @@
 # Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
 # See https://help.github.com/articles/about-code-owners/
 
-/**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review
 /global.json                                                                      @dotnet/aspnet-build @wtgodbe
 /.azure/                                                                          @dotnet/aspnet-build @wtgodbe
 /.azuredevops/                                                                    @dotnet/aspnet-build @wtgodbe
@@ -13,39 +12,27 @@
 /.github/workflows/                                                               @dotnet/aspnet-build @wtgodbe
 /docs/                                                                            @captainsafia @mkArtakMSFT
 /eng/                                                                             @dotnet/aspnet-build @wtgodbe
-/eng/common/                                                                      @dotnet-maestro-bot
-/eng/Versions.props                                                               @dotnet-maestro-bot @dotnet/aspnet-build @wtgodbe
-/eng/Version.Details.xml                                                          @dotnet-maestro-bot @dotnet/aspnet-build @wtgodbe
+/eng/Versions.props                                                               @dotnet/aspnet-build @wtgodbe
+/eng/Version.Details.xml                                                          @dotnet/aspnet-build @wtgodbe
 /eng/SourceBuild*                                                                 @dotnet/source-build
 /src/Caching/                                                                     @captainsafia @halter73 @mgravell
-/src/Caching/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @captainsafia @halter73 @mgravell
 /src/Components/                                                                  @dotnet/aspnet-blazor-eng
-/src/Components/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
 /src/DefaultBuilder/                                                              @halter73
-/src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review
 /src/Grpc/                                                                        @JamesNK @captainsafia @mgravell
-/src/Grpc/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @JamesNK @captainsafia @mgravell
 /src/Hosting/                                                                     @halter73
-/src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review
 /src/Http/                                                                        @BrennanConroy @halter73 @captainsafia
-/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @BrennanConroy
-/src/Http/Routing/                                                                @javiercn
-/src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
+/src/Http/Routing/                                                                @halter73
 /src/HttpClientFactory/                                                           @captainsafia @halter73
-/src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @captainsafia @halter73
 /src/Installers/                                                                  @dotnet/aspnet-build @wtgodbe
 /src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
 /src/Middleware/                                                                  @BrennanConroy
-/src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @BrennanConroy
 /src/Mvc/                                                                         @dotnet/minimal-apis
-/src/Mvc/Mvc.ApiExplorer                                                          @captainsafia @halter73 @brunolins16
-/src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
+/src/Mvc/Mvc.ApiExplorer                                                          @captainsafia @halter73
 /src/OpenApi                                                                      @captainsafia @dotnet/minimal-apis
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
-/src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review
+/src/Security/                                                                    @halter73
 /src/Servers/                                                                     @halter73 @BrennanConroy @JamesNK @mgravell
-/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @halter73 @BrennanConroy @JamesNK @mgravell
 /src/SignalR/                                                                     @BrennanConroy @halter73
-/src/SignalR/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @wtgodbe
+/**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review @Rick-Anderson @tdykstra

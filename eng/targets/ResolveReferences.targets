@@ -228,10 +228,6 @@
       Code="BUILD004"
       Text="%25(Private) metadata should not be applied to the %(Identity) package reference. Did you mean %25(PrivateAssets)?" />
     <Warning
-      Condition=" '@(ProjectReference->HasMetadata('PrivateAssets')->Count())' != '0' "
-      Code="BUILD005"
-      Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) project reference. Did you mean %25(Private)?" />
-    <Warning
       Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
       Code="BUILD006"
       Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) assembly reference. Did you mean %25(Private)?" />
@@ -249,6 +245,7 @@
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
       '$(MSBuildProjectName)' != 'RepoTasks' AND
       ('$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR
+      '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref.Sfx' OR
       (('$(IsAspNetCoreApp)' == 'true' OR '$(UseAspNetCoreSharedRuntime)' == 'true') AND
       $(_CompileTfmUsingReferenceAssemblies))) ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
@@ -268,11 +265,12 @@
   -->
   <Target Name="RemoveExtensionsCompileAssets"
       AfterTargets="ResolvePackageAssets"
-      Condition=" '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
+      Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref'
+        OR ( '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
-          ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+          $(_CompileTfmUsingReferenceAssemblies)) ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
           Condition=" '%(NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND

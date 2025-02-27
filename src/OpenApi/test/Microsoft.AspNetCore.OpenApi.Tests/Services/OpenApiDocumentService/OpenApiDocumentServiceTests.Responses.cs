@@ -231,16 +231,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Empty(response.Value.Description);
             var mediaTypeEntry = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", mediaTypeEntry.Key);
-            var schema = mediaTypeEntry.Value.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = mediaTypeEntry.Value.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties, property =>
             {
                 Assert.Equal("code", property.Key);
-                Assert.Equal("integer", property.Value.Type);
+                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
             }, property =>
             {
                 Assert.Equal("message", property.Key);
-                Assert.Equal("string", property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
         });
     }
@@ -264,17 +264,17 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(defaultResponse);
             Assert.Empty(defaultResponse.Description);
             var defaultContent = Assert.Single(defaultResponse.Content.Values);
-            var defaultSchema = defaultContent.Schema.GetEffective(document);
+            var defaultSchema = defaultContent.Schema;
             Assert.Collection(defaultSchema.Properties,
             property =>
             {
                 Assert.Equal("code", property.Key);
-                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
             },
             property =>
             {
                 Assert.Equal("message", property.Key);
-                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
             // Generates the 200 status code response with the `Todo` response type.
             var okResponse = operation.Responses["200"];
@@ -282,26 +282,91 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("OK", okResponse.Description);
             var okContent = Assert.Single(okResponse.Content);
             Assert.Equal("application/json", okContent.Key);
-            var schema = okContent.Value.Schema.GetEffective(document);
-            Assert.Equal("object", schema.Type);
+            var schema = okContent.Value.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties, property =>
             {
                 Assert.Equal("id", property.Key);
-                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
             }, property =>
             {
                 Assert.Equal("title", property.Key);
-                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             }, property =>
             {
                 Assert.Equal("completed", property.Key);
-                Assert.Equal("boolean", property.Value.Type);
+                Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
             }, property =>
             {
                 Assert.Equal("createdAt", property.Key);
-                Assert.Equal("string", property.Value.Type);
+                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                 Assert.Equal("date-time", property.Value.Format);
             });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDescriptionSetByUser()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        const string expectedCreatedDescription = "A new todo item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        // Act
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () =>
+            { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("201", response.Key);
+                    Assert.Equal(expectedCreatedDescription, response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal(expectedBadRequestDescription, response.Value.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesStatusCodeReasonPhraseWhenExplicitDescriptionIsMissing()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = null)] // Explicitly set to NULL
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
+        () =>
+            { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("201", response.Key);
+                    Assert.Equal("Created", response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal("Bad Request", response.Value.Description);
+                });
         });
     }
 }

@@ -6,7 +6,7 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/net8.0/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/net10.0/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
@@ -132,7 +132,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.props.in"
-      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);TargetingPackLayoutRoot=$(TargetingPackLayoutRoot);SharedFrameworkLayoutRoot=$(SharedFrameworkLayoutRoot);TestDependsOnAspNetPackages=$(TestDependsOnAspNetPackages);"
+      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);TargetingPackLayoutRoot=$(TargetingPackLayoutRoot);SharedFrameworkLayoutRoot=$(SharedFrameworkLayoutRoot);TestDependsOnAspNetPackages=$(TestDependsOnAspNetPackages);MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

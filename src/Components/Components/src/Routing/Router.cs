@@ -92,7 +92,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// over wildcards.
     /// <para>This property is obsolete and configuring it does nothing.</para>
     /// </summary>
-    [Obsolete("This property is obsolete and configuring it has not effect.")]
+    [Obsolete("This property is obsolete and configuring it has no effect.")]
     [Parameter] public bool PreferExactMatches { get; set; }
 
     private RouteTable Routes { get; set; }
