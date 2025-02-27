@@ -111,21 +111,22 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const originalLocation = location.href;
     saveScrollPosition();
+
     const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
-      let isSelfNavigation = isForSamePath(absoluteInternalHref, location.href);
+      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
         resetScrollAfterNextBatch();
         resetScrollIfNeeded();
       }
     }
-
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   });
 }
 
