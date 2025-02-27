@@ -1,4 +1,21 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Validate(object? value, string! prefix, System.Collections.Generic.Dictionary<string!, string![]!>! validationErrors, Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver! validatableTypeInfoResolver) -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
+Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver
+Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver.GetValidatableTypeInfo(System.Type! type) -> Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo?
+Microsoft.AspNetCore.Http.Validation.ValidatableMember
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.DisplayName.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.HasValidatableType.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.IsEnumerable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.IsNullable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.Name.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.ValidatableMember(string! name, string! displayName, bool isEnumerable, bool isNullable, bool hasValidatableType, System.Collections.Generic.IDictionary<string!, string![]!>! validationAttributes) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableMember.ValidationAttributes.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Members.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Validation.ValidatableMember!>!
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Type.get -> System.Type!
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Validation.ValidatableMember!>! members) -> void
+Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

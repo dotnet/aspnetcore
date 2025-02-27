@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis;
@@ -18,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static Microsoft.AspNetCore.Http.Generators.Tests.RequestDelegateCreationTestBase;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 
@@ -25,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 public class ValidationsGeneratorTestBase : LoggedTestBase
 {
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
-        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validations.Generated")]);
+        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validation.Generated")]);
 
     internal static Task Verify(string source, out Compilation compilation)
     {
@@ -50,9 +54,11 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
                 ]);
-        var inputCompilation = CSharpCompilation.Create("OpenApiXmlCommentGeneratorSample",
+        var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
@@ -60,12 +66,13 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
+            .AutoVerify()
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
     }
 
-    internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint> verifyFunc)
+    internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint, IServiceProvider> verifyFunc)
     {
         var assemblyName = compilation.AssemblyName;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -155,7 +162,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
             var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
             var endpoints = (IReadOnlyList<Endpoint>)serviceType.GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
             var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
-            verifyFunc(endpoint);
+            verifyFunc(endpoint, services);
         }
     }
 
@@ -510,10 +517,10 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         }
     }
 
-    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider = null)
+    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider)
     {
         var httpContext = new DefaultHttpContext();
-        httpContext.RequestServices = serviceProvider ?? CreateServiceProvider();
+        httpContext.RequestServices = serviceProvider;
 
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;
@@ -521,14 +528,24 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         return httpContext;
     }
 
-    internal ServiceProvider CreateServiceProvider(Action<IServiceCollection> configureServices = null)
+    internal HttpContext CreateHttpContextWithPayload(string requestData, IServiceProvider serviceProvider = null)
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(LoggerFactory);
-        if (configureServices is not null)
-        {
-            configureServices(serviceCollection);
-        }
-        return serviceCollection.BuildServiceProvider();
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(requestData));
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        return httpContext;
+    }
+
+    internal async Task<HttpValidationProblemDetails> AssertBadRequest(HttpContext context)
+    {
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+        var responseBody = await reader.ReadToEndAsync();
+        return JsonSerializer.Deserialize<HttpValidationProblemDetails>(responseBody);
     }
 }

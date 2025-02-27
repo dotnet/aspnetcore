@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <NoWarn>RS0016;RS0017</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

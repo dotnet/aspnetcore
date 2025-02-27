@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Validation;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -15,7 +16,7 @@ public abstract class EndpointBuilder
     /// <summary>
     /// Gets the list of filters that apply to this endpoint.
     /// </summary>
-    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> FilterFactories => _filterFactories ??= new();
+    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> FilterFactories => _filterFactories ??= [ValidationEndpointFilterFactory.Create];
 
     /// <summary>
     /// Gets or sets the delegate used to process requests for the endpoint.
