@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
-public class ValidatableMemberInfo
+public abstract class ValidatableMemberInfo
 {
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableMemberInfo"/>.
@@ -66,7 +66,7 @@ public class ValidatableMemberInfo
     /// Gets the validation attributes for this member.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
-    protected virtual ValidationAttribute[] GetValidationAttributes() => Array.Empty<ValidationAttribute>();
+    protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
     /// Validates the member's value.

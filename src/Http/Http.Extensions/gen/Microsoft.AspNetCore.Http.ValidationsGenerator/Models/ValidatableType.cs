@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
 internal sealed record class ValidatableType(
     ITypeSymbol Type,
-    string Name,
     bool IsIValidatableObject,
     ImmutableArray<ValidatableMember> Members,
     ImmutableArray<string> ValidatableSubTypeNames,

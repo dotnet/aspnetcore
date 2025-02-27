@@ -11,10 +11,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a parameter.
 /// </summary>
-public class ValidatableParameterInfo
+public abstract class ValidatableParameterInfo
 {
-    private readonly ValidationAttribute[] _validationAttributes;
-
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
     /// </summary>
@@ -23,21 +21,18 @@ public class ValidatableParameterInfo
     /// <param name="isOptional">Whether the parameter is optional.</param>
     /// <param name="hasValidatableType">Whether the parameter type is validatable.</param>
     /// <param name="isEnumerable">Whether the parameter is enumerable.</param>
-    /// <param name="validationAttributes">The validation attributes to apply.</param>
     public ValidatableParameterInfo(
         string name,
         string displayName,
         bool isOptional,
         bool hasValidatableType,
-        bool isEnumerable,
-        ValidationAttribute[] validationAttributes)
+        bool isEnumerable)
     {
         Name = name;
         DisplayName = displayName;
         IsOptional = isOptional;
         HasValidatableType = hasValidatableType;
         IsEnumerable = isEnumerable;
-        _validationAttributes = validationAttributes;
     }
 
     /// <summary>
@@ -69,7 +64,7 @@ public class ValidatableParameterInfo
     /// Gets the validation attributes for this parameter.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
-    protected virtual ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+    protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
     /// Validates the parameter value.

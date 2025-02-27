@@ -17,7 +17,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     private static readonly SymbolDisplayFormat _symbolDisplayFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
     internal ImmutableArray<ValidatableParameter> ExtractParameters(IInvocationOperation operation, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes)
@@ -74,7 +73,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(requiredSymbols.JsonDerivedTypeAttribute);
-        var derivedTypeNames = derivedTypes?.Select(t => t.Name).ToArray() ?? [];
+        var derivedTypeNames = derivedTypes?.Select(t => t.ToDisplayString(_symbolDisplayFormat)).ToArray() ?? [];
         foreach (var derivedType in derivedTypes ?? [])
         {
             _ = TryExtractValidatableType(derivedType, requiredSymbols, ref validatableTypes, ref visitedTypes);
@@ -83,7 +82,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Add the type itself as a validatable type itself.
         validatableTypes.Add(new ValidatableType(
             Type: typeSymbol,
-            Name: typeSymbol.ToDisplayString(),
             Members: members,
             IsIValidatableObject: typeSymbol.ImplementsInterface(requiredSymbols.IValidatableObject),
             ValidatableSubTypeNames: [.. validatableSubTypes],

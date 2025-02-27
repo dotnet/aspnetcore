@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using System.IO;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
@@ -18,7 +19,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static void Emit(SourceProductionContext context, ((InterceptableLocation? AddValidation, ImmutableArray<ValidatableType> Types) First, ImmutableArray<ValidatableParameter> Parameters) emitInputs)
     {
         var source = Emit(emitInputs.First.AddValidation, emitInputs.First.Types, emitInputs.Parameters);
-        context.AddSource("ValidatableTypeInfo.g.cs", SourceText.From(source, Encoding.UTF8));
+        context.AddSource("ValidatableInfoResolver.g.cs", SourceText.From(source, Encoding.UTF8));
     }
 
     private static string Emit(InterceptableLocation? addValidation, ImmutableArray<ValidatableType> validatableTypes, ImmutableArray<ValidatableParameter> validatableParameters) => $$"""
@@ -85,12 +86,22 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             bool isOptional,
             bool hasValidatableType,
             bool isEnumerable,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isOptional, hasValidatableType, isEnumerable, validationAttributes)
+            ValidationAttribute[] validationAttributes) : base(name, displayName, isOptional, hasValidatableType, isEnumerable)
         {
             _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+    }
+
+    {{GeneratedCodeAttribute}}
+    file sealed class GeneratedValidatableTypeInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
+    {
+        public GeneratedValidatableTypeInfo(
+            Type type,
+            ValidatableMemberInfo[] members,
+            bool implementsIValidatableObject,
+            Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
     }
 
     {{GeneratedCodeAttribute}}
@@ -262,93 +273,101 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 """;
     private static string EmitTypeChecks(ImmutableArray<ValidatableType> validatableTypes)
     {
-        var sb = new StringBuilder();
+        var sw = new StringWriter();
+        var cw = new CodeWriter(sw, baseIndent: 2);
         foreach (var validatableType in validatableTypes)
         {
-            var typeName = validatableType.Name;
-            sb.AppendLine($@"            if (type == typeof({typeName}))
-            {{
-                return Create{SanitizeTypeName(typeName)}();
-            }}");
+            var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            cw.WriteLine($"if (type == typeof({typeName}))");
+            cw.StartBlock();
+            cw.WriteLine($"return Create{SanitizeTypeName(validatableType.Type.MetadataName)}();");
+            cw.EndBlock();
         }
-        return sb.ToString();
+        return sw.ToString();
     }
 
     private static string EmitParameterTypeChecks(ImmutableArray<ValidatableParameter> validatableParameters)
     {
-        var sb = new StringBuilder();
+        var sw = new StringWriter();
+        var cw = new CodeWriter(sw, baseIndent: 3);
         foreach (var validatableParameter in validatableParameters)
         {
             var parameterTypeName = validatableParameter.Type.ToDisplayString();
-            sb.AppendLine($@"            if (parameterInfo.Name == ""{validatableParameter.Name}"" && parameterInfo.ParameterType == typeof({parameterTypeName}))
-            {{
-                return CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}();
-            }}");
+            cw.WriteLine($"if (parameterInfo.Name == \"{validatableParameter.Name}\" && parameterInfo.ParameterType == typeof({parameterTypeName}))");
+            cw.StartBlock();
+            cw.WriteLine($"return CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}();");
+            cw.EndBlock();
         }
-        return sb.ToString();
+        return sw.ToString();
     }
 
     private static string EmitCreateMethods(ImmutableArray<ValidatableType> validatableTypes)
     {
-        var sb = new StringBuilder();
+        var sw = new StringWriter();
+        var cw = new CodeWriter(sw, baseIndent: 3);
         foreach (var validatableType in validatableTypes)
         {
-            var typeName = validatableType.Name;
-            sb.AppendLine($@"        private ValidatableTypeInfo Create{SanitizeTypeName(typeName)}()
-        {{
-            return new ValidatableTypeInfo(
-                type: typeof({typeName}),
-                members: new[]
-                {{
-                    {string.Join(",\n                    ", validatableType.Members.Select(EmitValidatableMemberForCreate))}
-                }},
+            cw.WriteLine($@"private ValidatableTypeInfo Create{SanitizeTypeName(validatableType.Type.MetadataName)}()");
+            cw.StartBlock();
+            cw.WriteLine($"""
+            return new GeneratedValidatableTypeInfo(
+                type: typeof({validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),
+                members: [
+                    {string.Join(",\n                        ", validatableType.Members.Select(EmitValidatableMemberForCreate))}
+                ],
                 implementsIValidatableObject: {(validatableType.IsIValidatableObject ? "true" : "false")}{(validatableType.ValidatableSubTypeNames.Any() ? $@",
-                validatableSubTypes: new[]
-                {{
-                    {string.Join(",\n                    ", validatableType.ValidatableSubTypeNames.Select(t => $"typeof({t})"))}
-                }}" : string.Empty)}
-            );
-        }}");
+                validatableSubTypes: [
+                    {string.Join(",\n                        ", validatableType.ValidatableSubTypeNames.Select(t => $"typeof({t})"))}
+                ]" : string.Empty)});
+            """);
+            cw.EndBlock();
         }
-        return sb.ToString();
+        return sw.ToString();
+    }
+
+    private static string EmitValidatableMemberForCreate(ValidatableMember member)
+    {
+        var validationAttributes = member.Attributes.IsDefaultOrEmpty
+            ? "[]"
+            : $"[{string.Join(", ", member.Attributes.Select(EmitValidationAttributeForCreate))}]";
+        return $$"""
+        new GeneratedValidatableMemberInfo(
+            parentType: typeof({{member.ParentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
+            name: "{{member.Name}}",
+            displayName: "{{member.DisplayName}}",
+            isEnumerable: {{member.IsEnumerable.ToString().ToLowerInvariant()}},
+            isNullable: {{member.IsNullable.ToString().ToLowerInvariant()}},
+            hasValidatableType: {{member.HasValidatableType.ToString().ToLowerInvariant()}},
+            validationAttributes: {{validationAttributes}})
+""";
     }
 
     private static string EmitCreateParameterMethods(ImmutableArray<ValidatableParameter> validatableParameters)
     {
-        var sb = new StringBuilder();
+        var sw = new StringWriter();
+        var cw = new CodeWriter(sw, baseIndent: 3);
         foreach (var validatableParameter in validatableParameters)
         {
             var parameterTypeName = validatableParameter.Type.ToDisplayString();
-            sb.AppendLine($@"        private ValidatableParameterInfo CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}()
-        {{
+            cw.WriteLine($@"private ValidatableParameterInfo CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}()");
+            cw.StartBlock();
+            var validationAttributes = validatableParameter.Attributes.IsDefaultOrEmpty
+                ? "[]"
+                : $"[{string.Join(", ", validatableParameter.Attributes.Select(EmitValidationAttributeForCreate))}]";
+            cw.WriteLine($"""
             return new GeneratedValidatableParameterInfo(
-                name: ""{validatableParameter.Name}"",
-                displayName: ""{validatableParameter.DisplayName}"",
+                name: "{validatableParameter.Name}",
+                displayName: "{validatableParameter.DisplayName}",
                 isOptional: false,
                 hasValidatableType: {validatableParameter.HasValidatableType.ToString().ToLowerInvariant()},
                 isEnumerable: {validatableParameter.IsEnumerable.ToString().ToLowerInvariant()},
-                validationAttributes: new ValidationAttribute[]
-                {{
-                    {string.Join(",\n                    ", validatableParameter.Attributes.Select(EmitValidationAttributeForCreate))}
-                }});
-        }}");
+                validationAttributes: {validationAttributes}
+            );
+            """);
+            cw.EndBlock();
+        }
+        return sw.ToString();
     }
-    return sb.ToString();
-}
-
-    private static string EmitValidatableMemberForCreate(ValidatableMember member) => $$"""
-new GeneratedValidatableMemberInfo(
-    parentType: typeof({{member.ParentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
-    name: "{{member.Name}}",
-    displayName: "{{member.DisplayName}}",
-    isEnumerable: {{member.IsEnumerable.ToString().ToLowerInvariant()}},
-    isNullable: {{member.IsNullable.ToString().ToLowerInvariant()}},
-    hasValidatableType: {{member.HasValidatableType.ToString().ToLowerInvariant()}},
-    validationAttributes: new ValidationAttribute[]
-    {
-        {{string.Join(",\n        ", member.Attributes.Select(EmitValidationAttributeForCreate))}}
-    })
-""";
 
     private static string EmitValidationAttributeForCreate(ValidationAttribute attr)
     {

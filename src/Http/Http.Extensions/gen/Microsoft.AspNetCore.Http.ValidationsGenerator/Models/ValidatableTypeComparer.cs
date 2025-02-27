@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
@@ -19,11 +20,11 @@ internal sealed class ValidatableTypeComparer : IEqualityComparer<ValidatableTyp
         {
             return false;
         }
-        return x.Name == y.Name;
+        return SymbolEqualityComparer.Default.Equals(x.Type, y.Type);
     }
 
     public int GetHashCode(ValidatableType? obj)
     {
-        return obj?.Name.GetHashCode() ?? 0;
+        return SymbolEqualityComparer.Default.GetHashCode(obj?.Type);
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
-public class ValidatableTypeInfo
+public abstract class ValidatableTypeInfo
 {
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -60,7 +60,7 @@ public class ValidatableTypeInfo
     /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
     /// <param name="serviceProvider">The service provider to use for validation context.</param>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    public virtual Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    public Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
         if (value == null)
         {
