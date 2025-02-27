@@ -30,7 +30,7 @@ public class AuthorizationOptions
     /// - The `DefaultPolicy` applies whenever authorization is required, but no specific policy is set.
     /// - If an `[Authorize]` attribute is present without a policy name, the `DefaultPolicy` is used instead of the `FallbackPolicy`.
     /// - This behavior ensures that endpoints explicitly requesting authorization (via `[Authorize]` or `RequireAuthorization()`) default to a secure policy.
-    /// - If a different default behavior is needed, developers should explicitly define policies rather than relying on `FallbackPolicy`.
+    /// - When non-default behavior is needed, developers should define named policies.
     /// </remarks>
     public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
