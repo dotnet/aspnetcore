@@ -28,6 +28,7 @@ public static class WebHostBuilderSocketExtensions
         return hostBuilder.ConfigureServices(services =>
         {
             services.AddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+
             services.TryAddSingleton<IMemoryPoolFactory, DefaultMemoryPoolFactory>();
             services.AddOptions<SocketTransportOptions>().Configure((SocketTransportOptions options, IMemoryPoolFactory factory) =>
             {

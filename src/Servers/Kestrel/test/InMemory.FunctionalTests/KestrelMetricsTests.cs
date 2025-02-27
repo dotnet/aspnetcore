@@ -612,7 +612,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ShutdownTimeout = TimeSpan.Zero,
-            //MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool
+            MemoryPoolFactory = new TestServiceContext.WrappingMemoryPoolFactory(() => PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool())
         };
 
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

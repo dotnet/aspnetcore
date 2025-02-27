@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
@@ -113,14 +112,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected static readonly byte[] _noData = new byte[0];
     protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-    internal sealed class DummyMeterFactory : IMeterFactory
-    {
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose() { }
-    }
-
-    private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory());
+    private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
 
     internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
     internal readonly HPackDecoder _hpackDecoder;
