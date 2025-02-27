@@ -3,7 +3,9 @@
 
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -26,6 +28,11 @@ public static class WebHostBuilderSocketExtensions
         return hostBuilder.ConfigureServices(services =>
         {
             services.AddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+            services.TryAddSingleton<IMemoryPoolFactory, DefaultMemoryPoolFactory>();
+            services.AddOptions<SocketTransportOptions>().Configure((SocketTransportOptions options, IMemoryPoolFactory factory) =>
+            {
+                options.MemoryPoolFactory = factory;
+            });
         });
     }
 

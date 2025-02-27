@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -22,13 +21,13 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
     private readonly PipeOptions _outputOptions;
     private readonly SocketSenderPool _socketSenderPool;
 
-    public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory, IMeterFactory meterFactory)
+    public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
-        _memoryPool = options.Value.MemoryPoolFactory(meterFactory);
+        _memoryPool = options.Value.MemoryPoolFactory.CreatePool();
         _trace = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;

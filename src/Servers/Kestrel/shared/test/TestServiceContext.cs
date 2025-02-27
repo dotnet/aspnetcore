@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -74,14 +75,19 @@ internal class TestServiceContext : ServiceContext
 
     public FakeTimeProvider FakeTimeProvider { get; set; }
 
-    public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => System.Buffers.PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory());
+    public IMemoryPoolFactory MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => System.Buffers.PinnedBlockMemoryPoolFactory.Create());
 
     public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
 
-    internal sealed class DummyMeterFactory : IMeterFactory
+    internal sealed class WrappingMemoryPoolFactory : IMemoryPoolFactory
     {
-        public Meter Create(MeterOptions options) => new Meter(options);
+        private readonly Func<MemoryPool<byte>> _memoryPoolFactory;
 
-        public void Dispose() { }
+        public WrappingMemoryPoolFactory(Func<MemoryPool<byte>> memoryPoolFactory)
+        {
+            _memoryPoolFactory = memoryPoolFactory;
+        }
+
+        public MemoryPool<byte> CreatePool() => _memoryPoolFactory();
     }
 }

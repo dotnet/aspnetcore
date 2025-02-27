@@ -47,7 +47,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
             for (var i = 0; i < _settingsCount; i++)
             {
-                var memoryPool = _options.MemoryPoolFactory(_options.MeterFactory);
+                var memoryPool = _options.MemoryPoolFactory.CreatePool();
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
 
                 _settings[i] = new QueueSettings()
@@ -62,7 +62,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
         }
         else
         {
-            var memoryPool = _options.MemoryPoolFactory(_options.MeterFactory);
+            var memoryPool = _options.MemoryPoolFactory.CreatePool();
             var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
             _settings = new QueueSettings[]

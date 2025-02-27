@@ -41,19 +41,13 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     /// </summary>
     private bool _isDisposed; // To detect redundant calls
 
-    private readonly long _memoryLimit = 30_000;
+    private readonly PinnedBlockMemoryPoolMetrics _metrics;
 
-    //private readonly PinnedBlockMemoryPoolMetrics _metrics;
-
-    private long _evictionDelays; // Total time eviction tasks were delayed (ms)
-    private long _evictionDurations; // Total time spent on eviction (ms)
     public long _currentMemory;
     public long _evictedMemory;
 
-    private readonly long _lastEvictionStartTimestamp;
-    private readonly PeriodicTimer _timer;
-    private int _rentCount;
-    private int _returnCount;
+    private uint _rentCount;
+    private uint _returnCount;
 
     private readonly object _disposeSync = new object();
 
@@ -62,45 +56,14 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     /// </summary>
     private const int AnySize = -1;
 
-    public PinnedBlockMemoryPool(IMeterFactory meterFactory)
+    public PinnedBlockMemoryPool()
+        : this(NoopMeterFactory.Instance)
     {
-        _ = meterFactory;
-        //_timeProvider = timeProvider;
-        //_metrics = new(meterFactory);
-
-        var conserveMemory = Environment.GetEnvironmentVariable("DOTNET_GCConserveMemory")
-            ?? Environment.GetEnvironmentVariable("COMPlus_GCConserveMemory")
-            ?? "0";
-
-        if (!int.TryParse(conserveMemory, out var conserveSetting))
-        {
-            conserveSetting = 0;
-        }
-
-        conserveSetting = Math.Clamp(conserveSetting, 0, 9);
-
-        // Will be a value between 1 and .1f
-        var conserveRatio = 1.0f - (conserveSetting / 10.0f);
-        // Adjust memory limit to be between 100% and 10% of original value
-        _memoryLimit = (long)(_memoryLimit * conserveRatio);
-
-        _timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
-        _ = RunTimer();
     }
 
-    private async Task RunTimer()
+    public PinnedBlockMemoryPool(IMeterFactory meterFactory)
     {
-        try
-        {
-            while (await _timer.WaitForNextTickAsync())
-            {
-                PerformEviction();
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-        }
+        _metrics = new(meterFactory);
     }
 
     public override IMemoryOwner<byte> Rent(int size = AnySize)
@@ -115,17 +78,25 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
         }
 
-        Interlocked.Increment(ref _rentCount);
+        //Interlocked.Increment(ref _rentCount);
+        //++_rentCount;
+        ScalableCount(ref _rentCount);
 
         if (_blocks.TryDequeue(out var block))
         {
+            _metrics.UpdateCurrentMemory(-block.Memory.Length);
+            _metrics.Rent(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, -block.Memory.Length);
 
             // block successfully taken from the stack - return it
             return block;
         }
 
-        Interlocked.Increment(ref _rentCount);
+        _metrics.IncrementTotalMemory(BlockSize);
+        _metrics.Rent(BlockSize);
+        //Interlocked.Increment(ref _rentCount);
+        //++_rentCount;
+        ScalableCount(ref _rentCount);
 
         return new MemoryPoolBlock(this, BlockSize);
     }
@@ -146,68 +117,59 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             block.IsLeased = false;
 #endif
 
-        Interlocked.Increment(ref _returnCount);
+        //Interlocked.Increment(ref _returnCount);
+        //++_returnCount;
+        ScalableCount(ref _returnCount);
 
         if (!_isDisposed)
         {
+            _metrics.UpdateCurrentMemory(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, block.Memory.Length);
 
             _blocks.Enqueue(block);
         }
     }
 
-    private void PerformEviction()
+    public void PerformEviction()
     {
-        var now = Stopwatch.GetTimestamp();
-
-        try
+        long evictedMemoryThisPass = 0;
+        var currentCount = (uint)_blocks.Count;
+        var burstAmount = 0u;
+        // If any activity
+        if (_rentCount + _returnCount > 0)
         {
-            // Measure delay since the eviction was triggered
-
-            var delayMs = Stopwatch.GetElapsedTime(_lastEvictionStartTimestamp).TotalMilliseconds;
-            Interlocked.Add(ref _evictionDelays, (long)delayMs);
-
-            long evictedMemoryThisPass = 0;
-            var currentCount = _blocks.Count;
-            var burstAmount = 0;
-            // If any activity
-            if (_rentCount + _returnCount > 0)
+            // Trending less traffic
+            if (_returnCount > _rentCount)
             {
-                // Trending less traffic
-                if (_returnCount > _rentCount)
-                {
-                    burstAmount = currentCount / _returnCount - _rentCount;
-                }
-                // Traffic staying the same, try removing some blocks since we probably have excess
-                else if (_returnCount == _rentCount)
-                {
-                    burstAmount = Math.Min(10, currentCount / 20);
-                }
+                burstAmount = Math.Min(currentCount / 100, (_returnCount - _rentCount) / 5);
             }
-            // If no activity
-            else
+            // Traffic staying the same, try removing some blocks since we probably have excess
+            else if (_returnCount == _rentCount)
             {
-                burstAmount = Math.Max(1, currentCount / 10);
+                burstAmount = Math.Max(1, currentCount / 100);
             }
-            _rentCount = 0;
-            _returnCount = 0;
-
-            // Remove from queue and let GC clean the memory up
-            while (burstAmount > 0 && _blocks.TryDequeue(out var block))
-            {
-                Interlocked.Add(ref _currentMemory, -block.Memory.Length);
-                Interlocked.Add(ref _evictedMemory, block.Memory.Length);
-
-                evictedMemoryThisPass += block.Memory.Length;
-                burstAmount--;
-            }
-
-            Debug.WriteLine($"Evicted {evictedMemoryThisPass} bytes.");
         }
-        finally
+        // If no activity
+        else
         {
-            Interlocked.Add(ref _evictionDurations, (long)Stopwatch.GetElapsedTime(now).TotalMilliseconds);
+            burstAmount = Math.Max(10, currentCount / 20);
         }
+        _rentCount = 0;
+        _returnCount = 0;
+
+        // Remove from queue and let GC clean the memory up
+        while (burstAmount > 0 && _blocks.TryDequeue(out var block))
+        {
+            _metrics.UpdateCurrentMemory(-block.Memory.Length);
+            _metrics.EvictBlock(block.Memory.Length);
+            Interlocked.Add(ref _currentMemory, -block.Memory.Length);
+            Interlocked.Add(ref _evictedMemory, block.Memory.Length);
+
+            evictedMemoryThisPass += block.Memory.Length;
+            burstAmount--;
+        }
+
+        Debug.WriteLine($"Evicted {evictedMemoryThisPass} bytes.");
     }
 
     protected override void Dispose(bool disposing)
@@ -223,8 +185,6 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
             if (disposing)
             {
-                _timer.Dispose();
-
                 // Discard blocks in pool
                 while (_blocks.TryDequeue(out _))
                 {
@@ -232,5 +192,44 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
                 }
             }
         }
+    }
+
+    private sealed class NoopMeterFactory : IMeterFactory
+    {
+        public static NoopMeterFactory Instance { get; } = new();
+
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose()
+        {
+        }
+    }
+
+    // https://github.com/dotnet/runtime/blob/db681fb307d754c3746ffb40e0634e4c4e0caa9e/docs/design/features/ScalableApproximateCounting.md
+    static void ScalableCount(ref uint counter)
+    {
+        // Start using random for counting after 2^12 (4096)
+        const int threshold = 8;
+        uint count = counter;
+        uint delta = 1;
+#if true
+        if (count > 0)
+        {
+            int logCount = 31 - (int)uint.LeadingZeroCount(count);
+
+            if (logCount >= threshold)
+            {
+                delta = 1u << (logCount - (threshold - 1));
+                uint rand = (uint)Random.Shared.Next();
+                bool update = (rand & (delta - 1)) == 0;
+                if (!update)
+                {
+                    return;
+                }
+            }
+        }
+#endif
+
+        Interlocked.Add(ref counter, delta);
     }
 }

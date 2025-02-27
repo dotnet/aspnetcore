@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Core components of ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -37,6 +37,7 @@
     <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\MetricsExtensions.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +71,7 @@
     <InternalsVisibleTo Include="Sockets.FunctionalTests" />
     <InternalsVisibleTo Include="Quic.FunctionalTests" />
     <InternalsVisibleTo Include="InMemory.FunctionalTests" />
+    <InternalsVisibleTo Include="Interop.FunctionalTests" />
     <InternalsVisibleTo Include="Sockets.BindTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Core.Tests" />

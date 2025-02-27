@@ -16,10 +16,8 @@ internal sealed class PinnedBlockMemoryPoolMetrics
 
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _currentMemory;
-    private readonly UpDownCounter<long> _totalAllocatedMemory;
-    private readonly UpDownCounter<long> _evictedBlocks;
-    private readonly UpDownCounter<long> _evictedMemory;
-    private readonly UpDownCounter<long> _evictionAttempts;
+    private readonly Counter<long> _totalAllocatedMemory;
+    private readonly Counter<long> _evictedMemory;
     private readonly Counter<long> _usageRate;
 
     public PinnedBlockMemoryPoolMetrics(IMeterFactory meterFactory)
@@ -31,25 +29,15 @@ internal sealed class PinnedBlockMemoryPoolMetrics
             unit: "{bytes}",
             description: "Number of bytes that are currently pooled by the pinned block memory pool.");
 
-        _totalAllocatedMemory = _meter.CreateUpDownCounter<long>(
+        _totalAllocatedMemory = _meter.CreateCounter<long>(
            "pinnedblockmemorypool.total_allocated",
             unit: "{bytes}",
             description: "Total number of allocations made by the pinned block memory pool.");
 
-        _evictedBlocks = _meter.CreateUpDownCounter<long>(
-           "pinnedblockmemorypool.evicted_blocks",
-            unit: "{blocks}",
-            description: "Total number of pooled blocks that have been evicted.");
-
-        _evictedMemory = _meter.CreateUpDownCounter<long>(
+        _evictedMemory = _meter.CreateCounter<long>(
            "pinnedblockmemorypool.evicted_memory",
             unit: "{bytes}",
             description: "Total number of bytes that have been evicted.");
-
-        _evictionAttempts = _meter.CreateUpDownCounter<long>(
-           "pinnedblockmemorypool.eviction_attempts",
-            unit: "{eviction}",
-            description: "Total number of eviction attempts.");
 
         _usageRate = _meter.CreateCounter<long>(
             "pinnedblockmemorypool.usage_rate",
@@ -70,13 +58,7 @@ internal sealed class PinnedBlockMemoryPoolMetrics
 
     public void EvictBlock(int bytes)
     {
-        _evictedBlocks.Add(1);
         _evictedMemory.Add(bytes);
-    }
-
-    public void StartEviction()
-    {
-        _evictionAttempts.Add(1);
     }
 
     public void Rent(int bytes)

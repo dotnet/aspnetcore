@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics.Metrics;
 using System.IO.Pipes;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
@@ -117,11 +116,5 @@ public sealed class NamedPipeTransportOptions
         }
     }
 
-    internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory());
-    private sealed class DummyMeterFactory : IMeterFactory
-    {
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose() { }
-    }
+    internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => PinnedBlockMemoryPoolFactory.Create();
 }

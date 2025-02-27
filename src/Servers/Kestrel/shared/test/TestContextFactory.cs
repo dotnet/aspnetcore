@@ -74,13 +74,6 @@ internal static class TestContextFactory
         return context;
     }
 
-    internal sealed class DummyMeterFactory : IMeterFactory
-    {
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose() { }
-    }
-
     public static HttpMultiplexedConnectionContext CreateHttp3ConnectionContext(
         MultiplexedConnectionContext connectionContext = null,
         ServiceContext serviceContext = null,
@@ -101,7 +94,7 @@ internal static class TestContextFactory
             connectionContext,
             serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures ?? new FeatureCollection(),
-            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(new DummyMeterFactory()),
+            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
             localEndPoint,
             remoteEndPoint,
             metricsContext)
