@@ -134,6 +134,13 @@ public class ComponentStatePersistenceManager
                 continue;
             }
 
+            if (registration.Callback.Target is PersistentServicesRegistry)
+            {
+                // The registration callback is associated with the services registry, which is a special case.
+                // We don't need to infer the render mode for this case.
+                continue;
+            }
+
             throw new InvalidOperationException(
                 $"The registered callback {registration.Callback.Method.Name} must be associated with a component or define" +
                 $" an explicit render mode type during registration.");

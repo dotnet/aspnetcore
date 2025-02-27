@@ -4,6 +4,7 @@
 using BlazorServerApp.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace BlazorServerApp;
 
@@ -23,7 +24,7 @@ public class Startup
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddScoped<SamplePersistentService>();
-        services.AddPersistentService<SamplePersistentService>();
+        services.AddPersistentService<SamplePersistentService>(RenderMode.InteractiveServer);
         services.AddSingleton<WeatherForecastService>();
     }
 

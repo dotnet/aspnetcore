@@ -32,8 +32,11 @@ public static class SupplyParameterFromPersistentComponentStateProviderServiceCo
     /// </remarks>
     /// <typeparam name="TService">The service type to register for persistence.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="componentRenderMode">The <see cref="IComponentRenderMode"/> to register the service for.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection AddPersistentService<[DynamicallyAccessedMembers(JsonSerialized)] TService>(this IServiceCollection services)
+    public static IServiceCollection AddPersistentService<[DynamicallyAccessedMembers(JsonSerialized)] TService>(
+        this IServiceCollection services,
+        IComponentRenderMode componentRenderMode)
     {
         // This method does something very similar to what we do when we register root components, except in this case we are registering services.
         // We collect a list of all the registrations on during static rendering mode and push those registrations to interactive mode.
@@ -47,7 +50,8 @@ public static class SupplyParameterFromPersistentComponentStateProviderServiceCo
         //       We can choose to fail when the service is not registered on DI.
         // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
         services.TryAddScoped<PersistentServicesRegistry>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentComponentRegistration, PersistentComponentRegistration<TService>>());
+        //services.TryAddEnumerable(ServiceDescriptor.Singleton(new PersistentServiceRenderMode(componentRenderMode)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentComponentRegistration>(new PersistentComponentRegistration<TService>(componentRenderMode)));
 
         return services;
     }
