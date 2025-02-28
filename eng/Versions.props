@@ -138,6 +138,8 @@
     <MicrosoftBclAsyncInterfacesVersion>10.0.0-preview.3.25121.11</MicrosoftBclAsyncInterfacesVersion>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
     <MicrosoftBclTimeProviderVersion>10.0.0-preview.3.25121.11</MicrosoftBclTimeProviderVersion>
+    <SystemBuffersVersion>10.0.0-preview.3.25121.11</SystemBuffersVersion>
+    <SystemMemoryVersion>10.0.0-preview.3.25121.11</SystemMemoryVersion>
     <SystemCollectionsImmutableVersion>10.0.0-preview.3.25121.11</SystemCollectionsImmutableVersion>
     <SystemDiagnosticsPerformanceCounterVersion>10.0.0-preview.3.25121.11</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>10.0.0-preview.3.25121.11</SystemIOHashingVersion>
