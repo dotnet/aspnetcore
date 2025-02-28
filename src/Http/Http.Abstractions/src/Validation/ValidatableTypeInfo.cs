@@ -79,8 +79,7 @@ public abstract class ValidatableTypeInfo
             {
                 if (subType.IsAssignableFrom(actualType))
                 {
-                    var subTypeInfo = context.ValidatableInfoResolver.GetValidatableTypeInfo(subType);
-                    if (subTypeInfo != null)
+                    if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
                     {
                         subTypeInfo.Validate(value, context);
                         context.Prefix = originalPrefix;

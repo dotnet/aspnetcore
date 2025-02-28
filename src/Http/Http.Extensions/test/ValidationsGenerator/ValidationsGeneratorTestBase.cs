@@ -74,14 +74,25 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
 
     internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidatableTypeInfo> verifyFunc)
     {
-        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver", out var services, out var serviceType, out var outputAssemblyName) is false)
+        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
         {
             throw new InvalidOperationException("Could not resolve services from compilation.");
         }
         var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == outputAssemblyName);
         var type = targetAssembly.GetType(typeName, throwOnError: false);
-        var service = (IValidatableInfoResolver)services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IValidatableInfoResolver.");
-        verifyFunc(service.GetValidatableTypeInfo(type));
+
+        // Get IOptions<ValidationOptions> first
+        var optionsType = typeof(IOptions<>).MakeGenericType(serviceType);
+        var optionsInstance = services.GetService(optionsType) ?? throw new InvalidOperationException("Could not resolve IOptions<ValidationOptions>.");
+
+        // Then access the Value property
+        var valueProperty = optionsType.GetProperty("Value");
+        var service = (ValidationOptions)valueProperty.GetValue(optionsInstance) ?? throw new InvalidOperationException("Could not resolve ValidationOptions.");
+        if (service.TryGetValidatableTypeInfo(type, out var validatableTypeInfo) is false)
+        {
+            throw new InvalidOperationException("Could not resolve ValidatableTypeInfo.");
+        }
+        verifyFunc(validatableTypeInfo);
     }
 
     internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint, IServiceProvider> verifyFunc)

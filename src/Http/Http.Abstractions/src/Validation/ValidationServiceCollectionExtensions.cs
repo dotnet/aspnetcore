@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Validation;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -11,10 +13,17 @@ public static class ValidationServiceCollectionExtensions
     /// <summary>
     /// Adds the validation services to the specified <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
-    /// <returns>The <see cref="IServiceCollection" /> for chaining.</returns>
-    public static IServiceCollection AddValidation(this IServiceCollection services)
+    /// <param name="services"></param>
+    /// <param name="configureOptions"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
     {
+        if (configureOptions is null)
+        {
+            return services;
+        }
+
+        services.Configure(configureOptions);
         return services;
     }
 }

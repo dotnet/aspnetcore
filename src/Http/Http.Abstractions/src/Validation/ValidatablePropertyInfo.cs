@@ -136,8 +136,10 @@ public abstract class ValidatablePropertyInfo
                 if (HasValidatableType && item != null)
                 {
                     var itemType = item.GetType();
-                    var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(itemType);
-                    validatableType?.Validate(item, context);
+                    if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                    {
+                        validatableType.Validate(item, context);
+                    }
                 }
 
                 index++;
@@ -150,8 +152,10 @@ public abstract class ValidatablePropertyInfo
         {
             // Validate as a complex object
             var valueType = value.GetType();
-            var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(valueType);
-            validatableType?.Validate(value, context);
+            if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+            {
+                validatableType.Validate(value, context);
+            }
         }
 
         // No need to restore prefix here as it will be restored by the calling method

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -15,12 +16,13 @@ internal static class ValidationEndpointFilterFactory
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
         var parameters = context.MethodInfo.GetParameters();
-        var validatableTypeInfoResolver = context.ApplicationServices.GetService<IValidatableInfoResolver>();
-        if (validatableTypeInfoResolver is null)
+        var options = context.ApplicationServices.GetService<IOptions<ValidationOptions>>()?.Value;
+        if (options is null)
         {
             return next;
         }
-        var validatableParameters = parameters.Select(validatableTypeInfoResolver.GetValidatableParameterInfo);
+        var validatableParameters = parameters
+            .Select(p => options.TryGetValidatableParameterInfo(p, out var validatableParameter) ? validatableParameter : null);
         return async (context) =>
         {
             var validationErrors = new Dictionary<string, string[]>();
@@ -35,7 +37,7 @@ internal static class ValidationEndpointFilterFactory
                     continue;
                 }
                 var validationContext = new ValidationContext(argument, context.HttpContext.RequestServices, items: null);
-                var validatableContext = new ValidatableContext(validationContext, string.Empty, validatableTypeInfoResolver, validationErrors);
+                var validatableContext = new ValidatableContext(validationContext, string.Empty, options, validationErrors);
                 await validatableParameter.Validate(argument, validatableContext);
             }
 

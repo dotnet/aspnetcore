@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Represents the context for validating a validatable object.
 /// </summary>
-public sealed class ValidatableContext(ValidationContext validationContext, string prefix, IValidatableInfoResolver validatableInfoResolver, Dictionary<string, string[]> validationErrors)
+public sealed class ValidatableContext(ValidationContext validationContext, string prefix, ValidationOptions validationOptions, Dictionary<string, string[]> validationErrors)
 {
     public ValidationContext ValidationContext { get; } = validationContext;
     public string Prefix { get; set; } = prefix;
-    public IValidatableInfoResolver ValidatableInfoResolver { get; } = validatableInfoResolver;
+    public ValidationOptions ValidationOptions { get; } = validationOptions;
     public Dictionary<string, string[]> ValidationErrors { get; } = validationErrors;
 }

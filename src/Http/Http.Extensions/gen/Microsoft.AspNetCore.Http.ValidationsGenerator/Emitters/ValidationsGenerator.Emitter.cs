@@ -130,10 +130,17 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         {{addValidation!.GetInterceptsLocationAttributeSyntax()}}
-        public static IServiceCollection AddValidation(this IServiceCollection services)
+        public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
         {
-            services.AddSingleton<global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver>(new GeneratedValidatableInfoResolver());
-            return services;
+            // Use non-extension method to avoid infinite recursion.
+            return ValidationServiceCollectionExtensions.AddValidation(services, options =>
+            {
+                options.Resolvers.Add(new GeneratedValidatableInfoResolver());
+                if (configureOptions is not null)
+                {
+                    configureOptions(options);
+                }
+            });
         }
     }
 

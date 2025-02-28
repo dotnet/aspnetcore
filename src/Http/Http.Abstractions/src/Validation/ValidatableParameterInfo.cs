@@ -141,8 +141,10 @@ public abstract class ValidatableParameterInfo
                         ? $"{Name}[{index}]"
                         : $"{context.Prefix}.{Name}[{index}]";
 
-                    var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(item.GetType());
-                    validatableType?.Validate(item, context);
+                    if (context.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    {
+                        validatableType.Validate(item, context);
+                    }
                 }
                 index++;
             }
@@ -151,8 +153,10 @@ public abstract class ValidatableParameterInfo
         else if (HasValidatableType && value != null)
         {
             var valueType = value.GetType();
-            var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(valueType);
-            validatableType?.Validate(value, context);
+            if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+            {
+                validatableType.Validate(value, context);
+            }
         }
 
         return Task.CompletedTask;
