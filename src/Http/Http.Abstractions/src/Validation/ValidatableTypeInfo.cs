@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -55,12 +54,8 @@ public abstract class ValidatableTypeInfo
     /// Validates the specified value.
     /// </summary>
     /// <param name="value">The value to validate.</param>
-    /// <param name="prefix">The prefix to use for validation errors.</param>
-    /// <param name="validationErrors">The dictionary to add validation errors to.</param>
-    /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
-    /// <param name="serviceProvider">The service provider to use for validation context.</param>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    public Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    /// <param name="context"></param>
+    public Task Validate(object? value, ValidatableContext context)
     {
         if (value == null)
         {
@@ -68,54 +63,72 @@ public abstract class ValidatableTypeInfo
         }
 
         var actualType = value.GetType();
+        var originalPrefix = context.Prefix;
 
-        // Then validate members
+        // First validate members
         foreach (var member in Members)
         {
-            member.Validate(value, prefix, validationErrors, validatableTypeInfoResolver, serviceProvider);
+            member.Validate(value, context);
+            context.Prefix = originalPrefix;
         }
 
-        // Finally validate sub-types if any
+        // Then validate sub-types if any
         if (ValidatableSubTypes != null)
         {
             foreach (var subType in ValidatableSubTypes)
             {
                 if (subType.IsAssignableFrom(actualType))
                 {
-                    var subTypeInfo = validatableTypeInfoResolver.GetValidatableTypeInfo(subType);
-                    subTypeInfo?.Validate(value, prefix, validationErrors, validatableTypeInfoResolver, serviceProvider);
+                    var subTypeInfo = context.ValidatableInfoResolver.GetValidatableTypeInfo(subType);
+                    if (subTypeInfo != null)
+                    {
+                        subTypeInfo.Validate(value, context);
+                        context.Prefix = originalPrefix;
+                    }
                 }
             }
         }
 
-        // Validate IValidatableObject first if implemented
-        var trimmedPrefix = prefix.TrimStart('.');
-        var hasErrorsForPrefix = validationErrors.Keys.Any(k => k.StartsWith(trimmedPrefix, StringComparison.Ordinal));
-        if (!hasErrorsForPrefix && IsIValidatableObject && value is IValidatableObject validatable)
+        // Finally validate IValidatableObject if implemented
+        if (IsIValidatableObject && value is IValidatableObject validatable)
         {
-            var validationContext = new ValidationContext(value, serviceProvider: serviceProvider, items: null);
-            var validationResults = validatable.Validate(validationContext);
+            // Important: Set the DisplayName to the type name for top-level validations
+            // and restore the original validation context properties
+            var originalDisplayName = context.ValidationContext.DisplayName;
+            var originalMemberName = context.ValidationContext.MemberName;
 
+            // Set the display name to the class name for IValidatableObject validation
+            context.ValidationContext.DisplayName = Type.Name;
+            context.ValidationContext.MemberName = null;
+
+            var validationResults = validatable.Validate(context.ValidationContext);
             foreach (var validationResult in validationResults)
             {
                 if (validationResult != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(prefix) ?
-                        validationResult.MemberNames.First() :
-                        $"{prefix.TrimStart('.')}.{validationResult.MemberNames.First()}";
+                    var memberName = validationResult.MemberNames.First();
+                    var key = string.IsNullOrEmpty(originalPrefix) ?
+                        memberName :
+                        $"{originalPrefix}.{memberName}";
 
-                    if (validationErrors.TryGetValue(key, out var existing) && !existing.Contains(validationResult.ErrorMessage))
+                    if (context.ValidationErrors.TryGetValue(key, out var existing) && !existing.Contains(validationResult.ErrorMessage))
                     {
-                        validationErrors[key] = existing.Concat(new[] { validationResult.ErrorMessage! }).ToArray();
+                        context.ValidationErrors[key] = [.. existing, validationResult.ErrorMessage!];
                     }
                     else
                     {
-                        validationErrors[key] = new[] { validationResult.ErrorMessage! };
+                        context.ValidationErrors[key] = [validationResult.ErrorMessage!];
                     }
                 }
             }
+
+            // Restore the original validation context properties
+            context.ValidationContext.DisplayName = originalDisplayName;
+            context.ValidationContext.MemberName = originalMemberName;
         }
 
+        // Always restore original prefix
+        context.Prefix = originalPrefix;
         return Task.CompletedTask;
     }
 }

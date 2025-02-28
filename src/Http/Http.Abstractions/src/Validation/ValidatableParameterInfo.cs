@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -78,12 +77,8 @@ public abstract class ValidatableParameterInfo
     /// Validates the parameter value.
     /// </summary>
     /// <param name="value">The value to validate.</param>
-    /// <param name="prefix">The prefix to use for validation errors.</param>
-    /// <param name="validationErrors">The dictionary to add validation errors to.</param>
-    /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
-    /// <param name="serviceProvider">The service provider to use for validation context.</param>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    public Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    /// <param name="context"></param>
+    public Task Validate(object? value, ValidatableContext context)
     {
         // Skip validation if value is null and parameter is optional
         if (value == null && IsNullable && !IsRequired)
@@ -91,20 +86,19 @@ public abstract class ValidatableParameterInfo
             return Task.CompletedTask;
         }
 
+        context.ValidationContext.DisplayName = DisplayName;
+        context.ValidationContext.MemberName = Name;
+
         var validationAttributes = GetValidationAttributes();
 
         if (IsRequired && validationAttributes.OfType<RequiredAttribute>().SingleOrDefault() is { } requiredAttribute)
         {
-            var result = requiredAttribute.GetValidationResult(value, new ValidationContext(value ?? new object(), serviceProvider, null)
-            {
-                DisplayName = DisplayName,
-                MemberName = Name
-            });
+            var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
             if (result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
-                validationErrors[key] = [result!.ErrorMessage!];
+                var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                context.ValidationErrors[key] = [result!.ErrorMessage!];
                 return Task.CompletedTask;
             }
         }
@@ -114,30 +108,24 @@ public abstract class ValidatableParameterInfo
         {
             try
             {
-                var validationContext = new ValidationContext(value ?? new object(), serviceProvider, null)
-                {
-                    DisplayName = DisplayName,
-                    MemberName = Name
-                };
-
-                var result = attribute.GetValidationResult(value, validationContext);
+                var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
-                    if (validationErrors.TryGetValue(key, out var existing))
+                    var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                    if (context.ValidationErrors.TryGetValue(key, out var existing))
                     {
-                        validationErrors[key] = [.. existing, result!.ErrorMessage!];
+                        context.ValidationErrors[key] = [.. existing, result!.ErrorMessage!];
                     }
                     else
                     {
-                        validationErrors[key] = [result!.ErrorMessage!];
+                        context.ValidationErrors[key] = [result!.ErrorMessage!];
                     }
                 }
             }
             catch (Exception ex)
             {
-                var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
-                validationErrors[key] = [ex.Message];
+                var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                context.ValidationErrors[key] = [ex.Message];
             }
         }
 
@@ -149,12 +137,12 @@ public abstract class ValidatableParameterInfo
             {
                 if (item != null)
                 {
-                    var itemPrefix = string.IsNullOrEmpty(prefix)
+                    var itemPrefix = string.IsNullOrEmpty(context.Prefix)
                         ? $"{Name}[{index}]"
-                        : $"{prefix}.{Name}[{index}]";
+                        : $"{context.Prefix}.{Name}[{index}]";
 
-                    var validatableType = validatableTypeInfoResolver.GetValidatableTypeInfo(item.GetType());
-                    validatableType?.Validate(item, itemPrefix, validationErrors, validatableTypeInfoResolver, serviceProvider);
+                    var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(item.GetType());
+                    validatableType?.Validate(item, context);
                 }
                 index++;
             }
@@ -163,8 +151,8 @@ public abstract class ValidatableParameterInfo
         else if (HasValidatableType && value != null)
         {
             var valueType = value.GetType();
-            var validatableType = validatableTypeInfoResolver.GetValidatableTypeInfo(valueType);
-            validatableType?.Validate(value, prefix, validationErrors, validatableTypeInfoResolver, serviceProvider);
+            var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(valueType);
+            validatableType?.Validate(value, context);
         }
 
         return Task.CompletedTask;

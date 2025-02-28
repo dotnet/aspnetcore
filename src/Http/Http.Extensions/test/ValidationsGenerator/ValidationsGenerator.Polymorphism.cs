@@ -129,6 +129,11 @@ public class DerivedValidatableType : BaseValidatableType
                 {
                     Assert.Equal("Value3", error.Key);
                     Assert.Equal("The Value3 field is not a valid e-mail address.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("Value1", error.Key);
+                    Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
                 });
 
             httpContext = CreateHttpContextWithPayload("""

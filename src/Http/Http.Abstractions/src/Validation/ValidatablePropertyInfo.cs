@@ -86,62 +86,75 @@ public abstract class ValidatablePropertyInfo
     /// Validates the member's value.
     /// </summary>
     /// <param name="obj">The object containing the member to validate.</param>
-    /// <param name="prefix">The prefix to use for validation errors.</param>
-    /// <param name="validationErrors">The dictionary to add validation errors to.</param>
-    /// <param name="validatableTypeInfoResolver">The resolver to use for validatable types.</param>
-    /// <param name="serviceProvider"></param>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    public Task Validate(object obj, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
+    /// <param name="context"></param>
+    public Task Validate(object obj, ValidatableContext context)
     {
         var property = DeclaringType.GetProperty(Name)!;
         var value = property.GetValue(obj);
-
         var validationAttributes = GetValidationAttributes();
 
+        // Calculate and save the current path
+        var originalPrefix = context.Prefix;
+        if (string.IsNullOrEmpty(originalPrefix))
+        {
+            context.Prefix = Name;
+        }
+        else
+        {
+            context.Prefix = $"{originalPrefix}.{Name}";
+        }
+
+        context.ValidationContext.DisplayName = DisplayName;
+        context.ValidationContext.MemberName = Name;
+
+        // Check required attribute first
         if (IsRequired && validationAttributes.OfType<RequiredAttribute>().SingleOrDefault() is { } requiredAttribute)
         {
-            var result = requiredAttribute.GetValidationResult(value, new ValidationContext(value ?? new object(), serviceProvider, null)
-            {
-                DisplayName = DisplayName,
-                MemberName = Name
-            });
+            var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
             if (result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix.TrimStart('.')}.{Name}";
-                validationErrors[key] = [result!.ErrorMessage!];
+                context.ValidationErrors[context.Prefix] = [result!.ErrorMessage!];
+                context.Prefix = originalPrefix; // Restore prefix
                 return Task.CompletedTask;
             }
         }
 
-        // If this is an enumerable type, validate each item
+        // Validate any other attributes
+        ValidateValue(value, context.Prefix, validationAttributes);
+
+        // Handle enumerable values
         if (IsEnumerable && value is System.Collections.IEnumerable enumerable)
         {
             var index = 0;
+            var currentPrefix = context.Prefix;
+
             foreach (var item in enumerable)
             {
-                var itemPrefix = $"{prefix}.{Name}[{index}]";
-                ValidateValue(item, itemPrefix, validationAttributes);
+                context.Prefix = $"{currentPrefix}[{index}]";
+
                 if (HasValidatableType && item != null)
                 {
                     var itemType = item.GetType();
-                    var validatableType = validatableTypeInfoResolver.GetValidatableTypeInfo(itemType);
-                    validatableType?.Validate(item, itemPrefix, validationErrors, validatableTypeInfoResolver, serviceProvider);
+                    var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(itemType);
+                    validatableType?.Validate(item, context);
                 }
+
                 index++;
             }
+
+            // Restore prefix to the property name before validating the next item
+            context.Prefix = currentPrefix;
         }
-        else
+        else if (HasValidatableType && value != null)
         {
-            ValidateValue(value, $"{prefix}.{Name}", validationAttributes);
-            if (HasValidatableType && value != null)
-            {
-                var valueType = value.GetType();
-                var validatableType = validatableTypeInfoResolver.GetValidatableTypeInfo(valueType);
-                validatableType?.Validate(value, $"{prefix}.{Name}", validationErrors, validatableTypeInfoResolver, serviceProvider);
-            }
+            // Validate as a complex object
+            var valueType = value.GetType();
+            var validatableType = context.ValidatableInfoResolver.GetValidatableTypeInfo(valueType);
+            validatableType?.Validate(value, context);
         }
 
+        // No need to restore prefix here as it will be restored by the calling method
         return Task.CompletedTask;
 
         void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes)
@@ -150,13 +163,7 @@ public abstract class ValidatablePropertyInfo
             {
                 try
                 {
-                    var validationContext = new ValidationContext(obj, serviceProvider, null)
-                    {
-                        DisplayName = DisplayName,
-                        MemberName = Name
-                    };
-
-                    var result = attribute.GetValidationResult(val, validationContext);
+                    var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result != ValidationResult.Success)
                     {
                         AddValidationError(errorPrefix, [result!.ErrorMessage!]);
@@ -172,13 +179,13 @@ public abstract class ValidatablePropertyInfo
         void AddValidationError(string errorPrefix, string[] messages)
         {
             var key = errorPrefix.TrimStart('.');
-            if (validationErrors.TryGetValue(key, out var existing))
+            if (context.ValidationErrors.TryGetValue(key, out var existing))
             {
-                validationErrors[key] = [.. existing, .. messages];
+                context.ValidationErrors[key] = [.. existing, .. messages];
             }
             else
             {
-                validationErrors[key] = messages;
+                context.ValidationErrors[key] = messages;
             }
         }
     }
