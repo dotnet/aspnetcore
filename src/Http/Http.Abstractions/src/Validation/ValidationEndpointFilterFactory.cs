@@ -23,9 +23,10 @@ internal static class ValidationEndpointFilterFactory
         }
         var validatableParameters = parameters
             .Select(p => options.TryGetValidatableParameterInfo(p, out var validatableParameter) ? validatableParameter : null);
+        var validatableContext = new ValidatableContext { ValidationOptions = options };
         return async (context) =>
         {
-            var validationErrors = new Dictionary<string, string[]>();
+            validatableContext.ValidationErrors?.Clear();
 
             for (var i = 0; i < context.Arguments.Count; i++)
             {
@@ -37,15 +38,15 @@ internal static class ValidationEndpointFilterFactory
                     continue;
                 }
                 var validationContext = new ValidationContext(argument, context.HttpContext.RequestServices, items: null);
-                var validatableContext = new ValidatableContext(validationContext, string.Empty, options, validationErrors);
+                validatableContext.ValidationContext = validationContext;
                 await validatableParameter.Validate(argument, validatableContext);
             }
 
-            if (validationErrors.Count > 0)
+            if (validatableContext.ValidationErrors is { Count: > 0 })
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 context.HttpContext.Response.ContentType = "application/problem+json";
-                return await ValueTask.FromResult(new HttpValidationProblemDetails(validationErrors));
+                return await ValueTask.FromResult(new HttpValidationProblemDetails(validatableContext.ValidationErrors));
             }
 
             return await next(context);

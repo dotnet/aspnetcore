@@ -146,8 +146,8 @@ public class DerivedValidatableType : BaseValidatableType
 
             await endpoint.RequestDelegate(httpContext);
 
-            problemDetails = await AssertBadRequest(httpContext);
-            Assert.Collection(problemDetails.Errors,
+            var problemDetails1 = await AssertBadRequest(httpContext);
+            Assert.Collection(problemDetails1.Errors,
                 error =>
                 {
                     Assert.Equal("Value1", error.Key);

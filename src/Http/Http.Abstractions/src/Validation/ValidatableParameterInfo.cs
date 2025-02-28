@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -80,6 +81,8 @@ public abstract class ValidatableParameterInfo
     /// <param name="context"></param>
     public Task Validate(object? value, ValidatableContext context)
     {
+        Debug.Assert(context.ValidationContext is not null);
+
         // Skip validation if value is null and parameter is optional
         if (value == null && IsNullable && !IsRequired)
         {
@@ -95,10 +98,10 @@ public abstract class ValidatableParameterInfo
         {
             var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result != ValidationResult.Success)
+            if (result is not null && result != ValidationResult.Success)
             {
                 var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
-                context.ValidationErrors[key] = [result!.ErrorMessage!];
+                context.AddValidationError(key, [result.ErrorMessage!]);
                 return Task.CompletedTask;
             }
         }
@@ -109,23 +112,16 @@ public abstract class ValidatableParameterInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result != ValidationResult.Success)
+                if (result is not null && result != ValidationResult.Success)
                 {
                     var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
-                    if (context.ValidationErrors.TryGetValue(key, out var existing))
-                    {
-                        context.ValidationErrors[key] = [.. existing, result!.ErrorMessage!];
-                    }
-                    else
-                    {
-                        context.ValidationErrors[key] = [result!.ErrorMessage!];
-                    }
+                    context.AddOrExtendValidationErrors(key, [result!.ErrorMessage!]);
                 }
             }
             catch (Exception ex)
             {
                 var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
-                context.ValidationErrors[key] = [ex.Message];
+                context.AddValidationError(key, [ex.Message]);
             }
         }
 

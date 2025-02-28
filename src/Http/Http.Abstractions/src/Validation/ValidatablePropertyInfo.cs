@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -89,6 +90,8 @@ public abstract class ValidatablePropertyInfo
     /// <param name="context"></param>
     public Task Validate(object obj, ValidatableContext context)
     {
+        Debug.Assert(context.ValidationContext is not null);
+
         var property = DeclaringType.GetProperty(Name)!;
         var value = property.GetValue(obj);
         var validationAttributes = GetValidationAttributes();
@@ -112,9 +115,9 @@ public abstract class ValidatablePropertyInfo
         {
             var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result != ValidationResult.Success)
+            if (result is not null && result != ValidationResult.Success)
             {
-                context.ValidationErrors[context.Prefix] = [result!.ErrorMessage!];
+                context.AddValidationError(context.Prefix, [result!.ErrorMessage!]);
                 context.Prefix = originalPrefix; // Restore prefix
                 return Task.CompletedTask;
             }
@@ -168,28 +171,15 @@ public abstract class ValidatablePropertyInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result != ValidationResult.Success)
+                    if (result is not null && result != ValidationResult.Success)
                     {
-                        AddValidationError(errorPrefix, [result!.ErrorMessage!]);
+                        context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [result.ErrorMessage!]);
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddValidationError(errorPrefix, [ex.Message]);
+                    context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [ex.Message]);
                 }
-            }
-        }
-
-        void AddValidationError(string errorPrefix, string[] messages)
-        {
-            var key = errorPrefix.TrimStart('.');
-            if (context.ValidationErrors.TryGetValue(key, out var existing))
-            {
-                context.ValidationErrors[key] = [.. existing, .. messages];
-            }
-            else
-            {
-                context.ValidationErrors[key] = messages;
             }
         }
     }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -57,6 +58,7 @@ public abstract class ValidatableTypeInfo
     /// <param name="context"></param>
     public Task Validate(object? value, ValidatableContext context)
     {
+        Debug.Assert(context.ValidationContext is not null);
         if (value == null)
         {
             return Task.CompletedTask;
@@ -110,14 +112,7 @@ public abstract class ValidatableTypeInfo
                         memberName :
                         $"{originalPrefix}.{memberName}";
 
-                    if (context.ValidationErrors.TryGetValue(key, out var existing) && !existing.Contains(validationResult.ErrorMessage))
-                    {
-                        context.ValidationErrors[key] = [.. existing, validationResult.ErrorMessage!];
-                    }
-                    else
-                    {
-                        context.ValidationErrors[key] = [validationResult.ErrorMessage!];
-                    }
+                    context.AddOrExtendValidationError(key, validationResult.ErrorMessage!);
                 }
             }
 
