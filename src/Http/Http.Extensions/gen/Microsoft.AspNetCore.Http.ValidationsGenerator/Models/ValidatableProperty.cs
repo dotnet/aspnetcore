@@ -6,12 +6,14 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
-internal sealed record class ValidatableMember(
-    ITypeSymbol ParentType,
+internal sealed record class ValidatableProperty(
+    ITypeSymbol ContainingType,
+    ITypeSymbol Type,
     string Name,
     string DisplayName,
     bool IsEnumerable,
     bool IsNullable,
+    bool IsRequired,
     bool HasValidatableType,
     ImmutableArray<ValidationAttribute> Attributes
 );

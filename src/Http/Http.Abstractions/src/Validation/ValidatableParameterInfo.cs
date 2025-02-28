@@ -18,19 +18,22 @@ public abstract class ValidatableParameterInfo
     /// </summary>
     /// <param name="name">The parameter name.</param>
     /// <param name="displayName">The display name for the parameter.</param>
-    /// <param name="isOptional">Whether the parameter is optional.</param>
+    /// <param name="isNullable">Whether the parameter is optional.</param>
+    /// <param name="isRequired"></param>
     /// <param name="hasValidatableType">Whether the parameter type is validatable.</param>
     /// <param name="isEnumerable">Whether the parameter is enumerable.</param>
     public ValidatableParameterInfo(
         string name,
         string displayName,
-        bool isOptional,
+        bool isNullable,
+        bool isRequired,
         bool hasValidatableType,
         bool isEnumerable)
     {
         Name = name;
         DisplayName = displayName;
-        IsOptional = isOptional;
+        IsNullable = isNullable;
+        IsRequired = isRequired;
         HasValidatableType = hasValidatableType;
         IsEnumerable = isEnumerable;
     }
@@ -48,7 +51,12 @@ public abstract class ValidatableParameterInfo
     /// <summary>
     /// Gets whether the parameter is optional.
     /// </summary>
-    public bool IsOptional { get; }
+    public bool IsNullable { get; }
+
+    /// <summary>
+    /// Gets whether the parameter is annotated with the <see cref="RequiredAttribute"/>.
+    /// </summary>
+    public bool IsRequired { get; }
 
     /// <summary>
     /// Gets whether the parameter type is validatable.
@@ -78,7 +86,7 @@ public abstract class ValidatableParameterInfo
     public Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
         // Skip validation if value is null and parameter is optional
-        if (value == null && IsOptional)
+        if (value == null && IsNullable)
         {
             return Task.CompletedTask;
         }

@@ -14,6 +14,7 @@ internal sealed record class ValidatableParameter(
     int Index,
     bool IsEnumerable,
     bool IsNullable,
+    bool IsRequired,
     bool HasValidatableType,
     ImmutableArray<ValidationAttribute> Attributes
 );

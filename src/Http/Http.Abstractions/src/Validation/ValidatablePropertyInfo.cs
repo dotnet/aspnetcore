@@ -3,31 +3,34 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
-public abstract class ValidatableMemberInfo
+public abstract class ValidatablePropertyInfo
 {
     /// <summary>
-    /// Creates a new instance of <see cref="ValidatableMemberInfo"/>.
+    /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
-    public ValidatableMemberInfo(
-        Type parentType,
+    public ValidatablePropertyInfo(
+        Type declaringType,
+        Type propertyType,
         string name,
         string displayName,
         bool isEnumerable,
         bool isNullable,
+        bool isRequired,
         bool hasValidatableType)
     {
-        ParentType = parentType;
+        DeclaringType = declaringType;
+        PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
         IsEnumerable = isEnumerable;
         IsNullable = isNullable;
+        IsRequired = isRequired;
         HasValidatableType = hasValidatableType;
     }
 
@@ -35,7 +38,12 @@ public abstract class ValidatableMemberInfo
     /// Gets the member type.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-    public Type ParentType { get; }
+    public Type DeclaringType { get; }
+
+    /// <summary>
+    /// Gets the member type.
+    /// </summary>
+    public Type PropertyType { get; }
 
     /// <summary>
     /// Gets the member name.
@@ -43,7 +51,7 @@ public abstract class ValidatableMemberInfo
     public string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member.
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
     /// </summary>
     public string DisplayName { get; }
 
@@ -56,6 +64,11 @@ public abstract class ValidatableMemberInfo
     /// Gets whether the member is nullable.
     /// </summary>
     public bool IsNullable { get; }
+
+    /// <summary>
+    /// Gets whether the member is annotated with the <see cref="RequiredAttribute"/>.
+    /// </summary>
+    public bool IsRequired { get; }
 
     /// <summary>
     /// Gets whether the member's type is validatable.
@@ -78,7 +91,7 @@ public abstract class ValidatableMemberInfo
     /// <param name="serviceProvider"></param>
     public Task Validate(object obj, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
-        var property = ParentType.GetProperty(Name)!;
+        var property = DeclaringType.GetProperty(Name)!;
         var value = property.GetValue(obj);
 
         // If this is an enumerable type, validate each item
@@ -127,12 +140,12 @@ public abstract class ValidatableMemberInfo
                     var result = attribute.GetValidationResult(val, validationContext);
                     if (result != ValidationResult.Success)
                     {
-                        AddValidationError(errorPrefix, new[] { result!.ErrorMessage! });
+                        AddValidationError(errorPrefix, [result!.ErrorMessage!]);
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddValidationError(errorPrefix, new[] { ex.Message });
+                    AddValidationError(errorPrefix, [ex.Message]);
                 }
             }
         }
@@ -142,7 +155,7 @@ public abstract class ValidatableMemberInfo
             var key = errorPrefix.TrimStart('.');
             if (validationErrors.TryGetValue(key, out var existing))
             {
-                validationErrors[key] = existing.Concat(messages).ToArray();
+                validationErrors[key] = [.. existing, .. messages];
             }
             else
             {

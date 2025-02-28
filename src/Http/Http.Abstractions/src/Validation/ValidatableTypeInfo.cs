@@ -21,13 +21,13 @@ public abstract class ValidatableTypeInfo
     /// <param name="validatableSubTypes">The sub-types that can be validated.</param>
     public ValidatableTypeInfo(
         Type type,
-        IReadOnlyList<ValidatableMemberInfo> members,
+        IReadOnlyList<ValidatablePropertyInfo> members,
         bool implementsIValidatableObject,
         IReadOnlyList<Type>? validatableSubTypes = null)
     {
         Type = type;
         Members = members;
-        ImplementsIValidatableObject = implementsIValidatableObject;
+        IsIValidatableObject = implementsIValidatableObject;
         ValidatableSubTypes = validatableSubTypes;
     }
 
@@ -39,7 +39,7 @@ public abstract class ValidatableTypeInfo
     /// <summary>
     /// The members that can be validated.
     /// </summary>
-    public IReadOnlyList<ValidatableMemberInfo> Members { get; }
+    public IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
     /// <summary>
     /// The sub-types that can be validated.
@@ -49,7 +49,7 @@ public abstract class ValidatableTypeInfo
     /// <summary>
     /// Indicates whether the type implements IValidatableObject.
     /// </summary>
-    public bool ImplementsIValidatableObject { get; }
+    public bool IsIValidatableObject { get; }
 
     /// <summary>
     /// Validates the specified value.
@@ -91,7 +91,7 @@ public abstract class ValidatableTypeInfo
         // Validate IValidatableObject first if implemented
         var trimmedPrefix = prefix.TrimStart('.');
         var hasErrorsForPrefix = validationErrors.Keys.Any(k => k.StartsWith(trimmedPrefix, StringComparison.Ordinal));
-        if (!hasErrorsForPrefix && ImplementsIValidatableObject && value is IValidatableObject validatable)
+        if (!hasErrorsForPrefix && IsIValidatableObject && value is IValidatableObject validatable)
         {
             var validationContext = new ValidationContext(value, serviceProvider: serviceProvider, items: null);
             var validationResults = validatable.Validate(validationContext);

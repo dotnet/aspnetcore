@@ -30,6 +30,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         foreach (var parameter in parameters)
         {
             var hasValidatableType = TryExtractValidatableType(parameter.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
+            var validatableAttributes = ExtractValidationAttributes(parameter, requiredSymbols, out var isRequired);
             validatableParameters.Add(new ValidatableParameter(
                 Type: parameter.Type.UnwrapType(requiredSymbols.IEnumerable),
                 OriginalType: parameter.Type,
@@ -37,8 +38,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 DisplayName: parameter.GetDisplayName(requiredSymbols.DisplayAttribute),
                 Index: parameter.Ordinal,
                 IsNullable: parameter.Type.IsNullable(),
+                IsRequired: isRequired,
                 IsEnumerable: parameter.Type.IsEnumerable(requiredSymbols.IEnumerable),
-                Attributes: ExtractValidationAttributes(parameter, requiredSymbols),
+                Attributes: validatableAttributes,
                 HasValidatableType: hasValidatableType));
         }
         return validatableParameters.ToImmutable();
@@ -90,19 +92,22 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return true;
     }
 
-    internal ImmutableArray<ValidatableMember> ExtractValidatableMembers(ITypeSymbol typeSymbol, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
     {
-        var members = new List<ValidatableMember>();
+        var members = new List<ValidatableProperty>();
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
             var hasValidatableType = TryExtractValidatableType(member.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
-            members.Add(new ValidatableMember(
-                ParentType: member.ContainingType,
+            var attributes = ExtractValidationAttributes(member, requiredSymbols, out var isRequired);
+            members.Add(new ValidatableProperty(
+                ContainingType: member.ContainingType,
+                Type: member.Type,
                 Name: member.Name,
                 DisplayName: member.GetDisplayName(requiredSymbols.DisplayAttribute),
                 IsEnumerable: member.Type.IsEnumerable(requiredSymbols.IEnumerable),
                 IsNullable: member.Type.IsNullable(),
-                Attributes: ExtractValidationAttributes(member, requiredSymbols),
+                IsRequired: isRequired,
+                Attributes: attributes,
                 HasValidatableType: hasValidatableType));
         }
 
@@ -137,28 +142,17 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return builder.ToImmutable();
     }
 
-    internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(IPropertySymbol property, RequiredSymbols requiredSymbols)
+    internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(ISymbol symbol, RequiredSymbols requiredSymbols, out bool isRequired)
     {
-        return [.. property.GetAttributes()
+        var validationAttributes = symbol.GetAttributes()
             .Where(attribute => attribute.AttributeClass != null)
-            .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute))
+            .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute));
+        isRequired = validationAttributes.Any(attr => attr.AttributeClass?.Name == "RequiredAttribute");
+        return [.. validationAttributes
             .Select(attribute => new ValidationAttribute(
-                Name: property.Type.Name + property.Name + attribute.AttributeClass!.Name,
+                Name: symbol.Name + attribute.AttributeClass!.Name,
                 ClassName: attribute.AttributeClass!.ToDisplayString(_symbolDisplayFormat),
                 Arguments: [.. attribute.ConstructorArguments.Select(a => a.ToCSharpString())],
                 NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString())))];
-    }
-
-    internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(IParameterSymbol parameter, RequiredSymbols requiredSymbols)
-    {
-        return [.. parameter.GetAttributes()
-            .Where(attribute => attribute.AttributeClass != null)
-            .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute))
-            .Select(attribute => new ValidationAttribute(
-                Name: parameter.Name + attribute.AttributeClass!.Name,
-                ClassName: attribute.AttributeClass!.ToDisplayString(_symbolDisplayFormat),
-                Arguments: [.. attribute.ConstructorArguments.Select(a => a.ToCSharpString())],
-                NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString()),
-                ForParameter: true))];
     }
 }

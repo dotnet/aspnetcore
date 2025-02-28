@@ -9,6 +9,5 @@ internal sealed record class ValidationAttribute(
     string Name,
     string ClassName,
     List<string> Arguments,
-    Dictionary<string, string> NamedArguments,
-    bool ForParameter = false
+    Dictionary<string, string> NamedArguments
 );

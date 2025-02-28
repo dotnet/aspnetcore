@@ -56,18 +56,20 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     using Microsoft.AspNetCore.Http.Validation;
 
     {{GeneratedCodeAttribute}}
-    file sealed class GeneratedValidatableMemberInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableMemberInfo
+    file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo
     {
         private readonly ValidationAttribute[] _validationAttributes;
 
-        public GeneratedValidatableMemberInfo(
-            Type parentType,
+        public GeneratedValidatablePropertyInfo(
+            Type containingType,
+            Type propertyType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
+            bool isRequired,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(parentType, name, displayName, isEnumerable, isNullable, hasValidatableType)
+            ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
@@ -83,10 +85,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         public GeneratedValidatableParameterInfo(
             string name,
             string displayName,
-            bool isOptional,
+            bool isNullable,
+            bool isRequired,
             bool hasValidatableType,
             bool isEnumerable,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isOptional, hasValidatableType, isEnumerable)
+            ValidationAttribute[] validationAttributes) : base(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
         {
             _validationAttributes = validationAttributes;
         }
@@ -99,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         public GeneratedValidatableTypeInfo(
             Type type,
-            ValidatableMemberInfo[] members,
+            ValidatablePropertyInfo[] members,
             bool implementsIValidatableObject,
             Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
     }
@@ -325,18 +328,20 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         return sw.ToString();
     }
 
-    private static string EmitValidatableMemberForCreate(ValidatableMember member)
+    private static string EmitValidatableMemberForCreate(ValidatableProperty member)
     {
         var validationAttributes = member.Attributes.IsDefaultOrEmpty
             ? "[]"
             : $"[{string.Join(", ", member.Attributes.Select(EmitValidationAttributeForCreate))}]";
         return $$"""
-        new GeneratedValidatableMemberInfo(
-            parentType: typeof({{member.ParentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
+        new GeneratedValidatablePropertyInfo(
+            containingType: typeof({{member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
+            propertyType: typeof({{member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
             name: "{{member.Name}}",
             displayName: "{{member.DisplayName}}",
             isEnumerable: {{member.IsEnumerable.ToString().ToLowerInvariant()}},
             isNullable: {{member.IsNullable.ToString().ToLowerInvariant()}},
+            isRequired: {{member.IsRequired.ToString().ToLowerInvariant()}},
             hasValidatableType: {{member.HasValidatableType.ToString().ToLowerInvariant()}},
             validationAttributes: {{validationAttributes}})
 """;
@@ -358,7 +363,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return new GeneratedValidatableParameterInfo(
                 name: "{validatableParameter.Name}",
                 displayName: "{validatableParameter.DisplayName}",
-                isOptional: false,
+                isRequired: {validatableParameter.IsRequired.ToString().ToLowerInvariant()},
+                isNullable: {validatableParameter.IsNullable.ToString().ToLowerInvariant()},
                 hasValidatableType: {validatableParameter.HasValidatableType.ToString().ToLowerInvariant()},
                 isEnumerable: {validatableParameter.IsEnumerable.ToString().ToLowerInvariant()},
                 validationAttributes: {validationAttributes}
