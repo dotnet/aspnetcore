@@ -199,7 +199,18 @@ internal sealed class OpenApiDocumentService(
     {
         if (httpRequest is not null)
         {
-            var serverUrl = UriHelper.BuildAbsolute(httpRequest.Scheme, httpRequest.Host, httpRequest.PathBase);
+            // Handle forwarded headers directly if present
+            var scheme = httpRequest.Headers.GetCommaSeparatedValues("X-Forwarded-Proto") is [var forwardedScheme, ..]
+                        ? forwardedScheme
+                        : httpRequest.Scheme;
+
+            var host = httpRequest.Headers.GetCommaSeparatedValues("X-Forwarded-Host") is [var forwardedHost, ..]
+                             ? forwardedHost
+                             : httpRequest.Host.Value;
+
+            var hostString = new HostString(host);
+            var serverUrl = UriHelper.BuildAbsolute(scheme, hostString, httpRequest.PathBase);
+
             return [new OpenApiServer { Url = serverUrl }];
         }
         else
@@ -207,6 +218,7 @@ internal sealed class OpenApiDocumentService(
             return GetDevelopmentOpenApiServers();
         }
     }
+
     private List<OpenApiServer> GetDevelopmentOpenApiServers()
     {
         if (hostEnvironment.IsDevelopment() &&
