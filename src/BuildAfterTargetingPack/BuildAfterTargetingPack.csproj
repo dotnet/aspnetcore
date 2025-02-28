@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <!-- Cannot build in source-build because that does not create an App.Ref layout. -->
-  <!-- In VMR builds, only build on win-x64 -->
+  <!-- Only build on win-x64 -->
   <Target Name="BuildDelayedProjects"
       BeforeTargets="Build"
       Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') "
