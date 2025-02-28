@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
 internal sealed record class ValidatableEndpoint(
-    string EndpointKey,
     ImmutableArray<ValidatableParameter> Parameters,
     ImmutableArray<ValidatableType> ValidatableTypes
 );

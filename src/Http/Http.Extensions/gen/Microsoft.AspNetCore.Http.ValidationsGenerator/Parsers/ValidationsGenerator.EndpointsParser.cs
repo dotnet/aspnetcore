@@ -42,9 +42,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal ValidatableEndpoint ExtractValidatableEndpoint((IInvocationOperation? Operation, RequiredSymbols RequiredSymbols) input, CancellationToken cancellationToken)
     {
         AnalyzerDebug.Assert(input.Operation != null, "Operation should not be null.");
-        var endpointKey = input.Operation.GetEndpointKey();
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         var parameters = ExtractParameters(input.Operation, input.RequiredSymbols, ref validatableTypes);
-        return new ValidatableEndpoint(endpointKey, parameters, [.. validatableTypes]);
+        return new ValidatableEndpoint(parameters, [.. validatableTypes]);
     }
 }

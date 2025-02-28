@@ -79,76 +79,76 @@ public class DerivedValidatableType : BaseValidatableType
 """;
         await Verify(source, out var compilation);
 
-        // VerifyEndpoint(compilation, "/basic-polymorphism", async (endpoint, serviceProvider) =>
-        // {
-        //     var httpContext = CreateHttpContextWithPayload("""
-        //     {
-        //         "$type": "derived",
-        //         "Value1": 5,
-        //         "Value2": "invalid-email",
-        //         "Value3": "invalid-base64"
-        //     }
-        //     """, serviceProvider);
+        VerifyEndpoint(compilation, "/basic-polymorphism", async (endpoint, serviceProvider) =>
+        {
+            var httpContext = CreateHttpContextWithPayload("""
+            {
+                "$type": "derived",
+                "Value1": 5,
+                "Value2": "invalid-email",
+                "Value3": "invalid-base64"
+            }
+            """, serviceProvider);
 
-        //     await endpoint.RequestDelegate(httpContext);
+            await endpoint.RequestDelegate(httpContext);
 
-        //     var problemDetails = await AssertBadRequest(httpContext);
-        //     Assert.Collection(problemDetails.Errors,
-        //         error =>
-        //         {
-        //             Assert.Equal("Value3", error.Key);
-        //             Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
-        //         },
-        //         error =>
-        //         {
-        //             Assert.Equal("Value1", error.Key);
-        //             Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
-        //         },
-        //         error =>
-        //         {
-        //             Assert.Equal("Value2", error.Key);
-        //             Assert.Equal("The Value2 field is not a valid e-mail address.", error.Value.Single());
-        //         });
-        // });
+            var problemDetails = await AssertBadRequest(httpContext);
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Value3", error.Key);
+                    Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("Value1", error.Key);
+                    Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("Value2", error.Key);
+                    Assert.Equal("The Value2 field is not a valid e-mail address.", error.Value.Single());
+                });
+        });
 
-        // VerifyEndpoint(compilation, "/validatable-polymorphism", async (endpoint, serviceProvider) =>
-        // {
-        //     var httpContext = CreateHttpContextWithPayload("""
-        //     {
-        //         "$type": "derived",
-        //         "Value1": 5,
-        //         "Value3": "invalid-email"
-        //     }
-        //     """, serviceProvider);
+        VerifyEndpoint(compilation, "/validatable-polymorphism", async (endpoint, serviceProvider) =>
+        {
+            var httpContext = CreateHttpContextWithPayload("""
+            {
+                "$type": "derived",
+                "Value1": 5,
+                "Value3": "invalid-email"
+            }
+            """, serviceProvider);
 
-        //     await endpoint.RequestDelegate(httpContext);
+            await endpoint.RequestDelegate(httpContext);
 
-        //     var problemDetails = await AssertBadRequest(httpContext);
-        //     Assert.Collection(problemDetails.Errors,
-        //         error =>
-        //         {
-        //             Assert.Equal("Value3", error.Key);
-        //             Assert.Equal("The Value3 field is not a valid e-mail address.", error.Value.Single());
-        //         });
+            var problemDetails = await AssertBadRequest(httpContext);
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Value3", error.Key);
+                    Assert.Equal("The Value3 field is not a valid e-mail address.", error.Value.Single());
+                });
 
-        //     httpContext = CreateHttpContextWithPayload("""
-        //     {
-        //         "$type": "derived",
-        //         "Value1": 5,
-        //         "Value3": "test@example.com"
-        //     }
-        //     """, serviceProvider);
+            httpContext = CreateHttpContextWithPayload("""
+            {
+                "$type": "derived",
+                "Value1": 5,
+                "Value3": "test@example.com"
+            }
+            """, serviceProvider);
 
-        //     await endpoint.RequestDelegate(httpContext);
+            await endpoint.RequestDelegate(httpContext);
 
-        //     problemDetails = await AssertBadRequest(httpContext);
-        //     Assert.Collection(problemDetails.Errors,
-        //         error =>
-        //         {
-        //             Assert.Equal("Value1", error.Key);
-        //             Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
-        //         });
-        // });
+            problemDetails = await AssertBadRequest(httpContext);
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Value1", error.Key);
+                    Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
+                });
+        });
 
         VerifyEndpoint(compilation, "/polymorphism-container", async (endpoint, serviceProvider) =>
         {
