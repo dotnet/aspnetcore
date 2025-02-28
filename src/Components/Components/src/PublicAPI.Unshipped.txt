@@ -1,5 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Components.IComponentRenderMode.Includes(Microsoft.AspNetCore.Components.IComponentRenderMode! other) -> bool
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetPlatformRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
+Microsoft.AspNetCore.Components.Infrastructure.PersistentServicesRegistry
+Microsoft.AspNetCore.Components.Infrastructure.PersistentServicesRegistry.PersistentServicesRegistry(System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute.SupplyParameterFromPersistentComponentStateAttribute() -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions

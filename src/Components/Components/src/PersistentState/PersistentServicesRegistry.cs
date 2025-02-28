@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal class PersistentServicesRegistry
 {
@@ -24,10 +24,11 @@ internal class PersistentServicesRegistry
     private List<PersistingComponentStateSubscription> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
 
-    public PersistentServicesRegistry(
-        IServiceProvider serviceProvider,
-        IEnumerable<IPersistentComponentRegistration> registrations)
+    public IComponentRenderMode? RenderMode { get; internal set; }
+
+    public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
+        var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentComponentRegistration>>();
         _serviceProvider = serviceProvider;
         _persistentServiceTypeCache = new PersistentServiceTypeCache();
         _registrations = [.. registrations.Distinct().Order()];
@@ -67,7 +68,7 @@ internal class PersistentServicesRegistry
     [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson(String, Type, out Object)")]
     private static void RestoreInstanceState(object instance, Type type, PersistentComponentState state)
     {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (Type runtimeType, Type declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
             if (state.TryTakeFromJson(key, propertyType, out var result))
@@ -81,7 +82,7 @@ internal class PersistentServicesRegistry
     [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson(String, Object, Type)")]
     private static void PersistInstanceState(object instance, Type type, PersistentComponentState state)
     {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (Type runtimeType, Type declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
             var (setter, getter) = accessors.GetAccessor(key);
@@ -116,17 +117,8 @@ internal class PersistentServicesRegistry
             return;
         }
 
-        var comparer = EqualityComparer<IComponentRenderMode?>.Create((x, y) =>
-        {
-            var xType = x?.GetType();
-            var yType = y?.GetType();
-            return xType == yType;
-        });
-
-        var renderModes = new HashSet<IComponentRenderMode?>(comparer);
-
         var subscriptions = new List<PersistingComponentStateSubscription>(_registrations.Length + 1);
-        for (var i = 1; i < _registrations.Length; i++)
+        for (var i = 0; i < _registrations.Length; i++)
         {
             var registration = _registrations[i];
             var type = ResolveType(registration.Assembly, registration.FullTypeName);
@@ -136,10 +128,6 @@ internal class PersistentServicesRegistry
             }
 
             var renderMode = registration.GetRenderModeOrDefault();
-            if (renderMode != null)
-            {
-                renderModes.Add(renderMode);
-            }
 
             var instance = _serviceProvider.GetRequiredService(type);
             subscriptions.Add(state.RegisterOnPersisting(() =>
@@ -149,13 +137,13 @@ internal class PersistentServicesRegistry
             }, renderMode));
         }
 
-        foreach (var renderMode in renderModes)
+        if(RenderMode != null)
         {
             subscriptions.Add(state.RegisterOnPersisting(() =>
             {
                 state.PersistAsJson(_registryKey, _registrations);
                 return Task.CompletedTask;
-            }, renderMode));
+            }, RenderMode));
         }
 
         _subscriptions = subscriptions;
@@ -232,5 +220,17 @@ internal class PersistentServicesRegistry
         {
             return _underlyingAccessors.TryGetValue(key, out var result) ? result : default;
         }
+    }
+
+    private class RenderModeComparer : IEqualityComparer<IComponentRenderMode?>
+    {
+        public static RenderModeComparer Instance { get; } = new RenderModeComparer();
+
+        public bool Equals(IComponentRenderMode? x, IComponentRenderMode? y)
+        {
+            return x?.GetType() == y?.GetType();
+        }
+
+        public int GetHashCode([DisallowNull] IComponentRenderMode? obj) => obj?.GetHashCode() ?? 1;
     }
 }

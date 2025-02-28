@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -135,6 +136,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             new PrerenderComponentApplicationStore(_persistedState) :
             new PrerenderComponentApplicationStore();
 
+        manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store);
 
         if (MetadataUpdater.IsSupported)

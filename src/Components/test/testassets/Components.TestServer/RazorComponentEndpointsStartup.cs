@@ -61,6 +61,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.UseDeveloperExceptionPage();
         }
+        else
+        {
+            app.UseWebAssemblyDebugging();
+        }
 
         app.Map("/subdir", app =>
         {
@@ -69,6 +73,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             if (!env.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
+            }
+            else
+            {
+                app.UseWebAssemblyDebugging();
             }
 
             app.UseRouting();

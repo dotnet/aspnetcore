@@ -36,8 +36,8 @@ public class ComponentStatePersistenceManager
     /// <param name="serviceProvider"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
     {
-        _servicesRegistry = serviceProvider.GetService<PersistentServicesRegistry>();
-        _servicesRegistry?.RegisterForPersistence(State);
+        _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
+        _servicesRegistry.RegisterForPersistence(State);
     }
 
     /// <summary>
@@ -107,6 +107,25 @@ public class ComponentStatePersistenceManager
         }
     }
 
+    /// <summary>
+    /// Initializes the render mode for state persisted by the platform.
+    /// </summary>
+    /// <param name="renderMode">The render mode to use for state persisted by the platform.</param>
+    /// <exception cref="InvalidOperationException">when the render mode is already set.</exception>
+    public void SetPlatformRenderMode(IComponentRenderMode renderMode)
+    {
+        if (_servicesRegistry == null)
+        {
+            return;
+        }
+        else if (_servicesRegistry?.RenderMode != null)
+        {
+            throw new InvalidOperationException("Render mode already set.");
+        }
+
+        _servicesRegistry!.RenderMode = renderMode;
+    }
+
     private void InferRenderModes(Renderer renderer)
     {
         for (var i = 0; i < _registeredCallbacks.Count; i++)
@@ -151,7 +170,7 @@ public class ComponentStatePersistenceManager
     {
         List<Task>? pendingCallbackTasks = null;
 
-        for (var i = 0; i < _registeredCallbacks.Count; i++)
+        for (var i = _registeredCallbacks.Count - 1; i >= 0; i--)
         {
             var registration = _registeredCallbacks[i];
 

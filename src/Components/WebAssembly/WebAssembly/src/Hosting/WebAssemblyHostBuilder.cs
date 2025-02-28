@@ -300,18 +300,19 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
-        Services.AddSingleton<IInternalJSImportMethods>(_jsMethods);
+        Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-        Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
+        Services.AddSingleton(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
-        Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
+        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        Services.AddPersistentService<AntiforgeryStateProvider>(RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
     }
 }

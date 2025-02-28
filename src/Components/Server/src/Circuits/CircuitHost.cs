@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -757,6 +758,7 @@ internal partial class CircuitHost : IAsyncDisposable
                         // We only do this if we have no root components. Otherwise, the state would have been
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
                         await appLifetime.RestoreStateAsync(store);
                     }
 
