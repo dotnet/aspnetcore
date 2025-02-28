@@ -24,8 +24,20 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   JSEventRegistry.create(Blazor);
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
+
   const components = new InitialRootComponentsList(webAssemblyComponents);
-  await startWebAssembly(components);
+  await startWebAssembly(components, findEnvironment(webAssemblyComponents));
+}
+
+function findEnvironment(webAssemblyComponents: WebAssemblyComponentDescriptor[]): string | undefined {
+  for (let index = 0; index < webAssemblyComponents.length; index++) {
+    const component = webAssemblyComponents[index];
+    if (component.environment) {
+      return component.environment;
+    }
+  }
+
+  return undefined;
 }
 
 Blazor.start = boot;

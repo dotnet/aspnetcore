@@ -355,6 +355,7 @@ type ServerComponentMarker = {
 
 type WebAssemblyComponentMarker = {
   type: 'webassembly';
+  environment: string | undefined;
 } & WebAssemblyMarkerData;
 
 type AutoComponentMarker = {

@@ -132,7 +132,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
+    // MF TODO: Pass the environment
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(undefined);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {
@@ -182,7 +183,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.startLoadingWebAssemblyIfNotStarted();
 
     if (!hasStartedWebAssembly()) {
-      await startWebAssembly(this);
+      // MF TODO: Pass the environment
+      await startWebAssembly(this, undefined);
     }
   }
 

@@ -68,23 +68,23 @@ export function setWebAssemblyOptions(initializersReady: Promise<Partial<WebAsse
   }
 }
 
-export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
+export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | undefined): Promise<void> {
   if (startPromise !== undefined) {
     throw new Error('Blazor WebAssembly has already started.');
   }
 
-  startPromise = new Promise(startCore.bind(null, components));
+  startPromise = new Promise(startCore.bind(null, components, environment));
 
   return startPromise;
 }
 
-async function startCore(components: RootComponentManager<WebAssemblyComponentDescriptor>, resolve, _) {
+async function startCore(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | undefined, resolve, _) {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
-  const platformLoadPromise = loadWebAssemblyPlatformIfNotStarted();
+  const platformLoadPromise = loadWebAssemblyPlatformIfNotStarted(environment);
 
   addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -206,10 +206,13 @@ export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
-export function loadWebAssemblyPlatformIfNotStarted(): Promise<void> {
+export function loadWebAssemblyPlatformIfNotStarted(environment: string | undefined): Promise<void> {
   platformLoadPromise ??= (async () => {
     await initializersPromise;
     const finalOptions = options ?? {};
+    if (!finalOptions.environment) {
+      finalOptions.environment = environment;
+    }
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {
       existingConfig?.(config);
