@@ -16,6 +16,14 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
         _context = context;
     }
 
+    public override AntiforgeryRequestToken? CurrentToken {
+        get
+        {
+            return field ??= GetAntiforgeryToken();
+        }
+        set;
+    }
+
     public override AntiforgeryRequestToken? GetAntiforgeryToken()
     {
         if (_context == null)

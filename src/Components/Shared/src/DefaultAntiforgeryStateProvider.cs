@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider
 {
     [SupplyParameterFromPersistentComponentState]
-    public AntiforgeryRequestToken? CurrentToken { get; set; }
+    public virtual AntiforgeryRequestToken? CurrentToken { get; set; }
 
     /// <inheritdoc />
     public override AntiforgeryRequestToken? GetAntiforgeryToken() => CurrentToken;

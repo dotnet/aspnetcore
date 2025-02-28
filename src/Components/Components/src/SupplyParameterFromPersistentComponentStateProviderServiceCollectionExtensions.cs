@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -49,8 +51,7 @@ public static class SupplyParameterFromPersistentComponentStateProviderServiceCo
         //       Even as far as defaulting to Server (to avoid disclosing anything confidential to the client, even though is the Developer responsibility).
         //       We can choose to fail when the service is not registered on DI.
         // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
-        services.TryAddScoped<PersistentServicesRegistry>();
-        //services.TryAddEnumerable(ServiceDescriptor.Singleton(new PersistentServiceRenderMode(componentRenderMode)));
+
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentComponentRegistration>(new PersistentComponentRegistration<TService>(componentRenderMode)));
 
         return services;
