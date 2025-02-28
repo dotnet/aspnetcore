@@ -86,13 +86,31 @@ public abstract class ValidatableParameterInfo
     public Task Validate(object? value, string prefix, Dictionary<string, string[]> validationErrors, IValidatableInfoResolver validatableTypeInfoResolver, IServiceProvider serviceProvider)
     {
         // Skip validation if value is null and parameter is optional
-        if (value == null && IsNullable)
+        if (value == null && IsNullable && !IsRequired)
         {
             return Task.CompletedTask;
         }
 
+        var validationAttributes = GetValidationAttributes();
+
+        if (IsRequired && validationAttributes.OfType<RequiredAttribute>().SingleOrDefault() is { } requiredAttribute)
+        {
+            var result = requiredAttribute.GetValidationResult(value, new ValidationContext(value ?? new object(), serviceProvider, null)
+            {
+                DisplayName = DisplayName,
+                MemberName = Name
+            });
+
+            if (result != ValidationResult.Success)
+            {
+                var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
+                validationErrors[key] = [result!.ErrorMessage!];
+                return Task.CompletedTask;
+            }
+        }
+
         // Validate against validation attributes
-        foreach (var attribute in GetValidationAttributes())
+        foreach (var attribute in validationAttributes)
         {
             try
             {
@@ -108,18 +126,18 @@ public abstract class ValidatableParameterInfo
                     var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
                     if (validationErrors.TryGetValue(key, out var existing))
                     {
-                        validationErrors[key] = existing.Concat(new[] { result!.ErrorMessage! }).ToArray();
+                        validationErrors[key] = [.. existing, result!.ErrorMessage!];
                     }
                     else
                     {
-                        validationErrors[key] = new[] { result!.ErrorMessage! };
+                        validationErrors[key] = [result!.ErrorMessage!];
                     }
                 }
             }
             catch (Exception ex)
             {
                 var key = string.IsNullOrEmpty(prefix) ? Name : $"{prefix}.{Name}";
-                validationErrors[key] = new[] { ex.Message };
+                validationErrors[key] = [ex.Message];
             }
         }
 

@@ -147,8 +147,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var validationAttributes = symbol.GetAttributes()
             .Where(attribute => attribute.AttributeClass != null)
             .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute));
-        isRequired = validationAttributes.Any(attr => attr.AttributeClass?.Name == "RequiredAttribute");
+        isRequired = validationAttributes.Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, requiredSymbols.RequiredAttribute));
         return [.. validationAttributes
+            .Where(attr => !SymbolEqualityComparer.Default.Equals(attr.AttributeClass, requiredSymbols.ValidationAttribute))
             .Select(attribute => new ValidationAttribute(
                 Name: symbol.Name + attribute.AttributeClass!.Name,
                 ClassName: attribute.AttributeClass!.ToDisplayString(_symbolDisplayFormat),

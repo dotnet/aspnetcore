@@ -119,7 +119,6 @@ public class RangeService : IRangeService
                     {
                         Assert.Equal("Value2", error.Key);
                         Assert.Collection(error.Value,
-                            msg => Assert.Equal("The Value2 field is not a valid e-mail address.", msg),
                             msg => Assert.Equal("The Value2 field is required.", msg));
                     },
                     error =>
