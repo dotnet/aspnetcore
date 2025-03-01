@@ -93,7 +93,7 @@ internal static class TestContextFactory
             connectionContext,
             serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures ?? new FeatureCollection(),
-            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
+            memoryPool ?? System.Buffers.PinnedBlockMemoryPoolFactory.Create(),
             localEndPoint,
             remoteEndPoint,
             metricsContext)

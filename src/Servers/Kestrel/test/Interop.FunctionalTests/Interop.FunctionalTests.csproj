@@ -27,6 +27,7 @@
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
+    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
   </ItemGroup>
 
   <ItemGroup>
