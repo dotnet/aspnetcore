@@ -11,8 +11,9 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class ValidationEndpointFilterFactory
 {
+    private const string ValidationContextJustification = "The DisplayName property is always statically initialized in the ValidationContext through this codepath.";
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = ValidationContextJustification)]
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
         var parameters = context.MethodInfo.GetParameters();
