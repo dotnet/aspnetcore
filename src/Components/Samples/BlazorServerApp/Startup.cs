@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorServerApp.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace BlazorServerApp;
 
@@ -23,8 +20,6 @@ public class Startup
     {
         services.AddRazorPages();
         services.AddServerSideBlazor();
-        services.AddScoped<SamplePersistentService>();
-        services.AddPersistentService<SamplePersistentService>(RenderMode.InteractiveServer);
         services.AddSingleton<WeatherForecastService>();
     }
 
