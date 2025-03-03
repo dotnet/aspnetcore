@@ -28,7 +28,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="System.Net.ServerSentEvents" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />
   </ItemGroup>

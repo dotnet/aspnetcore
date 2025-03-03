@@ -155,7 +155,6 @@ public static class TestData
                 "Microsoft.Net.Http.Headers",
                 "System.Diagnostics.EventLog",
                 "System.Diagnostics.EventLog.Messages",
-                "System.Net.ServerSentEvents",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
                 "System.Threading.RateLimiting",
@@ -306,7 +305,6 @@ public static class TestData
                 { "Microsoft.JSInterop" },
                 { "Microsoft.Net.Http.Headers" },
                 { "System.Diagnostics.EventLog" },
-                { "System.Net.ServerSentEvents" },
                 { "System.Security.Cryptography.Xml" },
                 { "System.Threading.RateLimiting" },
             };
