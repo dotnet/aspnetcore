@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Company.WebApplication1;
 
@@ -24,7 +26,7 @@ public class Program
         };
 
         var todosApi = app.MapGroup("/todos");
-        #if (EnableOpenAPI)
+#if (EnableOpenAPI)
         todosApi.MapGet("/", () => sampleTodos)
                 .WithName("GetTodos");
 
@@ -33,14 +35,14 @@ public class Program
                 ? TypedResults.Ok(todo)
                 : TypedResults.NotFound())
             .WithName("GetTodoById");
-        #else
+#else
         todosApi.MapGet("/", () => sampleTodos);
 
         todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
             sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
                 ? TypedResults.Ok(todo)
                 : TypedResults.NotFound());
-        #endif
+#endif
 
         app.Run();
     }
