@@ -14,7 +14,7 @@
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <RollForward>LatestPatch</RollForward>
     <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6. -->
-    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le'">false</PublishReadyToRun>
+    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' OR '$(TargetArchitecture)' == 'riscv64' ">false</PublishReadyToRun>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
     <!-- Don't use ReadyToRun when explicitly opted out -->
     <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
@@ -32,7 +32,7 @@
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetRuntimeDependencyVersion>
-    <DotnetRuntimeDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
     <DotnetRuntimeDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetRuntimeDependencyMajorMinorVersion>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -44,7 +44,7 @@
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
     <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
-    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</BuildDebPackage>
+    <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>

@@ -3,6 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -70,11 +71,17 @@ export function detachProgressivelyEnhancedNavigationListener() {
   window.removeEventListener('popstate', onPopState);
 }
 
-function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  const originalLocation = location.href;
+
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
+    resetScrollAfterNextBatch();
   }
 
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
@@ -90,13 +97,20 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const originalLocation = location.href;
+
     const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
+      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+      if (!isSelfNavigation) {
+        resetScrollAfterNextBatch();
+        resetScrollIfNeeded();
+      }
     }
   });
 }
@@ -106,6 +120,7 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
+  // load the new page
   performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 

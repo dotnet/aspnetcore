@@ -33,6 +33,36 @@ namespace Microsoft.AspNetCore.Mvc.Description;
 public class DefaultApiDescriptionProviderTest
 {
     [Fact]
+    public void OnlyCatchAllParameter_IsReportedAsOptional()
+    {
+        // Arrange: Create an action descriptor with a multi-parameter route template.
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "/products/{category}/items/{group}/inventory/{**any}"
+        };
+
+        // Act: Get the API descriptions using the existing helper.
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert: Only the 'any' parameter should be optional.
+        var description = Assert.Single(descriptions);
+        var categoryParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "category", StringComparison.OrdinalIgnoreCase));
+        var groupParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "group", StringComparison.OrdinalIgnoreCase));
+        var anyParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "any", StringComparison.OrdinalIgnoreCase));
+
+        // The non-catch-all parameters should be required.
+        Assert.True(categoryParameter.IsRequired);
+        Assert.True(groupParameter.IsRequired);
+
+        // The catch-all parameter should be optional.
+        Assert.False(anyParameter.IsRequired);
+    }
+
+    [Fact]
     public void GetApiDescription_IgnoresNonControllerActionDescriptor()
     {
         // Arrange

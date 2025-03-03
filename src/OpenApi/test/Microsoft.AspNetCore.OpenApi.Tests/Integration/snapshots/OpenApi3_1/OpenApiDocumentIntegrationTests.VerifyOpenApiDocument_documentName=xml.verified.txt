@@ -1,0 +1,397 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Sample | xml",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/xml/type-with-examples": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TypeWithExamples"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypeWithExamples"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xml/todo": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoFomInterface"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/xml/project": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Project"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/xml/board": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BoardItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/xml/project-record": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectRecord"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/xml/todo-with-description": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoWithDescription"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/Xml": {
+      "get": {
+        "tags": [
+          "Xml"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of the person.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the greeting.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Xml"
+        ],
+        "requestBody": {
+          "description": "The todo to insert into the database.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BoardItem": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "description": "An item on the board."
+      },
+      "Project": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "description": "The project that contains Todo items."
+      },
+      "ProjectRecord": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the project."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the project."
+          }
+        },
+        "description": "The project that contains Todo items."
+      },
+      "Todo": {
+        "required": [
+          "id",
+          "title",
+          "completed"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TodoFomInterface": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The identifier of the todo.",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the todo."
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the todo."
+          }
+        },
+        "description": "This is a todo item."
+      },
+      "TodoWithDescription": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The identifier of the todo, overridden.",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the todo, overridden."
+          },
+          "description": {
+            "type": "string",
+            "description": "Another description of the todo."
+          }
+        }
+      },
+      "TypeWithExamples": {
+        "type": "object",
+        "properties": {
+          "booleanType": {
+            "type": "boolean",
+            "example": true
+          },
+          "integerType": {
+            "type": "integer",
+            "format": "int32",
+            "example": 42
+          },
+          "longType": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1234567890123456789
+          },
+          "doubleType": {
+            "type": "number",
+            "format": "double",
+            "example": 3.14
+          },
+          "floatType": {
+            "type": "number",
+            "format": "float",
+            "example": 3.14
+          },
+          "dateTimeType": {
+            "type": "string",
+            "format": "date-time",
+            "example": "[datetime]"
+          },
+          "dateOnlyType": {
+            "type": "string",
+            "format": "date",
+            "example": "[datetime]"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    },
+    {
+      "name": "Xml"
+    }
+  ]
+}

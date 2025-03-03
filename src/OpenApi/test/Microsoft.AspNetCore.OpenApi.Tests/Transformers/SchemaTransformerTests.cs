@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -505,7 +506,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var path = document.Paths["/shape"];
             var postOperation = path.Operations[OperationType.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            var triangleSubschema = Assert.Single(requestSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            var triangleSubschema = Assert.Single(requestSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var _));
 
             // Assert that the standalone `Triangle` type has been updated
@@ -580,13 +581,13 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var itemSchema = responseSchema.Items;
-            var triangleSubschema = Assert.Single(itemSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            var triangleSubschema = Assert.Single(itemSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
             Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
-            var squareSubschema = Assert.Single(itemSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            var squareSubschema = Assert.Single(itemSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
             Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
@@ -621,13 +622,13 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var someShapeSchema = responseSchema.Properties["someShape"];
-            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
             Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
-            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
             Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
@@ -662,13 +663,13 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var someShapeSchema = responseSchema.Items.Properties["someShape"];
-            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
             Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
-            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => s.Reference.Id == "ShapeSquare"));
+            var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
             Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
@@ -747,7 +748,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var shapePath = document.Paths["/shape"];
             var shapeOperation = shapePath.Operations[OperationType.Post];
             var shapeRequestSchema = shapeOperation.RequestBody.Content["application/json"].Schema;
-            var triangleSchema = Assert.Single(shapeRequestSchema.AnyOf.Where(s => s.Reference.Id == "ShapeTriangle"));
+            var triangleSchema = Assert.Single(shapeRequestSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             Assert.True(((OpenApiAny)triangleSchema.Not.Extensions["modified-by-not-schema-transformer"]).Node.GetValue<bool>());
         });
 
@@ -757,7 +758,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             {
                 if (schema.Not != null)
                 {
-                    await func(schema.Not, context, cancellationToken);
+                    var targetSchema = schema.Not is OpenApiSchemaReference reference ? reference.Target : (OpenApiSchema)schema.Not;
+                    await func(targetSchema, context, cancellationToken);
                 }
                 return;
             });
@@ -844,6 +846,94 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         // Since we call GetRequiredService twice in the transformer, the total number of
         // instantiations should be 10.
         Assert.Equal(10, Dependency.InstantiationCount);
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_RespectsOperationCancellation()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        var transformerCalled = false;
+        var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
+
+        //Assert that transformers wait for completion signal from sibling tasks before running
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            transformerCalled = true;
+            try
+            {
+                await tcs.Task.WaitAsync(cancellationToken);
+                schema.Description = "Should not be set";
+            }
+            catch (OperationCanceledException)
+            {
+                exceptionThrown = true;
+                throw;
+            }
+        });
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(1);
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await VerifyOpenApiDocument(builder, options, _ => { }, cts.Token);
+        });
+
+        Assert.True(transformerCalled);
+        Assert.True(exceptionThrown);
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_ExecutesAsynchronously()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        var transformerOrder = new List<int>();
+        var tcs1 = new TaskCompletionSource();
+        var tcs2 = new TaskCompletionSource();
+
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            await tcs1.Task;
+            transformerOrder.Add(1);
+            schema.Description = "First";
+        });
+
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            transformerOrder.Add(2);
+            schema.Description += " Second";
+            tcs2.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            await tcs2.Task;
+            transformerOrder.Add(3);
+            schema.Description += " Third";
+        });
+
+        var documentTask = VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = Assert.Single(document.Paths["/todo"].Operations.Values);
+            var schema = operation.Responses["200"].Content["application/json"].Schema;
+            Assert.Equal("First Second Third", schema.Description);
+        });
+
+        tcs1.TrySetResult();
+
+        await documentTask;
+
+        // Each transformer is called a total of 5 times, once for the top-level schema
+        // and one for each of the four properties within the Todo type.
+        Assert.Equal([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3], transformerOrder);
     }
 
     private class PolymorphicContainer

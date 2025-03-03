@@ -28,7 +28,6 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
