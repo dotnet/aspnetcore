@@ -134,7 +134,6 @@ internal sealed class PersistentServicesRegistry
         }
     }
 
-
     private Type? ResolveType(string assembly, string fullTypeName) => _persistentServiceTypeCache.GetPersistentService(assembly, fullTypeName);
 
     private sealed class PropertiesAccessor
