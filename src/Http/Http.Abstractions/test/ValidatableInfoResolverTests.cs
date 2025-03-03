@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace Microsoft.AspNetCore.Http.Tests;
+namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
 public class ValidatableInfoResolverTests
 {

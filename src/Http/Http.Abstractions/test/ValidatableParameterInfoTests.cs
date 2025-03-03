@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Validation;
+namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
 public class ValidatableParameterInfoTests
 {
@@ -36,9 +30,9 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("testParam"));
-        Assert.Contains("is required", errors["testParam"][0], StringComparison.OrdinalIgnoreCase);
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
+        Assert.Equal("The Test Parameter field is required.", error.Value.First());
     }
 
     [Fact]
@@ -85,9 +79,9 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("testParam"));
-        Assert.Contains("must be between 10 and 100", errors["testParam"][0], StringComparison.OrdinalIgnoreCase);
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
     }
 
     [Fact]
@@ -111,11 +105,10 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("testParam"));
-
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
         // The error message should use the display name
-        Assert.Contains("Custom Display Name", errors["testParam"][0], StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("The Custom Display Name field is required.", error.Value.First());
     }
 
     [Fact]
@@ -243,11 +236,11 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("testParam"));
-        Assert.Equal(2, errors["testParam"].Length);
-        Assert.Contains("Range error", errors["testParam"]);
-        Assert.Contains("Custom error", errors["testParam"]);
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
+        Assert.Collection(error.Value,
+            e => Assert.Equal("Range error", e),
+            e => Assert.Equal("Custom error", e));
     }
 
     [Fact]
@@ -272,8 +265,9 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("parent.testParam"));
+        var error = Assert.Single(errors);
+        Assert.Equal("parent.testParam", error.Key);
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
     }
 
     [Fact]
@@ -297,12 +291,10 @@ public class ValidatableParameterInfoTests
         // Assert
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.True(errors.ContainsKey("testParam"));
-        Assert.Contains("Test exception", errors["testParam"][0]);
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
+        Assert.Equal("Test exception", error.Value.First());
     }
-
-    // Helper methods and test classes
 
     private TestValidatableParameterInfo CreateTestParameterInfo(
         string name,

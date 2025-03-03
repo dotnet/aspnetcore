@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http.Validation;
-using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Http.Tests;
+namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
 public class ValidatableTypeInfoTests
 {
@@ -61,11 +59,27 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(4, context.ValidationErrors.Count);
-        Assert.Contains("Name", context.ValidationErrors.Keys);
-        Assert.Contains("Age", context.ValidationErrors.Keys);
-        Assert.Contains("Address.Street", context.ValidationErrors.Keys);
-        Assert.Contains("Address.City", context.ValidationErrors.Keys);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Address.Street", kvp.Key);
+                Assert.Equal("The Street field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Address.City", kvp.Key);
+                Assert.Equal("The City field is required.", kvp.Value.First());
+            });
     }
 
     [Fact]
@@ -106,8 +120,9 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
-        Assert.Contains("Salary", context.ValidationErrors.Keys);
-        Assert.Equal("Salary must be a positive value.", context.ValidationErrors["Salary"].First());
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Salary", error.Key);
+        Assert.Equal("Salary must be a positive value.", error.Value.First());
     }
 
     [Fact]
@@ -156,10 +171,22 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(3, context.ValidationErrors.Count);
-        Assert.Contains("Make", context.ValidationErrors.Keys);
-        Assert.Contains("Model", context.ValidationErrors.Keys);
-        Assert.Contains("Doors", context.ValidationErrors.Keys);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Doors", kvp.Key);
+                Assert.Equal("The field Doors must be between 2 and 5.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Make", kvp.Key);
+                Assert.Equal("The Make field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Model", kvp.Key);
+                Assert.Equal("The Model field is required.", kvp.Value.First());
+            });
     }
 
     [Fact]
@@ -214,10 +241,22 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(3, context.ValidationErrors.Count);
-        Assert.Contains("Items[1].ProductName", context.ValidationErrors.Keys);
-        Assert.Contains("Items[1].Quantity", context.ValidationErrors.Keys);
-        Assert.Contains("Items[2].Quantity", context.ValidationErrors.Keys);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Items[1].ProductName", kvp.Key);
+                Assert.Equal("The ProductName field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Items[1].Quantity", kvp.Key);
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Items[2].Quantity", kvp.Key);
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+            });
     }
 
     [Fact]
