@@ -152,13 +152,6 @@ public class ComponentStatePersistenceManager
                 continue;
             }
 
-            if (registration.Callback.Target is PersistentServicesRegistry)
-            {
-                // The registration callback is associated with the services registry, which is a special case.
-                // We don't need to infer the render mode for this case.
-                continue;
-            }
-
             throw new InvalidOperationException(
                 $"The registered callback {registration.Callback.Method.Name} must be associated with a component or define" +
                 $" an explicit render mode type during registration.");
@@ -169,6 +162,12 @@ public class ComponentStatePersistenceManager
     {
         List<Task>? pendingCallbackTasks = null;
 
+        // We are iterating backwards to allow the callbacks to remove themselves from the list.
+        // Otherwise, we would have to make a copy of the list to avoid running into situations
+        // where we don't run all the callbacks because the count of the list changed while we
+        // were iterating over it.
+        // It is not allowed to register a callback while we are persisting the state, so we don't
+        // need to worry about new callbacks being added to the list.
         for (var i = _registeredCallbacks.Count - 1; i >= 0; i--)
         {
             var registration = _registeredCallbacks[i];

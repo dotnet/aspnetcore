@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
+    private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
     public bool IsFixed => false;
-    private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => parameterInfo.Attribute is SupplyParameterFromPersistentComponentStateAttribute;
@@ -30,10 +30,8 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         "Trimming",
         "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
         Justification = "JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
-    {
-        return state.TryTakeFromJson(parameterInfo.PropertyName, parameterInfo.PropertyType, out var value) ? value : null;
-    }
+    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo) =>
+        state.TryTakeFromJson(parameterInfo.PropertyName, parameterInfo.PropertyType, out var value) ? value : null;
 
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
@@ -49,6 +47,31 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
+    public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        var propertyName = parameterInfo.PropertyName;
+        var propertyType = parameterInfo.PropertyType;
+        _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
+            {
+                var storageKey = ComputeKey(subscriber, propertyName);
+                var property = subscriber.Component.GetType().GetProperty(propertyName)!.GetValue(subscriber.Component)!;
+                state.PersistAsJson(storageKey, property, propertyType);
+                return Task.CompletedTask;
+            }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
+    }
+
+    public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        if (_subscriptions.TryGetValue(subscriber, out var subscription))
+        {
+            subscription.Dispose();
+            _subscriptions.Remove(subscriber);
+        }
     }
 
     private static string ComputeKey(ComponentState componentState, string propertyName)
@@ -144,45 +167,16 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
 
     private static string GetComponentType(ComponentState componentState) => componentState.Component.GetType().FullName!;
 
-    private static string GetParentComponentType(ComponentState componentState) => componentState.LogicalParentComponentState == null ?
-        "" :
-        GetComponentType(componentState.LogicalParentComponentState);
+    private static string GetParentComponentType(ComponentState componentState) =>
+        componentState.LogicalParentComponentState == null ? "" : GetComponentType(componentState.LogicalParentComponentState);
 
-    private static byte[] KeyFactory((string, string, string) parts)
-    {
-        return Encoding.UTF8.GetBytes(string.Join(".", parts.Item1, parts.Item2, parts.Item3));
-    }
+    private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
+        Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName));
 
-    // TODO: Complete later, support common types that have a string representation.
     private static bool IsSerializableKey(object key) =>
         key is { } componentKey && componentKey.GetType() is Type type &&
             (Type.GetTypeCode(type) != TypeCode.Object
             || type == typeof(Guid)
             || type == typeof(DateOnly)
             || type == typeof(TimeOnly));
-
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
-    public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-    {
-        var propertyName = parameterInfo.PropertyName;
-        var propertyType = parameterInfo.PropertyType;
-        _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
-            {
-                var storageKey = ComputeKey(subscriber, propertyName);
-                var property = subscriber.Component.GetType().GetProperty(propertyName)!.GetValue(subscriber.Component)!;
-                state.PersistAsJson(storageKey, property, propertyType);
-                return Task.CompletedTask;
-            }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
-    }
-
-    public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-    {
-        if (_subscriptions.TryGetValue(subscriber, out var subscription))
-        {
-            subscription.Dispose();
-            _subscriptions.Remove(subscriber);
-        }
-    }
 }

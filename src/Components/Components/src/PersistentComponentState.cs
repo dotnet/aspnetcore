@@ -56,6 +56,11 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
+        if (PersistingState)
+        {
+            throw new InvalidOperationException("Registering a callback during while persisting state is not allowed.");
+        }
+
         var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode);
 
         _registeredCallbacks.Add(persistenceCallback);
