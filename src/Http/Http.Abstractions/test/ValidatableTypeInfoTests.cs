@@ -200,12 +200,12 @@ public class ValidatableTypeInfoTests
         var order = new Order
         {
             OrderNumber = "ORD-12345",
-            Items = new List<OrderItem>
-            {
+            Items =
+            [
                 new OrderItem { ProductName = "Valid Product", Quantity = 5 },
                 new OrderItem { /* Missing ProductName (required) */ Quantity = 0 /* Invalid quantity */ },
                 new OrderItem { ProductName = "Another Product", Quantity = 200 /* Invalid quantity */ }
-            }
+            ]
         };
         context.ValidationContext = new ValidationContext(order);
 
@@ -255,6 +255,64 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
+    }
+
+    [Fact]
+    public async Task Validate_RespectsMaxDepthOption_ForCircularReferences()
+    {
+        // Arrange
+        // Create a type that can contain itself (circular reference)
+        var nodeType = new TestValidatableTypeInfo(
+            typeof(TreeNode),
+            [
+                CreatePropertyInfo(typeof(TreeNode), typeof(string), "Name", "Name", false, false, true, false,
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(TreeNode), typeof(TreeNode), "Parent", "Parent", false, true, false, true,
+                    []),
+                CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children", "Children", true, false, false, true,
+                    [])
+            ],
+            false
+        );
+
+        // Create a validation options with a small max depth
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(TreeNode), nodeType }
+        });
+        validationOptions.MaxDepth = 3; // Set a small max depth to trigger the limit
+
+        var context = new ValidatableContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationErrors = []
+        };
+
+        // Create a deep tree with circular references
+        var rootNode = new TreeNode { Name = "Root" };
+        var level1 = new TreeNode { Name = "Level1", Parent = rootNode };
+        var level2 = new TreeNode { Name = "Level2", Parent = level1 };
+        var level3 = new TreeNode { Name = "Level3", Parent = level2 };
+        var level4 = new TreeNode { Name = "" }; // Invalid: missing required name
+        var level5 = new TreeNode { Name = "" }; // Invalid but beyond max depth, should not be validated
+
+        rootNode.Children.Add(level1);
+        level1.Children.Add(level2);
+        level2.Children.Add(level3);
+        level3.Children.Add(level4);
+        level4.Children.Add(level5);
+
+        // Add a circular reference
+        level5.Children.Add(rootNode);
+
+        context.ValidationContext = new ValidationContext(rootNode);
+
+        // Act + Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        async () => await nodeType.Validate(rootNode, context));
+
+        Assert.NotNull(exception);
+        Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
     }
 
     private ValidatablePropertyInfo CreatePropertyInfo(
@@ -323,13 +381,20 @@ public class ValidatableTypeInfoTests
     private class Order
     {
         public string? OrderNumber { get; set; }
-        public List<OrderItem> Items { get; set; } = new List<OrderItem>();
+        public List<OrderItem> Items { get; set; } = [];
     }
 
     private class OrderItem
     {
         public string? ProductName { get; set; }
         public int Quantity { get; set; }
+    }
+
+    private class TreeNode
+    {
+        public string Name { get; set; } = string.Empty;
+        public TreeNode? Parent { get; set; }
+        public List<TreeNode> Children { get; set; } = [];
     }
 
     // Test implementations

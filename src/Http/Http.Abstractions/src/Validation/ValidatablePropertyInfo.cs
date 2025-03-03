@@ -126,43 +126,63 @@ public abstract class ValidatablePropertyInfo
         // Validate any other attributes
         ValidateValue(value, context.Prefix, validationAttributes);
 
-        // Handle enumerable values
-        if (IsEnumerable && value is System.Collections.IEnumerable enumerable)
+        // Check if we've reached the maximum depth before validating complex properties
+        if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
-            var index = 0;
-            var currentPrefix = context.Prefix;
+            throw new InvalidOperationException(
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.Prefix}'. " +
+                "This is likely caused by a circular reference in the object graph. " +
+                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
+        }
 
-            foreach (var item in enumerable)
+        // Increment depth counter
+        context.CurrentDepth++;
+
+        try
+        {
+            // Handle enumerable values
+            if (IsEnumerable && value is System.Collections.IEnumerable enumerable)
             {
-                context.Prefix = $"{currentPrefix}[{index}]";
+                var index = 0;
+                var currentPrefix = context.Prefix;
 
-                if (HasValidatableType && item != null)
+                foreach (var item in enumerable)
                 {
-                    var itemType = item.GetType();
-                    if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                    context.Prefix = $"{currentPrefix}[{index}]";
+
+                    if (HasValidatableType && item != null)
                     {
-                        validatableType.Validate(item, context);
+                        var itemType = item.GetType();
+                        if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        {
+                            validatableType.Validate(item, context);
+                        }
                     }
+
+                    index++;
                 }
 
-                index++;
+                // Restore prefix to the property name before validating the next item
+                context.Prefix = currentPrefix;
             }
-
-            // Restore prefix to the property name before validating the next item
-            context.Prefix = currentPrefix;
-        }
-        else if (HasValidatableType && value != null)
-        {
-            // Validate as a complex object
-            var valueType = value.GetType();
-            if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+            else if (HasValidatableType && value != null)
             {
-                validatableType.Validate(value, context);
+                // Validate as a complex object
+                var valueType = value.GetType();
+                if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                {
+                    validatableType.Validate(value, context);
+                }
             }
-        }
 
-        // No need to restore prefix here as it will be restored by the calling method
-        return Task.CompletedTask;
+            return Task.CompletedTask;
+        }
+        finally
+        {
+            // Always decrement the depth counter and restore prefix
+            context.CurrentDepth--;
+            context.Prefix = originalPrefix;
+        }
 
         void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes)
         {

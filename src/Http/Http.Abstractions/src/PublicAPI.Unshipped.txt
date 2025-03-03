@@ -8,6 +8,8 @@ Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
 Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver.GetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo) -> Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo?
 Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver.GetValidatableTypeInfo(System.Type! type) -> Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo?
 Microsoft.AspNetCore.Http.Validation.ValidatableContext
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.CurrentDepth.get -> int
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.CurrentDepth.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidatableContext.Prefix.get -> string!
 Microsoft.AspNetCore.Http.Validation.ValidatableContext.Prefix.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidatableContext() -> void

@@ -55,7 +55,7 @@ public abstract class ValidatableTypeInfo
     /// Validates the specified value.
     /// </summary>
     /// <param name="value">The value to validate.</param>
-    /// <param name="context"></param>
+    /// <param name="context">The validation context.</param>
     public Task Validate(object? value, ValidatableContext context)
     {
         Debug.Assert(context.ValidationContext is not null);
@@ -64,65 +64,82 @@ public abstract class ValidatableTypeInfo
             return Task.CompletedTask;
         }
 
-        var actualType = value.GetType();
-        var originalPrefix = context.Prefix;
-
-        // First validate members
-        foreach (var member in Members)
+        // Check if we've exceeded the maximum depth
+        if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
-            member.Validate(value, context);
-            context.Prefix = originalPrefix;
+            throw new InvalidOperationException(
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.Prefix}'. " +
+                "This is likely caused by a circular reference in the object graph. " +
+                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
-        // Then validate sub-types if any
-        if (ValidatableSubTypes != null)
+        try
         {
-            foreach (var subType in ValidatableSubTypes)
+            var actualType = value.GetType();
+            var originalPrefix = context.Prefix;
+
+            // First validate members
+            foreach (var member in Members)
             {
-                if (subType.IsAssignableFrom(actualType))
+                member.Validate(value, context);
+                context.Prefix = originalPrefix;
+            }
+
+            // Then validate sub-types if any
+            if (ValidatableSubTypes != null)
+            {
+                foreach (var subType in ValidatableSubTypes)
                 {
-                    if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
+                    if (subType.IsAssignableFrom(actualType))
                     {
-                        subTypeInfo.Validate(value, context);
-                        context.Prefix = originalPrefix;
+                        if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
+                        {
+                            subTypeInfo.Validate(value, context);
+                            context.Prefix = originalPrefix;
+                        }
                     }
                 }
             }
-        }
 
-        // Finally validate IValidatableObject if implemented
-        if (IsIValidatableObject && value is IValidatableObject validatable)
-        {
-            // Important: Set the DisplayName to the type name for top-level validations
-            // and restore the original validation context properties
-            var originalDisplayName = context.ValidationContext.DisplayName;
-            var originalMemberName = context.ValidationContext.MemberName;
-
-            // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
-            context.ValidationContext.MemberName = null;
-
-            var validationResults = validatable.Validate(context.ValidationContext);
-            foreach (var validationResult in validationResults)
+            // Finally validate IValidatableObject if implemented
+            if (IsIValidatableObject && value is IValidatableObject validatable)
             {
-                if (validationResult != ValidationResult.Success)
-                {
-                    var memberName = validationResult.MemberNames.First();
-                    var key = string.IsNullOrEmpty(originalPrefix) ?
-                        memberName :
-                        $"{originalPrefix}.{memberName}";
+                // Important: Set the DisplayName to the type name for top-level validations
+                // and restore the original validation context properties
+                var originalDisplayName = context.ValidationContext.DisplayName;
+                var originalMemberName = context.ValidationContext.MemberName;
 
-                    context.AddOrExtendValidationError(key, validationResult.ErrorMessage!);
+                // Set the display name to the class name for IValidatableObject validation
+                context.ValidationContext.DisplayName = Type.Name;
+                context.ValidationContext.MemberName = null;
+
+                var validationResults = validatable.Validate(context.ValidationContext);
+                foreach (var validationResult in validationResults)
+                {
+                    if (validationResult != ValidationResult.Success)
+                    {
+                        var memberName = validationResult.MemberNames.First();
+                        var key = string.IsNullOrEmpty(originalPrefix) ?
+                            memberName :
+                            $"{originalPrefix}.{memberName}";
+
+                        context.AddOrExtendValidationError(key, validationResult.ErrorMessage!);
+                    }
                 }
+
+                // Restore the original validation context properties
+                context.ValidationContext.DisplayName = originalDisplayName;
+                context.ValidationContext.MemberName = originalMemberName;
             }
 
-            // Restore the original validation context properties
-            context.ValidationContext.DisplayName = originalDisplayName;
-            context.ValidationContext.MemberName = originalMemberName;
+            // Always restore original prefix
+            context.Prefix = originalPrefix;
+            return Task.CompletedTask;
         }
-
-        // Always restore original prefix
-        context.Prefix = originalPrefix;
-        return Task.CompletedTask;
+        finally
+        {
+            // Decrement depth when validation completes
+            context.CurrentDepth--;
+        }
     }
 }

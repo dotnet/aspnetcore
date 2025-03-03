@@ -35,6 +35,12 @@ public sealed class ValidatableContext
     /// </summary>
     public Dictionary<string, string[]>? ValidationErrors { get; set; }
 
+    /// <summary>
+    /// Gets or sets the current depth in the validation hierarchy.
+    /// This is used to prevent stack overflows from circular references.
+    /// </summary>
+    public int CurrentDepth { get; set; }
+
     internal void AddValidationError(string key, string[] error)
     {
         ValidationErrors ??= [];
