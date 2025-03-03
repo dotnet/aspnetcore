@@ -16,6 +16,18 @@ const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-S
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 
+export function findWebAssemblyEnvironment(components: ComponentDescriptor[]): string | undefined {
+  for (let index = 0; index < components.length; index++) {
+    const component = components[index];
+    const webAssemblyComponent = component as WebAssemblyComponentDescriptor;
+    if (webAssemblyComponent.environment) {
+      return webAssemblyComponent.environment;
+    }
+  }
+
+  return undefined;
+}
+
 export function discoverServerPersistedState(node: Node): string | null | undefined {
   return discoverBlazorComment(node, blazorServerStateCommentRegularExpression);
 }

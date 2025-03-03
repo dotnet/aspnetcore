@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, findWebAssemblyEnvironment, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -13,6 +13,7 @@ let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
   registerComponent(descriptor: ComponentDescriptor): void;
+  setWebAssemblyEnvironment(webAssemblyEnvironment: string | undefined): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -21,6 +22,8 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 
 export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
+  const webAssemblyEnvironment = findWebAssemblyEnvironment(descriptors);
+  descriptorHandler?.setWebAssemblyEnvironment(webAssemblyEnvironment);
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);

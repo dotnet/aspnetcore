@@ -6,7 +6,7 @@ import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Common';
-import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { WebAssemblyComponentDescriptor, discoverComponents, findWebAssemblyEnvironment } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
 import { JSEventRegistry } from './Services/JSEventRegistry';
@@ -26,18 +26,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
 
   const components = new InitialRootComponentsList(webAssemblyComponents);
-  await startWebAssembly(components, findEnvironment(webAssemblyComponents));
-}
-
-function findEnvironment(webAssemblyComponents: WebAssemblyComponentDescriptor[]): string | undefined {
-  for (let index = 0; index < webAssemblyComponents.length; index++) {
-    const component = webAssemblyComponents[index];
-    if (component.environment) {
-      return component.environment;
-    }
-  }
-
-  return undefined;
+  await startWebAssembly(components, findWebAssemblyEnvironment(webAssemblyComponents));
 }
 
 Blazor.start = boot;

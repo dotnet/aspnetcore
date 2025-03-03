@@ -63,6 +63,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private _circuitInactivityTimeoutId: any;
 
+  private _webAssemblyEnvironment: string | undefined;
+
   // Implements RootComponentManager.
   // An empty array becuase all root components managed
   // by WebRootComponentManager are added and removed dynamically.
@@ -92,6 +94,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // Root components may now be ready for activation if they had been previously
     // skipped for activation due to an enhanced navigation being underway.
     this.rootComponentsMayRequireRefresh();
+  }
+
+  public setWebAssemblyEnvironment(webAssemblyEnvironment: string | undefined): void {
+    this._webAssemblyEnvironment = webAssemblyEnvironment;
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
@@ -132,7 +138,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(environment);
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(environment ?? this._webAssemblyEnvironment);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {
@@ -182,7 +188,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.startLoadingWebAssemblyIfNotStarted(environment);
 
     if (!hasStartedWebAssembly()) {
-      await startWebAssembly(this, environment);
+      await startWebAssembly(this, environment ?? this._webAssemblyEnvironment);
     }
   }
 
