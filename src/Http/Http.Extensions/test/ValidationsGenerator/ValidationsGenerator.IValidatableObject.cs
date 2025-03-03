@@ -87,7 +87,6 @@ public class RangeService : IRangeService
 """;
 
         await Verify(source, out var compilation);
-
         await VerifyEndpoint(compilation, "/validatable-object", async (endpoint, serviceProvider) =>
         {
             await ValidateMethodCalledIfPropertyValidationsFail();
