@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    // [Fact]
-    internal async Task CanValidateIValidatableObject()
+    [Fact]
+    public async Task CanValidateIValidatableObject()
     {
         var source = """
 using System.Collections.Generic;

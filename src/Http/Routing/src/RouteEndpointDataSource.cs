@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -59,7 +61,18 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc,
         MethodInfo methodInfo)
     {
-        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+        // Initialize all route handlers with validation convention if validation options
+        // are registered.
+        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection
+        {
+            (builder) =>
+            {
+                if (builder.ApplicationServices.GetService(typeof(IOptions<ValidationOptions>)) is not null)
+                {
+                    builder.FilterFactories.Add(ValidationEndpointFilterFactory.Create);
+                }
+            }
+        };
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
         var routeAttributes = RouteAttributes.RouteHandler;

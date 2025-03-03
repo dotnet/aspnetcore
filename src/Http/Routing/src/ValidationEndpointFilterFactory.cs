@@ -23,6 +23,10 @@ internal static class ValidationEndpointFilterFactory
         }
         var validatableParameters = parameters
             .Select(p => options.TryGetValidatableParameterInfo(p, out var validatableParameter) ? validatableParameter : null);
+        if (validatableParameters.All(p => p is null))
+        {
+            return next;
+        }
         var validatableContext = new ValidatableContext { ValidationOptions = options };
         return async (context) =>
         {
@@ -49,7 +53,7 @@ internal static class ValidationEndpointFilterFactory
                 return await ValueTask.FromResult(new HttpValidationProblemDetails(validatableContext.ValidationErrors));
             }
 
-            return await next(context);
+            return next;
         };
     }
 }

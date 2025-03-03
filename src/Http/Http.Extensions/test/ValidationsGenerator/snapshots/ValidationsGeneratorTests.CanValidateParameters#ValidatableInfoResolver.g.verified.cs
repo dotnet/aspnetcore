@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Add(new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);
