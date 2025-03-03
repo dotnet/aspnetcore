@@ -1,27 +1,7 @@
 ﻿@page "/"
-@inject Data.SamplePersistentService Service
-@inject AntiforgeryStateProvider AntiforgeryStateProvider
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
-<button id="start-blazor" onclick="start()">Start Blazor!</button>
-
-<p>Service state: @Service.SampleState</p>
-
-<p>Antifoguerty @AntiforgeryStateProvider.GetAntiforgeryToken()?.Value</p>
-
-@for (var i = 0; i < 10; i++)
-{
-    var current = i;
-
-    <StatefulComponent @key="current" InitialValue="@Guid.NewGuid()" />
-}
-
-@code {
-    protected override void OnInitialized()
-    {
-        Service.SampleState ??= Guid.NewGuid().ToString();
-    }
-}
+Welcome to your new app.
