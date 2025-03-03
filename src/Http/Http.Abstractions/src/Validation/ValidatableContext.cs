@@ -10,9 +10,29 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// </summary>
 public sealed class ValidatableContext
 {
+    /// <summary>
+    /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
+    /// This context provides access to service provider and other validation metadata.
+    /// </summary>
     public ValidationContext? ValidationContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
+    /// This is used to build property paths in validation error messages (e.g., "Customer.Address.Street").
+    /// </summary>
     public string Prefix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the validation options that control validation behavior,
+    /// including validation depth limits and resolver registration.
+    /// </summary>
     public required ValidationOptions ValidationOptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the dictionary of validation errors collected during validation.
+    /// Keys are property names or paths, and values are arrays of error messages.
+    /// This dictionary is lazily initialized when the first validation error is added.
+    /// </summary>
     public Dictionary<string, string[]>? ValidationErrors { get; set; }
 
     internal void AddValidationError(string key, string[] error)
