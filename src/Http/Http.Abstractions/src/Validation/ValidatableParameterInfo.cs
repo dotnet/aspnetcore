@@ -78,7 +78,12 @@ public abstract class ValidatableParameterInfo
     /// Validates the parameter value.
     /// </summary>
     /// <param name="value">The value to validate.</param>
-    /// <param name="context"></param>
+    /// <param name="context">The context for the validation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// If the parameter is a collection, each item in the collection will be validated.
+    /// If the parameter is not a collection but has a validatable type, the single value will be validated.
+    /// </remarks>
     public Task Validate(object? value, ValidatableContext context)
     {
         Debug.Assert(context.ValidationContext is not null);

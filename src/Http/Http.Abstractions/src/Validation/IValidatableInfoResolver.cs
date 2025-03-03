@@ -6,7 +6,8 @@ using System.Reflection;
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
-/// Resolves validation type information for a given type.
+/// Provides an interface for resolving the validation information associated
+/// with a given <seealso cref="Type"/> or <seealso cref="ParameterInfo"/>.
 /// </summary>
 public interface IValidatableInfoResolver
 {
