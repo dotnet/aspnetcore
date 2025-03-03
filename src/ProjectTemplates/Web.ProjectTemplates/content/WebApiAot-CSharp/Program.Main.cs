@@ -15,7 +15,19 @@ public class Program
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
+#if (EnableOpenAPI)
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddOpenApi();
+#endif
+
         var app = builder.Build();
+
+#if (EnableOpenAPI)
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+        }
+#endif
 
         var sampleTodos = new Todo[] {
             new(1, "Walk the dog"),
