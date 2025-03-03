@@ -57,15 +57,19 @@ internal struct ComponentMarker
     // Serialized values of the component's parameters.
     public string? ParameterValues { get; set; }
 
+    // The WebHost Environment
+    public string? Environment { get; set; }
+
     #endregion
 
-    public static ComponentMarker Create(string type, bool prerendered, ComponentMarkerKey? key)
+    public static ComponentMarker Create(string type, bool prerendered, ComponentMarkerKey? key, string? environment = null)
     {
         return new()
         {
             Type = type,
             PrerenderId = prerendered ? GeneratePrerenderId() : null,
             Key = key,
+            Environment = environment
         };
     }
 

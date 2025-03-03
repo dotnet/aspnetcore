@@ -355,7 +355,6 @@ type ServerComponentMarker = {
 
 type WebAssemblyComponentMarker = {
   type: 'webassembly';
-  environment: string | undefined;
 } & WebAssemblyMarkerData;
 
 type AutoComponentMarker = {
@@ -383,4 +382,5 @@ type WebAssemblyMarkerData = {
   assembly: string;
   parameterDefinitions: string;
   parameterValues: string;
+  environment: string | undefined;
 } & CommonMarkerData;

@@ -105,12 +105,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // may take a long time to load, so starting to load them now potentially reduces
     // the time to interactvity.
     if (descriptor.type === 'webassembly') {
-      this.startLoadingWebAssemblyIfNotStarted();
+      this.startLoadingWebAssemblyIfNotStarted(descriptor.environment);
     } else if (descriptor.type === 'auto') {
       // If the WebAssembly runtime starts downloading because an Auto component was added to
       // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
       // so that the performance of any Blazor Server circuit is minimally impacted.
-      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
+      this.startLoadingWebAssemblyIfNotStarted(descriptor.environment, /* maxParallelDownloadsOverride */ 1);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -125,15 +125,14 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
+  private async startLoadingWebAssemblyIfNotStarted(environment: string | undefined, maxParallelDownloadsOverride?: number) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
 
     setWaitForRootComponents();
 
-    // MF TODO: Pass the environment
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(undefined);
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(environment);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {
@@ -179,12 +178,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  private async startWebAssemblyIfNotStarted() {
-    this.startLoadingWebAssemblyIfNotStarted();
+  private async startWebAssemblyIfNotStarted(environment?: string) {
+    this.startLoadingWebAssemblyIfNotStarted(environment);
 
     if (!hasStartedWebAssembly()) {
-      // MF TODO: Pass the environment
-      await startWebAssembly(this, undefined);
+      await startWebAssembly(this, environment);
     }
   }
 
