@@ -1,21 +1,57 @@
 #nullable enable
-abstract Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Validate(object? value, string! prefix, System.Collections.Generic.Dictionary<string!, string![]!>! validationErrors, Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver! validatableTypeInfoResolver) -> void
+abstract Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+abstract Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
-Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver
-Microsoft.AspNetCore.Http.Validation.IValidatableTypeInfoResolver.GetValidatableTypeInfo(System.Type! type) -> Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo?
-Microsoft.AspNetCore.Http.Validation.ValidatableMember
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.DisplayName.get -> string!
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.HasValidatableType.get -> bool
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.IsEnumerable.get -> bool
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.IsNullable.get -> bool
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.Name.get -> string!
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.ValidatableMember(string! name, string! displayName, bool isEnumerable, bool isNullable, bool hasValidatableType, System.Collections.Generic.IDictionary<string!, string![]!>! validationAttributes) -> void
-Microsoft.AspNetCore.Http.Validation.ValidatableMember.ValidationAttributes.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
+Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver.GetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo) -> Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo?
+Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver.GetValidatableTypeInfo(System.Type! type) -> Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo?
+Microsoft.AspNetCore.Http.Validation.ValidatableContext
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.Prefix.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.Prefix.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidatableContext() -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext?
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationContext.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationErrors.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationOptions.get -> Microsoft.AspNetCore.Http.Validation.ValidationOptions!
+Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationOptions.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.DisplayName.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.HasValidatableType.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsEnumerable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsNullable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsRequired.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.Name.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.ValidatableParameterInfo(string! name, string! displayName, bool isNullable, bool isRequired, bool hasValidatableType, bool isEnumerable) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.Validate(object? value, Microsoft.AspNetCore.Http.Validation.ValidatableContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.DeclaringType.get -> System.Type!
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.DisplayName.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.HasValidatableType.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.IsEnumerable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.IsNullable.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.IsRequired.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.Name.get -> string!
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.PropertyType.get -> System.Type!
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName, bool isEnumerable, bool isNullable, bool isRequired, bool hasValidatableType) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.Validate(object! obj, Microsoft.AspNetCore.Http.Validation.ValidatableContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeAttribute
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeAttribute.ValidatableTypeAttribute() -> void
 Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
-Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Members.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Validation.ValidatableMember!>!
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.IsIValidatableObject.get -> bool
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Members.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo!>!
 Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Type.get -> System.Type!
-Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Validation.ValidatableMember!>! members) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.ValidatableSubTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>?
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo!>! members, bool implementsIValidatableObject, System.Collections.Generic.IReadOnlyList<System.Type!>? validatableSubTypes = null) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo.Validate(object? value, Microsoft.AspNetCore.Http.Validation.ValidatableContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Validation.ValidationOptions
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.MaxDepth.get -> int
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.MaxDepth.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.Resolvers.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver!>!
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? validatableParameterInfo) -> bool
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? validatableTypeInfo) -> bool
+Microsoft.AspNetCore.Http.Validation.ValidationOptions.ValidationOptions() -> void
 Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions
-static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Validation.ValidationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
