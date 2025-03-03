@@ -58,7 +58,7 @@ public class PersistentComponentState
 
         if (PersistingState)
         {
-            throw new InvalidOperationException("Registering a callback during while persisting state is not allowed.");
+            throw new InvalidOperationException("Registering a callback while persisting state is not allowed.");
         }
 
         var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode);
