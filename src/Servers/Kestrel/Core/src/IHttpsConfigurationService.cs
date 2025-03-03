@@ -100,7 +100,8 @@ internal readonly struct CertificateAndConfig
         CertificateChain = [];
     }
 
-    public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig, X509Certificate2Collection certificateChain){
+    public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig, X509Certificate2Collection certificateChain)
+    {
         Certificate = certificate;
         CertificateConfig = certificateConfig;
         CertificateChain = certificateChain;

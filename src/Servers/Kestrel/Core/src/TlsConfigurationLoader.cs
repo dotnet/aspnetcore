@@ -131,8 +131,9 @@ internal sealed class TlsConfigurationLoader
             var (defaultCert, defaultCertChain) = _certificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
             if (defaultCert != null)
             {
-                if(defaultCertChain != null){
-                    return new CertificateAndConfig(defaultCert,defaultCertConfig,defaultCertChain);
+                if (defaultCertChain != null)
+                {
+                    return new CertificateAndConfig(defaultCert, defaultCertConfig, defaultCertChain);
                 }
                 return new CertificateAndConfig(defaultCert, defaultCertConfig);
             }
