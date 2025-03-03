@@ -30,10 +30,17 @@ public partial class Program { }
         await VerifyCS.VerifyAsync(source, "PublicTopLevelProgram.Generated.g.cs", expected);
     }
 
-    [Fact]
-    public async Task DoesNotGeneratesSource_IfProgramIsAlreadyPublic()
+    [Theory]
+    [InlineData("public partial class Program { }")]
+    [InlineData("""
+namespace Foo
+{
+    public partial class Program { }
+}
+""")]
+    public async Task DoesNotGeneratesSource_IfProgramIsAlreadyPublic(string declaration)
     {
-        var source = """
+        var source = $$"""
 using Microsoft.AspNetCore.Builder;
 
 var app = WebApplication.Create();
@@ -42,16 +49,23 @@ app.MapGet("/", () => "Hello, World!");
 
 app.Run();
 
-public partial class Program { }
+{{declaration}}
 """;
 
         await VerifyCS.VerifyAsync(source);
     }
 
-    [Fact]
-    public async Task DoesNotGeneratesSource_IfProgramDeclaresExplicitInternalAccess()
+    [Theory]
+    [InlineData("internal partial class Program { }")]
+    [InlineData("""
+namespace Foo
+{
+    internal partial class Program { }
+}
+""")]
+    public async Task DoesNotGeneratesSource_IfProgramDeclaresExplicitInternalAccess(string declaration)
     {
-        var source = """
+        var source = $$"""
 using Microsoft.AspNetCore.Builder;
 
 var app = WebApplication.Create();
@@ -60,7 +74,7 @@ app.MapGet("/", () => "Hello, World!");
 
 app.Run();
 
-internal partial class Program { }
+{{declaration}}
 """;
 
         await VerifyCS.VerifyAsync(source);
@@ -81,6 +95,31 @@ public class Program
         app.MapGet("/", () => "Hello, World!");
 
         app.Run();
+    }
+}
+""";
+
+        await VerifyCS.VerifyAsync(source);
+    }
+
+    [Fact]
+    public async Task DoesNotGeneratorSource_ExplicitPublicProgramClassInNamespace()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+namespace Foo
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            var app = WebApplication.Create();
+
+            app.MapGet("/", () => "Hello, World!");
+
+            app.Run();
+        }
     }
 }
 """;
@@ -110,6 +149,31 @@ internal class Program
         await VerifyCS.VerifyAsync(source);
     }
 
+    [Fact]
+    public async Task DoesNotGeneratorSource_ExplicitInternalProgramClassInNamespace()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+namespace Foo
+{
+    internal class Program
+    {
+        public static void Main()
+        {
+            var app = WebApplication.Create();
+
+            app.MapGet("/", () => "Hello, World!");
+
+            app.Run();
+        }
+    }
+}
+""";
+
+        await VerifyCS.VerifyAsync(source);
+    }
+
     [Theory]
     [InlineData("interface")]
     [InlineData("struct")]
@@ -127,6 +191,33 @@ internal {{type}} Program
         app.MapGet("/", () => "Hello, World!");
 
         app.Run();
+    }
+}
+""";
+
+        await VerifyCS.VerifyAsync(source);
+    }
+
+    [Theory]
+    [InlineData("interface")]
+    [InlineData("struct")]
+    public async Task DoesNotGeneratorSource_ExplicitInternalProgramTypeInNamespace(string type)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+
+namespace Foo
+{
+    internal {{type}} Program
+    {
+        public static void Main(string[] args)
+        {
+            var app = WebApplication.Create();
+
+            app.MapGet("/", () => "Hello, World!");
+
+            app.Run();
+        }
     }
 }
 """;
