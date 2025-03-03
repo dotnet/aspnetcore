@@ -33,7 +33,7 @@ public class RecursiveType
 """;
         await Verify(source, out var compilation);
 
-        VerifyEndpoint(compilation, "/recursive-type", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/recursive-type", async (endpoint, serviceProvider) =>
         {
             var httpContext = CreateHttpContextWithPayload("""
             {

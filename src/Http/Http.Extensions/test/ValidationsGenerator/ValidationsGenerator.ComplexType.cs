@@ -75,7 +75,7 @@ public class SubTypeWithInheritance : SubType
 }
 """;
         await Verify(source, out var compilation);
-        VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
         {
             await InvalidIntegerWithRangeProducesError(endpoint);
             await InvalidIntegerWithRangeAndDisplayNameProducesError(endpoint);

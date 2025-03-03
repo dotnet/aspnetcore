@@ -94,7 +94,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         verifyFunc(validatableTypeInfo);
     }
 
-    internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint, IServiceProvider> verifyFunc)
+    internal static async Task VerifyEndpoint(Compilation compilation, string routePattern, Func<Endpoint, IServiceProvider, Task> verifyFunc)
     {
         if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Routing", typeName: "Microsoft.AspNetCore.Routing.EndpointDataSource", out var services, out var serviceType, out var outputAssemblyName) is false)
         {
@@ -103,7 +103,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
         var endpoints = (IReadOnlyList<Endpoint>)service.GetType().GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
         var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
-        verifyFunc(endpoint, services);
+        await verifyFunc(endpoint, services);
     }
 
     private static bool TryResolveServicesFromCompilation(Compilation compilation, string targetAssemblyName, string typeName, out IServiceProvider serviceProvider, out Type serviceType, out string outputAssemblyName)

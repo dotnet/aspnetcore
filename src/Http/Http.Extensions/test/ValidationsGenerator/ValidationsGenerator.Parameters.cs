@@ -40,7 +40,7 @@ public class CustomValidationAttribute : ValidationAttribute
 }
 """;
         await Verify(source, out var compilation);
-        VerifyEndpoint(compilation, "/params", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/params", async (endpoint, serviceProvider) =>
         {
             var context = CreateHttpContext(serviceProvider);
             context.Request.QueryString = new QueryString("?value1=5&value2=5&value3=&value4=3&value5=5");

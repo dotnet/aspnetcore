@@ -79,7 +79,7 @@ public class DerivedValidatableType : BaseValidatableType
 """;
         await Verify(source, out var compilation);
 
-        VerifyEndpoint(compilation, "/basic-polymorphism", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/basic-polymorphism", async (endpoint, serviceProvider) =>
         {
             var httpContext = CreateHttpContextWithPayload("""
             {
@@ -111,7 +111,7 @@ public class DerivedValidatableType : BaseValidatableType
                 });
         });
 
-        VerifyEndpoint(compilation, "/validatable-polymorphism", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/validatable-polymorphism", async (endpoint, serviceProvider) =>
         {
             var httpContext = CreateHttpContextWithPayload("""
             {
@@ -155,7 +155,7 @@ public class DerivedValidatableType : BaseValidatableType
                 });
         });
 
-        VerifyEndpoint(compilation, "/polymorphism-container", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/polymorphism-container", async (endpoint, serviceProvider) =>
         {
             var httpContext = CreateHttpContextWithPayload("""
             {

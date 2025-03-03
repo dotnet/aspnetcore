@@ -46,7 +46,7 @@ public class ComplexValidatableType: IValidatableObject
         var maximum = rangeService?.GetMaximum();
         if (Value1 < minimum || Value1 > maximum)
         {
-            yield return new ValidationResult($"The field {validationContext.DisplayName} must be between {minimum} and {maximum}.", [nameof(Value1)]);
+            yield return new ValidationResult($"The field {nameof(Value1)} must be between {minimum} and {maximum}.", [nameof(Value1)]);
         }
     }
 }
@@ -88,7 +88,7 @@ public class RangeService : IRangeService
 
         await Verify(source, out var compilation);
 
-        VerifyEndpoint(compilation, "/validatable-object", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/validatable-object", async (endpoint, serviceProvider) =>
         {
             await ValidateMethodCalledIfPropertyValidationsFail();
             await ValidateForSubtypeInvokedFirst();
@@ -126,12 +126,12 @@ public class RangeService : IRangeService
                     error =>
                     {
                         Assert.Equal("SubType.Value3", error.Key);
-                        Assert.Equal("The field StringWithLength must be 'some-value'.", error.Value.Single());
+                        Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
                     },
                     error =>
                     {
                         Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
 
@@ -157,6 +157,11 @@ public class RangeService : IRangeService
                     {
                         Assert.Equal("SubType.Value3", error.Key);
                         Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
+                    },
+                    error =>
+                    {
+                        Assert.Equal("Value1", error.Key);
+                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
 
@@ -181,7 +186,7 @@ public class RangeService : IRangeService
                     error =>
                     {
                         Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field ComplexValidatableType must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
         });
