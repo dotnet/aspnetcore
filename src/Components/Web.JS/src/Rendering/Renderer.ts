@@ -95,7 +95,7 @@ export function resetScrollAfterNextBatch(): void {
   shouldResetScrollAfterNextBatch = true;
 }
 
-function resetScrollIfNeeded() {
+export function resetScrollIfNeeded() {
   if (shouldResetScrollAfterNextBatch) {
     shouldResetScrollAfterNextBatch = false;
 

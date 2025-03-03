@@ -240,6 +240,89 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal(2, Dependency.InstantiationCount);
     }
 
+    [Fact]
+    public async Task DocumentTransformer_RespectsOperationCancellation()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        var transformerCalled = false;
+        var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
+
+        options.AddDocumentTransformer(async (document, context, cancellationToken) =>
+        {
+            transformerCalled = true;
+            try
+            {
+                await tcs.Task.WaitAsync(cancellationToken);
+                document.Info.Description = "Should not be set";
+            }
+            catch (OperationCanceledException)
+            {
+                exceptionThrown = true;
+                throw;
+            }
+        });
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(1);
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await VerifyOpenApiDocument(builder, options, _ => { }, cts.Token);
+        });
+
+        Assert.True(transformerCalled);
+        Assert.True(exceptionThrown);
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_ExecutesAsynchronously()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        var transformerOrder = new List<int>();
+        var tcs1 = new TaskCompletionSource();
+        var tcs2 = new TaskCompletionSource();
+
+        options.AddDocumentTransformer(async (document, context, cancellationToken) =>
+        {
+            await tcs1.Task;
+            transformerOrder.Add(1);
+            document.Info.Title = "First";
+        });
+
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            transformerOrder.Add(2);
+            document.Info.Title += " Second";
+            tcs2.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        options.AddDocumentTransformer(async (document, context, cancellationToken) =>
+        {
+            await tcs2.Task;
+            transformerOrder.Add(3);
+            document.Info.Title += " Third";
+        });
+
+        var documentTask = VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("First Second Third", document.Info.Title);
+        });
+
+        tcs1.TrySetResult();
+
+        await documentTask;
+
+        Assert.Equal([1, 2, 3], transformerOrder);
+    }
+
     private class ActivatedTransformer : IOpenApiDocumentTransformer
     {
         public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)

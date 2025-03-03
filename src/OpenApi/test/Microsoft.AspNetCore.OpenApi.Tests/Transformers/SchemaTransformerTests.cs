@@ -848,6 +848,94 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal(10, Dependency.InstantiationCount);
     }
 
+    [Fact]
+    public async Task SchemaTransformer_RespectsOperationCancellation()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        var transformerCalled = false;
+        var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
+
+        //Assert that transformers wait for completion signal from sibling tasks before running
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            transformerCalled = true;
+            try
+            {
+                await tcs.Task.WaitAsync(cancellationToken);
+                schema.Description = "Should not be set";
+            }
+            catch (OperationCanceledException)
+            {
+                exceptionThrown = true;
+                throw;
+            }
+        });
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(1);
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await VerifyOpenApiDocument(builder, options, _ => { }, cts.Token);
+        });
+
+        Assert.True(transformerCalled);
+        Assert.True(exceptionThrown);
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_ExecutesAsynchronously()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        var transformerOrder = new List<int>();
+        var tcs1 = new TaskCompletionSource();
+        var tcs2 = new TaskCompletionSource();
+
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            await tcs1.Task;
+            transformerOrder.Add(1);
+            schema.Description = "First";
+        });
+
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            transformerOrder.Add(2);
+            schema.Description += " Second";
+            tcs2.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+        {
+            await tcs2.Task;
+            transformerOrder.Add(3);
+            schema.Description += " Third";
+        });
+
+        var documentTask = VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = Assert.Single(document.Paths["/todo"].Operations.Values);
+            var schema = operation.Responses["200"].Content["application/json"].Schema;
+            Assert.Equal("First Second Third", schema.Description);
+        });
+
+        tcs1.TrySetResult();
+
+        await documentTask;
+
+        // Each transformer is called a total of 5 times, once for the top-level schema
+        // and one for each of the four properties within the Todo type.
+        Assert.Equal([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3], transformerOrder);
+    }
+
     private class PolymorphicContainer
     {
         public string Name { get; }
