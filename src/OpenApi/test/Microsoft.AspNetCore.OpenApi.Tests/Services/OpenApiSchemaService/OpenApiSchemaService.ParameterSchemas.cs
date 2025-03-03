@@ -3,7 +3,6 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -74,7 +74,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
-            Assert.False(parameter.Schema.Nullable);
         });
     }
 
@@ -361,7 +360,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            verifySchema(parameter.Schema);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
         });
     }
 
@@ -390,7 +390,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            verifySchema(parameter.Schema);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
         });
     }
 
@@ -418,7 +419,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
-            verifySchema(parameter.Schema);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
         });
     }
 
@@ -481,9 +483,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // When the element type is not nullable (int[] ints), the binding
             // will produce [1, 2, 0, 4]
             Assert.Equal(JsonSchemaType.Array, parameter.Schema.Type);
-            Assert.Equal(JsonSchemaType.Array, parameter.Schema.Type);
-            Assert.Equal(innerSchemaType, parameter.Schema.Items.Type);
-            Assert.Equal(isNullable, parameter.Schema.Items.Nullable);
+
+            Assert.True(parameter.Schema.Items.Type?.HasFlag(innerSchemaType));
+            Assert.Equal(isNullable, parameter.Schema.Items.Type?.HasFlag(JsonSchemaType.Null));
         });
     }
 
@@ -619,8 +621,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api/with-enum"].Operations[OperationType.Get];
             var parameter = Assert.Single(operation.Parameters);
             var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
-            Assert.NotNull(parameter.Schema.Reference);
-            Assert.Equal(parameter.Schema.Reference.Id, response.Reference.Id);
+            Assert.Equal(((OpenApiSchemaReference)parameter.Schema).Reference.Id, ((OpenApiSchemaReference)response).Reference.Id);
             var schema = parameter.Schema;
             Assert.Collection(schema.Enum,
             value =>
@@ -695,7 +696,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(schema.Properties, property =>
             {
                 Assert.Equal("name", property.Key);
-                Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
             });
         }
     }

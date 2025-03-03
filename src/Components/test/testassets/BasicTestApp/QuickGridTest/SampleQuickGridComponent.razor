@@ -5,7 +5,7 @@
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.firstName)" Sortable="true">
+        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true">
             <ColumnOptions>
                 <div class="search-box">
                     <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
@@ -13,7 +13,7 @@
                 <button type="button" id="close-column-options" @onclick="@(() => quickGridRef.CloseColumnOptionsAsync())">Close Column Options</button>
             </ColumnOptions>
         </PropertyColumn>
-        <PropertyColumn Property="@(p => p.lastName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true"/>
     </QuickGrid>
@@ -21,7 +21,7 @@
 <Paginator State="@pagination" />
 
 @code {
-    record Person(int PersonId, string firstName, string lastName, DateOnly BirthDate);
+    record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
     QuickGrid<Person> quickGridRef;
@@ -29,7 +29,7 @@
     int ComputeAge(DateOnly birthDate)
         => DateTime.Now.Year - birthDate.Year - (birthDate.DayOfYear < DateTime.Now.DayOfYear ? 0 : 1);
 
-    string HighlightJulie(Person person) => person.firstName == "Julie" ? "highlight" : null;
+    string HighlightJulie(Person person) => person.FirstName == "Julie" ? "highlight" : null;
 
     IQueryable<Person> FilteredPeople
     {
@@ -39,7 +39,7 @@
 
             if (!string.IsNullOrEmpty(firstNameFilter))
             {
-                result = result.Where(p => p.firstName.Contains(firstNameFilter, StringComparison.CurrentCultureIgnoreCase));
+                result = result.Where(p => p.FirstName.Contains(firstNameFilter, StringComparison.CurrentCultureIgnoreCase));
             }
 
             return result;

@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "10.0.100-preview.2.25102.3"
+    "version": "10.0.100-preview.2.25109.3"
   },
   "tools": {
-    "dotnet": "10.0.100-preview.2.25102.3",
+    "dotnet": "10.0.100-preview.2.25109.3",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
@@ -21,7 +21,7 @@
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
       ]
     },
-    "xcopy-msbuild": "17.8.5"
+    "xcopy-msbuild": "17.13.0"
   },
   "native-tools": {
     "jdk": "latest"

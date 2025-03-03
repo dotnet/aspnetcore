@@ -121,4 +121,17 @@ public static class OpenApiEndpointConventionBuilderExtensions
             }
         }
     }
+
+    /// <summary>
+    /// Adds an OpenAPI operation transformer to the <see cref="EndpointBuilder.Metadata" /> associated
+    /// with the current endpoint.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="transformer">The <see cref="Func{OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task}"/> that modifies the operation in the <see cref="OpenApiDocument"/>.</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static TBuilder AddOpenApiOperationTransformer<TBuilder>(this TBuilder builder, Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> transformer) where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new DelegateOpenApiOperationTransformer(transformer));
+        return builder;
+    }
 }

@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.AddOpenApiOperationTransformer<TBuilder>(this TBuilder builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> TBuilder
