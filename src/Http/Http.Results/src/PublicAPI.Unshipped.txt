@@ -1,2 +1,10 @@
-#nullable enable
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.StatusCode.get -> int?
 static Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult.IsLocalUrl(string? url) -> bool
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<string!>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!
