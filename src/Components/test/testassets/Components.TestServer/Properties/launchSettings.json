@@ -11,7 +11,6 @@
         // time you restart the test server
         "TESTSERVER_USE_DETERMINISTIC_PORTS": "true"
       },
-      "inspectUri": "{wsProtocol}://{url.hostname}:5006/subdir/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5000"
     }
   }
