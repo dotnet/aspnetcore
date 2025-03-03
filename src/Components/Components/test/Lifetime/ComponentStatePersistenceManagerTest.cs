@@ -148,7 +148,7 @@ public class ComponentStatePersistenceManagerTest
         await persistTask;
 
         // Assert
-        Assert.Equal(new[] { 1, 2, 3, 4 }, sequence);
+        Assert.Equal(new[] { 2, 1, 3, 4 }, sequence);
     }
 
     [Fact]

@@ -16,20 +16,12 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
         _context = context;
     }
 
-    public override AntiforgeryRequestToken? CurrentToken {
-        get
-        {
-            return field ??= GetAntiforgeryToken();
-        }
-        set;
-    }
-
     public override AntiforgeryRequestToken? GetAntiforgeryToken()
     {
         if (_context == null)
         {
             // We're in an interactive context. Use the token persisted during static rendering.
-            return base.GetAntiforgeryToken();
+            return _currentToken;
         }
 
         // We already have a callback setup to generate the token when the response starts if needed.
@@ -42,7 +34,7 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
             return null;
         }
 
-        CurrentToken = new AntiforgeryRequestToken(tokens.RequestToken, tokens.FormFieldName);
-        return CurrentToken;
+        _currentToken = new AntiforgeryRequestToken(tokens.RequestToken, tokens.FormFieldName);
+        return _currentToken;
     }
 }
