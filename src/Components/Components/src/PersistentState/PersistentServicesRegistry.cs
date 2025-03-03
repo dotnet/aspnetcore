@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal class PersistentServicesRegistry
+internal sealed class PersistentServicesRegistry
 {
     private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
 
@@ -23,7 +23,6 @@ internal class PersistentServicesRegistry
     private IPersistentComponentRegistration[] _registrations;
     private List<PersistingComponentStateSubscription> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
-
     public IComponentRenderMode? RenderMode { get; internal set; }
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
@@ -31,82 +30,7 @@ internal class PersistentServicesRegistry
         var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentComponentRegistration>>();
         _serviceProvider = serviceProvider;
         _persistentServiceTypeCache = new PersistentServiceTypeCache();
-        _registrations = [.. registrations.Distinct().Order()];
-    }
-
-    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-    private class PersistentComponentRegistration : IPersistentComponentRegistration
-    {
-        public string Assembly { get; set; } = "";
-
-        public string FullTypeName { get; set; } = "";
-
-        public IComponentRenderMode? GetRenderModeOrDefault() => null;
-
-        private string GetDebuggerDisplay() => $"{Assembly}::{FullTypeName}";
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    private void RestoreRegistrationsIfAvailable(PersistentComponentState state)
-    {
-        foreach (var registration in _registrations)
-        {
-            var type = ResolveType(registration.Assembly, registration.FullTypeName);
-            if (type == null)
-            {
-                continue;
-            }
-
-            var instance = _serviceProvider.GetService(type);
-            if (instance != null)
-            {
-                RestoreInstanceState(instance, type, state);
-            }
-        }
-    }
-
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson(String, Type, out Object)")]
-    private static void RestoreInstanceState(object instance, Type type, PersistentComponentState state)
-    {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
-        foreach (var (key, propertyType) in accessors.KeyTypePairs)
-        {
-            if (state.TryTakeFromJson(key, propertyType, out var result))
-            {
-                var (setter, getter) = accessors.GetAccessor(key);
-                setter.SetValue(instance, result!);
-            }
-        }
-    }
-
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson(String, Object, Type)")]
-    private static void PersistInstanceState(object instance, Type type, PersistentComponentState state)
-    {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
-        foreach (var (key, propertyType) in accessors.KeyTypePairs)
-        {
-            var (setter, getter) = accessors.GetAccessor(key);
-            var value = getter.GetValue(instance);
-            if (value != null)
-            {
-                state.PersistAsJson(key, value, propertyType);
-            }
-        }
-    }
-
-    private Type? ResolveType(string assembly, string fullTypeName) => _persistentServiceTypeCache.GetPersistentService(assembly, fullTypeName);
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    internal void Restore(PersistentComponentState state)
-    {
-        if (_registrations.Length == 0 &&
-           state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) &&
-           registry != null)
-        {
-            _registrations = registry ?? [];
-        }
-
-        RestoreRegistrationsIfAvailable(state);
+        _registrations = [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
@@ -148,6 +72,70 @@ internal class PersistentServicesRegistry
 
         _subscriptions = subscriptions;
     }
+
+    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson(String, Object, Type)")]
+    private static void PersistInstanceState(object instance, Type type, PersistentComponentState state)
+    {
+        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        foreach (var (key, propertyType) in accessors.KeyTypePairs)
+        {
+            var (setter, getter) = accessors.GetAccessor(key);
+            var value = getter.GetValue(instance);
+            if (value != null)
+            {
+                state.PersistAsJson(key, value, propertyType);
+            }
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    internal void Restore(PersistentComponentState state)
+    {
+        if (_registrations.Length == 0 &&
+           state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) &&
+           registry != null)
+        {
+            _registrations = registry ?? [];
+        }
+
+        RestoreRegistrationsIfAvailable(state);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    private void RestoreRegistrationsIfAvailable(PersistentComponentState state)
+    {
+        foreach (var registration in _registrations)
+        {
+            var type = ResolveType(registration.Assembly, registration.FullTypeName);
+            if (type == null)
+            {
+                continue;
+            }
+
+            var instance = _serviceProvider.GetService(type);
+            if (instance != null)
+            {
+                RestoreInstanceState(instance, type, state);
+            }
+        }
+    }
+
+    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson(String, Type, out Object)")]
+    private static void RestoreInstanceState(object instance, Type type, PersistentComponentState state)
+    {
+        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        foreach (var (key, propertyType) in accessors.KeyTypePairs)
+        {
+            if (state.TryTakeFromJson(key, propertyType, out var result))
+            {
+                var (setter, getter) = accessors.GetAccessor(key);
+                setter.SetValue(instance, result!);
+            }
+        }
+    }
+
+
+    private Type? ResolveType(string assembly, string fullTypeName) => _persistentServiceTypeCache.GetPersistentService(assembly, fullTypeName);
 
     private sealed class PropertiesAccessor
     {
@@ -216,21 +204,19 @@ internal class PersistentServicesRegistry
             [DynamicallyAccessedMembers(LinkerFlags.Component)] Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, BindablePropertyFlags);
 
-        internal (PropertySetter setter, PropertyGetter getter) GetAccessor(string key)
-        {
-            return _underlyingAccessors.TryGetValue(key, out var result) ? result : default;
-        }
+        internal (PropertySetter setter, PropertyGetter getter) GetAccessor(string key) =>
+            _underlyingAccessors.TryGetValue(key, out var result) ? result : default;
     }
 
-    private class RenderModeComparer : IEqualityComparer<IComponentRenderMode?>
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+    private class PersistentComponentRegistration : IPersistentComponentRegistration
     {
-        public static RenderModeComparer Instance { get; } = new RenderModeComparer();
+        public string Assembly { get; set; } = "";
 
-        public bool Equals(IComponentRenderMode? x, IComponentRenderMode? y)
-        {
-            return x?.GetType() == y?.GetType();
-        }
+        public string FullTypeName { get; set; } = "";
 
-        public int GetHashCode([DisallowNull] IComponentRenderMode? obj) => obj?.GetHashCode() ?? 1;
+        public IComponentRenderMode? GetRenderModeOrDefault() => null;
+
+        private string GetDebuggerDisplay() => $"{Assembly}::{FullTypeName}";
     }
 }

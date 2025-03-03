@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components;
 
-// A cache for registered persistent services. This is similar to the `RootComponentTypeCache`.
+// A cache for registered persistent services. This is similar to the RootComponentTypeCache.
 internal sealed class PersistentServiceTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();

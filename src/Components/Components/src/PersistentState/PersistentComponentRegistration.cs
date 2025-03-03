@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Components;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class PersistentComponentRegistration<TService>(IComponentRenderMode componentRenderMode) : IPersistentComponentRegistration
+internal sealed class PersistentComponentRegistration<TService>(IComponentRenderMode componentRenderMode) : IPersistentComponentRegistration
 {
     public string Assembly => typeof(TService).Assembly.GetName().Name!;
     public string FullTypeName => typeof(TService).FullName!;
