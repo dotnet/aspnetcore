@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Aplikacja internetowa platformy ASP.NET Core",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "Szablon projektu służący do tworzenia aplikacji platformy ASP.NET Core z przykładową zawartością platformy Razor Pages na platformie ASP.NET Core Razor.",
   "symbols/auth/choices/None/description": "Bez uwierzytelniania",
   "symbols/auth/choices/Individual/description": "Uwierzytelnianie indywidualne",

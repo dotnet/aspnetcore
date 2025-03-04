@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web アプリ",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "ASP.NET Core アプリケーションを、サンプルの ASP.NET Core Razor Pages コンテンツで作成するためのプロジェクト テンプレートです",
   "symbols/auth/choices/None/description": "認証なし",
   "symbols/auth/choices/Individual/description": "個別の認証",

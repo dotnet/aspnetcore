@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core 웹앱",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "예제 ASP.NET Core Razor Pages 콘텐츠를 사용하여 ASP.NET Core 애플리케이션을 만들기 위한 프로젝트 템플릿",
   "symbols/auth/choices/None/description": "인증 없음",
   "symbols/auth/choices/Individual/description": "개별 인증",

@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Webová aplikace ASP.NET Core",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkou obsahu ASP.NET Core Razor Pages",
   "symbols/auth/choices/None/description": "Bez ověřování",
   "symbols/auth/choices/Individual/description": "Ověřování Individual",

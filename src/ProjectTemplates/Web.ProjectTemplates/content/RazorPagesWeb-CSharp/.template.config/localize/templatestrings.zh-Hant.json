@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web 應用程式",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "建立 ASP.NET 核心應用程式的專案範本，同時附上範例 ASP.NET Razor 頁面內容。",
   "symbols/auth/choices/None/description": "沒有驗證",
   "symbols/auth/choices/Individual/description": "個別驗證",

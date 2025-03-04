@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web Uygulaması",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "description": "ASP.NET Core Razor Sayfalar içeriği örneğiyle ASP.NET Core uygulaması oluşturmak için proje şablonu",
   "symbols/auth/choices/None/description": "Kimlik doğrulaması yok",
   "symbols/auth/choices/Individual/description": "Bireysel kimlik doğrulaması",
