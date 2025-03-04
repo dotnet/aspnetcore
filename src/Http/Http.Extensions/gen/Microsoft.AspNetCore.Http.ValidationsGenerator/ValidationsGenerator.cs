@@ -41,14 +41,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Concat(validatableTypesWithAttribute)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
-        // Extract all validatable parameters encountered in minimal endpoints.
-        var validatableParameters = validatableEndpoints
-            .SelectMany((endpoint, ct) => endpoint.Parameters)
-            .Collect();
 
         var emitInputs = addValidation
-            .Combine(validatableTypes)
-            .Combine(validatableParameters);
+            .Combine(validatableTypes);
 
         // Emit ValidatableTypeInfo for all validatable types.
         context.RegisterSourceOutput(emitInputs, Emit);

@@ -54,26 +54,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed class GeneratedValidatableParameterInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public GeneratedValidatableParameterInfo(
-            string name,
-            string displayName,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            bool isEnumerable,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
@@ -104,13 +84,9 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return null;
         }
 
+        // No-ops, rely on runtime code for ParameterInfo-based resolution
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "model" && parameterInfo.ParameterType == typeof(ComplexValidatableType))
-            {
-                return CreateParameterInfo_ComplexValidatableType_model_0();
-            }
-
             return null;
         }
 
@@ -200,19 +176,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validationAttributes: [])
     ],
     implementsIValidatableObject: true);
-            }
-
-                    private ValidatableParameterInfo CreateParameterInfo_ComplexValidatableType_model_0()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "model",
-    displayName: "model",
-    isRequired: false,
-    isNullable: false,
-    hasValidatableType: true,
-    isEnumerable: false,
-    validationAttributes: []
-);
             }
 
     }

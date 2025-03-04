@@ -18,13 +18,15 @@ public static class ValidationServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection" /> for chaining.</returns>
     public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
     {
-        if (configureOptions is null)
+        services.Configure<ValidationOptions>(options =>
         {
-            services.Configure<ValidationOptions>(_ => { });
-            return services;
-        }
-
-        services.Configure(configureOptions);
+            if (configureOptions is not null)
+            {
+                configureOptions(options);
+            }
+            // Support ParameterInfo resolution at runtime
+            options.Resolvers.Add(new RuntimeValidatableParameterInfoResolver());
+        });
         return services;
     }
 }

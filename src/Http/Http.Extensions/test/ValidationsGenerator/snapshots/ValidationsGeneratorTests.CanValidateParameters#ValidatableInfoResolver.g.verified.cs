@@ -54,26 +54,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed class GeneratedValidatableParameterInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public GeneratedValidatableParameterInfo(
-            string name,
-            string displayName,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            bool isEnumerable,
-            ValidationAttribute[] validationAttributes) : base(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
@@ -92,94 +72,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return null;
         }
 
+        // No-ops, rely on runtime code for ParameterInfo-based resolution
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "value1" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfo_int_value1_0();
-            }
-            if (parameterInfo.Name == "value2" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfo_int_value2_1();
-            }
-            if (parameterInfo.Name == "value3" && parameterInfo.ParameterType == typeof(string))
-            {
-                return CreateParameterInfo_string_value3_2();
-            }
-            if (parameterInfo.Name == "value4" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfo_int_value4_3();
-            }
-            if (parameterInfo.Name == "value5" && parameterInfo.ParameterType == typeof(int))
-            {
-                return CreateParameterInfo_int_value5_4();
-            }
-
             return null;
         }
 
         
-                    private ValidatableParameterInfo CreateParameterInfo_int_value1_0()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "value1",
-    displayName: "value1",
-    isRequired: false,
-    isNullable: false,
-    hasValidatableType: false,
-    isEnumerable: false,
-    validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
-);
-            }
-            private ValidatableParameterInfo CreateParameterInfo_int_value2_1()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "value2",
-    displayName: "Valid identifier",
-    isRequired: false,
-    isNullable: false,
-    hasValidatableType: false,
-    isEnumerable: false,
-    validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
-);
-            }
-            private ValidatableParameterInfo CreateParameterInfo_string_value3_2()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "value3",
-    displayName: "value3",
-    isRequired: true,
-    isNullable: false,
-    hasValidatableType: false,
-    isEnumerable: false,
-    validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")]
-);
-            }
-            private ValidatableParameterInfo CreateParameterInfo_int_value4_3()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "value4",
-    displayName: "value4",
-    isRequired: false,
-    isNullable: false,
-    hasValidatableType: false,
-    isEnumerable: false,
-    validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute")]
-);
-            }
-            private ValidatableParameterInfo CreateParameterInfo_int_value5_4()
-            {
-                return new GeneratedValidatableParameterInfo(
-    name: "value5",
-    displayName: "value5",
-    isRequired: false,
-    isNullable: false,
-    hasValidatableType: false,
-    isEnumerable: false,
-    validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute"), ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
-);
-            }
-
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
