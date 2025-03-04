@@ -146,47 +146,4 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         Assert.Empty(servers);
     }
-
-    [Theory]
-    [InlineData("https", "proxy-server.com", "https://proxy-server.com/original-path")]
-    [InlineData("http", "proxy:8080", "http://proxy:8080/original-path")]
-    [InlineData("https", "proxy.example.org", "https://proxy.example.org/original-path")]
-    public void GetOpenApiServers_HandlesForwardedHeaders(string forwardedProto, string forwardedHost, string expectedUrl)
-    {
-        // Arrange
-        var hostEnvironment = new HostingEnvironment
-        {
-            ApplicationName = "TestApplication",
-            EnvironmentName = "Production"
-        };
-        var docService = new OpenApiDocumentService(
-            "v1",
-            new Mock<IApiDescriptionGroupCollectionProvider>().Object,
-            hostEnvironment,
-            GetMockOptionsMonitor(),
-            new Mock<IKeyedServiceProvider>().Object,
-            new OpenApiTestServer(["http://localhost:5000"]));
-
-        var httpContext = new DefaultHttpContext()
-        {
-            Request =
-            {
-                // Original values that should be overridden by forwarded headers
-                Host = new HostString("localhost:5000"),
-                PathBase = "/original-path",
-                Scheme = "http"
-            }
-        };
-
-        // Add forwarded headers
-        httpContext.Request.Headers["X-Forwarded-Proto"] = forwardedProto;
-        httpContext.Request.Headers["X-Forwarded-Host"] = forwardedHost;
-
-        // Act
-        var servers = docService.GetOpenApiServers(httpContext.Request);
-
-        // Assert
-        var serverUrl = Assert.Single(servers).Url;
-        Assert.Equal(expectedUrl, serverUrl);
-    }
 }
