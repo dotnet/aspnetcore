@@ -34,14 +34,19 @@ public class WebApiNativeAotTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task WebApiNativeAotTemplateCSharp()
     {
-        await WebApiNativeAotTemplateCore(languageOverride: null, additionalEndpointsThatShould200OkForBuiltProjects: new[] { "/openapi/v1.json" });
+        await WebApiNativeAotTemplateCore(
+            languageOverride: null,
+            additionalEndpointsThatShould200OkForBuiltProjects: new[] { "/openapi/v1.json" });
     }
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task WebApiNativeAotTemplateProgramMainCSharp()
     {
-        await WebApiNativeAotTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain }, additionalEndpointsThatShould200OkForBuiltProjects: new[] { "/openapi/v1.json" });
+        await WebApiNativeAotTemplateCore(
+            languageOverride: null,
+            args: new[] { ArgConstants.UseProgramMain },
+            additionalEndpointsThatShould200OkForBuiltProjects: new[] { "/openapi/v1.json" });
     }
 
     [ConditionalTheory]
@@ -53,7 +58,10 @@ public class WebApiNativeAotTemplateTest : LoggedTest
             ? new[] { ArgConstants.UseProgramMain }
             : new[] { };
 
-        await WebApiNativeAotTemplateCore(languageOverride: null, args: args, additionalEndpointsThatShould404NotFoundForPublishedProjects: new[] { "/openapi/v1.json" });
+        await WebApiNativeAotTemplateCore(
+            languageOverride: null,
+            args: args,
+            additionalEndpointsThatShould404NotFoundForPublishedProjects: new[] { "/openapi/v1.json" });
     }
 
     [ConditionalTheory]
