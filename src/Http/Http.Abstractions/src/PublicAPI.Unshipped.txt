@@ -21,12 +21,12 @@ Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationOptions.get ->
 Microsoft.AspNetCore.Http.Validation.ValidatableContext.ValidationOptions.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.DisplayName.get -> string!
-Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.HasValidatableType.get -> bool
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsEnumerable.get -> bool
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsNullable.get -> bool
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.IsRequired.get -> bool
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.Name.get -> string!
-Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.ValidatableParameterInfo(string! name, string! displayName, bool isNullable, bool isRequired, bool hasValidatableType, bool isEnumerable) -> void
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.ParameterType.get -> System.Type!
+Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName, bool isNullable, bool isRequired, bool isEnumerable) -> void
 Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.Validate(object? value, Microsoft.AspNetCore.Http.Validation.ValidatableContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo
 Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.DeclaringType.get -> System.Type!

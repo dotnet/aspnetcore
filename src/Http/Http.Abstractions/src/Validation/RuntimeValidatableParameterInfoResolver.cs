@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -11,16 +12,16 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
 {
     public ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo)
     {
+        Debug.Assert(parameterInfo.Name != null, "Parameter must have name defined.");
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();
         return new RuntimeValidatableParameterInfo(
-            name: parameterInfo.Name!,
+            parameterType: parameterInfo.ParameterType,
+            name: parameterInfo.Name,
             displayName: GetDisplayName(parameterInfo),
             isNullable: IsNullable(parameterInfo),
             isRequired: validationAttributes.Any(a => a is RequiredAttribute),
-            // All parameters are validatable, implementation will no-op if type resolution fails
-            hasValidatableType: true,
             isEnumerable: IsEnumerable(parameterInfo),
             validationAttributes: validationAttributes
         );
@@ -75,14 +76,14 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
     }
 
     private class RuntimeValidatableParameterInfo(
+        Type parameterType,
         string name,
         string displayName,
         bool isNullable,
         bool isRequired,
-        bool hasValidatableType,
         bool isEnumerable,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
+            ValidatableParameterInfo(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 

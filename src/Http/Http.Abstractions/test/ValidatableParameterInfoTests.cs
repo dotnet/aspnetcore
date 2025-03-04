@@ -14,11 +14,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: true,
             isRequired: true,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new RequiredAttribute()]);
 
@@ -40,11 +40,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: true,
             isRequired: false,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new StringLengthAttribute(10)]);
 
@@ -63,11 +63,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new RangeAttribute(10, 100)]);
 
@@ -89,11 +89,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(string),
             name: "testParam",
             displayName: "Custom Display Name",
             isNullable: false,
             isRequired: true,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new RequiredAttribute()]);
 
@@ -132,11 +132,11 @@ public class ValidatableParameterInfoTests
             false);
 
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(Person),
             name: "person",
             displayName: "Person",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: true,
             isEnumerable: false,
             validationAttributes: Array.Empty<ValidationAttribute>());
 
@@ -180,11 +180,11 @@ public class ValidatableParameterInfoTests
             false);
 
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(IEnumerable<Person>),
             name: "people",
             displayName: "People",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: true,
             isEnumerable: true,
             validationAttributes: Array.Empty<ValidationAttribute>());
 
@@ -216,11 +216,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes:
             [
@@ -248,11 +248,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new RangeAttribute(10, 100)]);
 
@@ -275,11 +275,11 @@ public class ValidatableParameterInfoTests
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
             isNullable: false,
             isRequired: false,
-            hasValidatableType: false,
             isEnumerable: false,
             validationAttributes: [new ThrowingValidationAttribute()]);
 
@@ -297,20 +297,20 @@ public class ValidatableParameterInfoTests
     }
 
     private TestValidatableParameterInfo CreateTestParameterInfo(
+        Type parameterType,
         string name,
         string displayName,
         bool isNullable,
         bool isRequired,
-        bool hasValidatableType,
         bool isEnumerable,
         ValidationAttribute[] validationAttributes)
     {
         return new TestValidatableParameterInfo(
+            parameterType,
             name,
             displayName,
             isNullable,
             isRequired,
-            hasValidatableType,
             isEnumerable,
             validationAttributes);
     }
@@ -333,14 +333,14 @@ public class ValidatableParameterInfoTests
         private readonly ValidationAttribute[] _validationAttributes;
 
         public TestValidatableParameterInfo(
+            Type parameterType,
             string name,
             string displayName,
             bool isNullable,
             bool isRequired,
-            bool hasValidatableType,
             bool isEnumerable,
             ValidationAttribute[] validationAttributes)
-            : base(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
+            : base(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
         {
             _validationAttributes = validationAttributes;
         }

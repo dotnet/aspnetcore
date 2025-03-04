@@ -16,27 +16,32 @@ public abstract class ValidatableParameterInfo
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
     /// </summary>
+    /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
     /// <param name="displayName">The display name for the parameter.</param>
     /// <param name="isNullable">Whether the parameter is optional.</param>
     /// <param name="isRequired"></param>
-    /// <param name="hasValidatableType">Whether the parameter type is validatable.</param>
     /// <param name="isEnumerable">Whether the parameter is enumerable.</param>
     public ValidatableParameterInfo(
+        Type parameterType,
         string name,
         string displayName,
         bool isNullable,
         bool isRequired,
-        bool hasValidatableType,
         bool isEnumerable)
     {
+        ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
         IsNullable = isNullable;
         IsRequired = isRequired;
-        HasValidatableType = hasValidatableType;
         IsEnumerable = isEnumerable;
     }
+
+    /// <summary>
+    /// Gets the parameter type.
+    /// </summary>
+    public Type ParameterType { get; }
 
     /// <summary>
     /// Gets the parameter name.
@@ -57,11 +62,6 @@ public abstract class ValidatableParameterInfo
     /// Gets whether the parameter is annotated with the <see cref="RequiredAttribute"/>.
     /// </summary>
     public bool IsRequired { get; }
-
-    /// <summary>
-    /// Gets whether the parameter type is validatable.
-    /// </summary>
-    public bool HasValidatableType { get; }
 
     /// <summary>
     /// Gets whether the parameter is enumerable.
@@ -131,7 +131,7 @@ public abstract class ValidatableParameterInfo
         }
 
         // If the parameter is a collection, validate each item
-        if (IsEnumerable && value is IEnumerable enumerable && HasValidatableType)
+        if (IsEnumerable && value is IEnumerable enumerable)
         {
             var index = 0;
             foreach (var item in enumerable)
@@ -150,8 +150,8 @@ public abstract class ValidatableParameterInfo
                 index++;
             }
         }
-        // If not enumerable but has a validatable type, validate the single value
-        else if (HasValidatableType && value != null)
+        // If not enumerable, validate the single value
+        else if (value != null)
         {
             var valueType = value.GetType();
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))

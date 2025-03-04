@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
@@ -71,11 +70,11 @@ public class ValidatableInfoResolverTests
         var parameter = method.GetParameters()[0];
 
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
+            typeof(string),
             "model",
             "model",
             false,
             false,
-            true,
             false).Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
@@ -87,7 +86,6 @@ public class ValidatableInfoResolverTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("model", result.Name);
-        Assert.True(result.HasValidatableType);
     }
 
     [Fact]
@@ -167,14 +165,14 @@ public class ValidatableInfoResolverTests
         private readonly ValidationAttribute[] _validationAttributes;
 
         public TestValidatableParameterInfo(
+            Type parameterType,
             string name,
             string displayName,
             bool isNullable,
             bool isRequired,
-            bool hasValidatableType,
             bool isEnumerable,
             ValidationAttribute[] validationAttributes)
-            : base(name, displayName, isNullable, isRequired, hasValidatableType, isEnumerable)
+            : base(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
         {
             _validationAttributes = validationAttributes;
         }
