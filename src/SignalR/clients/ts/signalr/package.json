@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/signalr",
-  "version": "5.0.0-dev",
+  "version": "10.0.0-dev",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
