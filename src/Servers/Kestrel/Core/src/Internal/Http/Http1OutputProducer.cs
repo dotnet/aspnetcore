@@ -360,6 +360,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         writer.Commit();
 
+        Debug.Assert(responseBodyMode != ResponseBodyMode.Uninitialized);
         _responseBodyMode = responseBodyMode;
         WriteDataWrittenBeforeHeaders(ref writer);
         _unflushedBytes += writer.BytesCommitted;
@@ -544,7 +545,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
         // Cleared in sequential address ascending order
         _currentMemoryPrefixBytes = 0;
-        _responseBodyMode = ResponseBodyMode.ContentLength;
+        _responseBodyMode = ResponseBodyMode.Uninitialized;
         _writeStreamSuffixCalled = false;
         _currentChunkMemoryUpdated = false;
         _startCalled = false;

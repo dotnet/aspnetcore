@@ -56,7 +56,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     protected volatile bool _keepAlive = true;
     // _responseBodyMode is set in CreateResponseHeaders.
     // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
-    private ResponseBodyMode _responseBodyMode = ResponseBodyMode.ContentLength;
+    private ResponseBodyMode _responseBodyMode = ResponseBodyMode.Uninitialized;
     private bool _hasAdvanced;
     private bool _isLeasedMemoryInvalid = true;
     protected Exception? _applicationException;
@@ -346,7 +346,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         _routeValues?.Clear();
 
         _requestProcessingStatus = RequestProcessingStatus.RequestPending;
-        _responseBodyMode = ResponseBodyMode.ContentLength;
+        _responseBodyMode = ResponseBodyMode.Uninitialized;
         _applicationException = null;
         _requestRejectedException = null;
 
@@ -1592,28 +1592,28 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             VerifyAndUpdateWrite(data.Length);
         }
 
-        if (_responseBodyMode != ResponseBodyMode.Disabled)
+        switch (_responseBodyMode)
         {
-            if (_responseBodyMode == ResponseBodyMode.Chunked)
-            {
+            case ResponseBodyMode.Disabled:
+                HandleNonBodyResponseWrite();
+                return default;
+            case ResponseBodyMode.Chunked:
                 if (data.Length == 0)
                 {
                     return default;
                 }
 
                 return Output.WriteChunkAsync(data.Span, cancellationToken);
-            }
-            else
-            {
+            case ResponseBodyMode.ContentLength:
                 CheckLastWrite();
                 return Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
-            }
+            case ResponseBodyMode.Uninitialized:
+                ThrowInvalidOperation();
+                break;
         }
-        else
-        {
-            HandleNonBodyResponseWrite();
-            return default;
-        }
+
+        Debug.Assert(false, "Should not reach here, all cases in above switch statement should return");
+        return default;
     }
 
     private ValueTask<FlushResult> FirstWriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -1640,10 +1640,13 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
-        if (_responseBodyMode != ResponseBodyMode.Disabled)
+        switch (_responseBodyMode)
         {
-            if (_responseBodyMode == ResponseBodyMode.Chunked)
-            {
+            case ResponseBodyMode.Disabled:
+                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted: false);
+                HandleNonBodyResponseWrite();
+                return Output.FlushAsync(cancellationToken);
+            case ResponseBodyMode.Chunked:
                 if (data.Length == 0)
                 {
                     Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted: false);
@@ -1651,19 +1654,16 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
 
                 return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, data.Span, cancellationToken);
-            }
-            else
-            {
+            case ResponseBodyMode.ContentLength:
                 CheckLastWrite();
                 return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, data.Span, cancellationToken);
-            }
+            case ResponseBodyMode.Uninitialized:
+                ThrowInvalidOperation();
+                break;
         }
-        else
-        {
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted: false);
-            HandleNonBodyResponseWrite();
-            return Output.FlushAsync(cancellationToken);
-        }
+
+        Debug.Assert(false, "Should not reach here, all cases in above switch statement should return");
+        return default;
     }
 
     public Task FlushAsync(CancellationToken cancellationToken = default)
@@ -1689,27 +1689,34 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         // WriteAsyncAwaited is only called for the first write to the body.
         // Ensure headers are flushed if Write(Chunked)Async isn't called.
-        if (_responseBodyMode != ResponseBodyMode.Disabled)
+        switch (_responseBodyMode)
         {
-            if (_responseBodyMode == ResponseBodyMode.Chunked)
-            {
+            case ResponseBodyMode.Disabled:
+                HandleNonBodyResponseWrite();
+                return await Output.FlushAsync(cancellationToken);
+            case ResponseBodyMode.Chunked:
                 if (data.Length == 0)
                 {
                     return await Output.FlushAsync(cancellationToken);
                 }
 
                 return await Output.WriteChunkAsync(data.Span, cancellationToken);
-            }
-            else
-            {
+            case ResponseBodyMode.ContentLength:
                 CheckLastWrite();
                 return await Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
-            }
+            case ResponseBodyMode.Uninitialized:
+                ThrowInvalidOperation();
+                break;
         }
-        else
-        {
-            HandleNonBodyResponseWrite();
-            return await Output.FlushAsync(cancellationToken);
-        }
+
+        Debug.Assert(false, "Should not reach here, all cases in above switch statement should return");
+        return default;
+    }
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static void ThrowInvalidOperation()
+    {
+        throw new InvalidOperationException();
     }
 }

@@ -32,6 +32,7 @@ internal interface IHttpOutputProducer
 
 internal enum ResponseBodyMode
 {
+    Uninitialized,
     Disabled,
     Chunked,
     ContentLength
