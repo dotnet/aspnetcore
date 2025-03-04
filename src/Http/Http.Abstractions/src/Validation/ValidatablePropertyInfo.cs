@@ -90,7 +90,7 @@ public abstract class ValidatablePropertyInfo
     /// <param name="obj">The object containing the member to validate.</param>
     /// <param name="context">The context for the validation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public Task Validate(object obj, ValidatableContext context)
+    public virtual Task Validate(object obj, ValidatableContext context)
     {
         Debug.Assert(context.ValidationContext is not null);
 

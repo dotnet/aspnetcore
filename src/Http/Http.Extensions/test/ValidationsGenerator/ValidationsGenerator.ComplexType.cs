@@ -47,14 +47,17 @@ public class ComplexType
 
     public List<SubType> ListOfSubTypes { get; set; } = [];
 
-    [CustomValidation(ErrorMessage = "Value must be an even number")]
-    public int IntegerWithCustomValidationAttribute { get; set; }
+    [DerivedValidation(ErrorMessage = "Value must be an even number")]
+    public int IntegerWithDerivedValidationAttribute { get; set; }
 
-    [CustomValidation, Range(10, 100)]
+    [CustomValidation(typeof(CustomValidators), nameof(CustomValidators.Validate))]
+    public int IntegerWithCustomValidation { get; set; } = 0;
+
+    [DerivedValidation, Range(10, 100)]
     public int PropertyWithMultipleAttributes { get; set; } = 10;
 }
 
-public class CustomValidationAttribute : ValidationAttribute
+public class DerivedValidationAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value) => value is int number && number % 2 == 0;
 }
@@ -73,6 +76,23 @@ public class SubTypeWithInheritance : SubType
     [EmailAddress]
     public string? EmailString { get; set; }
 }
+
+public static class CustomValidators
+{
+    public static ValidationResult Validate(int number, ValidationContext validationContext)
+    {
+        var parent = (ComplexType)validationContext.ObjectInstance;
+
+        if (parent.IntegerWithRange == number)
+        {
+            return new ValidationResult(
+                "Can't use the same number value in two properties on the same class.",
+                new[] { validationContext.MemberName });
+        }
+
+        return ValidationResult.Success;
+    }
+}
 """;
         await Verify(source, out var compilation);
         await VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
@@ -83,8 +103,9 @@ public class SubTypeWithInheritance : SubType
             await InvalidRequiredSubtypePropertyProducesError(endpoint);
             await InvalidSubTypeWithInheritancePropertyProducesError(endpoint);
             await InvalidListOfSubTypesProducesError(endpoint);
-            await InvalidPropertyWithCustomValidationAttributeProducesError(endpoint);
+            await InvalidPropertyWithDerivedValidationAttributeProducesError(endpoint);
             await InvalidPropertyWithMultipleAttributesProducesError(endpoint);
+            await InvalidPropertyWithCustomValidationProducesError(endpoint);
 
             async Task InvalidIntegerWithRangeProducesError(Endpoint endpoint)
             {
@@ -249,11 +270,11 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidPropertyWithCustomValidationAttributeProducesError(Endpoint endpoint)
+            async Task InvalidPropertyWithDerivedValidationAttributeProducesError(Endpoint endpoint)
             {
                 var payload = """
                 {
-                    "IntegerWithCustomValidationAttribute": 5
+                    "IntegerWithDerivedValidationAttribute": 5
                 }
                 """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
@@ -263,7 +284,7 @@ public class SubTypeWithInheritance : SubType
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
+                    Assert.Equal("IntegerWithDerivedValidationAttribute", kvp.Key);
                     Assert.Equal("Value must be an even number", kvp.Value.Single());
                 });
             }
@@ -292,6 +313,27 @@ public class SubTypeWithInheritance : SubType
                     {
                         Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
                     });
+                });
+            }
+
+            async Task InvalidPropertyWithCustomValidationProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "IntegerWithRange": 42,
+                    "IntegerWithCustomValidation": 42
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("IntegerWithCustomValidation", kvp.Key);
+                    var error = Assert.Single(kvp.Value);
+                    Assert.Equal("Can't use the same number value in two properties on the same class.", error);
                 });
             }
         });

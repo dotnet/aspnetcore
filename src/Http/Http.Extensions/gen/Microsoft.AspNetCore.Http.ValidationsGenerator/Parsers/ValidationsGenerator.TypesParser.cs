@@ -50,11 +50,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
-        List<string>? validatableSubTypes = [];
+        List<string>? validatableSubTypes = current != null && current.SpecialType != SpecialType.System_Object
+            ? []
+            : null;
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
             _ = TryExtractValidatableType(current, requiredSymbols, ref validatableTypes, ref visitedTypes);
-            validatableSubTypes.Add(current.Name);
+            validatableSubTypes?.Add(current.Name);
             current = current.BaseType;
         }
 
@@ -74,7 +76,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             Type: typeSymbol,
             Members: members,
             IsIValidatableObject: typeSymbol.ImplementsInterface(requiredSymbols.IValidatableObject),
-            ValidatableSubTypeNames: [.. validatableSubTypes],
+            ValidatableSubTypeNames: validatableSubTypes?.Count > 0 ? [.. validatableSubTypes] : ImmutableArray<string>.Empty,
             ValidatableDerivedTypeNames: [.. derivedTypeNames]));
 
         return true;
@@ -132,7 +134,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(ISymbol symbol, RequiredSymbols requiredSymbols, out bool isRequired)
     {
-        var validationAttributes = symbol.GetAttributes()
+        var attributes = symbol.GetAttributes();
+        if (attributes.Length == 0)
+        {
+            isRequired = false;
+            return [];
+        }
+
+        // Continue with existing logic...
+        var validationAttributes = attributes
             .Where(attribute => attribute.AttributeClass != null)
             .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute));
         isRequired = validationAttributes.Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, requiredSymbols.RequiredAttribute));
@@ -142,6 +152,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 Name: symbol.Name + attribute.AttributeClass!.Name,
                 ClassName: attribute.AttributeClass!.ToDisplayString(_symbolDisplayFormat),
                 Arguments: [.. attribute.ConstructorArguments.Select(a => a.ToCSharpString())],
-                NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString())))];
+                NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString()),
+                IsCustomValidationAttribute: SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, requiredSymbols.CustomValidationAttribute)))];
     }
 }

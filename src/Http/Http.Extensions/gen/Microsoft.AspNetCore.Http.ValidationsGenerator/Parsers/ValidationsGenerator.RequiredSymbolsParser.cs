@@ -16,7 +16,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             compilation.GetTypeByMetadataName("System.Collections.IEnumerable")!,
             compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.IValidatableObject")!,
             compilation.GetTypeByMetadataName("System.Text.Json.Serialization.JsonDerivedTypeAttribute")!,
-            compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!
+            compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute")!,
+            compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.CustomValidationAttribute")!
         );
     }
 }

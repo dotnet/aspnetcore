@@ -56,7 +56,7 @@ public abstract class ValidatableTypeInfo
     /// </summary>
     /// <param name="value">The value to validate.</param>
     /// <param name="context">The validation context.</param>
-    public Task Validate(object? value, ValidatableContext context)
+    public virtual Task Validate(object? value, ValidatableContext context)
     {
         Debug.Assert(context.ValidationContext is not null);
         if (value == null)

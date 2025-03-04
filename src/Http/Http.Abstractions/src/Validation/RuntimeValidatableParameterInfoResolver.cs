@@ -12,7 +12,7 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
 {
     public ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo)
     {
-        Debug.Assert(parameterInfo.Name != null, "Parameter must have name defined.");
+        Debug.Assert(parameterInfo.Name != null, "Parameter must have name");
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();

@@ -8,6 +8,9 @@ using System.Text;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
+using System.Collections.Generic;
+using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
@@ -90,14 +93,14 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
+        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
         {
             {{EmitTypeChecks(validatableTypes)}}
             return null;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
+        public global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
             return null;
         }
@@ -126,13 +129,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {{GeneratedCodeAttribute}}
     file static class ValidationAttributeCache
     {
-        private sealed record CacheKey(Type AttributeType, string[] Arguments, IReadOnlyDictionary<string, string> NamedArguments);
+        private sealed record CacheKey(Type AttributeType, object[] Arguments, IReadOnlyDictionary<string, object> NamedArguments);
         private static readonly ConcurrentDictionary<CacheKey, ValidationAttribute> _cache = new();
 
         public static ValidationAttribute? GetOrCreateValidationAttribute(
             Type attributeType,
-            string[] arguments,
-            IReadOnlyDictionary<string, string> namedArguments)
+            object[] arguments,
+            IReadOnlyDictionary<string, object> namedArguments)
         {
             var key = new CacheKey(attributeType, arguments, namedArguments);
             return _cache.GetOrAdd(key, static k =>
@@ -155,40 +158,62 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                             (ValidationAttribute)Activator.CreateInstance(type)!
                     };
                 }
+                else if (type == typeof(CustomValidationAttribute) && args.Length == 2)
+                {
+                    // CustomValidationAttribute requires special handling
+                    // First argument is a type, second is a method name
+                    if (args[0] is Type validatingType && args[1] is string methodName)
+                    {
+                        attribute = new CustomValidationAttribute(validatingType, methodName);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Invalid arguments for CustomValidationAttribute: Type and method name required");
+                    }
+                }
                 else if (type == typeof(StringLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var maxLength))
+                    if (args[0] is int maxLength)
+                        attribute = new StringLengthAttribute(maxLength);
+                    else
                         throw new ArgumentException($"Invalid maxLength value for StringLengthAttribute: {args[0]}");
-                    attribute = new StringLengthAttribute(maxLength);
                 }
                 else if (type == typeof(MinLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var length))
+                    if (args[0] is int length)
+                        attribute = new MinLengthAttribute(length);
+                    else
                         throw new ArgumentException($"Invalid length value for MinLengthAttribute: {args[0]}");
-                    attribute = new MinLengthAttribute(length);
                 }
                 else if (type == typeof(MaxLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var length))
+                    if (args[0] is int length)
+                        attribute = new MaxLengthAttribute(length);
+                    else
                         throw new ArgumentException($"Invalid length value for MaxLengthAttribute: {args[0]}");
-                    attribute = new MaxLengthAttribute(length);
                 }
                 else if (type == typeof(RangeAttribute) && args.Length == 2)
                 {
-                    if (int.TryParse(args[0], out var min) && int.TryParse(args[1], out var max))
+                    if (args[0] is int min && args[1] is int max)
                         attribute = new RangeAttribute(min, max);
-                    else if (double.TryParse(args[0], out var dmin) && double.TryParse(args[1], out var dmax))
+                    else if (args[0] is double dmin && args[1] is double dmax)
                         attribute = new RangeAttribute(dmin, dmax);
                     else
                         throw new ArgumentException($"Invalid range values for RangeAttribute: {args[0]}, {args[1]}");
                 }
                 else if (type == typeof(RegularExpressionAttribute))
                 {
-                    attribute = new RegularExpressionAttribute(args[0]);
+                    if (args[0] is string pattern)
+                        attribute = new RegularExpressionAttribute(pattern);
+                    else
+                        throw new ArgumentException($"Invalid pattern for RegularExpressionAttribute: {args[0]}");
                 }
                 else if (type == typeof(CompareAttribute))
                 {
-                    attribute = new CompareAttribute(args[0]);
+                    if (args[0] is string otherProperty)
+                        attribute = new CompareAttribute(otherProperty);
+                    else
+                        throw new ArgumentException($"Invalid otherProperty for CompareAttribute: {args[0]}");
                 }
                 else if (typeof(ValidationAttribute).IsAssignableFrom(type))
                 {
@@ -209,7 +234,16 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         {
                             try
                             {
-                                convertedArgs[i] = Convert.ChangeType(args[i], parameters[i].ParameterType);
+                                if (args[i] != null && args[i].GetType() == parameters[i].ParameterType)
+                                {
+                                    // Type already matches, use as-is
+                                    convertedArgs[i] = args[i];
+                                }
+                                else
+                                {
+                                    // Try to convert
+                                    convertedArgs[i] = Convert.ChangeType(args[i], parameters[i].ParameterType);
+                                }
                             }
                             catch
                             {
@@ -244,8 +278,16 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     {
                         try
                         {
-                            var convertedValue = Convert.ChangeType(namedArg.Value, prop.PropertyType);
-                            prop.SetValue(attribute, convertedValue);
+                            if (namedArg.Value != null && namedArg.Value.GetType() == prop.PropertyType)
+                            {
+                                // Type already matches, use as-is
+                                prop.SetValue(attribute, namedArg.Value);
+                            }
+                            else
+                            {
+                                // Try to convert
+                                prop.SetValue(attribute, Convert.ChangeType(namedArg.Value, prop.PropertyType));
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -260,6 +302,112 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     }
 }
 """;
+
+    private static string EmitValidationAttributeForCreate(ValidationAttribute attr)
+    {
+        // Process constructor arguments - convert to appropriate typed objects
+        var processedArgs = new List<string>(attr.Arguments.Count);
+
+        foreach (var arg in attr.Arguments)
+        {
+            // Handle different types of arguments
+            if (arg.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && arg.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                // String literal - remove quotes and pass as object
+                var stringValue = arg.Substring(1, arg.Length - 2).Replace("\\\"", "\"");
+                processedArgs.Add($"\"{stringValue}\"");
+            }
+            else if (arg.StartsWith("typeof(", StringComparison.OrdinalIgnoreCase) && arg.EndsWith(")", StringComparison.OrdinalIgnoreCase))
+            {
+                // Type argument - pass directly
+                processedArgs.Add(arg);
+            }
+            else if (int.TryParse(arg, out var intValue))
+            {
+                // Integer
+                processedArgs.Add(intValue.ToString(CultureInfo.InvariantCulture));
+            }
+            else if (double.TryParse(arg, out var doubleValue))
+            {
+                // Double
+                processedArgs.Add(doubleValue.ToString(CultureInfo.InvariantCulture) + "d");
+            }
+            else if (bool.TryParse(arg, out var boolValue))
+            {
+                // Boolean
+                processedArgs.Add(boolValue.ToString().ToLowerInvariant());
+            }
+            else if (arg == "null")
+            {
+                // Null
+                processedArgs.Add("null");
+            }
+            else
+            {
+                // Default to string for anything else
+                processedArgs.Add($"\"{arg.Replace("\"", "\\\"")}\"");
+            }
+        }
+
+        var args = attr.Arguments.Count > 0
+            ? $"new object[] {{ {string.Join(", ", processedArgs)} }}"
+            : "Array.Empty<object>()";
+
+        // Process named arguments - ensure proper formatting for object dictionary
+        var namedArgsParts = new List<string>(attr.NamedArguments.Count);
+        foreach (var pair in attr.NamedArguments)
+        {
+            // Convert the value based on its format
+            var valueStr = pair.Value;
+            string objectValue;
+
+            if (valueStr.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && valueStr.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                // String literal
+                objectValue = valueStr;
+            }
+            else if (valueStr.StartsWith("typeof(", StringComparison.OrdinalIgnoreCase) && valueStr.EndsWith(")", StringComparison.OrdinalIgnoreCase))
+            {
+                // Type argument
+                objectValue = valueStr;
+            }
+            else if (int.TryParse(valueStr, out _))
+            {
+                // Integer
+                objectValue = valueStr;
+            }
+            else if (double.TryParse(valueStr, out _))
+            {
+                // Double
+                objectValue = valueStr + "d";
+            }
+            else if (bool.TryParse(valueStr, out var boolVal))
+            {
+                // Boolean
+                objectValue = boolVal.ToString().ToLowerInvariant();
+            }
+            else if (valueStr == "null")
+            {
+                // Null
+                objectValue = "null";
+            }
+            else
+            {
+                // Default to string for anything else
+                objectValue = $"\"{valueStr.Replace("\"", "\\\"")}\"";
+            }
+
+            namedArgsParts.Add($"{{ \"{pair.Key}\", {objectValue} }}");
+        }
+
+        var namedArgs = attr.NamedArguments.Count > 0
+            ? $"new Dictionary<string, object> {{ {string.Join(", ", namedArgsParts)} }}"
+            : "new Dictionary<string, object>()";
+
+        // Use string interpolation with @ to prevent escaping issues in the error message
+        return $@"ValidationAttributeCache.GetOrCreateValidationAttribute(typeof({attr.ClassName}), {args}, {namedArgs}) ?? throw new InvalidOperationException(@""Failed to create validation attribute {attr.ClassName}"")";
+    }
+
     private static string EmitTypeChecks(ImmutableArray<ValidatableType> validatableTypes)
     {
         var sw = new StringWriter();
@@ -316,19 +464,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             hasValidatableType: {{member.HasValidatableType.ToString().ToLowerInvariant()}},
             validationAttributes: {{validationAttributes}})
 """;
-    }
-
-    private static string EmitValidationAttributeForCreate(ValidationAttribute attr)
-    {
-        var args = attr.Arguments.Count > 0
-            ? $"new string[] {{ {string.Join(", ", attr.Arguments.Select(a => $@"""{a}"""))} }}"
-            : "Array.Empty<string>()";
-
-        var namedArgs = attr.NamedArguments.Count > 0
-            ? $"new Dictionary<string, string> {{ {string.Join(", ", attr.NamedArguments.Select(x => $@"{{ ""{x.Key}"", {x.Value} }}"))} }}"
-            : "new Dictionary<string, string>()";
-
-        return $"ValidationAttributeCache.GetOrCreateValidationAttribute(typeof({attr.ClassName}), {args}, {namedArgs}) ?? throw new InvalidOperationException(\"Failed to create validation attribute {attr.ClassName}\")";
     }
 
     private static string SanitizeTypeName(string typeName)

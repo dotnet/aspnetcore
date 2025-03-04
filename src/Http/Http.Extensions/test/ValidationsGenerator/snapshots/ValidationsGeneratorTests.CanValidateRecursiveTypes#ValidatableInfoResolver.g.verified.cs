@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
+        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
         {
                     if (type == typeof(global::RecursiveType))
         {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
+        public global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
             return null;
         }
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             isNullable: false,
             isRequired: false,
             hasValidatableType: false,
-            validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]),
+            validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new object[] { 10, 100 }, new Dictionary<string, object>()) ?? throw new InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]),
                                 new GeneratedValidatablePropertyInfo(
             containingType: typeof(global::RecursiveType),
             propertyType: typeof(global::RecursiveType),
@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class ValidationAttributeCache
     {
-        private sealed record CacheKey(Type AttributeType, string[] Arguments, IReadOnlyDictionary<string, string> NamedArguments);
+        private sealed record CacheKey(Type AttributeType, object[] Arguments, IReadOnlyDictionary<string, object> NamedArguments);
         private static readonly ConcurrentDictionary<CacheKey, ValidationAttribute> _cache = new();
 
         public static ValidationAttribute? GetOrCreateValidationAttribute(
             Type attributeType,
-            string[] arguments,
-            IReadOnlyDictionary<string, string> namedArguments)
+            object[] arguments,
+            IReadOnlyDictionary<string, object> namedArguments)
         {
             var key = new CacheKey(attributeType, arguments, namedArguments);
             return _cache.GetOrAdd(key, static k =>
@@ -163,40 +163,62 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                             (ValidationAttribute)Activator.CreateInstance(type)!
                     };
                 }
+                else if (type == typeof(CustomValidationAttribute) && args.Length == 2)
+                {
+                    // CustomValidationAttribute requires special handling
+                    // First argument is a type, second is a method name
+                    if (args[0] is Type validatingType && args[1] is string methodName)
+                    {
+                        attribute = new CustomValidationAttribute(validatingType, methodName);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Invalid arguments for CustomValidationAttribute: Type and method name required");
+                    }
+                }
                 else if (type == typeof(StringLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var maxLength))
+                    if (args[0] is int maxLength)
+                        attribute = new StringLengthAttribute(maxLength);
+                    else
                         throw new ArgumentException($"Invalid maxLength value for StringLengthAttribute: {args[0]}");
-                    attribute = new StringLengthAttribute(maxLength);
                 }
                 else if (type == typeof(MinLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var length))
+                    if (args[0] is int length)
+                        attribute = new MinLengthAttribute(length);
+                    else
                         throw new ArgumentException($"Invalid length value for MinLengthAttribute: {args[0]}");
-                    attribute = new MinLengthAttribute(length);
                 }
                 else if (type == typeof(MaxLengthAttribute))
                 {
-                    if (!int.TryParse(args[0], out var length))
+                    if (args[0] is int length)
+                        attribute = new MaxLengthAttribute(length);
+                    else
                         throw new ArgumentException($"Invalid length value for MaxLengthAttribute: {args[0]}");
-                    attribute = new MaxLengthAttribute(length);
                 }
                 else if (type == typeof(RangeAttribute) && args.Length == 2)
                 {
-                    if (int.TryParse(args[0], out var min) && int.TryParse(args[1], out var max))
+                    if (args[0] is int min && args[1] is int max)
                         attribute = new RangeAttribute(min, max);
-                    else if (double.TryParse(args[0], out var dmin) && double.TryParse(args[1], out var dmax))
+                    else if (args[0] is double dmin && args[1] is double dmax)
                         attribute = new RangeAttribute(dmin, dmax);
                     else
                         throw new ArgumentException($"Invalid range values for RangeAttribute: {args[0]}, {args[1]}");
                 }
                 else if (type == typeof(RegularExpressionAttribute))
                 {
-                    attribute = new RegularExpressionAttribute(args[0]);
+                    if (args[0] is string pattern)
+                        attribute = new RegularExpressionAttribute(pattern);
+                    else
+                        throw new ArgumentException($"Invalid pattern for RegularExpressionAttribute: {args[0]}");
                 }
                 else if (type == typeof(CompareAttribute))
                 {
-                    attribute = new CompareAttribute(args[0]);
+                    if (args[0] is string otherProperty)
+                        attribute = new CompareAttribute(otherProperty);
+                    else
+                        throw new ArgumentException($"Invalid otherProperty for CompareAttribute: {args[0]}");
                 }
                 else if (typeof(ValidationAttribute).IsAssignableFrom(type))
                 {
@@ -217,7 +239,16 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         {
                             try
                             {
-                                convertedArgs[i] = Convert.ChangeType(args[i], parameters[i].ParameterType);
+                                if (args[i] != null && args[i].GetType() == parameters[i].ParameterType)
+                                {
+                                    // Type already matches, use as-is
+                                    convertedArgs[i] = args[i];
+                                }
+                                else
+                                {
+                                    // Try to convert
+                                    convertedArgs[i] = Convert.ChangeType(args[i], parameters[i].ParameterType);
+                                }
                             }
                             catch
                             {
@@ -252,8 +283,16 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     {
                         try
                         {
-                            var convertedValue = Convert.ChangeType(namedArg.Value, prop.PropertyType);
-                            prop.SetValue(attribute, convertedValue);
+                            if (namedArg.Value != null && namedArg.Value.GetType() == prop.PropertyType)
+                            {
+                                // Type already matches, use as-is
+                                prop.SetValue(attribute, namedArg.Value);
+                            }
+                            else
+                            {
+                                // Try to convert
+                                prop.SetValue(attribute, Convert.ChangeType(namedArg.Value, prop.PropertyType));
+                            }
                         }
                         catch (Exception ex)
                         {

@@ -84,7 +84,7 @@ public abstract class ValidatableParameterInfo
     /// If the parameter is a collection, each item in the collection will be validated.
     /// If the parameter is not a collection but has a validatable type, the single value will be validated.
     /// </remarks>
-    public Task Validate(object? value, ValidatableContext context)
+    public virtual Task Validate(object? value, ValidatableContext context)
     {
         Debug.Assert(context.ValidationContext is not null);
 
