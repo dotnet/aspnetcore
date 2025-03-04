@@ -31,13 +31,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 predicate: FindEndpoints,
                 transform: TransformEndpoints)
             .Where(endpoint => endpoint is not null);
-        // Extract all validatable endpoints encountered in the type graph.
-        var validatableEndpoints = endpoints
+        // Extract validatable types from all endpoints.
+        var validatableTypesFromEndpoints = endpoints
             .Combine(requiredSymbols)
             .Select(ExtractValidatableEndpoint);
         // Extract all validatable types encountered in the type graph.
-        var validatableTypes = validatableEndpoints
-            .SelectMany((endpoint, ct) => endpoint.ValidatableTypes)
+        var validatableTypes = validatableTypesFromEndpoints
             .Concat(validatableTypesWithAttribute)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();

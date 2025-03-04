@@ -38,11 +38,10 @@ internal static class IncrementalValuesProviderExtensions
     }
 
     public static IncrementalValuesProvider<T> Concat<T>(
-        this IncrementalValuesProvider<T> first,
+        this IncrementalValuesProvider<ImmutableArray<T>> first,
         IncrementalValuesProvider<ImmutableArray<T>> second)
     {
         return first
-            .Collect()
             .Combine(second.Collect())
             .SelectMany((tuple, _) =>
             {

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -39,11 +38,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             : null;
     }
 
-    internal ValidatableEndpoint ExtractValidatableEndpoint((IInvocationOperation? Operation, RequiredSymbols RequiredSymbols) input, CancellationToken cancellationToken)
+    internal ImmutableArray<ValidatableType> ExtractValidatableEndpoint((IInvocationOperation? Operation, RequiredSymbols RequiredSymbols) input, CancellationToken cancellationToken)
     {
         AnalyzerDebug.Assert(input.Operation != null, "Operation should not be null.");
-        var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
-        var parameters = ExtractParameters(input.Operation, input.RequiredSymbols, ref validatableTypes);
-        return new ValidatableEndpoint(parameters, [.. validatableTypes]);
+        var validatableTypes = ExtractValidatableTypes(input.Operation, input.RequiredSymbols);
+        return validatableTypes;
     }
 }

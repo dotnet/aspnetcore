@@ -19,31 +19,19 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
-    internal ImmutableArray<ValidatableParameter> ExtractParameters(IInvocationOperation operation, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes)
+    internal ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation, RequiredSymbols requiredSymbols)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
             ? method.Parameters
             : [];
-        var validatableParameters = ImmutableArray.CreateBuilder<ValidatableParameter>(parameters.Length);
+        var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
         foreach (var parameter in parameters)
         {
-            var hasValidatableType = TryExtractValidatableType(parameter.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
-            var validatableAttributes = ExtractValidationAttributes(parameter, requiredSymbols, out var isRequired);
-            validatableParameters.Add(new ValidatableParameter(
-                Type: parameter.Type.UnwrapType(requiredSymbols.IEnumerable),
-                OriginalType: parameter.Type,
-                Name: parameter.Name,
-                DisplayName: parameter.GetDisplayName(requiredSymbols.DisplayAttribute),
-                Index: parameter.Ordinal,
-                IsNullable: parameter.Type.IsNullable(),
-                IsRequired: isRequired,
-                IsEnumerable: parameter.Type.IsEnumerable(requiredSymbols.IEnumerable),
-                Attributes: validatableAttributes,
-                HasValidatableType: hasValidatableType));
+            _ = TryExtractValidatableType(parameter.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
         }
-        return validatableParameters.ToImmutable();
+        return [.. validatableTypes];
     }
 
     internal bool TryExtractValidatableType(ITypeSymbol typeSymbol, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
