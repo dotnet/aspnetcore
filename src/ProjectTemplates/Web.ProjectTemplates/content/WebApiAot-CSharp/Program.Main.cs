@@ -14,19 +14,15 @@ public class Program
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
-#if (EnableOpenAPI)
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-#endif
 
         var app = builder.Build();
 
-#if (EnableOpenAPI)
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
         }
-#endif
 
         var sampleTodos = new Todo[] {
             new(1, "Walk the dog"),
@@ -37,7 +33,7 @@ public class Program
         };
 
         var todosApi = app.MapGroup("/todos");
-#if (EnableOpenAPI)
+
         todosApi.MapGet("/", () => sampleTodos)
                 .WithName("GetTodos");
 
@@ -46,14 +42,6 @@ public class Program
                 ? TypedResults.Ok(todo)
                 : TypedResults.NotFound())
             .WithName("GetTodoById");
-#else
-        todosApi.MapGet("/", () => sampleTodos);
-
-        todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
-            sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-                ? TypedResults.Ok(todo)
-                : TypedResults.NotFound());
-#endif
 
         app.Run();
     }
