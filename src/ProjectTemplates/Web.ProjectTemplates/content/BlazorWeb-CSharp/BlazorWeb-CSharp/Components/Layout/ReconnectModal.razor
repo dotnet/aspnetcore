@@ -1,4 +1,8 @@
-﻿<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
+﻿@*#if (UseWebAssembly && InteractiveAtRoot) -->
+<script type="module" src="@Assets["Layout/ReconnectModal.razor.js"]"></script>
+##else
+<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
+##endif*@
 
 <dialog id="components-reconnect-modal" data-nosnippet>
     <div class="components-reconnect-container">
