@@ -775,4 +775,23 @@ app.MapPost("/", (HttpContext context,
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
         Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
     }
+
+    [Theory]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] string[]? arr) => arr);""", "", "[]")]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] string[]? arr) => arr);""", "a,b,c", "[\"a\",\"b\",\"c\"]")]
+    [InlineData("""app.MapGet("/", ([FromHeader(Name = "q")] int[]? arr) => arr);""", "1,2,3", "[1,2,3]")]
+    public async Task MapMethods_Get_With_CommaSeparatedValues_InHeader_ShouldBindToArray(string source, string headerContent, string expectedBody)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Headers["q"] = headerContent;
+            await endpoint.RequestDelegate(httpContext);
+
+            await VerifyResponseBodyAsync(httpContext, expectedBody);
+        }
+    }
 }
