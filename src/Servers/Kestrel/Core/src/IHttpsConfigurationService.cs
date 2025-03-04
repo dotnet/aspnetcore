@@ -94,10 +94,11 @@ internal readonly struct CertificateAndConfig
     public readonly CertificateConfig CertificateConfig;
 
     public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig)
+        : this(
+            certificate,
+            certificateConfig,
+            [])
     {
-        Certificate = certificate;
-        CertificateConfig = certificateConfig;
-        CertificateChain = [];
     }
 
     public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig, X509Certificate2Collection certificateChain)

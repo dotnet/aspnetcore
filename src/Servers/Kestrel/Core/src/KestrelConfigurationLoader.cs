@@ -78,6 +78,7 @@ public class KestrelConfigurationLoader
     internal X509Certificate2? DefaultCertificate { get; set; }
 
     internal X509Certificate2Collection? DefaultCertificateChain { get; set; }
+
     /// <summary>
     /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
     /// </summary>

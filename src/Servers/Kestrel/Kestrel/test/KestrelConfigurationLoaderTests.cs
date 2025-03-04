@@ -205,7 +205,7 @@ public class KestrelConfigurationLoaderTests
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            new KeyValuePair<string,string>("Certificates:Default:Path",testCertPath)
+            new KeyValuePair<string,string>("Certificates:Default:Path", testCertPath)
         }).Build();
 
         serverOptions.Configure(config)
