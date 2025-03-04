@@ -31,7 +31,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
     private IWebHost? _webHost;
-    private Uri _webHostAddress;
+    private Uri? _webHostAddress;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
@@ -507,7 +507,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         if (_useKestrel)
         {
-            // Have to do this, as the ClientOptions.BaseAddress will be set to poitn to the kestrel server,
+            // Have to do this, as the ClientOptions.BaseAddress will be set to point to the kestrel server,
             // and it may not match the original base address value.
             client.BaseAddress = ClientOptions.BaseAddress;
         }
