@@ -52,11 +52,12 @@ public class WebApiNativeAotTemplateTest : LoggedTest
     [ConditionalTheory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task WebApiNativeAotTemplateCSharp_OpenApiDisabledInProductionEnvironment()
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task WebApiNativeAotTemplateCSharp_OpenApiDisabledInProductionEnvironment(bool useProgramMain)
     {
         var args = useProgramMain
             ? new[] { ArgConstants.UseProgramMain }
-            : new[] { };
+            : new string[] { };
 
         await WebApiNativeAotTemplateCore(
             languageOverride: null,
@@ -77,7 +78,7 @@ public class WebApiNativeAotTemplateTest : LoggedTest
         await WebApiNativeAotTemplateCore(
             languageOverride: null,
             args: args,
-            additionalEndpointsThatShould404NotFoundForBuiltProjects: new[] { "/openapi/v1.json" };
+            additionalEndpointsThatShould404NotFoundForBuiltProjects: new[] { "/openapi/v1.json" });
     }
 
     private async Task WebApiNativeAotTemplateCore(
