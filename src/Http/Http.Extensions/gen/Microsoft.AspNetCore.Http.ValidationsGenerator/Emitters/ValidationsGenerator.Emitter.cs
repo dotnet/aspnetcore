@@ -300,14 +300,64 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         var sw = new StringWriter();
         var cw = new CodeWriter(sw, baseIndent: 3);
-        foreach (var validatableParameter in validatableParameters)
+
+        // Group parameters by name to handle potential duplicates
+        var parameterGroups = validatableParameters.GroupBy(p => p.Name).ToList();
+
+        foreach (var group in parameterGroups)
         {
-            var parameterTypeName = validatableParameter.Type.ToDisplayString();
-            cw.WriteLine($"if (parameterInfo.Name == \"{validatableParameter.Name}\" && parameterInfo.ParameterType == typeof({parameterTypeName}))");
-            cw.StartBlock();
-            cw.WriteLine($"return CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}();");
-            cw.EndBlock();
+            var name = group.Key;
+            var parameters = group.ToList();
+
+            // If there's only one parameter with this name, use the simple check
+            if (parameters.Count == 1)
+            {
+                var param = parameters[0];
+                var parameterTypeName = param.Type.ToDisplayString();
+                cw.WriteLine($"if (parameterInfo.Name == \"{param.Name}\" && parameterInfo.ParameterType == typeof({parameterTypeName}))");
+                cw.StartBlock();
+                cw.WriteLine($"return CreateParameterInfo_{SanitizeTypeName(param.OriginalType.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat))}_{SanitizeTypeName(param.Name)}_{param.Index}();");
+                cw.EndBlock();
+            }
+            else
+            {
+                // For parameters with the same name, we need additional checks to distinguish them
+                cw.WriteLine($"if (parameterInfo.Name == \"{name}\")");
+                cw.StartBlock();
+
+                // Check parameter type first as it's faster
+                for (var i = 0; i < parameters.Count; i++)
+                {
+                    var param = parameters[i];
+                    var parameterTypeName = param.Type.ToDisplayString();
+
+                    // For first item, use 'if', for others use 'else if'
+                    string ifStatement = i == 0 ? "if" : "else if";
+
+                    cw.WriteLine($"{ifStatement} (parameterInfo.ParameterType == typeof({parameterTypeName}))");
+                    cw.StartBlock();
+
+                    // Add position check if available
+                    if (param.Index >= 0)
+                    {
+                        cw.WriteLine($"if (parameterInfo.Position == {param.Index})");
+                        cw.StartBlock();
+                    }
+
+                    cw.WriteLine($"return CreateParameterInfo_{SanitizeTypeName(param.OriginalType.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat))}_{SanitizeTypeName(param.Name)}_{param.Index}();");
+
+                    if (param.Index >= 0)
+                    {
+                        cw.EndBlock();
+                    }
+
+                    cw.EndBlock();
+                }
+
+                cw.EndBlock();
+            }
         }
+
         return sw.ToString();
     }
 
@@ -361,7 +411,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         foreach (var validatableParameter in validatableParameters)
         {
             var parameterTypeName = validatableParameter.Type.ToDisplayString();
-            cw.WriteLine($@"private ValidatableParameterInfo CreateParameterInfo{SanitizeTypeName(validatableParameter.Name)}()");
+            cw.WriteLine($@"private ValidatableParameterInfo CreateParameterInfo_{SanitizeTypeName(validatableParameter.OriginalType.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat))}_{SanitizeTypeName(validatableParameter.Name)}_{validatableParameter.Index}()");
             cw.StartBlock();
             var validationAttributes = validatableParameter.Attributes.IsDefaultOrEmpty
                 ? "[]"

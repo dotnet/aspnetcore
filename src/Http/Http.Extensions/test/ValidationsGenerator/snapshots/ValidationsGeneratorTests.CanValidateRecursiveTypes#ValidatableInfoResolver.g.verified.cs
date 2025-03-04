@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         {
                         if (parameterInfo.Name == "model" && parameterInfo.ParameterType == typeof(RecursiveType))
             {
-                return CreateParameterInfomodel();
+                return CreateParameterInfo_RecursiveType_model_0();
             }
 
             return null;
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     implementsIValidatableObject: false);
             }
 
-                    private ValidatableParameterInfo CreateParameterInfomodel()
+                    private ValidatableParameterInfo CreateParameterInfo_RecursiveType_model_0()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "model",

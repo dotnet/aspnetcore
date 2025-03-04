@@ -24,9 +24,9 @@ builder.Services.AddValidation();
 
 var app = builder.Build();
 
-app.MapPost("/basic-polymorphism", (BaseType model1) => Results.Ok());
-app.MapPost("/validatable-polymorphism", (BaseValidatableType model2) => Results.Ok());
-app.MapPost("/polymorphism-container", (ContainerType model3) => Results.Ok());
+app.MapPost("/basic-polymorphism", (BaseType model) => Results.Ok());
+app.MapPost("/validatable-polymorphism", (BaseValidatableType model) => Results.Ok());
+app.MapPost("/polymorphism-container", (ContainerType model) => Results.Ok());
 
 app.Run();
 

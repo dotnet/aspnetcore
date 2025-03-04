@@ -96,30 +96,30 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         {
                         if (parameterInfo.Name == "value1" && parameterInfo.ParameterType == typeof(int))
             {
-                return CreateParameterInfovalue1();
+                return CreateParameterInfo_int_value1_0();
             }
             if (parameterInfo.Name == "value2" && parameterInfo.ParameterType == typeof(int))
             {
-                return CreateParameterInfovalue2();
+                return CreateParameterInfo_int_value2_1();
             }
             if (parameterInfo.Name == "value3" && parameterInfo.ParameterType == typeof(string))
             {
-                return CreateParameterInfovalue3();
+                return CreateParameterInfo_string_value3_2();
             }
             if (parameterInfo.Name == "value4" && parameterInfo.ParameterType == typeof(int))
             {
-                return CreateParameterInfovalue4();
+                return CreateParameterInfo_int_value4_3();
             }
             if (parameterInfo.Name == "value5" && parameterInfo.ParameterType == typeof(int))
             {
-                return CreateParameterInfovalue5();
+                return CreateParameterInfo_int_value5_4();
             }
 
             return null;
         }
 
         
-                    private ValidatableParameterInfo CreateParameterInfovalue1()
+                    private ValidatableParameterInfo CreateParameterInfo_int_value1_0()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "value1",
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
 );
             }
-            private ValidatableParameterInfo CreateParameterInfovalue2()
+            private ValidatableParameterInfo CreateParameterInfo_int_value2_1()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "value2",
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), new string[] { "10", "100" }, new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
 );
             }
-            private ValidatableParameterInfo CreateParameterInfovalue3()
+            private ValidatableParameterInfo CreateParameterInfo_string_value3_2()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "value3",
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), Array.Empty<string>(), new Dictionary<string, string>()) ?? throw new InvalidOperationException("Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")]
 );
             }
-            private ValidatableParameterInfo CreateParameterInfovalue4()
+            private ValidatableParameterInfo CreateParameterInfo_int_value4_3()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "value4",
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::CustomValidationAttribute), Array.Empty<string>(), new Dictionary<string, string> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new InvalidOperationException("Failed to create validation attribute global::CustomValidationAttribute")]
 );
             }
-            private ValidatableParameterInfo CreateParameterInfovalue5()
+            private ValidatableParameterInfo CreateParameterInfo_int_value5_4()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "value5",

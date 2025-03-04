@@ -114,17 +114,29 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
         public ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-                        if (parameterInfo.Name == "model1" && parameterInfo.ParameterType == typeof(BaseType))
+                        if (parameterInfo.Name == "model")
             {
-                return CreateParameterInfomodel1();
-            }
-            if (parameterInfo.Name == "model2" && parameterInfo.ParameterType == typeof(BaseValidatableType))
-            {
-                return CreateParameterInfomodel2();
-            }
-            if (parameterInfo.Name == "model3" && parameterInfo.ParameterType == typeof(ContainerType))
-            {
-                return CreateParameterInfomodel3();
+                if (parameterInfo.ParameterType == typeof(BaseType))
+                {
+                    if (parameterInfo.Position == 0)
+                    {
+                        return CreateParameterInfo_BaseType_model_0();
+                    }
+                }
+                else if (parameterInfo.ParameterType == typeof(BaseValidatableType))
+                {
+                    if (parameterInfo.Position == 0)
+                    {
+                        return CreateParameterInfo_BaseValidatableType_model_0();
+                    }
+                }
+                else if (parameterInfo.ParameterType == typeof(ContainerType))
+                {
+                    if (parameterInfo.Position == 0)
+                    {
+                        return CreateParameterInfo_ContainerType_model_0();
+                    }
+                }
             }
 
             return null;
@@ -247,11 +259,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     implementsIValidatableObject: false);
             }
 
-                    private ValidatableParameterInfo CreateParameterInfomodel1()
+                    private ValidatableParameterInfo CreateParameterInfo_BaseType_model_0()
             {
                 return new GeneratedValidatableParameterInfo(
-    name: "model1",
-    displayName: "model1",
+    name: "model",
+    displayName: "model",
     isRequired: false,
     isNullable: false,
     hasValidatableType: true,
@@ -259,11 +271,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: []
 );
             }
-            private ValidatableParameterInfo CreateParameterInfomodel2()
+            private ValidatableParameterInfo CreateParameterInfo_BaseValidatableType_model_0()
             {
                 return new GeneratedValidatableParameterInfo(
-    name: "model2",
-    displayName: "model2",
+    name: "model",
+    displayName: "model",
     isRequired: false,
     isNullable: false,
     hasValidatableType: true,
@@ -271,11 +283,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     validationAttributes: []
 );
             }
-            private ValidatableParameterInfo CreateParameterInfomodel3()
+            private ValidatableParameterInfo CreateParameterInfo_ContainerType_model_0()
             {
                 return new GeneratedValidatableParameterInfo(
-    name: "model3",
-    displayName: "model3",
+    name: "model",
+    displayName: "model",
     isRequired: false,
     isNullable: false,
     hasValidatableType: true,
@@ -289,7 +301,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "5ZkYKqNUHazJ7h8nBycbiYgBAABQcm9ncmFtLmNz")]
+        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "2dHhUDyiknXJLaQw/hXAKIgBAABQcm9ncmFtLmNz")]
         public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.

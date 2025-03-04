@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         {
                         if (parameterInfo.Name == "complexType" && parameterInfo.ParameterType == typeof(ComplexType))
             {
-                return CreateParameterInfocomplexType();
+                return CreateParameterInfo_ComplexType_complexType_0();
             }
 
             return null;
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     implementsIValidatableObject: false);
             }
 
-                    private ValidatableParameterInfo CreateParameterInfocomplexType()
+                    private ValidatableParameterInfo CreateParameterInfo_ComplexType_complexType_0()
             {
                 return new GeneratedValidatableParameterInfo(
     name: "complexType",
