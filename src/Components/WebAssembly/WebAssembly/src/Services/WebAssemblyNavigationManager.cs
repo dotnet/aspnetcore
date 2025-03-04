@@ -85,9 +85,42 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
     }
 
+    /// <inheritdoc />
+    protected override void NotFoundCore()
+    {
+        _ = PerformNotFoundAsync();
+
+        async Task PerformNotFoundAsync()
+        {
+            try
+            {
+                var shouldContinueNotFound = await NotifyNotFoundAsync(false); // should we pass NavigationOptions.HistoryEntryState? are we navigating awaay and changing the history?
+
+                if (!shouldContinueNotFound)
+                {
+                    Log.NotFoundRenderCanceled(_logger);
+                    return;
+                }
+
+                NotifyNotFound(false);
+            }
+            catch (Exception ex)
+            {
+                // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleNotFoundHandlerException.
+                // But if some other exception gets thrown, we still want to know about it.
+                Log.NotFoundRenderFailed(_logger, ex);
+            }
+        }
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
+    }
+
+    protected override void HandleNotFoundHandlerException(Exception ex, NotFoundContext context)
+    {
+        Log.NotFoundRenderFailed(_logger, ex);
     }
 
     protected override void SetNavigationLockState(bool value)
@@ -100,5 +133,11 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
 
         [LoggerMessage(2, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
+
+        [LoggerMessage(5, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
+        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(1, LogLevel.Debug, "NotFound render canceled", EventName = "NotFoundRenderCanceled")]
+        public static partial void NotFoundRenderCanceled(ILogger logger);
     }
 }

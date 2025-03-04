@@ -105,6 +105,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+        NavigationManager.NotFoundEvent += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
@@ -146,6 +147,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        NavigationManager.NotFoundEvent -= OnNotFound;
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
@@ -320,6 +322,15 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
+    private void OnNotFound(object sender, NotFoundEventArgs args)
+    {
+        if (_renderHandle.IsInitialized)
+        {
+            Log.DisplayingNotFound(_logger);
+            _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+        }
+    }
+
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
@@ -339,6 +350,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
         internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
+
+        [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger);
 
         [LoggerMessage(2, LogLevel.Debug, "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToComponent")]
         internal static partial void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri);

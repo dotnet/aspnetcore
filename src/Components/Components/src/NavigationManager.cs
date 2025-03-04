@@ -35,6 +35,29 @@ public abstract class NavigationManager
 
     private CancellationTokenSource? _locationChangingCts;
 
+    /// <summary>
+    /// An event that fires when the page is not found.
+    /// </summary>
+    public event EventHandler<NotFoundEventArgs> NotFoundEvent
+    {
+        add
+        {
+            AssertInitialized();
+            _notFound += value;
+        }
+        remove
+        {
+            AssertInitialized();
+            _notFound -= value;
+        }
+    }
+
+    private EventHandler<NotFoundEventArgs>? _notFound;
+
+    private readonly List<Func<NotFoundContext, ValueTask>> _notFoundHandlers = new();
+
+    private CancellationTokenSource? _notFoundCts;
+
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -178,6 +201,16 @@ public abstract class NavigationManager
         => NavigateTo(Uri, forceLoad: true, replace: true);
 
     /// <summary>
+    /// TODO
+    /// </summary>
+    public virtual void NotFound() => NotFoundCore();
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    protected virtual void NotFoundCore() => throw new NotImplementedException();
+
+    /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
     /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
     /// </summary>
@@ -309,6 +342,26 @@ public abstract class NavigationManager
     }
 
     /// <summary>
+    /// Triggers the <see cref="NotFound"/> event with the current URI value.
+    /// </summary>
+    protected void NotifyNotFound(bool isInterceptedLink)
+    {
+        try
+        {
+            _notFound?.Invoke(
+                this,
+                new NotFoundEventArgs(isInterceptedLink)
+                {
+                    HistoryEntryState = HistoryEntryState
+                });
+        }
+        catch (Exception ex)
+        {
+            throw new NotFoundRenderingException("An exception occurred while dispatching a NotFound event.", ex);
+        }
+    }
+
+    /// <summary>
     /// Notifies the registered handlers of the current location change.
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
@@ -433,8 +486,131 @@ public abstract class NavigationManager
             cts.Dispose();
 
             if (_locationChangingCts == cts)
-            {
+        {
                 _locationChangingCts = null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Notifies the registered handlers of the current ot found event.
+    /// </summary>
+    /// <param name="isNavigationIntercepted">Whether this not found was intercepted from a link.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation. If the result is <see langword="true"/>, the navigation should continue.</returns>
+    protected async ValueTask<bool> NotifyNotFoundAsync(bool isNavigationIntercepted)
+    {
+        _notFoundCts?.Cancel();
+        _notFoundCts = null;
+
+        var handlerCount = _notFoundHandlers.Count;
+
+        if (handlerCount == 0)
+        {
+            return true;
+        }
+
+        var cts = new CancellationTokenSource();
+
+        _notFoundCts = cts;
+
+        var cancellationToken = cts.Token;
+        var context = new NotFoundContext
+        {
+            // HistoryEntryState = state,
+            IsNavigationIntercepted = isNavigationIntercepted,
+            CancellationToken = cancellationToken,
+        };
+
+        try
+        {
+            if (handlerCount == 1)
+            {
+                var handlerTask = InvokeNotFoundHandlerAsync(_notFoundHandlers[0], context);
+
+                if (handlerTask.IsFaulted)
+                {
+                    await handlerTask;
+                    return false; // Unreachable because the previous line will throw.
+                }
+
+                if (context.DidPreventRendering)
+                {
+                    return false;
+                }
+
+                if (!handlerTask.IsCompletedSuccessfully)
+                {
+                    await handlerTask.AsTask().WaitAsync(cancellationToken);
+                }
+            }
+            else
+            {
+                var notFoundHandlersCopy = ArrayPool<Func<NotFoundContext, ValueTask>>.Shared.Rent(handlerCount);
+
+                try
+                {
+                    _notFoundHandlers.CopyTo(notFoundHandlersCopy);
+
+                    var notFoundTasks = new HashSet<Task>();
+
+                    for (var i = 0; i < handlerCount; i++)
+                    {
+                        var handlerTask = InvokeNotFoundHandlerAsync(notFoundHandlersCopy[i], context);
+
+                        if (handlerTask.IsFaulted)
+                        {
+                            await handlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
+
+                        if (context.DidPreventRendering)
+                        {
+                            return false;
+                        }
+
+                        notFoundTasks.Add(handlerTask.AsTask());
+                    }
+
+                    while (notFoundTasks.Count != 0)
+                    {
+                        var completedHandlerTask = await Task.WhenAny(notFoundTasks).WaitAsync(cancellationToken);
+
+                        if (completedHandlerTask.IsFaulted)
+                        {
+                            await completedHandlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
+
+                        notFoundTasks.Remove(completedHandlerTask);
+                    }
+                }
+                finally
+                {
+                    ArrayPool<Func<NotFoundContext, ValueTask>>.Shared.Return(notFoundHandlersCopy);
+                }
+            }
+
+            return !context.DidPreventRendering;
+        }
+        catch (TaskCanceledException ex)
+        {
+            if (ex.CancellationToken == cancellationToken)
+            {
+                // This navigation was in progress when a successive navigation occurred.
+                // We treat this as a canceled navigation.
+                return false;
+            }
+
+            throw;
+        }
+        finally
+        {
+            cts.Cancel();
+            cts.Dispose();
+
+            if (_notFoundCts == cts)
+        {
+                _notFoundCts = null;
             }
         }
     }
@@ -455,6 +631,22 @@ public abstract class NavigationManager
         }
     }
 
+    private async ValueTask InvokeNotFoundHandlerAsync(Func<NotFoundContext, ValueTask> handler, NotFoundContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            HandleNotFoundHandlerException(ex, context);
+        }
+    }
+
     /// <summary>
     /// Handles exceptions thrown in location changing handlers.
     /// </summary>
@@ -462,6 +654,14 @@ public abstract class NavigationManager
     /// <param name="context">The context passed to the handler.</param>
     protected virtual void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
         => throw new InvalidOperationException($"To support navigation locks, {GetType().Name} must override {nameof(HandleLocationChangingHandlerException)}");
+
+    /// <summary>
+    /// Handles exceptions thrown in NotFound rendering handlers.
+    /// </summary>
+    /// <param name="ex">The exception to handle.</param>
+    /// <param name="context">The context passed to the handler.</param>
+    protected virtual void HandleNotFoundHandlerException(Exception ex, NotFoundContext context)
+        => throw new InvalidOperationException($"To support not found rendering locks, {GetType().Name} must override {nameof(HandleNotFoundHandlerException)}");
 
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
