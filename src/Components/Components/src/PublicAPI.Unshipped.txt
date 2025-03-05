@@ -2,20 +2,14 @@
 
 virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NotFoundCore() -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs!>!
-Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs
-Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs(bool isNavigationIntercepted) -> void
-Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.IsNavigationIntercepted.get -> bool
-Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.HistoryEntryState.get -> string?
+Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
 Microsoft.AspNetCore.Components.Routing.NotFoundContext
 Microsoft.AspNetCore.Components.Routing.NotFoundContext.NotFoundContext() -> void
 Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.init -> void
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.IsNavigationIntercepted.get -> bool
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.IsNavigationIntercepted.init -> void
 Microsoft.AspNetCore.Components.Routing.NotFoundContext.PreventRendering() -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFound(bool isInterceptedLink) -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFoundAsync(bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFound() -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFoundAsync() -> System.Threading.Tasks.ValueTask<bool>
 virtual Microsoft.AspNetCore.Components.NavigationManager.HandleNotFoundHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.NotFoundContext! context) -> void
 Microsoft.AspNetCore.Components.NotFoundRenderingException
 Microsoft.AspNetCore.Components.NotFoundRenderingException.NotFoundRenderingException(string! message, System.Exception! innerException) -> void

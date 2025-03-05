@@ -17,11 +17,6 @@ public sealed class NotFoundContext
     public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
-    /// Gets whether this navigation was intercepted from a link.
-    /// </summary>
-    public bool IsNavigationIntercepted { get; init; }
-
-    /// <summary>
     /// Prevents this navigation from continuing.
     /// </summary>
     public void PreventRendering()

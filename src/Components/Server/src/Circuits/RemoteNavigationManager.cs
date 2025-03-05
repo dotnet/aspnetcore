@@ -160,14 +160,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         {
             try
             {
-                bool shouldContinueRendering = await NotifyNotFoundAsync(false);
+                bool shouldContinueRendering = await NotifyNotFoundAsync();
                 if (!shouldContinueRendering)
                 {
                     Log.NotFoundRenderCanceled(_logger);
                     return;
                 }
 
-                NotifyNotFound(false);
+                NotifyNotFound();
             }
             catch (Exception ex)
             {

@@ -322,7 +322,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private void OnNotFound(object sender, NotFoundEventArgs args)
+    private void OnNotFound(object sender, EventArgs args)
     {
         if (_renderHandle.IsInitialized)
         {

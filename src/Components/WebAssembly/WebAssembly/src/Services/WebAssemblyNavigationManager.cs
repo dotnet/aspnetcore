@@ -94,7 +94,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         {
             try
             {
-                var shouldContinueNotFound = await NotifyNotFoundAsync(false); // should we pass NavigationOptions.HistoryEntryState? are we navigating awaay and changing the history?
+                var shouldContinueNotFound = await NotifyNotFoundAsync();
 
                 if (!shouldContinueNotFound)
                 {
@@ -102,7 +102,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
                     return;
                 }
 
-                NotifyNotFound(false);
+                NotifyNotFound();
             }
             catch (Exception ex)
             {

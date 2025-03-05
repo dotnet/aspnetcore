@@ -38,7 +38,7 @@ public abstract class NavigationManager
     /// <summary>
     /// An event that fires when the page is not found.
     /// </summary>
-    public event EventHandler<NotFoundEventArgs> NotFoundEvent
+    public event EventHandler<EventArgs> NotFoundEvent
     {
         add
         {
@@ -52,7 +52,7 @@ public abstract class NavigationManager
         }
     }
 
-    private EventHandler<NotFoundEventArgs>? _notFound;
+    private EventHandler<EventArgs>? _notFound;
 
     private readonly List<Func<NotFoundContext, ValueTask>> _notFoundHandlers = new();
 
@@ -201,12 +201,12 @@ public abstract class NavigationManager
         => NavigateTo(Uri, forceLoad: true, replace: true);
 
     /// <summary>
-    /// TODO
+    /// Handles setting the NotFound state.
     /// </summary>
     public virtual void NotFound() => NotFoundCore();
 
     /// <summary>
-    /// TODO
+    /// Handles setting the NotFound state.
     /// </summary>
     protected virtual void NotFoundCore() => throw new NotImplementedException();
 
@@ -344,16 +344,11 @@ public abstract class NavigationManager
     /// <summary>
     /// Triggers the <see cref="NotFound"/> event with the current URI value.
     /// </summary>
-    protected void NotifyNotFound(bool isInterceptedLink)
+    protected void NotifyNotFound()
     {
         try
         {
-            _notFound?.Invoke(
-                this,
-                new NotFoundEventArgs(isInterceptedLink)
-                {
-                    HistoryEntryState = HistoryEntryState
-                });
+            _notFound?.Invoke(this, new EventArgs());
         }
         catch (Exception ex)
         {
@@ -486,7 +481,7 @@ public abstract class NavigationManager
             cts.Dispose();
 
             if (_locationChangingCts == cts)
-        {
+            {
                 _locationChangingCts = null;
             }
         }
@@ -495,9 +490,8 @@ public abstract class NavigationManager
     /// <summary>
     /// Notifies the registered handlers of the current ot found event.
     /// </summary>
-    /// <param name="isNavigationIntercepted">Whether this not found was intercepted from a link.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation. If the result is <see langword="true"/>, the navigation should continue.</returns>
-    protected async ValueTask<bool> NotifyNotFoundAsync(bool isNavigationIntercepted)
+    protected async ValueTask<bool> NotifyNotFoundAsync()
     {
         _notFoundCts?.Cancel();
         _notFoundCts = null;
@@ -516,8 +510,6 @@ public abstract class NavigationManager
         var cancellationToken = cts.Token;
         var context = new NotFoundContext
         {
-            // HistoryEntryState = state,
-            IsNavigationIntercepted = isNavigationIntercepted,
             CancellationToken = cancellationToken,
         };
 
