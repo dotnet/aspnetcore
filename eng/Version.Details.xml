@@ -295,14 +295,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6e2274c87c699f6749473b83969f12949e48ec7d</Sha>
     </Dependency>
-    <Dependency Name="System.Buffers" Version="10.0.0-preview.3.25121.11">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>57ed25449ab954595130997679807a471ef85aef</Sha>
-    </Dependency>
-    <Dependency Name="System.Memory" Version="10.0.0-preview.3.25121.11">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>57ed25449ab954595130997679807a471ef85aef</Sha>
-    </Dependency>
     <Dependency Name="System.Collections.Immutable" Version="10.0.0-preview.3.25154.11">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6e2274c87c699f6749473b83969f12949e48ec7d</Sha>
