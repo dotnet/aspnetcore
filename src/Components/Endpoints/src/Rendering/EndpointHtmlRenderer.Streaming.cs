@@ -273,9 +273,10 @@ internal partial class EndpointHtmlRenderer
 
             if (marker.Type is ComponentMarker.WebAssemblyMarkerType or ComponentMarker.AutoMarkerType)
             {
-                if (_httpContext.RequestServices.GetRequiredService<WebAssemblyEnvironmentEmitter>().TryGetEnvironmentOnce(out var environment))
+                if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
                 {
-                    output.Write($"<!--Blazor-WebAssemblyEnvironment:{environment}-->");
+                    var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
+                    output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
                 }
             }
 

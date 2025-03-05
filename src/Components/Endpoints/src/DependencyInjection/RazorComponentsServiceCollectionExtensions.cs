@@ -71,7 +71,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         services.AddSupplyValueFromQueryProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
-        services.TryAddScoped<WebAssemblyEnvironmentEmitter>();
+        services.TryAddScoped<WebAssemblySettingsEmitter>();
 
         services.TryAddScoped<ResourceCollectionProvider>();
 
