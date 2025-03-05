@@ -222,9 +222,6 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         [LoggerMessage(4, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
 
-        [LoggerMessage(5, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
-        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
-
         [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
         public static partial void RefreshFailed(ILogger logger, Exception exception);
 
@@ -236,5 +233,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
+
+        [LoggerMessage(8, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
+        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
     }
 }

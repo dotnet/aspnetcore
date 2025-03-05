@@ -114,7 +114,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         [LoggerMessage(2, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
 
-        [LoggerMessage(5, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
+        [LoggerMessage(3, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
         public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
     }
 }
