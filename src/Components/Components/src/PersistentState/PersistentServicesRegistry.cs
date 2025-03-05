@@ -23,15 +23,18 @@ internal sealed class PersistentServicesRegistry
     private IPersistentComponentRegistration[] _registrations;
     private List<PersistingComponentStateSubscription> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
-    public IComponentRenderMode? RenderMode { get; internal set; }
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
         var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentComponentRegistration>>();
         _serviceProvider = serviceProvider;
         _persistentServiceTypeCache = new PersistentServiceTypeCache();
-        _registrations = [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
+        _registrations = ResolveRegistrations(registrations);
     }
+
+    internal IComponentRenderMode? RenderMode { get; set; }
+
+    internal IReadOnlyList<IPersistentComponentRegistration> Registrations => _registrations;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     internal void RegisterForPersistence(PersistentComponentState state)
@@ -61,7 +64,7 @@ internal sealed class PersistentServicesRegistry
             }, renderMode));
         }
 
-        if(RenderMode != null)
+        if (RenderMode != null)
         {
             subscriptions.Add(state.RegisterOnPersisting(() =>
             {
@@ -91,11 +94,9 @@ internal sealed class PersistentServicesRegistry
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     internal void Restore(PersistentComponentState state)
     {
-        if (_registrations.Length == 0 &&
-           state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) &&
-           registry != null)
+        if (state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) && registry != null)
         {
-            _registrations = registry ?? [];
+            _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
 
         RestoreRegistrationsIfAvailable(state);
@@ -133,6 +134,8 @@ internal sealed class PersistentServicesRegistry
             }
         }
     }
+
+    private static IPersistentComponentRegistration[] ResolveRegistrations(IEnumerable<IPersistentComponentRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
 
     private Type? ResolveType(string assembly, string fullTypeName) => _persistentServiceTypeCache.GetPersistentService(assembly, fullTypeName);
 
