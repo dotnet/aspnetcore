@@ -27,6 +27,17 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void CanRenderNotFoundInteractive(string renderingMode)
+    {
+        Navigate($"{ServerPathBase}/render-not-found-{renderingMode}");
+
+        var bodyText = Browser.FindElement(By.TagName("body")).Text;
+        Assert.Contains("There's nothing here", bodyText);
+    }
+
     [Fact]
     public void CanRenderLargeComponentsWithServerRenderMode()
     {
