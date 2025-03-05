@@ -7,14 +7,13 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
 {
-    private readonly IRazorComponentEndpointInvoker _invoker;
+    private IEndpointHtmlRenderer? _renderer;
 
-    public HttpNavigationManager(IRazorComponentEndpointInvoker invoker)
+    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer)
     {
-        _invoker = invoker;
+        Initialize(baseUri, uri);
+        _renderer = renderer;
     }
-
-    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
@@ -24,6 +23,6 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 
     protected override void NotFoundCore()
     {
-        _invoker.SetNotFound();
+        _renderer?.SetNotFoundResponse();
     }
 }

@@ -25,6 +25,4 @@ public interface IRazorComponentEndpointInvoker
     /// <returns>A <see cref="Task"/> that completes when the endpoint has been invoked and the component
     /// has been rendered into the response.</returns>
     Task Render(HttpContext context);
-
-    void SetNotFound();
 }

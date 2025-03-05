@@ -14,5 +14,6 @@ public interface IHostEnvironmentNavigationManager
     /// </summary>
     /// <param name="baseUri">The base URI.</param>
     /// <param name="uri">The absolute URI.</param>
-    void Initialize(string baseUri, string uri);
+    /// <param name="renderer">The optional renderer.</param>
+    void Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer = null);
 }

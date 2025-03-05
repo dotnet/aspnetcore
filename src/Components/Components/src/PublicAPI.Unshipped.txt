@@ -19,3 +19,6 @@ Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFoundAsync(bool isNav
 virtual Microsoft.AspNetCore.Components.NavigationManager.HandleNotFoundHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.NotFoundContext! context) -> void
 Microsoft.AspNetCore.Components.NotFoundRenderingException
 Microsoft.AspNetCore.Components.NotFoundRenderingException.NotFoundRenderingException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Components.IEndpointHtmlRenderer
+Microsoft.AspNetCore.Components.IEndpointHtmlRenderer.SetNotFoundResponse() -> void
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, Microsoft.AspNetCore.Components.IEndpointHtmlRenderer? renderer = null) -> void

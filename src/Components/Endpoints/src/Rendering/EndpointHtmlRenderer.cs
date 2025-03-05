@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// output with prerendering markers so the content can later switch into interactive mode when used with
 /// blazor.*.js. It also deals with initializing the standard component DI services once per request.
 /// </summary>
-internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
+internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer, IEndpointHtmlRenderer
 {
     private readonly IServiceProvider _services;
     private readonly RazorComponentsServiceOptions _options;
@@ -70,14 +70,14 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    internal static async Task InitializeStandardComponentServicesAsync(
+    internal async Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+        navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), this);
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
