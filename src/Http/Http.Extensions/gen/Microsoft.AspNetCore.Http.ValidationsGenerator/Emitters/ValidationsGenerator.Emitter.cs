@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
-    public static string GeneratedCodeConstructor => $@"System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(ValidationsGenerator).Assembly.FullName}"", ""{typeof(ValidationsGenerator).Assembly.GetName().Version}"")";
+    public static string GeneratedCodeConstructor => $@"global::System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(ValidationsGenerator).Assembly.FullName}"", ""{typeof(ValidationsGenerator).Assembly.GetName().Version}"")";
     public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
 
     internal static void Emit(SourceProductionContext context, (InterceptableLocation? AddValidation, ImmutableArray<ValidatableType> ValidatableTypes) emitInputs)
@@ -50,52 +50,44 @@ namespace System.Runtime.CompilerServices
 
 namespace Microsoft.AspNetCore.Http.Validation.Generated
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Concurrent;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.AspNetCore.Http.Validation;
-
     {{GeneratedCodeAttribute}}
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo
     {
-        private readonly ValidationAttribute[] _validationAttributes;
+        private readonly global::System.ComponentModel.DataAnnotations.ValidationAttribute[] _validationAttributes;
 
         public GeneratedValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
+            global::System.Type containingType,
+            global::System.Type propertyType,
             string name,
             string displayName,
             bool isEnumerable,
             bool isNullable,
             bool isRequired,
             bool hasValidatableType,
-            ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
         {
             _validationAttributes = validationAttributes;
         }
 
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
 
     {{GeneratedCodeAttribute}}
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
-            Type type,
+            global::System.Type type,
             ValidatablePropertyInfo[] members,
             bool implementsIValidatableObject,
-            Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
+            global::System.Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
     }
 
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
+        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(global::System.Type type)
         {
-            {{EmitTypeChecks(validatableTypes)}}
+{{EmitTypeChecks(validatableTypes)}}
             return null;
         }
 
@@ -105,17 +97,17 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return null;
         }
 
-        {{EmitCreateMethods(validatableTypes)}}
+{{EmitCreateMethods(validatableTypes)}}
     }
 
     {{GeneratedCodeAttribute}}
     file static class GeneratedServiceCollectionExtensions
     {
         {{addValidation!.GetInterceptsLocationAttributeSyntax()}}
-        public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
+        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.
-            return ValidationServiceCollectionExtensions.AddValidation(services, options =>
+            return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
                 options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
@@ -129,13 +121,13 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {{GeneratedCodeAttribute}}
     file static class ValidationAttributeCache
     {
-        private sealed record CacheKey(Type AttributeType, object[] Arguments, IReadOnlyDictionary<string, object> NamedArguments);
-        private static readonly ConcurrentDictionary<CacheKey, ValidationAttribute> _cache = new();
+        private sealed record CacheKey(global::System.Type AttributeType, object[] Arguments, global::System.Collections.Generic.Dictionary<string, object> NamedArguments);
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute> _cache = new();
 
-        public static ValidationAttribute? GetOrCreateValidationAttribute(
-            Type attributeType,
+        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute? GetOrCreateValidationAttribute(
+            global::System.Type attributeType,
             object[] arguments,
-            IReadOnlyDictionary<string, object> namedArguments)
+            global::System.Collections.Generic.Dictionary<string, object> namedArguments)
         {
             var key = new CacheKey(attributeType, arguments, namedArguments);
             return _cache.GetOrAdd(key, static k =>
@@ -143,79 +135,105 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 var type = k.AttributeType;
                 var args = k.Arguments;
 
-                ValidationAttribute attribute;
+                global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute;
 
                 if (args.Length == 0)
                 {
                     attribute = type switch
                     {
-                        Type t when t == typeof(RequiredAttribute) => new RequiredAttribute(),
-                        Type t when t == typeof(EmailAddressAttribute) => new EmailAddressAttribute(),
-                        Type t when t == typeof(PhoneAttribute) => new PhoneAttribute(),
-                        Type t when t == typeof(UrlAttribute) => new UrlAttribute(),
-                        Type t when t == typeof(CreditCardAttribute) => new CreditCardAttribute(),
-                        _ when typeof(ValidationAttribute).IsAssignableFrom(type) =>
-                            (ValidationAttribute)Activator.CreateInstance(type)!
+                        global::System.Type t when t == typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute) => new global::System.ComponentModel.DataAnnotations.RequiredAttribute(),
+                        global::System.Type t when t == typeof(global::System.ComponentModel.DataAnnotations.EmailAddressAttribute) => new global::System.ComponentModel.DataAnnotations.EmailAddressAttribute(),
+                        global::System.Type t when t == typeof(global::System.ComponentModel.DataAnnotations.PhoneAttribute) => new global::System.ComponentModel.DataAnnotations.PhoneAttribute(),
+                        global::System.Type t when t == typeof(global::System.ComponentModel.DataAnnotations.UrlAttribute) => new global::System.ComponentModel.DataAnnotations.UrlAttribute(),
+                        global::System.Type t when t == typeof(global::System.ComponentModel.DataAnnotations.CreditCardAttribute) => new global::System.ComponentModel.DataAnnotations.CreditCardAttribute(),
+                        _ when typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute).IsAssignableFrom(type) =>
+                            (global::System.ComponentModel.DataAnnotations.ValidationAttribute)global::System.Activator.CreateInstance(type)!
                     };
                 }
-                else if (type == typeof(CustomValidationAttribute) && args.Length == 2)
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.CustomValidationAttribute) && args.Length == 2)
                 {
                     // CustomValidationAttribute requires special handling
                     // First argument is a type, second is a method name
-                    if (args[0] is Type validatingType && args[1] is string methodName)
+                    if (args[0] is global::System.Type validatingType && args[1] is string methodName)
                     {
-                        attribute = new CustomValidationAttribute(validatingType, methodName);
+                        attribute = new global::System.ComponentModel.DataAnnotations.CustomValidationAttribute(validatingType, methodName);
                     }
                     else
                     {
-                        throw new ArgumentException($"Invalid arguments for CustomValidationAttribute: Type and method name required");
+                        throw new global::System.ArgumentException($"Invalid arguments for CustomValidationAttribute: Type and method name required");
                     }
                 }
-                else if (type == typeof(StringLengthAttribute))
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.StringLengthAttribute))
                 {
                     if (args[0] is int maxLength)
-                        attribute = new StringLengthAttribute(maxLength);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.StringLengthAttribute(maxLength);
+                    }
                     else
-                        throw new ArgumentException($"Invalid maxLength value for StringLengthAttribute: {args[0]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid maxLength value for StringLengthAttribute: {args[0]}");
+                    }
                 }
-                else if (type == typeof(MinLengthAttribute))
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.MinLengthAttribute))
                 {
                     if (args[0] is int length)
-                        attribute = new MinLengthAttribute(length);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.MinLengthAttribute(length);
+                    }
                     else
-                        throw new ArgumentException($"Invalid length value for MinLengthAttribute: {args[0]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid length value for MinLengthAttribute: {args[0]}");
+                    }
                 }
-                else if (type == typeof(MaxLengthAttribute))
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.MaxLengthAttribute))
                 {
                     if (args[0] is int length)
-                        attribute = new MaxLengthAttribute(length);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.MaxLengthAttribute(length);
+                    }
                     else
-                        throw new ArgumentException($"Invalid length value for MaxLengthAttribute: {args[0]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid length value for MaxLengthAttribute: {args[0]}");
+                    }
                 }
-                else if (type == typeof(RangeAttribute) && args.Length == 2)
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute) && args.Length == 2)
                 {
                     if (args[0] is int min && args[1] is int max)
-                        attribute = new RangeAttribute(min, max);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.RangeAttribute(min, max);
+                    }
                     else if (args[0] is double dmin && args[1] is double dmax)
-                        attribute = new RangeAttribute(dmin, dmax);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.RangeAttribute(dmin, dmax);
+                    }
                     else
-                        throw new ArgumentException($"Invalid range values for RangeAttribute: {args[0]}, {args[1]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid range values for RangeAttribute: {args[0]}, {args[1]}");
+                    }
                 }
-                else if (type == typeof(RegularExpressionAttribute))
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute))
                 {
                     if (args[0] is string pattern)
-                        attribute = new RegularExpressionAttribute(pattern);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute(pattern);
+                    }
                     else
-                        throw new ArgumentException($"Invalid pattern for RegularExpressionAttribute: {args[0]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid pattern for RegularExpressionAttribute: {args[0]}");
+                    }
                 }
-                else if (type == typeof(CompareAttribute))
+                else if (type == typeof(global::System.ComponentModel.DataAnnotations.CompareAttribute))
                 {
                     if (args[0] is string otherProperty)
-                        attribute = new CompareAttribute(otherProperty);
+                    {
+                        attribute = new global::System.ComponentModel.DataAnnotations.CompareAttribute(otherProperty);
+                    }
                     else
-                        throw new ArgumentException($"Invalid otherProperty for CompareAttribute: {args[0]}");
+                    {
+                        throw new global::System.ArgumentException($"Invalid otherProperty for CompareAttribute: {args[0]}");
+                    }
                 }
-                else if (typeof(ValidationAttribute).IsAssignableFrom(type))
+                else if (typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute).IsAssignableFrom(type))
                 {
                     var constructors = type.GetConstructors();
                     var success = false;
@@ -242,7 +260,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                                 else
                                 {
                                     // Try to convert
-                                    convertedArgs[i] = Convert.ChangeType(args[i], parameters[i].ParameterType);
+                                    convertedArgs[i] = global::System.Convert.ChangeType(args[i], parameters[i].ParameterType);
                                 }
                             }
                             catch
@@ -254,7 +272,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
                         if (canUseConstructor)
                         {
-                            attribute = (ValidationAttribute)Activator.CreateInstance(type, convertedArgs)!;
+                            attribute = (global::System.ComponentModel.DataAnnotations.ValidationAttribute)global::System.Activator.CreateInstance(type, convertedArgs)!;
                             success = true;
                             break;
                         }
@@ -262,12 +280,12 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
                     if (!success)
                     {
-                        throw new ArgumentException($"Could not find a suitable constructor for validation attribute type: {type.FullName}");
+                        throw new global::System.ArgumentException($"Could not find a suitable constructor for validation attribute type: {type.FullName}");
                     }
                 }
                 else
                 {
-                    throw new ArgumentException($"Unsupported validation attribute type: {type.FullName}");
+                    throw new global::System.ArgumentException($"Unsupported validation attribute type: {type.FullName}");
                 }
 
                 // Apply named arguments after construction
@@ -286,12 +304,12 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                             else
                             {
                                 // Try to convert
-                                prop.SetValue(attribute, Convert.ChangeType(namedArg.Value, prop.PropertyType));
+                                prop.SetValue(attribute, global::System.Convert.ChangeType(namedArg.Value, prop.PropertyType));
                             }
                         }
-                        catch (Exception ex)
+                        catch (global::System.Exception ex)
                         {
-                            throw new ArgumentException($"Failed to set property {namedArg.Key} on {type.FullName}: {ex.Message}");
+                            throw new global::System.ArgumentException($"Failed to set property {namedArg.Key} on {type.FullName}: {ex.Message}");
                         }
                     }
                 }
@@ -350,8 +368,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
         var args = attr.Arguments.Count > 0
-            ? $"new object[] {{ {string.Join(", ", processedArgs)} }}"
-            : "Array.Empty<object>()";
+            ? $"[{string.Join(", ", processedArgs)}]"
+            : "[]";
 
         // Process named arguments - ensure proper formatting for object dictionary
         var namedArgsParts = new List<string>(attr.NamedArguments.Count);
@@ -401,11 +419,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         }
 
         var namedArgs = attr.NamedArguments.Count > 0
-            ? $"new Dictionary<string, object> {{ {string.Join(", ", namedArgsParts)} }}"
-            : "new Dictionary<string, object>()";
+            ? $"new global::System.Collections.Generic.Dictionary<string, object> {{ {string.Join(", ", namedArgsParts)} }}"
+            : "[]";
 
         // Use string interpolation with @ to prevent escaping issues in the error message
-        return $@"ValidationAttributeCache.GetOrCreateValidationAttribute(typeof({attr.ClassName}), {args}, {namedArgs}) ?? throw new InvalidOperationException(@""Failed to create validation attribute {attr.ClassName}"")";
+        return $@"ValidationAttributeCache.GetOrCreateValidationAttribute(typeof({attr.ClassName}), {args}, {namedArgs}) ?? throw new global::System.InvalidOperationException(@""Failed to create validation attribute {attr.ClassName}"")";
     }
 
     private static string EmitTypeChecks(ImmutableArray<ValidatableType> validatableTypes)
@@ -426,44 +444,59 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     private static string EmitCreateMethods(ImmutableArray<ValidatableType> validatableTypes)
     {
         var sw = new StringWriter();
-        var cw = new CodeWriter(sw, baseIndent: 3);
+        var cw = new CodeWriter(sw, baseIndent: 2);
         foreach (var validatableType in validatableTypes)
         {
+            var validatableSubTypes = validatableType.ValidatableSubTypeNames.IsDefaultOrEmpty
+                ? "null"
+                : $"[{string.Join(", ", validatableType.ValidatableSubTypeNames.Select(t => $"typeof({t})"))}]";
             cw.WriteLine($@"private ValidatableTypeInfo Create{SanitizeTypeName(validatableType.Type.MetadataName)}()");
             cw.StartBlock();
-            cw.WriteLine($"""
-            return new GeneratedValidatableTypeInfo(
-                type: typeof({validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),
-                members: [
-                    {string.Join(",\n                        ", validatableType.Members.Select(EmitValidatableMemberForCreate))}
-                ],
-                implementsIValidatableObject: {(validatableType.IsIValidatableObject ? "true" : "false")}{(validatableType.ValidatableSubTypeNames.Any() ? $@",
-                validatableSubTypes: [
-                    {string.Join(",\n                        ", validatableType.ValidatableSubTypeNames.Select(t => $"typeof({t})"))}
-                ]" : string.Empty)});
-            """);
+            cw.WriteLine("return new GeneratedValidatableTypeInfo(");
+            cw.Indent++;
+            cw.WriteLine($"type: typeof({validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+            if (validatableType.Members.IsDefaultOrEmpty)
+            {
+                cw.WriteLine("members: []");
+            }
+            else
+            {
+                cw.WriteLine("members: [");
+                cw.Indent++;
+                foreach (var member in validatableType.Members)
+                {
+                    EmitValidatableMemberForCreate(member, cw);
+                }
+                cw.Indent--;
+                cw.WriteLine("],");
+            }
+            cw.WriteLine($"implementsIValidatableObject: {(validatableType.IsIValidatableObject ? "true" : "false")},");
+            cw.WriteLine($"validatableSubTypes: {validatableSubTypes}");
+            cw.Indent--;
+            cw.WriteLine(");");
             cw.EndBlock();
         }
         return sw.ToString();
     }
 
-    private static string EmitValidatableMemberForCreate(ValidatableProperty member)
+    private static void EmitValidatableMemberForCreate(ValidatableProperty member, CodeWriter cw)
     {
         var validationAttributes = member.Attributes.IsDefaultOrEmpty
             ? "[]"
             : $"[{string.Join(", ", member.Attributes.Select(EmitValidationAttributeForCreate))}]";
-        return $$"""
-        new GeneratedValidatablePropertyInfo(
-            containingType: typeof({{member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
-            propertyType: typeof({{member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}),
-            name: "{{member.Name}}",
-            displayName: "{{member.DisplayName}}",
-            isEnumerable: {{member.IsEnumerable.ToString().ToLowerInvariant()}},
-            isNullable: {{member.IsNullable.ToString().ToLowerInvariant()}},
-            isRequired: {{member.IsRequired.ToString().ToLowerInvariant()}},
-            hasValidatableType: {{member.HasValidatableType.ToString().ToLowerInvariant()}},
-            validationAttributes: {{validationAttributes}})
-""";
+        cw.WriteLine("new GeneratedValidatablePropertyInfo(");
+        cw.Indent++;
+        cw.WriteLine($"containingType: typeof({member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+        cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+        cw.WriteLine($"name: \"{member.Name}\",");
+        cw.WriteLine($"displayName: \"{member.DisplayName}\",");
+        cw.WriteLine($"isEnumerable: {(member.IsEnumerable ? "true" : "false")},");
+        cw.WriteLine($"isNullable: {(member.IsNullable ? "true" : "false")},");
+        cw.WriteLine($"isRequired: {(member.IsRequired ? "true" : "false")},");
+        cw.WriteLine($"hasValidatableType: {(member.HasValidatableType ? "true" : "false")},");
+        cw.WriteLine($"validationAttributes: {validationAttributes}");
+        cw.Indent--;
+        cw.WriteLine("),");
     }
 
     private static string SanitizeTypeName(string typeName)
