@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,9 +10,6 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class ValidationEndpointFilterFactory
 {
-    private const string ValidationContextJustification = "The DisplayName property is always statically initialized in the ValidationContext through this codepath.";
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = ValidationContextJustification)]
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
         var parameters = context.MethodInfo.GetParameters();
@@ -42,7 +38,13 @@ internal static class ValidationEndpointFilterFactory
                 {
                     continue;
                 }
-                var validationContext = new ValidationContext(argument, context.HttpContext.RequestServices, items: null);
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+                // ValidationContext is not trim-friendly in codepaths that don't
+                // initialize an explicit DisplayName. We can suppress the warning here.
+                // Eventually, this can be removed when the code is updated to
+                // use https://github.com/dotnet/runtime/issues/113134.
+                var validationContext = new ValidationContext(argument, context.HttpContext.RequestServices, items: null) { DisplayName = validatableParameter.DisplayName };
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                 validatableContext.ValidationContext = validationContext;
                 await validatableParameter.Validate(argument, validatableContext);
             }
