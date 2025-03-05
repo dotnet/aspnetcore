@@ -581,8 +581,6 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return client;
     }
 
-
-
     private HttpMessageHandler CreateHandler()
     {
         if (_useKestrel)
