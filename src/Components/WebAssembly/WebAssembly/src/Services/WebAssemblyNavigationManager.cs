@@ -88,39 +88,19 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     /// <inheritdoc />
     protected override void NotFoundCore()
     {
-        _ = PerformNotFoundAsync();
-
-        async Task PerformNotFoundAsync()
+        try
         {
-            try
-            {
-                var shouldContinueNotFound = await NotifyNotFoundAsync();
-
-                if (!shouldContinueNotFound)
-                {
-                    Log.NotFoundRenderCanceled(_logger);
-                    return;
-                }
-
-                NotifyNotFound();
-            }
-            catch (Exception ex)
-            {
-                // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleNotFoundHandlerException.
-                // But if some other exception gets thrown, we still want to know about it.
-                Log.NotFoundRenderFailed(_logger, ex);
-            }
+            NotifyNotFound();
+        }
+        catch (Exception ex)
+        {
+            Log.NotFoundRenderFailed(_logger, ex);
         }
     }
 
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
-    }
-
-    protected override void HandleNotFoundHandlerException(Exception ex, NotFoundContext context)
-    {
-        Log.NotFoundRenderFailed(_logger, ex);
     }
 
     protected override void SetNavigationLockState(bool value)
@@ -136,8 +116,5 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
 
         [LoggerMessage(5, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
         public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
-
-        [LoggerMessage(1, LogLevel.Debug, "NotFound render canceled", EventName = "NotFoundRenderCanceled")]
-        public static partial void NotFoundRenderCanceled(ILogger logger);
     }
 }

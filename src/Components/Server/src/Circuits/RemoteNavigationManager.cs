@@ -165,26 +165,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         Log.RequestingNotFound(_logger);
 
-        _ = NotFoundAsync();
-
-        async Task NotFoundAsync()
+        try
         {
-            try
-            {
-                bool shouldContinueRendering = await NotifyNotFoundAsync();
-                if (!shouldContinueRendering)
-                {
-                    Log.NotFoundRenderCanceled(_logger);
-                    return;
-                }
-
-                NotifyNotFound();
-            }
-            catch (Exception ex)
-            {
-                Log.NotFoundRenderFailed(_logger, ex);
-                UnhandledException?.Invoke(this, ex);
-            }
+            NotifyNotFound();
+        }
+        catch (Exception ex)
+        {
+            Log.NotFoundRenderFailed(_logger, ex);
+            UnhandledException?.Invoke(this, ex);
         }
     }
 
@@ -248,8 +236,5 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
-
-        [LoggerMessage(3, LogLevel.Debug, "Rendering of NotFound canceled", EventName = "NotFoundRenderCanceled")]
-        public static partial void NotFoundRenderCanceled(ILogger logger);
     }
 }
