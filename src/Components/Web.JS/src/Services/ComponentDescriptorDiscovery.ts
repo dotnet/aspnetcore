@@ -15,17 +15,10 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 
 const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
+const blazorWebAssemblyEnvironmentCommentRegularExpression = /^\s*Blazor-WebAssemblyEnvironment:(?<environment>[a-zA-Z0-9+/=]+)$/;
 
-export function findWebAssemblyEnvironment(components: ComponentDescriptor[]): string | undefined {
-  for (let index = 0; index < components.length; index++) {
-    const component = components[index];
-    const webAssemblyComponent = component as WebAssemblyComponentDescriptor;
-    if (webAssemblyComponent.environment) {
-      return webAssemblyComponent.environment;
-    }
-  }
-
-  return undefined;
+export function discoverWebAssemblyEnvironment(root: Node): string | null | undefined {
+  return discoverBlazorComment(root, blazorWebAssemblyEnvironmentCommentRegularExpression, 'environment');
 }
 
 export function discoverServerPersistedState(node: Node): string | null | undefined {
@@ -394,5 +387,4 @@ type WebAssemblyMarkerData = {
   assembly: string;
   parameterDefinitions: string;
   parameterValues: string;
-  environment: string | undefined;
 } & CommonMarkerData;

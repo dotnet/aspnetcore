@@ -111,12 +111,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // may take a long time to load, so starting to load them now potentially reduces
     // the time to interactvity.
     if (descriptor.type === 'webassembly') {
-      this.startLoadingWebAssemblyIfNotStarted(descriptor.environment);
+      this.startLoadingWebAssemblyIfNotStarted();
     } else if (descriptor.type === 'auto') {
       // If the WebAssembly runtime starts downloading because an Auto component was added to
       // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
       // so that the performance of any Blazor Server circuit is minimally impacted.
-      this.startLoadingWebAssemblyIfNotStarted(descriptor.environment, /* maxParallelDownloadsOverride */ 1);
+      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -131,14 +131,14 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted(environment: string | undefined, maxParallelDownloadsOverride?: number) {
+  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(environment ?? this._webAssemblyEnvironment);
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyEnvironment);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {

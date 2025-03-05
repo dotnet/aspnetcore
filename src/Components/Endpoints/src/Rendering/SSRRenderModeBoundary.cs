@@ -165,8 +165,8 @@ internal class SSRRenderModeBoundary : IComponent
         var marker = RenderMode switch
         {
             InteractiveServerRenderMode server => ComponentMarker.Create(ComponentMarker.ServerMarkerType, server.Prerender, _markerKey),
-            InteractiveWebAssemblyRenderMode webAssembly => ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, webAssembly.Prerender, _markerKey, GetEnvironmentOnce(httpContext)),
-            InteractiveAutoRenderMode auto => ComponentMarker.Create(ComponentMarker.AutoMarkerType, auto.Prerender, _markerKey, GetEnvironmentOnce(httpContext)),
+            InteractiveWebAssemblyRenderMode webAssembly => ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, webAssembly.Prerender, _markerKey),
+            InteractiveAutoRenderMode auto => ComponentMarker.Create(ComponentMarker.AutoMarkerType, auto.Prerender, _markerKey),
             _ => throw new UnreachableException($"Unknown render mode {RenderMode.GetType().FullName}"),
         };
 
@@ -187,9 +187,6 @@ internal class SSRRenderModeBoundary : IComponent
 
         return marker;
     }
-
-    private static string? GetEnvironmentOnce(HttpContext httpContext)
-        => httpContext.RequestServices.GetRequiredService<WebAssemblyEnvironmentEmitter>().GetEnvironmentOnce();
 
     private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
     {

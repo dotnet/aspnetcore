@@ -9,14 +9,16 @@ internal class WebAssemblyEnvironmentEmitter(IHostEnvironment hostEnvironment)
 {
     private bool wasEmittedAlready;
 
-    public string? GetEnvironmentOnce()
+    public bool TryGetEnvironmentOnce(out string environment)
     {
         if (wasEmittedAlready)
         {
-            return null;
+            environment = string.Empty;
+            return false;
         }
 
         wasEmittedAlready = true;
-        return hostEnvironment.EnvironmentName;
+        environment = hostEnvironment.EnvironmentName;
+        return true;
     }
 }

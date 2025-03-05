@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, findWebAssemblyEnvironment, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, discoverWebAssemblyEnvironment, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -13,7 +13,7 @@ let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
   registerComponent(descriptor: ComponentDescriptor): void;
-  setWebAssemblyEnvironment(webAssemblyEnvironment: string | undefined): void;
+  setWebAssemblyEnvironment(webAssemblyEnvironment: string | null | undefined): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -22,7 +22,7 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 
 export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
-  const webAssemblyEnvironment = findWebAssemblyEnvironment(descriptors);
+  const webAssemblyEnvironment = discoverWebAssemblyEnvironment(root);
   descriptorHandler?.setWebAssemblyEnvironment(webAssemblyEnvironment);
 
   for (const descriptor of descriptors) {
@@ -171,7 +171,7 @@ function treatAsMatch(destination: Node, source: Node) {
       }
 
       if (destinationRootDescriptor) {
-        // Update the existing descriptor with hte new descriptor's data
+        // Update the existing descriptor with the new descriptor's data
         mergeDescriptors(destinationRootDescriptor, sourceRootDescriptor);
 
         const isDestinationInteractive = isInteractiveRootComponentElement(destinationAsLogicalElement);

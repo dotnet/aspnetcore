@@ -68,7 +68,7 @@ export function setWebAssemblyOptions(initializersReady: Promise<Partial<WebAsse
   }
 }
 
-export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | undefined): Promise<void> {
+export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | null | undefined): Promise<void> {
   if (startPromise !== undefined) {
     throw new Error('Blazor WebAssembly has already started.');
   }
@@ -78,7 +78,7 @@ export function startWebAssembly(components: RootComponentManager<WebAssemblyCom
   return startPromise;
 }
 
-async function startCore(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | undefined, resolve, _) {
+async function startCore(components: RootComponentManager<WebAssemblyComponentDescriptor>, environment: string | null | undefined, resolve, _) {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
@@ -206,12 +206,12 @@ export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
-export function loadWebAssemblyPlatformIfNotStarted(environment: string | undefined): Promise<void> {
+export function loadWebAssemblyPlatformIfNotStarted(environment: string | null | undefined): Promise<void> {
   platformLoadPromise ??= (async () => {
     await initializersPromise;
     const finalOptions = options ?? {};
     if (!finalOptions.environment) {
-      finalOptions.environment = environment;
+      finalOptions.environment = environment ?? undefined;
     }
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {

@@ -271,6 +271,14 @@ internal partial class EndpointHtmlRenderer
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
+            if (marker.Type is ComponentMarker.WebAssemblyMarkerType or ComponentMarker.AutoMarkerType)
+            {
+                if (_httpContext.RequestServices.GetRequiredService<WebAssemblyEnvironmentEmitter>().TryGetEnvironmentOnce(out var environment))
+                {
+                    output.Write($"<!--Blazor-WebAssemblyEnvironment:{environment}-->");
+                }
+            }
+
             var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
             output.Write("<!--Blazor:");
             output.Write(serializedStartRecord);
