@@ -184,11 +184,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  private async startWebAssemblyIfNotStarted(environment?: string) {
-    this.startLoadingWebAssemblyIfNotStarted(environment);
+  private async startWebAssemblyIfNotStarted() {
+    this.startLoadingWebAssemblyIfNotStarted();
 
     if (!hasStartedWebAssembly()) {
-      await startWebAssembly(this, environment ?? this._webAssemblyEnvironment);
+      await startWebAssembly(this, this._webAssemblyEnvironment);
     }
   }
 
