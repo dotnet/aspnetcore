@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -25,6 +26,21 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
+    [Fact]
+    public async Task CanRenderNotFound()
+    {
+        var url = $"{ServerPathBase}/render-not-found-ssr";
+        Navigate(url);
+        var statusCode = await GetStatusCodeAsync(url);
+        Assert.Equal(404, statusCode);
+    }
+    private async Task<int> GetStatusCodeAsync(string relativeUrl)
+    {
+        using var client = new HttpClient();
+        string absoluteUrl = $"{_serverFixture.RootUri}/{relativeUrl}";
+        var response = await client.GetAsync(absoluteUrl);
+        return (int)response.StatusCode;
+    }
     [Fact]
     public void NavigationManagerCanRefreshSSRPageWhenInteractivityNotPresent()
     {
