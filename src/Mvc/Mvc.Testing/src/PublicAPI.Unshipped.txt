@@ -1,5 +1,5 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer!
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Initialize() -> void
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer?
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.UseKestrel() -> void
-virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHandler() -> System.Net.Http.HttpMessageHandler!

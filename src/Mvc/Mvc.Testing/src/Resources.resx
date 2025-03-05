@@ -129,4 +129,7 @@
   <data name="ServerNotInitialized" xml:space="preserve">
     <value>Server hasn't been initialized yet. Plase intialized the server first before trying to create a client.</value>
   </data>
+  <data name="UseKestrelCanBeCalledBeforeInitialization" xml:space="preserve">
+    <value>UseKestrel should be called before server initialization. Calling UseKestrel after the server was initialized will have no effect.</value>
+  </data>
 </root>
