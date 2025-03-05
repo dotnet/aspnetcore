@@ -510,6 +510,9 @@ public class RazorComponentResultTest
 
     class FakeNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
+         public new void Initialize(string baseUri, string uri)
+            => base.Initialize(baseUri, uri);
+
 #nullable enable
         public void Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer = null)
             => base.Initialize(baseUri, uri);

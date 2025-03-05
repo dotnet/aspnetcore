@@ -9,6 +9,8 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 {
     private IEndpointHtmlRenderer? _renderer;
 
+    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
+
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer)
     {
         Initialize(baseUri, uri);

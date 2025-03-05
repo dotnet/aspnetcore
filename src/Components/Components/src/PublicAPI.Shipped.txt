@@ -445,6 +445,7 @@ Microsoft.AspNetCore.Components.RouteView.RouteData.set -> void
 Microsoft.AspNetCore.Components.RouteView.RouteView() -> void
 Microsoft.AspNetCore.Components.RouteView.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri) -> void
 Microsoft.AspNetCore.Components.Routing.INavigationInterception
 Microsoft.AspNetCore.Components.Routing.INavigationInterception.EnableNavigationInterceptionAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Routing.IRoutingStateProvider

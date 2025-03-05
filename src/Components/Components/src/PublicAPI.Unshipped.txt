@@ -1,18 +1,17 @@
 #nullable enable
-
-virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
-virtual Microsoft.AspNetCore.Components.NavigationManager.NotFoundCore() -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
-Microsoft.AspNetCore.Components.Routing.NotFoundContext
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.NotFoundContext() -> void
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.get -> System.Threading.CancellationToken
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.init -> void
-Microsoft.AspNetCore.Components.Routing.NotFoundContext.PreventRendering() -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFound() -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFoundAsync() -> System.Threading.Tasks.ValueTask<bool>
-virtual Microsoft.AspNetCore.Components.NavigationManager.HandleNotFoundHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.NotFoundContext! context) -> void
-Microsoft.AspNetCore.Components.NotFoundRenderingException
-Microsoft.AspNetCore.Components.NotFoundRenderingException.NotFoundRenderingException(string! message, System.Exception! innerException) -> void
 Microsoft.AspNetCore.Components.IEndpointHtmlRenderer
 Microsoft.AspNetCore.Components.IEndpointHtmlRenderer.SetNotFoundResponse() -> void
-Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, Microsoft.AspNetCore.Components.IEndpointHtmlRenderer? renderer = null) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
+Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFound() -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFoundAsync() -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.NotFoundRenderingException
+Microsoft.AspNetCore.Components.NotFoundRenderingException.NotFoundRenderingException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, Microsoft.AspNetCore.Components.IEndpointHtmlRenderer! renderer) -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundContext
+Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Components.Routing.NotFoundContext.CancellationToken.init -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundContext.NotFoundContext() -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundContext.PreventRendering() -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.HandleNotFoundHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.NotFoundContext! context) -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.NotFoundCore() -> void
