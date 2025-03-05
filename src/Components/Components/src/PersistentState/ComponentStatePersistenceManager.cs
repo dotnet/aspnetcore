@@ -36,8 +36,13 @@ public class ComponentStatePersistenceManager
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
     {
         _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
-        _servicesRegistry.RegisterForPersistence(State);
     }
+
+    // For testing purposes only
+    internal PersistentServicesRegistry? ServicesRegistry => _servicesRegistry;
+
+    // For testing purposes only
+    internal List<PersistComponentStateRegistration> RegisteredCallbacks => _registeredCallbacks;
 
     /// <summary>
     /// Gets the <see cref="ComponentStatePersistenceManager"/> associated with the <see cref="ComponentStatePersistenceManager"/>.
@@ -73,6 +78,9 @@ public class ComponentStatePersistenceManager
 
         async Task PauseAndPersistState()
         {
+            // Ensure that we register the services before we start persisting the state.
+            _servicesRegistry?.RegisterForPersistence(State);
+
             State.PersistingState = true;
 
             if (store is IEnumerable<IPersistentComponentStateStore> compositeStore)
