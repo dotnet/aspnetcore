@@ -39,6 +39,9 @@
     ##else
     <Routes @rendermode="InteractiveWebAssembly" />
     ##endif*@
+    @*#if (UseServer)  -->
+    <ReconnectModal />
+    ##endif*@
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
