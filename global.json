@@ -13,7 +13,7 @@
       ]
     },
     "vs": {
-      "version": "17.2",
+      "version": "17.13",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
