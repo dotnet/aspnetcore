@@ -572,11 +572,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return client;
     }
 
-    /// <summary>
-    /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
-    /// </summary>
-
-    protected virtual HttpMessageHandler CreateHandler()
+    private HttpMessageHandler CreateHandler()
     {
         if (_useKestrel)
         {
