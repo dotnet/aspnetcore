@@ -92,22 +92,19 @@
                 run('ChannelCounter');
             });
 
-            function run(method) {
+            async function run(method) {
                 let id = invocationCounter;
                 invocationCounter += 1;
                 addLine('resultsList', 'running ' + method + '(' + id + ') ...');
-                connection.stream(method, 10, (Math.random() * 5) * 200).subscribe({
-                    closed: false,
-                    next: function (item) {
+                try
+                {
+                    for await (var item of connection.streamAsync(method, 100, (Math.random() * 5) * 200)) {
                         addLine('resultsList', method + '(' + id + '): ' + item);
-                    },
-                    error: function (err) {
-                        addLine('resultsList', method + '(' + id + '):' + err, 'red');
-                    },
-                    complete: function () {
-                        addLine('resultsList', method + '(' + id + '): complete', 'green');
                     }
-                });
+                    addLine('resultsList', method + '(' + id + '): complete', 'green');
+                } catch (err) {
+                    addLine('resultsList', method + '(' + id + '):' + err, 'red');
+                }
             }
         });
     </script>

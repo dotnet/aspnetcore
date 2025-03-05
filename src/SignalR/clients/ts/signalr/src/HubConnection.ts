@@ -363,6 +363,63 @@ export class HubConnection {
         }
     }
 
+    public async *streamAsync<T = any>(methodName: string, ...args: any[]): AsyncGenerator<T, void> {
+        const res = this.stream(methodName, ...args);
+
+        var resolve: (value: void | PromiseLike<void>) => void;
+        let itemSource: Promise<void> = new Promise((res) =>
+        {
+            resolve = res;
+        });
+
+        var results: T[] = [];
+        var isComplete: boolean = false;
+        var error: any = undefined;
+        const subscriber = res.subscribe({
+            next: (item) => {
+                results.push(item);
+                resolve();
+            },
+            complete: () => {
+                isComplete = true;
+                resolve();
+            },
+            error: (err) => {
+                error = err;
+                resolve();
+            }
+        });
+
+        try {
+            while (true)
+            {
+                await itemSource;
+
+                itemSource = new Promise((res) =>
+                {
+                    resolve = res;
+                });
+
+                while (results.length > 0) {
+                    const item = results.shift();
+                    if (item) {
+                        yield item;
+                    }
+                }
+
+                if (error) {
+                    throw error;
+                }
+
+                if (isComplete) {
+                    return;
+                }
+            }
+        } finally {
+            subscriber.dispose();
+        }
+    }
+
     /** Invokes a streaming hub method on the server using the specified name and arguments.
      *
      * @typeparam T The type of the items returned by the server.

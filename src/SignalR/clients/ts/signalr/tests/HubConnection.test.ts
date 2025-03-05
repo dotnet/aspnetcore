@@ -1704,6 +1704,192 @@ describe("HubConnection", () => {
                 }
             }, /Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error: Error: from error/);
         });
+
+        it("streamAsync with multiple items", async () => {
+            async function runStream(hubConnection: HubConnection): Promise<string[]> {
+                const values: string[] = [];
+                const stream = hubConnection.streamAsync("testMethod", "arg");
+                for await (const item of stream) {
+                    values.push(item);
+                }
+
+                return values;
+            }
+
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const streamTask = runStream(hubConnection);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo2" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo3" });
+                    connection.receive({ type: MessageType.Completion, invocationId: "0" });
+
+                    const values = await streamTask;
+
+                    expect(values.length).toEqual(3);
+                    expect(values[0]).toEqual("foo");
+                    expect(values[1]).toEqual("foo2");
+                    expect(values[2]).toEqual("foo3");
+
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("streamAsync can send stream as well", async () => {
+            async function runStream<T>(hubConnection: HubConnection, subject: Subject<T>): Promise<string[]> {
+                const values: string[] = [];
+                const stream = hubConnection.streamAsync("testMethod", "arg", subject);
+                for await (const item of stream) {
+                    values.push(item);
+                }
+
+                return values;
+            }
+
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const subject = new Subject();
+
+                    const streamTask = runStream(hubConnection, subject);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "1",
+                        streamIds: ["0"],
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
+                        invocationId: "0",
+                        item: "item numero uno",
+                        type: MessageType.StreamItem,
+                    });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: "1" });
+
+                    const values = await streamTask;
+
+                    expect(values.length).toEqual(0);
+
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("streamAsync can cancel", async () => {
+            async function runStream(hubConnection: HubConnection): Promise<string[]> {
+                const values: string[] = [];
+                const stream = hubConnection.streamAsync("testMethod", "arg");
+                for await (const item of stream) {
+                    values.push(item);
+                    await stream.return();
+                }
+
+                return values;
+            }
+
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const streamTask = runStream(hubConnection);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo2" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo3" });
+                    connection.receive({ type: MessageType.Completion, invocationId: "0" });
+
+                    const values = await streamTask;
+
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
+                        invocationId: "0",
+                        type: MessageType.CancelInvocation,
+                    });
+
+                    expect(values.length).toEqual(1);
+                    expect(values[0]).toEqual("foo");
+
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("streamAsync receives error", async () => {
+            async function runStream(hubConnection: HubConnection, values: string[]): Promise<void> {
+                const stream = hubConnection.streamAsync<string>("testMethod", "arg");
+                for await (const item of stream) {
+                    values.push(item);
+                }
+            }
+
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const values: string[] = [];
+                    const streamTask = runStream(hubConnection, values);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "0", item: "foo2" });
+                    connection.receive({ type: MessageType.Completion, invocationId: "0", error: "bar" });
+
+                    try {
+                        await streamTask;
+                    } catch (err) {
+                        expect(err).toEqual(new Error("bar"));
+                    }
+
+                    expect(values.length).toEqual(2);
+                    expect(values[0]).toEqual("foo");
+                    expect(values[1]).toEqual("foo2");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
     });
 
     describe("onClose", () => {
