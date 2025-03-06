@@ -14,6 +14,9 @@ internal static partial class HttpApi
     private const string HTTPAPI = "httpapi.dll";
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
+    internal static partial uint HttpSetServiceConfiguration(IntPtr ServiceHandle, ulong configId, IntPtr pConfigInformation, ulong configInformationLength, IntPtr overlapped);
+
+    [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpReceiveRequestEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, IntPtr pEntityBuffer, uint entityBufferLength, out uint bytesReturned, SafeNativeOverlapped pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
@@ -34,21 +37,57 @@ internal static partial class HttpApi
     [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
     internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
-    internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
-        void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped);
+    internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, uint propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped);
 
-    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
+    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, int propertyId,
+        void* input, uint inputSize, IntPtr overlapped);
 
     // HTTP_PROPERTY_FLAGS.Present (1)
     internal static HTTP_PROPERTY_FLAGS HTTP_PROPERTY_FLAGS_PRESENT { get; } = new() { _bitfield = 0x00000001 };
     // This property is used by HttpListener to pass the version structure to the native layer in API calls.
     internal static HTTPAPI_VERSION Version { get; } = new () { HttpApiMajorVersion = 2 };
     internal static SafeLibraryHandle? HttpApiModule { get; }
-    internal static HttpGetRequestPropertyInvoker? HttpGetRequestProperty { get; }
-    internal static HttpSetRequestPropertyInvoker? HttpSetRequestProperty { get; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+
+    private static HttpGetRequestPropertyInvoker? HttpGetRequestInvoker { get; }
+    private static HttpSetRequestPropertyInvoker? HttpSetRequestInvoker { get; }
+
+    internal static bool HttpGetRequestPropertySupported => HttpGetRequestInvoker is not null;
+    internal static bool HttpSetRequestPropertySupported => HttpSetRequestInvoker is not null;
+
+    internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
+    => HttpGetRequestProperty(requestQueueHandle, requestId, (uint)propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+
+    internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, uint propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
+    {
+        if (!HttpGetRequestPropertySupported)
+        {
+            return default;
+        }
+
+        return HttpGetRequestInvoker!(requestQueueHandle, requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    }
+
+    internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* input, uint inputSize, IntPtr overlapped)
+    => HttpSetRequestProperty(requestQueueHandle, requestId, (int)propertyId, input, inputSize, overlapped);
+
+    internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, int propertyId,
+        void* input, uint inputSize, IntPtr overlapped)
+    {
+        if (!HttpSetRequestPropertySupported)
+        {
+            return default;
+        }
+
+        return HttpSetRequestInvoker!(requestQueueHandle, requestId, propertyId, input, inputSize, overlapped);
+    }
+
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsTrailers { get; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsReset { get; }
     internal static bool SupportsDelegation { get; }
     internal static bool Supported { get; }
@@ -61,9 +100,9 @@ internal static partial class HttpApi
         {
             Supported = true;
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
-            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
-            HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-            SupportsReset = HttpSetRequestProperty != null;
+            HttpGetRequestInvoker = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
+            HttpSetRequestInvoker = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+            SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
         }

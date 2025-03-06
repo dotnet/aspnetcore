@@ -20,5 +20,11 @@ internal partial class RequestContext
 
         [LoggerMessage(LoggerEventIds.RequestParsingError, LogLevel.Debug, "Failed to parse request.", EventName = "RequestParsingError")]
         public static partial void RequestParsingError(ILogger logger, Exception exception);
+
+        [LoggerMessage(LoggerEventIds.RequestParsingError, LogLevel.Debug, "Failed to invoke QueryTlsClientHello.", EventName = "TlsClientHelloRetrieveError")]
+        public static partial void TlsClientHelloRetrieveError(ILogger logger, string message);
+
+        [LoggerMessage(LoggerEventIds.RequestParsingError, LogLevel.Debug, "Failed to parse TLS client hello message.", EventName = "TlsClientHelloParseError")]
+        public static partial void TlsClientHelloParseError(ILogger logger, Exception exception);
     }
 }

@@ -1772,6 +1772,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.ValidationsGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj", "{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TlsFeaturesObserve", "src\Servers\HttpSys\samples\TlsFeaturesObserve\TlsFeaturesObserve.csproj", "{98C71EC8-1303-F55D-4032-E6728971770E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10983,6 +10985,22 @@ Global
 		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x64.Build.0 = Release|Any CPU
 		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x86.ActiveCfg = Release|Any CPU
 		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157}.Release|x86.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|arm64.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x64.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x86.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|arm64.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|arm64.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x64.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x64.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x86.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11777,6 +11795,7 @@ Global
 		{01A75167-DF5A-AF38-8700-C3FBB2C2CFF5} = {225AEDCF-7162-4A86-AC74-06B84660B379}
 		{E6D564C0-4CA5-411C-BF40-9802AF7900CB} = {01A75167-DF5A-AF38-8700-C3FBB2C2CFF5}
 		{7899F5DD-AA7C-4561-BAC4-E2EC78B7D157} = {01A75167-DF5A-AF38-8700-C3FBB2C2CFF5}
+		{98C71EC8-1303-F55D-4032-E6728971770E} = {49016328-4D32-46E4-A4D2-94686ED38EA2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
