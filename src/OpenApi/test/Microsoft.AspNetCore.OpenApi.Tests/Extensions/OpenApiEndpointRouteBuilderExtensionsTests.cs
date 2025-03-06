@@ -235,8 +235,9 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
     private static async Task ValidateOpenApiDocumentAsync(MemoryStream documentStream, Action<OpenApiDocument> action, string format = "json")
     {
         documentStream.Position = 0;
-        OpenApiReaderRegistry.RegisterReader(OpenApiConstants.Yaml, new OpenApiYamlReader());
-        var result = await OpenApiDocument.LoadAsync(documentStream, format);
+        var readerSettings = new OpenApiReaderSettings();
+        readerSettings.AddYamlReader();
+        var result = await OpenApiDocument.LoadAsync(documentStream, format, readerSettings);
         Assert.Empty(result.Diagnostic.Errors);
         action(result.Document);
     }

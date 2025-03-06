@@ -11,10 +11,6 @@ using System.Text.RegularExpressions;
 [UsesVerify]
 public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
 {
-    private static Regex DateTimeRegex() => new(
-        @"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{7}[+-]\d{2}:\d{2}",
-        RegexOptions.Compiled);
-
     [Theory]
     [InlineData("v1", OpenApiSpecVersion.OpenApi3_0)]
     [InlineData("v2", OpenApiSpecVersion.OpenApi3_0)]
@@ -42,7 +38,6 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
         await Verifier.Verify(json)
             .UseDirectory(outputDirectory)
-            .ScrubLinesWithReplace(line => DateTimeRegex().Replace(line, "[datetime]"))
             .UseParameters(documentName);
     }
 }
