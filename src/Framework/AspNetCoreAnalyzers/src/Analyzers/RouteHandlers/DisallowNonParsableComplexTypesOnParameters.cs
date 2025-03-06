@@ -30,7 +30,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var parameterTypeSymbol = ResovleParameterTypeSymbol(handlerDelegateParameter);
+            var parameterTypeSymbol = ResolveParameterTypeSymbol(handlerDelegateParameter);
 
             // If this is null it means we aren't working with a named type symbol.
             if (parameterTypeSymbol == null)
@@ -113,7 +113,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        static INamedTypeSymbol? ResovleParameterTypeSymbol(IParameterSymbol parameterSymbol)
+        static INamedTypeSymbol? ResolveParameterTypeSymbol(IParameterSymbol parameterSymbol)
         {
             INamedTypeSymbol? parameterTypeSymbol = null;
 
