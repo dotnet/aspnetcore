@@ -126,7 +126,7 @@ internal static unsafe partial class HttpApi
     internal static HttpSetRequestPropertyInvoker? HttpSetRequestProperty { get; private set; }
     [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
     internal static bool SupportsTrailers { get; private set; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsReset { get; private set; }
     internal static bool SupportsDelegation { get; private set; }
 
@@ -147,9 +147,9 @@ internal static unsafe partial class HttpApi
         if (supported)
         {
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
-            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
-            HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-            SupportsReset = HttpSetRequestProperty != null;
+            HttpGetRequestInvoker = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
+            HttpSetRequestInvoker = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+            SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
         }

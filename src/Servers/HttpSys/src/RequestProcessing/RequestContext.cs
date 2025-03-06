@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.Buffers;
 using System.Runtime.InteropServices;
-using System.Security.Authentication.ExtendedProtection;
+using System.Security.Authentication;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Connections.Abstractions.TLS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -234,28 +235,119 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    internal unsafe TLS_CLIENT_HELLO TryGetTlsClientHello()
     {
-        if (HttpApi.HttpGetRequestProperty != null)
+        if (!HttpApi.HttpGetRequestPropertySupported)
         {
-            var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+            return default;
+        }
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturned = &bytesReturnedValue;
+
+        var buffer = new byte[256];
+        try
+        {
             fixed (byte* pBuffer = buffer)
             {
                 var statusCode = HttpApi.HttpGetRequestProperty(
                     Server.RequestQueue.Handle,
                     RequestId,
-                    HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                    11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                     qualifier: null,
                     qualifierSize: 0,
-                    (void*)pBuffer,
+                    pBuffer,
                     (uint)buffer.Length,
-                    bytesReturned: null,
+                    bytesReturned: (IntPtr)bytesReturned,
                     IntPtr.Zero);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
                 {
-                    return Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                    // The buffer is too small, we need to allocate a larger one.
+                    // Firstly, return the initial buffer to not leak
+                    // ArrayPool<byte>.Shared.Return(buffer);
+
+                    // then reallocate the buffer of size as `bytesReturned`
+                    buffer = new byte[(int)bytesReturned];
+
+                    // and try again!
+                    statusCode = HttpApi.HttpGetRequestProperty(
+                        Server.RequestQueue.Handle,
+                        RequestId,
+                        11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        qualifier: null,
+                        qualifierSize: 0,
+                        pBuffer,
+                        (uint)buffer.Length,
+                        bytesReturned: (IntPtr)bytesReturned,
+                        IntPtr.Zero);
                 }
+
+                if (statusCode == ErrorCodes.ERROR_SUCCESS)
+                {
+                    try
+                    {
+                        var tlsMajorVersion = pBuffer[1];
+                        var tlsMinorVersion = pBuffer[2];
+
+                        return new TLS_CLIENT_HELLO
+                        {
+                            ProtocolVersion = tlsMinorVersion switch
+                            {
+                                4 => SslProtocols.Tls13,
+                                3 => SslProtocols.Tls12,
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
+                                2 => SslProtocols.Tls11,
+                                1 => SslProtocols.Tls,
+#pragma warning restore SYSLIB0039
+#pragma warning disable CS0618 // Type or member is obsolete
+                                0 => SslProtocols.Ssl3,
+#pragma warning restore CS0618 // Type or member is obsolete
+                                _ => SslProtocols.None,
+                            }
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.TlsClientHelloParseError(Logger, ex);
+                    }
+                }
+
+                // if not returned here, we got a non-success status code
+                Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
+                return default;
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            return default;
+        }
+
+        var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = HttpApi.HttpGetRequestProperty(
+                Server.RequestQueue.Handle,
+                RequestId,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                qualifier: null,
+                qualifierSize: 0,
+                pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: IntPtr.Zero,
+                IntPtr.Zero);
+
+            if (statusCode == ErrorCodes.ERROR_SUCCESS)
+            {
+                return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
             }
         }
 

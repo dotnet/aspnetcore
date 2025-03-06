@@ -1784,6 +1784,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotReferencedInWasmCodePack
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.WasmRemoteAuthentication", "src\Components\test\testassets\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj", "{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TlsFeaturesObserve", "src\Servers\HttpSys\samples\TlsFeaturesObserve\TlsFeaturesObserve.csproj", "{98C71EC8-1303-F55D-4032-E6728971770E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10753,6 +10755,22 @@ Global
 		{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13}.Release|x64.Build.0 = Release|Any CPU
 		{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13}.Release|x86.ActiveCfg = Release|Any CPU
 		{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13}.Release|x86.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|arm64.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x64.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Debug|x86.Build.0 = Debug|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|arm64.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|arm64.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x64.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x64.Build.0 = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x86.ActiveCfg = Release|Any CPU
+		{98C71EC8-1303-F55D-4032-E6728971770E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11634,6 +11652,7 @@ Global
 		{F232B503-D412-45EE-8B31-EFD46B9FA302} = {AA5ABFBC-177C-421E-B743-005E0FD1248B}
 		{433F91E4-E39D-4EB0-B798-2998B3969A2C} = {6126DCE4-9692-4EE2-B240-C65743572995}
 		{8A021D6D-7935-4AB3-BB47-38D4FF9B0D13} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{98C71EC8-1303-F55D-4032-E6728971770E} = {49016328-4D32-46E4-A4D2-94686ED38EA2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

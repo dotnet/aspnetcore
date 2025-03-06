@@ -8,6 +8,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Connections.Abstractions.TLS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -172,6 +173,7 @@ internal sealed partial class Request
             if (IsHttps)
             {
                 GetTlsHandshakeResults();
+                ParseTlsClientHello();
             }
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -360,6 +362,11 @@ internal sealed partial class Request
 
         var sni = RequestContext.GetClientSni();
         SniHostName = sni.Hostname;
+    }
+
+    private void ParseTlsClientHello()
+    {
+        TlsClientHelloMessage = RequestContext.TryGetTlsClientHello();
     }
 
     public X509Certificate2? ClientCertificate
