@@ -149,17 +149,17 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         lock (_dataWriterLock)
         {
-            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
+            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, responseBodyMode, appCompleted: false);
 
             return WriteDataToPipeAsync(data, cancellationToken);
         }
     }
 
-    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
@@ -375,7 +375,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, bool appCompleted)
     {
         // appCompleted flag is not used here. The write FIN is sent via the transport and not via the frame.
         // Headers are written to buffer and flushed with a FIN when Http3FrameWriter.CompleteAsync is called
