@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web App (Razor Pages)",
+  "name": "Application web ASP.NET Core (Razor Pages)",
   "description": "Modèle de projet pour la création d’une application ASP.NET Core avec un exemple de contenu ASP.NET Core Razor Pages",
   "symbols/auth/choices/None/description": "Aucune authentification",
   "symbols/auth/choices/Individual/description": "Authentification individuelle",

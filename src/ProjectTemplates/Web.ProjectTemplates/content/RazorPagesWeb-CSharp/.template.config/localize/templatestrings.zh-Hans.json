@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web App (Razor Pages)",
+  "name": "ASP.NET Core Web 应用(Razor Pages)",
   "description": "用于创建包含示例 ASP.NET Core Razor Pages 内容的 ASP.NET Core 应用程序的项目模板",
   "symbols/auth/choices/None/description": "无身份验证",
   "symbols/auth/choices/Individual/description": "个人身份验证",
