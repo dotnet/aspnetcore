@@ -664,6 +664,7 @@ public class EndpointHtmlRendererTest
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
+        collection.TryAddScoped<WebAssemblySettingsEmitter>();
         collection.TryAddSingleton(_dataprotectorProvider);
         collection.TryAddSingleton<WebAssemblyComponentSerializer>();
 
