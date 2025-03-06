@@ -326,12 +326,12 @@ internal sealed class OpenApiDocumentService(
         => description.ActionDescriptor.AttributeRouteInfo?.Name ??
             description.ActionDescriptor.EndpointMetadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName;
 
-    private static ISet<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
+    private static HashSet<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
         {
-            ISet<OpenApiTagReference> tags = new HashSet<OpenApiTagReference>();
+            HashSet<OpenApiTagReference> tags = [];
             foreach (var tag in tagsMetadata.Tags)
             {
                 document.Tags ??= new HashSet<OpenApiTag>();
@@ -346,7 +346,7 @@ internal sealed class OpenApiDocumentService(
         var controllerName = description.ActionDescriptor.RouteValues["controller"];
         document.Tags ??= new HashSet<OpenApiTag>();
         document.Tags.Add(new OpenApiTag { Name = controllerName });
-        return new HashSet<OpenApiTagReference> { new(controllerName, document) };
+        return [new(controllerName, document)];
     }
 
     private async Task<OpenApiResponses> GetResponsesAsync(

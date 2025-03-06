@@ -324,7 +324,7 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private ISet<OpenApiTagReference> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private HashSet<OpenApiTagReference> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
         var document = new OpenApiDocument();
@@ -361,10 +361,7 @@ internal sealed class OpenApiGenerator
 
         document.Tags ??= new HashSet<OpenApiTag>();
         document.Tags.Add(new OpenApiTag { Name = controllerName });
-        return new HashSet<OpenApiTagReference>
-        {
-            new(controllerName, document)
-        };
+        return [new(controllerName, document)];
     }
 
     private List<IOpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
