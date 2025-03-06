@@ -1,6 +1,7 @@
 #nullable enable
 abstract Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 abstract Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?

@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.FileProviders;
@@ -63,16 +65,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         // Initialize all route handlers with validation convention if validation options
         // are registered.
-        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection
-        {
-            (builder) =>
-            {
-                if (builder.ApplicationServices.GetService(typeof(IOptions<ValidationOptions>)) is not null)
-                {
-                    builder.FilterFactories.Add(ValidationEndpointFilterFactory.Create);
-                }
-            }
-        };
+        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
         var routeAttributes = RouteAttributes.RouteHandler;
@@ -113,7 +106,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context)
     {
         var endpoints = new RouteEndpoint[_routeEntries.Count];
-        for (int i = 0; i < _routeEntries.Count; i++)
+        for (var i = 0; i < _routeEntries.Count; i++)
         {
             endpoints[i] = (RouteEndpoint)CreateRouteEndpointBuilder(_routeEntries[i], context.Prefix, context.Conventions, context.FinallyConventions).Build();
         }
@@ -168,7 +161,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         // If we're not a route handler, we started with a fully realized (although unfiltered) RequestDelegate, so we can just redirect to that
         // while running any conventions. We'll put the original back if it remains unfiltered right before building the endpoint.
-        RequestDelegate? factoryCreatedRequestDelegate = isRouteHandler ? null : (RequestDelegate)entry.RouteHandler;
+        var factoryCreatedRequestDelegate = isRouteHandler ? null : (RequestDelegate)entry.RouteHandler;
 
         // Let existing conventions capture and call into builder.RequestDelegate as long as they do so after it has been created.
         RequestDelegate redirectRequestDelegate = context =>
@@ -243,6 +236,13 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         foreach (var entrySpecificConvention in entry.Conventions)
         {
             entrySpecificConvention(builder);
+        }
+
+        var hasValidationOptions = builder.ApplicationServices.GetService(typeof(IOptions<ValidationOptions>)) is not null;
+        var hasDisableValidationMetadata = builder.Metadata.OfType<IDisableValidationMetadata>().FirstOrDefault() is not null;
+        if (hasValidationOptions && !hasDisableValidationMetadata)
+        {
+            builder.FilterFactories.Insert(0, ValidationEndpointFilterFactory.Create);
         }
 
         // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.

@@ -354,6 +354,143 @@ public class ValidatableTypeInfoTests
         Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
     }
 
+    [Fact]
+    public async Task Validate_HandlesCustomValidationAttributes()
+    {
+        // Arrange
+        var productType = new TestValidatableTypeInfo(
+            typeof(Product),
+            [
+                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", false, false, true, false, [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
+            ],
+            false
+        );
+
+        var context = new ValidatableContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Product), productType }
+            })
+        };
+
+        var product = new Product { SKU = "INVALID-SKU" };
+        context.ValidationContext = new ValidationContext(product);
+
+        // Act
+        await productType.Validate(product, context);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("SKU", error.Key);
+        Assert.Equal("SKU must start with 'PROD-'.", error.Value.First());
+    }
+
+    [Fact]
+    public async Task Validate_HandlesMultipleErrorsOnSameProperty()
+    {
+        // Arrange
+        var userType = new TestValidatableTypeInfo(
+            typeof(User),
+            [
+                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password", false, false, true, false,
+                    [
+                        new RequiredAttribute(),
+                        new MinLengthAttribute(8) { ErrorMessage = "Password must be at least 8 characters." },
+                        new PasswordComplexityAttribute()
+                    ])
+            ],
+            false
+        );
+
+        var context = new ValidatableContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(User), userType }
+            })
+        };
+
+        var user = new User { Password = "abc" };  // Too short and not complex enough
+        context.ValidationContext = new ValidationContext(user);
+
+        // Act
+        await userType.Validate(user, context);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
+        Assert.Equal(2, context.ValidationErrors["Password"].Length); // But with 2 errors
+        Assert.Contains("Password must be at least 8 characters.", context.ValidationErrors["Password"]);
+        Assert.Contains("Password must contain at least one number and one special character.", context.ValidationErrors["Password"]);
+    }
+
+    [Fact]
+    public async Task Validate_HandlesMultiLevelInheritance()
+    {
+        // Arrange
+        var baseType = new TestValidatableTypeInfo(
+            typeof(BaseEntity),
+            [
+                CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", false, false, false, false, [])
+            ],
+            false
+        );
+
+        var intermediateType = new TestValidatableTypeInfo(
+            typeof(IntermediateEntity),
+            [
+                CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", false, false, false, false, [new PastDateAttribute()])
+            ],
+            false,
+            [typeof(BaseEntity)]
+        );
+
+        var derivedType = new TestValidatableTypeInfo(
+            typeof(DerivedEntity),
+            [
+                CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", false, false, true, false, [new RequiredAttribute()])
+            ],
+            false,
+            [typeof(IntermediateEntity)]
+        );
+
+        var context = new ValidatableContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(BaseEntity), baseType },
+                { typeof(IntermediateEntity), intermediateType },
+                { typeof(DerivedEntity), derivedType }
+            })
+        };
+
+        var entity = new DerivedEntity
+        {
+            Name = "",  // Invalid: required
+            CreatedAt = DateTime.Now.AddDays(1) // Invalid: future date
+        };
+        context.ValidationContext = new ValidationContext(entity);
+
+        // Act
+        await derivedType.Validate(entity, context);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("CreatedAt", kvp.Key);
+                Assert.Equal("Date must be in the past.", kvp.Value.First());
+            });
+    }
+
     private ValidatablePropertyInfo CreatePropertyInfo(
         Type containingType,
         Type propertyType,
@@ -434,6 +571,76 @@ public class ValidatableTypeInfoTests
         public string Name { get; set; } = string.Empty;
         public TreeNode? Parent { get; set; }
         public List<TreeNode> Children { get; set; } = [];
+    }
+
+    private class Product
+    {
+        public string SKU { get; set; } = string.Empty;
+    }
+
+    private class User
+    {
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private class BaseEntity
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+    }
+
+    private class IntermediateEntity : BaseEntity
+    {
+        public DateTime CreatedAt { get; set; }
+    }
+
+    private class DerivedEntity : IntermediateEntity
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private class PastDateAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is DateTime date && date > DateTime.Now)
+            {
+                return new ValidationResult("Date must be in the past.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    private class CustomSkuValidationAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is string sku && !sku.StartsWith("PROD-", StringComparison.Ordinal))
+            {
+                return new ValidationResult("SKU must start with 'PROD-'.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    private class PasswordComplexityAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is string password)
+            {
+                bool hasDigit = password.Any(c => char.IsDigit(c));
+                bool hasSpecial = password.Any(c => !char.IsLetterOrDigit(c));
+
+                if (!hasDigit || !hasSpecial)
+                {
+                    return new ValidationResult("Password must contain at least one number and one special character.");
+                }
+            }
+
+            return ValidationResult.Success;
+        }
     }
 
     // Test implementations
