@@ -26,7 +26,7 @@ builder.Services.AddValidation();
 
 var app = builder.Build();
 
-app.MapPost("/complex-type", (ComplexType complexType) => Results.Ok());
+app.MapPost("/complex-type", (ComplexType complexType) => Results.Ok("Passed"!));
 
 app.Run();
 
@@ -106,6 +106,7 @@ public static class CustomValidators
             await InvalidPropertyWithDerivedValidationAttributeProducesError(endpoint);
             await InvalidPropertyWithMultipleAttributesProducesError(endpoint);
             await InvalidPropertyWithCustomValidationProducesError(endpoint);
+            await ValidInputProducesNoWarnings(endpoint);
 
             async Task InvalidIntegerWithRangeProducesError(Endpoint endpoint)
             {
@@ -335,6 +336,37 @@ public static class CustomValidators
                     var error = Assert.Single(kvp.Value);
                     Assert.Equal("Can't use the same number value in two properties on the same class.", error);
                 });
+            }
+
+            async Task ValidInputProducesNoWarnings(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "IntegerWithRange": 50,
+                    "IntegerWithRangeAndDisplayName": 50,
+                    "PropertyWithMemberAttributes": {
+                        "RequiredProperty": "valid",
+                        "StringWithLength": "valid"
+                    },
+                    "PropertyWithoutMemberAttributes": {
+                        "RequiredProperty": "valid",
+                        "StringWithLength": "valid"
+                    },
+                    "PropertyWithInheritance": {
+                        "RequiredProperty": "valid",
+                        "StringWithLength": "valid",
+                        "EmailString": "test@example.com"
+                    },
+                    "ListOfSubTypes": [],
+                    "IntegerWithDerivedValidationAttribute": 2,
+                    "IntegerWithCustomValidation": 0,
+                    "PropertyWithMultipleAttributes": 12
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
             }
         });
     }

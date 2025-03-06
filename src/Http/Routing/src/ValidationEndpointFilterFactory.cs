@@ -69,7 +69,7 @@ internal static class ValidationEndpointFilterFactory
                 return await ValueTask.FromResult(new HttpValidationProblemDetails(validatableContext.ValidationErrors));
             }
 
-            return next;
+            return await next(context);
         };
     }
 

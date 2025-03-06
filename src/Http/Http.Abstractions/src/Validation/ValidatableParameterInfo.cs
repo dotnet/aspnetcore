@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// </summary>
 public abstract class ValidatableParameterInfo
 {
+    private ValidationAttribute? _requiredAttribute;
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
     /// </summary>
@@ -99,9 +100,12 @@ public abstract class ValidatableParameterInfo
 
         var validationAttributes = GetValidationAttributes();
 
-        if (IsRequired && validationAttributes.OfType<RequiredAttribute>().SingleOrDefault() is { } requiredAttribute)
+        if (IsRequired)
         {
-            var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
+            _requiredAttribute ??= validationAttributes.OfType<RequiredAttribute>()
+                .FirstOrDefault();
+            Debug.Assert(_requiredAttribute is not null, "RequiredAttribute should be present if IsRequired is true");
+            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
@@ -112,8 +116,9 @@ public abstract class ValidatableParameterInfo
         }
 
         // Validate against validation attributes
-        foreach (var attribute in validationAttributes)
+        for (var i = 0; i < validationAttributes.Length; i++)
         {
+            var attribute = validationAttributes[i];
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);

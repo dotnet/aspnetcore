@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// </summary>
 public abstract class ValidatableTypeInfo
 {
+    private readonly int _membersCount;
+    private readonly int _validatableSubtypesCount;
+
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
@@ -29,6 +32,8 @@ public abstract class ValidatableTypeInfo
         Members = members;
         IsIValidatableObject = implementsIValidatableObject;
         ValidatableSubTypes = validatableSubTypes;
+        _membersCount = members.Count;
+        _validatableSubtypesCount = validatableSubTypes?.Count ?? 0;
     }
 
     /// <summary>
@@ -79,17 +84,20 @@ public abstract class ValidatableTypeInfo
             var originalPrefix = context.Prefix;
 
             // First validate members
-            foreach (var member in Members)
+            for (var i = 0; i < _membersCount; i++)
             {
-                member.Validate(value, context);
+                Members[i].Validate(value, context);
                 context.Prefix = originalPrefix;
             }
 
             // Then validate sub-types if any
-            if (ValidatableSubTypes != null)
+            if (ValidatableSubTypes is not null)
             {
-                foreach (var subType in ValidatableSubTypes)
+                for (var i = 0; i < _validatableSubtypesCount; i++)
                 {
+                    var subType = ValidatableSubTypes[i];
+                    // Check if the actual type is assignable to the sub-type
+                    // and validate it if it is
                     if (subType.IsAssignableFrom(actualType))
                     {
                         if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))

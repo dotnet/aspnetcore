@@ -188,8 +188,9 @@ public abstract class ValidatablePropertyInfo
 
         void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes)
         {
-            foreach (var attribute in validationAttributes)
+            for (var i = 0; i < validationAttributes.Length; i++)
             {
+                var attribute = validationAttributes[i];
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
