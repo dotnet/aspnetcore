@@ -45,11 +45,7 @@ public static class SupplyParameterFromPersistentComponentStateProviderServiceCo
         // We look for the assembly in the current list of loaded assemblies.
         // We look for the type inside the assembly.
         // We resolve the service from the DI container.
-        // TODO: We can support registering for a specific render mode at this level (that way no info gets sent to the client accidentally 4 example).
-        //       Even as far as defaulting to Server (to avoid disclosing anything confidential to the client, even though is the Developer responsibility).
-        //       We can choose to fail when the service is not registered on DI.
         // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
-
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentComponentRegistration>(new PersistentComponentRegistration<TService>(componentRenderMode)));
 
         return services;
