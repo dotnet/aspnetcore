@@ -8,11 +8,9 @@
     <ItemGroup>
       <AdditionalFiles
         Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')"
-        Condition="
-          '%(ReferencePath.Extension)' == '.dll' AND
-          Exists('%(ReferencePath.RootDir)%(ReferencePath.Directory)%(ReferencePath.Filename).xml') AND
-          ('%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' OR
-          '%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity')"
+        Condition="'%(ReferencePath.Extension)' == '.dll' AND
+        Exists('%(ReferencePath.RootDir)%(ReferencePath.Directory)%(ReferencePath.Filename).xml') AND
+        ('%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference')"
          KeepMetadata="Identity" />
     </ItemGroup>
   </Target>
