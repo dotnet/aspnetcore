@@ -302,6 +302,55 @@ public class ComponentStatePersistenceManagerTest
         Assert.Equal(LogLevel.Error, log.LogLevel);
     }
 
+    [Fact]
+    public async Task PersistStateAsync_InvokesAllCallbacksEvenIfACallbackIsRemovedAsPartOfRunningIt()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+        var renderer = new TestRenderer();
+
+        var executionSequence = new List<int>();
+
+        persistenceManager.State.RegisterOnPersisting(() =>
+        {
+            executionSequence.Add(1);
+            return Task.CompletedTask;
+        }, new TestRenderMode());
+
+        PersistingComponentStateSubscription subscription2 = default;
+        subscription2 = persistenceManager.State.RegisterOnPersisting(() =>
+        {
+            executionSequence.Add(2);
+            subscription2.Dispose();
+            return Task.CompletedTask;
+        }, new TestRenderMode());
+
+        var tcs = new TaskCompletionSource();
+        persistenceManager.State.RegisterOnPersisting(async () =>
+        {
+            executionSequence.Add(3);
+            await tcs.Task;
+            executionSequence.Add(4);
+        }, new TestRenderMode());
+
+        // Act
+        var persistTask = persistenceManager.PersistStateAsync(store, renderer);
+        tcs.SetResult(); // Allow the async callback to complete
+        await persistTask;
+
+        // Assert
+        Assert.Contains(3, executionSequence);
+        Assert.Contains(2, executionSequence);
+        Assert.Contains(1, executionSequence);
+        Assert.Contains(4, executionSequence);
+
+        Assert.Equal(4, executionSequence.Count);
+    }
+
     private class TestRenderer : Renderer
     {
         public TestRenderer() : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)

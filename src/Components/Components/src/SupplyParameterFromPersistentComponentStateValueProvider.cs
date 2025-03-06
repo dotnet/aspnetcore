@@ -18,6 +18,8 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
     public bool IsFixed => false;
+    // For testing purposes only
+    internal Dictionary<ComponentState, PersistingComponentStateSubscription> Subscriptions => _subscriptions;
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => parameterInfo.Attribute is SupplyParameterFromPersistentComponentStateAttribute;
@@ -31,7 +33,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
         Justification = "JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public object? GetCurrentValue(in CascadingParameterInfo parameterInfo) =>
-        state.TryTakeFromJson(parameterInfo.PropertyName, parameterInfo.PropertyType, out var value) ? value : null;
+        throw new InvalidOperationException("Using this provider requires a key.");
 
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
@@ -74,7 +76,8 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         }
     }
 
-    private static string ComputeKey(ComponentState componentState, string propertyName)
+    // Internal for testing only
+    internal static string ComputeKey(ComponentState componentState, string propertyName)
     {
         // We need to come up with a pseudo-unique key for the storage key.
         // We need to consider the property name, the component type, and its position within the component tree.
@@ -110,20 +113,58 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         {
             Span<byte> keyBuffer = stackalloc byte[1024];
             preKey.CopyTo(keyBuffer);
-            if (key is IUtf8SpanFormattable formattable)
+            if (key is IUtf8SpanFormattable spanFormattable)
             {
-                while (!formattable.TryFormat(keyBuffer[preKey.Length..], out var written, "{0:G}", CultureInfo.InvariantCulture))
+                var wroteKey = false;
+                while (!wroteKey)
                 {
-                    // It is really unlikely that we will enter here, but we need to handle this case
-                    Debug.Assert(written == 0);
-                    var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
-                    keyBuffer[0..preKey.Length].CopyTo(newPool);
-                    keyBuffer = newPool;
-                    if (pool != null)
+                    wroteKey = spanFormattable.TryFormat(keyBuffer[preKey.Length..], out var written, "", CultureInfo.InvariantCulture);
+                    if (!wroteKey)
                     {
-                        ArrayPool<byte>.Shared.Return(pool, clearArray: true);
+                        // It is really unlikely that we will enter here, but we need to handle this case
+                        Debug.Assert(written == 0);
+                        GrowBuffer(preKey, ref pool, ref keyBuffer);
                     }
-                    pool = newPool;
+                    else
+                    {
+                        keyBuffer = keyBuffer[..(preKey.Length + written)];
+                    }
+                }
+            }
+            else if (key is IFormattable formattable)
+            {
+                var keyString = formattable.ToString("", CultureInfo.InvariantCulture);
+                var wroteKey = false;
+                while (!wroteKey)
+                {
+                    wroteKey = Encoding.UTF8.TryGetBytes(keyString, keyBuffer[preKey.Length..], out var written);
+                    if (!wroteKey)
+                    {
+                        Debug.Assert(written == 0);
+                        GrowBuffer(preKey, ref pool, ref keyBuffer);
+                    }
+                    else
+                    {
+                        keyBuffer = keyBuffer[..(preKey.Length + written)];
+                    }
+                }
+            }
+            else if (key is IConvertible convertible)
+            {
+                var keyString = convertible.ToString(CultureInfo.InvariantCulture);
+                var wroteKey = false;
+                while (!wroteKey)
+                {
+                    wroteKey = Encoding.UTF8.TryGetBytes(keyString, keyBuffer[preKey.Length..], out var written);
+                    if (!wroteKey)
+                    {
+                        Debug.Assert(written == 0);
+                        GrowBuffer(preKey, ref pool, ref keyBuffer);
+                    }
+                    else
+                    {
+                        keyBuffer = keyBuffer[..(preKey.Length + written)];
+                    }
                 }
             }
 
@@ -137,6 +178,18 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
                 ArrayPool<byte>.Shared.Return(pool, clearArray: true);
             }
         }
+    }
+
+    private static void GrowBuffer(byte[] preKey, ref byte[]? pool, ref Span<byte> keyBuffer)
+    {
+        var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
+        keyBuffer[0..preKey.Length].CopyTo(newPool);
+        keyBuffer = newPool;
+        if (pool != null)
+        {
+            ArrayPool<byte>.Shared.Return(pool, clearArray: true);
+        }
+        pool = newPool;
     }
 
     private static object? GetSerializableKey(ComponentState componentState)
@@ -173,10 +226,18 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
         Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName));
 
-    private static bool IsSerializableKey(object key) =>
-        key is { } componentKey && componentKey.GetType() is Type type &&
-            (Type.GetTypeCode(type) != TypeCode.Object
-            || type == typeof(Guid)
-            || type == typeof(DateOnly)
-            || type == typeof(TimeOnly));
+    private static bool IsSerializableKey(object key)
+    {
+        if (key == null)
+        {
+            return false;
+        }
+        var keyType = key.GetType();
+        var result = Type.GetTypeCode(keyType) != TypeCode.Object
+            || keyType == typeof(Guid)
+            || keyType == typeof(DateOnly)
+            || keyType == typeof(TimeOnly);
+
+        return result;
+    }
 }
