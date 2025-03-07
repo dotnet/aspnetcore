@@ -1,0 +1,374 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.ComponentModel.DataAnnotations;
+using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+namespace Microsoft.AspNetCore.Http.Microbenchmarks;
+
+public class ValidatableTypeInfoBenchmark
+{
+    private ValidatableTypeInfo _simpleTypeInfo = null!;
+    private ValidatableTypeInfo _complexTypeInfo = null!;
+    private ValidatableTypeInfo _hierarchicalTypeInfo = null!;
+    private ValidatableTypeInfo _ivalidatableObjectTypeInfo = null!;
+
+    private ValidatableContext _context = null!;
+    private SimpleModel _simpleModel = null!;
+    private ComplexModel _complexModel = null!;
+    private HierarchicalModel _hierarchicalModel = null!;
+    private ValidatableObjectModel _validatableObjectModel = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        var services = new ServiceCollection();
+        var mockResolver = new MockValidatableTypeInfoResolver();
+
+        services.AddValidation(options =>
+        {
+            // Register our mock resolver
+            options.Resolvers.Insert(0, mockResolver);
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+        var validationOptions = serviceProvider.GetRequiredService<IOptions<ValidationOptions>>().Value;
+
+        _context = new ValidatableContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(new object(), serviceProvider, null),
+            ValidationErrors = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        };
+
+        // Create the model instances
+        _simpleModel = new SimpleModel
+        {
+            Id = 1,
+            Name = "Test Name",
+            Email = "test@example.com"
+        };
+
+        _complexModel = new ComplexModel
+        {
+            Id = 1,
+            Name = "Complex Model",
+            Properties = new Dictionary<string, string>
+            {
+                ["Prop1"] = "Value1",
+                ["Prop2"] = "Value2"
+            },
+            Items = ["Item1", "Item2", "Item3"],
+            CreatedOn = DateTime.UtcNow
+        };
+
+        _hierarchicalModel = new HierarchicalModel
+        {
+            Id = 1,
+            Name = "Parent Model",
+            Child = new ChildModel
+            {
+                Id = 2,
+                Name = "Child Model",
+                ParentId = 1
+            },
+            Siblings =
+            [
+                new SimpleModel { Id = 3, Name = "Sibling 1", Email = "sibling1@example.com" },
+                new SimpleModel { Id = 4, Name = "Sibling 2", Email = "sibling2@example.com" }
+            ]
+        };
+
+        _validatableObjectModel = new ValidatableObjectModel
+        {
+            Id = 1,
+            Name = "Validatable Model",
+            CustomField = "Valid Value"
+        };
+
+        // Get the type info instances from validation options using the mock resolver
+        validationOptions.TryGetValidatableTypeInfo(typeof(SimpleModel), out _simpleTypeInfo);
+        validationOptions.TryGetValidatableTypeInfo(typeof(ComplexModel), out _complexTypeInfo);
+        validationOptions.TryGetValidatableTypeInfo(typeof(HierarchicalModel), out _hierarchicalTypeInfo);
+        validationOptions.TryGetValidatableTypeInfo(typeof(ValidatableObjectModel), out _ivalidatableObjectTypeInfo);
+
+        // Ensure we have all type infos (this should not be needed with our mock resolver)
+        if (_simpleTypeInfo == null || _complexTypeInfo == null ||
+            _hierarchicalTypeInfo == null || _ivalidatableObjectTypeInfo == null)
+        {
+            throw new InvalidOperationException("Failed to register one or more type infos with mock resolver");
+        }
+    }
+
+    [Benchmark(Description = "Validate Simple Model")]
+    [BenchmarkCategory("Simple")]
+    public async Task ValidateSimpleModel()
+    {
+        _context.ValidationErrors.Clear();
+        await _simpleTypeInfo.Validate(_simpleModel, _context);
+    }
+
+    [Benchmark(Description = "Validate Complex Model")]
+    [BenchmarkCategory("Complex")]
+    public async Task ValidateComplexModel()
+    {
+        _context.ValidationErrors.Clear();
+        await _complexTypeInfo.Validate(_complexModel, _context);
+    }
+
+    [Benchmark(Description = "Validate Hierarchical Model")]
+    [BenchmarkCategory("Hierarchical")]
+    public async Task ValidateHierarchicalModel()
+    {
+        _context.ValidationErrors.Clear();
+        await _hierarchicalTypeInfo.Validate(_hierarchicalModel, _context);
+    }
+
+    [Benchmark(Description = "Validate IValidatableObject Model")]
+    [BenchmarkCategory("IValidatableObject")]
+    public async Task ValidateIValidatableObjectModel()
+    {
+        _context.ValidationErrors.Clear();
+        await _ivalidatableObjectTypeInfo.Validate(_validatableObjectModel, _context);
+    }
+
+    [Benchmark(Description = "Validate invalid Simple Model")]
+    [BenchmarkCategory("Invalid")]
+    public async Task ValidateInvalidSimpleModel()
+    {
+        _context.ValidationErrors.Clear();
+        _simpleModel.Email = "invalid-email";
+        await _simpleTypeInfo.Validate(_simpleModel, _context);
+    }
+
+    [Benchmark(Description = "Validate invalid IValidatableObject Model")]
+    [BenchmarkCategory("Invalid")]
+    public async Task ValidateInvalidIValidatableObjectModel()
+    {
+        _context.ValidationErrors.Clear();
+        _validatableObjectModel.CustomField = "Invalid";
+        await _ivalidatableObjectTypeInfo.Validate(_validatableObjectModel, _context);
+    }
+
+    #region Helper methods to create type info instances manually if needed
+
+    private ValidatablePropertyInfo CreatePropertyInfo(string name, Type type, bool isRequired, params ValidationAttribute[] attributes)
+    {
+        return new MockValidatablePropertyInfo(
+            typeof(SimpleModel),
+            type,
+            name,
+            name,
+            type.IsAssignableTo(typeof(System.Collections.IEnumerable)) && type != typeof(string),
+            type.IsValueType ? Nullable.GetUnderlyingType(type) != null : true,
+            isRequired,
+            false,
+            attributes);
+    }
+
+    #endregion
+
+    #region Test Models
+
+    public class SimpleModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+
+    public class ComplexModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public Dictionary<string, string> Properties { get; set; }
+
+        public List<string> Items { get; set; }
+
+        public DateTime CreatedOn { get; set; }
+    }
+
+    public class ChildModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public int ParentId { get; set; }
+    }
+
+    public class HierarchicalModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public ChildModel Child { get; set; }
+
+        public List<SimpleModel> Siblings { get; set; }
+    }
+
+    public class ValidatableObjectModel : IValidatableObject
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public string CustomField { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (CustomField == "Invalid")
+            {
+                yield return new ValidationResult("CustomField has an invalid value", new[] { nameof(CustomField) });
+            }
+        }
+    }
+
+    #endregion
+
+    #region Mock Implementations for Testing
+
+    private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members, bool isIValidatableObject) : ValidatableTypeInfo(type, members, isIValidatableObject)
+    {
+    }
+
+    private class MockValidatablePropertyInfo(
+        Type containingType,
+        Type propertyType,
+        string name,
+        string displayName,
+        bool isEnumerable,
+        bool isNullable,
+        bool isRequired,
+        bool hasValidatableType,
+        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+    {
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+    }
+
+    #endregion
+
+    #region Mock Resolver Implementation
+
+    private class MockValidatableTypeInfoResolver : IValidatableInfoResolver
+    {
+        private readonly Dictionary<Type, ValidatableTypeInfo> _typeInfoCache = [];
+
+        public MockValidatableTypeInfoResolver()
+        {
+            // Initialize the cache with our test models
+            _typeInfoCache[typeof(SimpleModel)] = CreateSimpleModelTypeInfo();
+            _typeInfoCache[typeof(ComplexModel)] = CreateComplexModelTypeInfo();
+            _typeInfoCache[typeof(HierarchicalModel)] = CreateHierarchicalModelTypeInfo();
+            _typeInfoCache[typeof(ValidatableObjectModel)] = CreateValidatableObjectModelTypeInfo();
+
+            // Add child models that might be validated separately
+            _typeInfoCache[typeof(ChildModel)] = CreateChildModelTypeInfo();
+        }
+
+        public ValidatableTypeInfo GetValidatableTypeInfo(Type type)
+        {
+            return _typeInfoCache.TryGetValue(type, out var typeInfo) ? typeInfo : null;
+        }
+
+        public ValidatableParameterInfo GetValidatableParameterInfo(System.Reflection.ParameterInfo parameterInfo)
+        {
+            // This is not used in our benchmark tests
+            return null;
+        }
+
+        private ValidatableTypeInfo CreateSimpleModelTypeInfo()
+        {
+            return new MockValidatableTypeInfo(
+                typeof(SimpleModel),
+                [
+                    CreatePropertyInfo(typeof(SimpleModel), "Id", typeof(int), false),
+                    CreatePropertyInfo(typeof(SimpleModel), "Name", typeof(string), true),
+                    CreatePropertyInfo(typeof(SimpleModel), "Email", typeof(string), false, new EmailAddressAttribute())
+                ],
+                false);
+        }
+
+        private ValidatableTypeInfo CreateComplexModelTypeInfo()
+        {
+            return new MockValidatableTypeInfo(
+                typeof(ComplexModel),
+                [
+                    CreatePropertyInfo(typeof(ComplexModel), "Id", typeof(int), false),
+                    CreatePropertyInfo(typeof(ComplexModel), "Name", typeof(string), true),
+                    CreatePropertyInfo(typeof(ComplexModel), "Properties", typeof(Dictionary<string, string>), false),
+                    CreatePropertyInfo(typeof(ComplexModel), "Items", typeof(List<string>), false),
+                    CreatePropertyInfo(typeof(ComplexModel), "CreatedOn", typeof(DateTime), false)
+                ],
+                false);
+        }
+
+        private ValidatableTypeInfo CreateChildModelTypeInfo()
+        {
+            return new MockValidatableTypeInfo(
+                typeof(ChildModel),
+                [
+                    CreatePropertyInfo(typeof(ChildModel), "Id", typeof(int), false),
+                    CreatePropertyInfo(typeof(ChildModel), "Name", typeof(string), true),
+                    CreatePropertyInfo(typeof(ChildModel), "ParentId", typeof(int), false)
+                ],
+                false);
+        }
+
+        private ValidatableTypeInfo CreateHierarchicalModelTypeInfo()
+        {
+            return new MockValidatableTypeInfo(
+                typeof(HierarchicalModel),
+                [
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Id", typeof(int), false),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Name", typeof(string), true),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Child", typeof(ChildModel), false),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Siblings", typeof(List<SimpleModel>), false)
+                ],
+                false);
+        }
+
+        private ValidatableTypeInfo CreateValidatableObjectModelTypeInfo()
+        {
+            return new MockValidatableTypeInfo(
+                typeof(ValidatableObjectModel),
+                [
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Id", typeof(int), false),
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Name", typeof(string), true),
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "CustomField", typeof(string), false)
+                ],
+                true);
+        }
+
+        private ValidatablePropertyInfo CreatePropertyInfo(Type containingType, string name, Type type, bool isRequired, params ValidationAttribute[] attributes)
+        {
+            return new MockValidatablePropertyInfo(
+                containingType,
+                type,
+                name,
+                name, // Use name as display name
+                type.IsAssignableTo(typeof(System.Collections.IEnumerable)) && type != typeof(string),
+                type.IsValueType ? Nullable.GetUnderlyingType(type) != null : true,
+                isRequired,
+                type != typeof(string) && !type.IsValueType && type.IsClass && !type.IsAssignableTo(typeof(System.Collections.IEnumerable)), // hasValidatableType
+                attributes);
+        }
+    }
+    #endregion
+}
