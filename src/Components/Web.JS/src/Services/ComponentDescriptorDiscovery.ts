@@ -15,6 +15,16 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 
 const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
+const blazorWebAssemblyOptionsCommentRegularExpression = /^\s*Blazor-WebAssembly:[^{]*(?<options>.*)$/;
+
+export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions | undefined {
+  const optionsJson = discoverBlazorComment(root, blazorWebAssemblyOptionsCommentRegularExpression, 'options');
+  if (!optionsJson) {
+    return undefined;
+  }
+  const options = JSON.parse(optionsJson);
+  return options;
+}
 
 export function discoverServerPersistedState(node: Node): string | null | undefined {
   return discoverBlazorComment(node, blazorServerStateCommentRegularExpression);
@@ -338,6 +348,11 @@ export type ComponentMarker = ServerComponentMarker | WebAssemblyComponentMarker
 export type ServerComponentDescriptor = ServerComponentMarker & DescriptorData;
 export type WebAssemblyComponentDescriptor = WebAssemblyComponentMarker & DescriptorData;
 export type AutoComponentDescriptor = AutoComponentMarker & DescriptorData;
+
+export type WebAssemblyServerOptions = {
+  environmentName: string,
+  environmentVariables: { [i: string]: string; }
+};
 
 type DescriptorData = {
   uniqueId: number;
