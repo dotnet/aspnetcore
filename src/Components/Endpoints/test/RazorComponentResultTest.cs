@@ -513,6 +513,11 @@ public class RazorComponentResultTest
         public new void Initialize(string baseUri, string uri)
             => base.Initialize(baseUri, uri);
 
+#nullable enable
+        public void Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer = null)
+            => base.Initialize(baseUri, uri);
+#nullable disable
+
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             // Equivalent to what RemoteNavigationManager would do

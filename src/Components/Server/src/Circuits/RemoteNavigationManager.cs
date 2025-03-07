@@ -46,6 +46,18 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     }
 
     /// <summary>
+    /// Initializes the <see cref="NavigationManager" />.
+    /// </summary>
+    /// <param name="baseUri">The base URI.</param>
+    /// <param name="uri">The absolute URI.</param>
+    /// <param name="renderer">The optional renderer.</param>
+    public void Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer = null)
+    {
+        base.Initialize(baseUri, uri);
+        NotifyLocationChanged(isInterceptedLink: false);
+    }
+
+    /// <summary>
     /// Initializes the <see cref="RemoteNavigationManager"/>.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
@@ -148,6 +160,22 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
+    /// <inheritdoc />
+    protected override void NotFoundCore()
+    {
+        Log.RequestingNotFound(_logger);
+
+        try
+        {
+            NotifyNotFound();
+        }
+        catch (Exception ex)
+        {
+            Log.NotFoundRenderFailed(_logger, ex);
+            UnhandledException?.Invoke(this, ex);
+        }
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
@@ -197,10 +225,16 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
         public static partial void RefreshFailed(ILogger logger, Exception exception);
 
+        [LoggerMessage(1, LogLevel.Debug, "Requesting not found", EventName = "RequestingNotFound")]
+        public static partial void RequestingNotFound(ILogger logger);
+
         [LoggerMessage(6, LogLevel.Debug, "Navigation completed when changing the location to {Uri}", EventName = "NavigationCompleted")]
         public static partial void NavigationCompleted(ILogger logger, string uri);
 
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
+
+        [LoggerMessage(8, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
+        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
     }
 }

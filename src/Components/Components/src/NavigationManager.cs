@@ -35,6 +35,25 @@ public abstract class NavigationManager
 
     private CancellationTokenSource? _locationChangingCts;
 
+    /// <summary>
+    /// An event that fires when the page is not found.
+    /// </summary>
+    public event EventHandler<EventArgs> NotFoundEvent
+    {
+        add
+        {
+            AssertInitialized();
+            _notFound += value;
+        }
+        remove
+        {
+            AssertInitialized();
+            _notFound -= value;
+        }
+    }
+
+    private EventHandler<EventArgs>? _notFound;
+
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -178,6 +197,16 @@ public abstract class NavigationManager
         => NavigateTo(Uri, forceLoad: true, replace: true);
 
     /// <summary>
+    /// Handles setting the NotFound state.
+    /// </summary>
+    public virtual void NotFound() => NotFoundCore();
+
+    /// <summary>
+    /// Handles setting the NotFound state.
+    /// </summary>
+    protected virtual void NotFoundCore() => throw new NotImplementedException();
+
+    /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
     /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
     /// </summary>
@@ -305,6 +334,21 @@ public abstract class NavigationManager
         catch (Exception ex)
         {
             throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Triggers the <see cref="NotFound"/> event with the current URI value.
+    /// </summary>
+    protected void NotifyNotFound()
+    {
+        try
+        {
+            _notFound?.Invoke(this, new EventArgs());
+        }
+        catch (Exception ex)
+        {
+            throw new NotFoundRenderingException("An exception occurred while dispatching a NotFound event.", ex);
         }
     }
 
