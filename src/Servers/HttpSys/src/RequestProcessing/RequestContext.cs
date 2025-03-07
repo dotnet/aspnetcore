@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -219,28 +220,102 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    /// <summary>
+    /// Attempts to get the client hello message bytes from the http.sys.
+    /// If not successful, will return `null`
+    /// </summary>
+    internal unsafe byte[]? GetTlsClientHelloMessageBytes()
     {
-        if (HttpApi.HttpGetRequestProperty != null)
+        if (!HttpApi.HttpGetRequestPropertySupported)
         {
-            var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+            return default;
+        }
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturned = &bytesReturnedValue;
+        uint statusCode;
+
+        var buffer = ArrayPool<byte>.Shared.Rent(256);
+        try
+        {
             fixed (byte* pBuffer = buffer)
             {
-                var statusCode = HttpApi.HttpGetRequestProperty(
-                    Server.RequestQueue.Handle,
-                    RequestId,
-                    HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
-                    qualifier: null,
-                    qualifierSize: 0,
-                    (void*)pBuffer,
-                    (uint)buffer.Length,
-                    bytesReturned: null,
-                    IntPtr.Zero);
+                statusCode = HttpApi.HttpGetRequestProperty(
+                    Server.RequestQueue.Handle, RequestId,
+                    11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                    qualifier: null, qualifierSize: 0,
+                    pBuffer, (uint)buffer.Length,
+                    bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
 
-                if (statusCode == ErrorCodes.ERROR_SUCCESS)
+                if (statusCode is ErrorCodes.ERROR_SUCCESS)
                 {
-                    return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                    return buffer.AsSpan().ToArray();
                 }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+
+        // if buffer supplied is too small, `bytesReturned` will have proper size
+        // so retry should succeed with the properly allocated buffer
+        if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+        {
+            try
+            {
+                var correctSize = (int)bytesReturnedValue;
+                buffer = ArrayPool<byte>.Shared.Rent(correctSize);
+
+                fixed (byte* pBuffer = buffer)
+                {
+                    statusCode = HttpApi.HttpGetRequestProperty(
+                        Server.RequestQueue.Handle, RequestId,
+                        11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        qualifier: null, qualifierSize: 0,
+                        pBuffer, (uint)buffer.Length,
+                        bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
+
+                    if (statusCode is ErrorCodes.ERROR_SUCCESS)
+                    {
+                        return buffer.AsSpan(0, correctSize).ToArray();
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
+        return default;
+    }
+
+    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            return default;
+        }
+
+        var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = HttpApi.HttpGetRequestProperty(
+                Server.RequestQueue.Handle,
+                RequestId,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                qualifier: null,
+                qualifierSize: 0,
+                pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: IntPtr.Zero,
+                IntPtr.Zero);
+
+            if (statusCode == ErrorCodes.ERROR_SUCCESS)
+            {
+                return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
             }
         }
 
