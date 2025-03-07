@@ -34,7 +34,6 @@
     <Content Include="$(SharedSourceRoot)TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pem" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
 
-    <Reference Include="System.Threading.Channels" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
