@@ -79,7 +79,10 @@ internal static class HttpSysConfigurator
         int length = thumbprint.Length;
         byte[] bytes = new byte[length / 2];
         for (int i = 0; i < length; i += 2)
+        {
             bytes[i / 2] = Convert.ToByte(thumbprint.Substring(i, 2), 16);
+        }
+
         return bytes;
     }
 
@@ -104,6 +107,8 @@ internal static class HttpSysConfigurator
         body();
     }
 
+// disabled warning since it is just a sample
+#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
     [DllImport("httpapi.dll", SetLastError = true)]
     private static extern uint HttpInitialize(
             HTTPAPI_VERSION version,
@@ -117,4 +122,5 @@ internal static class HttpSysConfigurator
         nint pConfigInformation,
         int configInformationLength,
         nint pOverlapped);
+#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 }
