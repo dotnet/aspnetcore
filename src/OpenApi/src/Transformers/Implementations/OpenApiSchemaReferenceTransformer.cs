@@ -112,6 +112,13 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
             return new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = schemaId?.ToString() } };
         }
 
+        // Handle relative schemas that don't point to the parent document but to another property in the same type.
+        // In this case, remove the reference and rely on the properties that have been resolved and copied by the OpenApiSchemaService.
+        if (schema.Reference is { Type: ReferenceType.Schema, Id: var id } && id.StartsWith("#/", StringComparison.Ordinal))
+        {
+            schema.Reference = null;
+        }
+
         if (schema.AllOf is not null)
         {
             for (var i = 0; i < schema.AllOf.Count; i++)

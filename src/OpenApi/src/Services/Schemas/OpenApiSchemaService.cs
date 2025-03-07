@@ -102,7 +102,7 @@ internal sealed class OpenApiSchemaService(
                 // "nested": "#/properties/nested" becomes "nested": "#/components/schemas/NestedType"
                 if (jsonPropertyInfo.PropertyType == jsonPropertyInfo.DeclaringType)
                 {
-                    return new JsonObject { [OpenApiSchemaKeywords.RefKeyword] = createSchemaReferenceId(context.TypeInfo) };
+                    schema[OpenApiSchemaKeywords.RefKeyword] = createSchemaReferenceId(context.TypeInfo);
                 }
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
@@ -213,13 +213,118 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        if (schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } && jsonTypeInfo.ElementType is not null) 
-		{
+        if (schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } && jsonTypeInfo.ElementType is not null)
+        {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
         }
-	}
+    }
 
     private JsonNode CreateSchema(OpenApiSchemaKey key)
-        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+    {
+        var sourceSchema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+
+        // Resolve any relative references in the schema
+        ResolveRelativeReferences(sourceSchema, sourceSchema);
+
+        return sourceSchema;
+    }
+
+    // Helper method to recursively resolve relative references in a schema
+    private static void ResolveRelativeReferences(JsonNode node, JsonNode rootNode)
+    {
+        if (node is JsonObject jsonObj)
+        {
+            // Check if this node has a $ref property with a relative reference and no schemaId to
+            // resolve to
+            if (jsonObj.TryGetPropertyValue(OpenApiSchemaKeywords.RefKeyword, out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.TryGetValue<string>(out var refPath) &&
+                refPath.StartsWith("#/", StringComparison.OrdinalIgnoreCase) &&
+                !jsonObj.TryGetPropertyValue(OpenApiConstants.SchemaId, out var schemaId) &&
+                schemaId is null)
+            {
+                // Found a relative reference, resolve it
+                var resolvedNode = ResolveJsonPointer(rootNode, refPath);
+                if (resolvedNode != null)
+                {
+                    // Copy all properties from the resolved node
+                    if (resolvedNode is JsonObject resolvedObj)
+                    {
+                        foreach (var property in resolvedObj)
+                        {
+                            // Clone the property value to avoid modifying the original
+                            var clonedValue = property.Value != null
+                                ? JsonNode.Parse(property.Value.ToJsonString())
+                                : null;
+
+                            jsonObj[property.Key] = clonedValue;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Recursively process all properties
+                foreach (var property in jsonObj)
+                {
+                    if (property.Value is JsonNode propNode)
+                    {
+                        ResolveRelativeReferences(propNode, rootNode);
+                    }
+                }
+            }
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            // Process each item in the array
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] is JsonNode arrayItem)
+                {
+                    ResolveRelativeReferences(arrayItem, rootNode);
+                }
+            }
+        }
+    }
+
+    // Helper method to resolve a JSON pointer path and return the referenced node
+    private static JsonNode? ResolveJsonPointer(JsonNode root, string pointer)
+    {
+        if (string.IsNullOrEmpty(pointer) || !pointer.StartsWith("#/", StringComparison.OrdinalIgnoreCase))
+        {
+            return null; // Invalid pointer
+        }
+
+        // Remove the leading "#/" and split the path into segments
+        var jsonPointer = pointer.AsSpan(2);
+        var segments = jsonPointer.Split('/');
+        var currentNode = root;
+
+        foreach (var segment in segments)
+        {
+            if (currentNode is JsonObject jsonObj)
+            {
+                if (!jsonObj.TryGetPropertyValue(jsonPointer[segment].ToString(), out var nextNode))
+                {
+                    return null; // Path segment not found
+                }
+                currentNode = nextNode;
+            }
+            else if (currentNode is JsonArray jsonArray && int.TryParse(jsonPointer[segment], out var index))
+            {
+                if (index < 0 || index >= jsonArray.Count)
+                {
+                    return null; // Index out of range
+                }
+                currentNode = jsonArray[index];
+            }
+            else
+            {
+                return null; // Cannot navigate further
+            }
+        }
+
+        return currentNode;
+    }
 }

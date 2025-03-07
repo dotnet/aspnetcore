@@ -505,6 +505,58 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // Assert that $ref is used for related LocationDto
             var addressSchema = locationSchema.Properties["address"].GetEffective(document);
             Assert.Equal("LocationDto", addressSchema.Properties["relatedLocation"].Reference.Id);
+
+            // Assert that only expected schemas are generated at the top-level
+            Assert.Equal(["AddressDto", "LocationContainer", "LocationDto"], document.Components.Schemas.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsListOfNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/list", (List<LocationContainer> items) => { });
+        builder.MapPost("/array", (LocationContainer[] items) => { });
+        builder.MapPost("/dictionary", (Dictionary<string, LocationContainer> items) => { });
+        builder.MapPost("/", (LocationContainer item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var listOperation = document.Paths["/list"].Operations[OperationType.Post];
+            var listRequestSchema = listOperation.RequestBody.Content["application/json"].Schema;
+
+            var arrayOperation = document.Paths["/array"].Operations[OperationType.Post];
+            var arrayRequestSchema = arrayOperation.RequestBody.Content["application/json"].Schema;
+
+            var dictionaryOperation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            var dictionaryRequestSchema = dictionaryOperation.RequestBody.Content["application/json"].Schema;
+
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("LocationContainer", listRequestSchema.Items.Reference.Id);
+            Assert.Equal("LocationContainer", arrayRequestSchema.Items.Reference.Id);
+            Assert.Equal("LocationContainer", dictionaryRequestSchema.AdditionalProperties.Reference.Id);
+            Assert.Equal("LocationContainer", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested LocationDto
+            var locationContainerSchema = requestSchema.GetEffective(document);
+            Assert.Equal("LocationDto", locationContainerSchema.Properties["location"].Reference.Id);
+
+            // Assert that $ref is used for nested AddressDto
+            var locationSchema = locationContainerSchema.Properties["location"].GetEffective(document);
+            Assert.Equal("AddressDto", locationSchema.Properties["address"].Reference.Id);
+
+            // Assert that $ref is used for related LocationDto
+            var addressSchema = locationSchema.Properties["address"].GetEffective(document);
+            Assert.Equal("LocationDto", addressSchema.Properties["relatedLocation"].Reference.Id);
+
+            // Assert that only expected schemas are generated at the top-level
+            Assert.Equal(3, document.Components.Schemas.Count);
+            Assert.Equal(["AddressDto", "LocationContainer", "LocationDto"], document.Components.Schemas.Keys);
         });
     }
 
@@ -531,6 +583,9 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // Assert that $ref is used for nested Parent
             var childSchema = parentSchema.Properties["children"].Items.GetEffective(document);
             Assert.Equal("ParentObject", childSchema.Properties["parent"].Reference.Id);
+
+            // Assert that only the expected schemas are registered
+            Assert.Equal(["ChildObject", "ParentObject"], document.Components.Schemas.Keys);
         });
     }
 
@@ -557,6 +612,161 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // Assert that $ref is used for nested Item2
             Assert.Equal("Item", rootSchema.Properties["item2"].Reference.Id);
         });
+    }
+
+    // Test for: https://github.com/dotnet/aspnetcore/issues/60381
+    [Fact]
+    public async Task ResolvesListBasedReferencesCorrectly()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (ContainerType item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ContainerType", requestSchema.Reference.Id);
+
+            // Get effective schema for ContainerType
+            var containerSchema = requestSchema.GetEffective(document);
+            Assert.Equal(2, containerSchema.Properties.Count);
+
+            // Check Seq1 and Seq2 properties
+            var seq1Schema = containerSchema.Properties["seq1"];
+            var seq2Schema = containerSchema.Properties["seq2"];
+
+            // Assert both are array types
+            Assert.Equal("array", seq1Schema.Type);
+            Assert.Equal("array", seq2Schema.Type);
+
+            // Assert items are arrays of strings
+            Assert.Equal("array", seq1Schema.Items.Type);
+            Assert.Equal("array", seq2Schema.Items.Type);
+
+            // Since both Seq1 and Seq2 are the same type (List<List<string>>),
+            // they should reference the same schema structure
+            Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
+
+            // Verify the inner arrays contain strings
+            Assert.Equal("string", seq1Schema.Items.Items.Type);
+            Assert.Equal("string", seq2Schema.Items.Items.Type);
+
+            Assert.Equal(["ContainerType"], document.Components.Schemas.Keys);
+        });
+    }
+
+    // Tests for: https://github.com/dotnet/aspnetcore/issues/60012
+    [Fact]
+    public async Task SupportsListOfClassInSelfReferentialSchema()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Category item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Category", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested Tags
+            var categorySchema = requestSchema.GetEffective(document);
+            Assert.Equal("Tag", categorySchema.Properties["tags"].Items.Reference.Id);
+
+            // Assert that $ref is used for nested Parent
+            Assert.Equal("Category", categorySchema.Properties["parent"].Reference.Id);
+
+            // Assert that no duplicate schemas are emitted
+            Assert.Collection(document.Components.Schemas,
+                schema =>
+                {
+                    Assert.Equal("Category", schema.Key);
+                },
+                schema =>
+                {
+                    Assert.Equal("Tag", schema.Key);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task UsesSameReferenceForSameTypeInDifferentLocations()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/parent-object", (ParentObject item) => { });
+        builder.MapPost("/list", (List<ParentObject> item) => { });
+        builder.MapPost("/dictionary", (Dictionary<string, ParentObject> item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/parent-object"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ParentObject", requestSchema.Reference.Id);
+
+            // Assert that $ref is used for nested Children
+            var parentSchema = requestSchema.GetEffective(document);
+            Assert.Equal("ChildObject", parentSchema.Properties["children"].Items.Reference.Id);
+
+            // Assert that $ref is used for nested Parent
+            var childSchema = parentSchema.Properties["children"].Items.GetEffective(document);
+            Assert.Equal("ParentObject", childSchema.Properties["parent"].Reference.Id);
+
+            operation = document.Paths["/list"].Operations[OperationType.Post];
+            requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for items in the list definition
+            Assert.Equal("ParentObject", requestSchema.Items.Reference.Id);
+            parentSchema = requestSchema.Items.GetEffective(document);
+            Assert.Equal("ChildObject", parentSchema.Properties["children"].Items.Reference.Id);
+
+            childSchema = parentSchema.Properties["children"].Items.GetEffective(document);
+            Assert.Equal("ParentObject", childSchema.Properties["parent"].Reference.Id);
+
+            operation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for items in the dictionary definition
+            Assert.Equal("ParentObject", requestSchema.AdditionalProperties.Reference.Id);
+            parentSchema = requestSchema.AdditionalProperties.GetEffective(document);
+            Assert.Equal("ChildObject", parentSchema.Properties["children"].Items.Reference.Id);
+
+            childSchema = parentSchema.Properties["children"].Items.GetEffective(document);
+            Assert.Equal("ParentObject", childSchema.Properties["parent"].Reference.Id);
+
+            // Assert that only the expected schemas are registered
+            Assert.Equal(["ChildObject", "ParentObject"], document.Components.Schemas.Keys);
+        });
+    }
+
+    private class Category
+    {
+        public required string Name { get; set; }
+
+        public Category Parent { get; set; }
+
+        public IEnumerable<Tag> Tags { get; set; } = [];
+    }
+
+    public class Tag
+    {
+        public required string Name { get; set; }
+    }
+
+    private class ContainerType
+    {
+        public List<List<string>> Seq1 { get; set; } = [];
+        public List<List<string>> Seq2 { get; set; } = [];
     }
 
     private class Root

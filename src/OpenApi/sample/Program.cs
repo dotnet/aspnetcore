@@ -113,6 +113,7 @@ schemas.MapGet("/frozen-dictionary-of-ints", () => ImmutableDictionary.CreateRan
 schemas.MapPost("/shape", (Shape shape) => { });
 schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
 schemas.MapPost("/person", (Person person) => { });
+schemas.MapTypesWithRef();
 
 app.MapControllers();
 
