@@ -148,4 +148,46 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             Assert.Fail("No row found for Julie to highlight.");
         }
     }
+
+    [Fact]
+    public void CanOpenColumnOptions()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.Exists(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByBlurring()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click outside the column options to close
+        grid.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByCloseColumnOptionsAsync()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click the button inside the column options popup to close, which calls QuickGrid.CloseColumnOptionsAsync
+        grid.FindElement(By.CssSelector("#close-column-options")).Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
 }

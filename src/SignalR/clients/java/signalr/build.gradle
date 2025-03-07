@@ -22,7 +22,7 @@ allprojects {
     version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
     java {
-        sourceCompatibility = 1.8
+        sourceCompatibility = 1.9
     }
 
     repositories {

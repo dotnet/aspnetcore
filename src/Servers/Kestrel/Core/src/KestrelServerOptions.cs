@@ -303,6 +303,10 @@ public class KestrelServerOptions
         if (ConfigurationLoader?.DefaultCertificate is X509Certificate2 certificateFromLoader)
         {
             httpsOptions.ServerCertificate = certificateFromLoader;
+            if (ConfigurationLoader?.DefaultCertificateChain is X509Certificate2Collection certificateChainFromLoader)
+            {
+                httpsOptions.ServerCertificateChain = certificateChainFromLoader;
+            }
             return;
         }
 

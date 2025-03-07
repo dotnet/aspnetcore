@@ -478,6 +478,185 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal(4, Dependency.InstantiationCount);
     }
 
+    [Fact]
+    public async Task AddOpenApiOperationTransformer_CanApplyTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description", operation.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task AddOpenApiOperationTransformer_TransformerRunsAfterOtherTransformers()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            });
+
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            operation.Description = "Operation Description 2";
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description", operation.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task AddOpenApiOperationTransformer_SupportsMultipleTransformers()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/", () => { })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description = "Operation Description";
+                return Task.CompletedTask;
+            })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description += " 2";
+                operation.Deprecated = true;
+                return Task.CompletedTask;
+            })
+            .AddOpenApiOperationTransformer((operation, context, cancellationToken) =>
+            {
+                operation.Description += " 3";
+                operation.OperationId = "OperationId";
+                return Task.CompletedTask;
+            });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/", path.Key);
+                    var operation = Assert.Single(path.Value.Operations.Values);
+                    Assert.Equal("Operation Description 2 3", operation.Description);
+                    Assert.True(operation.Deprecated);
+                    Assert.Equal("OperationId", operation.OperationId);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task OperationTransformer_RespectsOperationCancellation()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        var transformerCalled = false;
+        var exceptionThrown = false;
+        var tcs = new TaskCompletionSource();
+
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            transformerCalled = true;
+            try
+            {
+                await tcs.Task.WaitAsync(cancellationToken);
+                operation.Description = "Should not be set";
+            }
+            catch (OperationCanceledException)
+            {
+                exceptionThrown = true;
+                throw;
+            }
+        });
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(1);
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await VerifyOpenApiDocument(builder, options, _ => { }, cts.Token);
+        });
+
+        Assert.True(transformerCalled);
+        Assert.True(exceptionThrown);
+    }
+
+    [Fact]
+    public async Task OperationTransformer_ExecutesAsynchronously()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        var transformerOrder = new List<int>();
+        var tcs1 = new TaskCompletionSource();
+        var tcs2 = new TaskCompletionSource();
+
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            await tcs1.Task;
+            transformerOrder.Add(1);
+            operation.Description = "First";
+        });
+
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            transformerOrder.Add(2);
+            operation.Description += " Second";
+            tcs2.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            await tcs2.Task;
+            transformerOrder.Add(3);
+            operation.Description += " Third";
+        });
+
+        var documentTask = VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = Assert.Single(document.Paths["/todo"].Operations.Values);
+            Assert.Equal("First Second Third", operation.Description);
+        });
+
+        tcs1.TrySetResult();
+
+        await documentTask;
+
+        // Verify transformers executed in the correct order, once for each transformer
+        // since there is a single operation in the document.
+        Assert.Equal([1, 2, 3], transformerOrder);
+    }
+
     private class ActivatedTransformer : IOpenApiOperationTransformer
     {
         public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)

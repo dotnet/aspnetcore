@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 using Microsoft.OpenApi.Writers;
 
 public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTestBase
@@ -54,14 +55,17 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             //       }
             //     }
             //   }
-            Assert.Equal(schema.Reference, schema2.Reference);
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
+            var value = Assert.Single(schema.Properties).Value;
+            Assert.Equal("IFormFile", ((OpenApiSchemaReference)value).Reference.Id);
 
-            var effectiveSchema = schema;
-            Assert.Equal(JsonSchemaType.Object, effectiveSchema.Type);
-            Assert.Single(effectiveSchema.Properties);
-            var effectivePropertySchema = effectiveSchema.Properties["value"];
-            Assert.Equal(JsonSchemaType.String, effectivePropertySchema.Type);
-            Assert.Equal("binary", effectivePropertySchema.Format);
+            Assert.Equal(JsonSchemaType.Object, schema2.Type);
+            var value2 = Assert.Single(schema2.Properties).Value;
+            Assert.Equal("IFormFile", ((OpenApiSchemaReference)value2).Reference.Id);
+
+            var effectiveSchema = ((OpenApiSchemaReference)value).Target;
+            Assert.Equal(JsonSchemaType.String, effectiveSchema.Type);
+            Assert.Equal("binary", effectiveSchema.Format);
         });
     }
 
@@ -102,7 +106,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             //       }
             //     }
             //   }
-            Assert.Equal(requestBodySchema.Reference.Id, responseSchema.Reference.Id);
+            // }
+            Assert.Equal(((OpenApiSchemaReference)requestBodySchema).Reference.Id, ((OpenApiSchemaReference)responseSchema).Reference.Id);
 
             var effectiveSchema = requestBodySchema;
             Assert.Equal(JsonSchemaType.Object, effectiveSchema.Type);
@@ -110,7 +115,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var effectiveIdSchema = effectiveSchema.Properties["id"];
             Assert.Equal(JsonSchemaType.Integer, effectiveIdSchema.Type);
             var effectiveTitleSchema = effectiveSchema.Properties["title"];
-            Assert.Equal(JsonSchemaType.String, effectiveTitleSchema.Type);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, effectiveTitleSchema.Type);
             var effectiveCompletedSchema = effectiveSchema.Properties["completed"];
             Assert.Equal(JsonSchemaType.Boolean, effectiveCompletedSchema.Type);
             var effectiveCreatedAtSchema = effectiveSchema.Properties["createdAt"];
@@ -171,7 +176,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal(JsonSchemaType.Array, requestBodySchema.Type);
             Assert.Equal(JsonSchemaType.Object, requestBodySchema2.Type);
             // Values of the list and dictionary point to the same reference ID
-            Assert.Equal(requestBodySchema.Items.Reference.Id, requestBodySchema2.AdditionalProperties.Reference.Id);
+            Assert.Equal(((OpenApiSchemaReference)requestBodySchema.Items).Reference.Id, ((OpenApiSchemaReference)requestBodySchema2.AdditionalProperties).Reference.Id);
         });
     }
 
@@ -197,7 +202,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestBodySchema2 = requestBody2.Schema;
 
             // Todo parameter (second parameter) in allOf for each operation should point to the same reference ID.
-            Assert.Equal(requestBodySchema.AllOf[1].Reference.Id, requestBodySchema2.AllOf[1].Reference.Id);
+            Assert.Equal(((OpenApiSchemaReference)requestBodySchema.AllOf[1]).Reference.Id, ((OpenApiSchemaReference)requestBodySchema2.AllOf[1]).Reference.Id);
 
             // IFormFile parameter should use inline schema since it only appears once in the application.
             Assert.Equal(JsonSchemaType.Object, requestBodySchema.AllOf[0].Type);
@@ -206,8 +211,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // string parameter is not resolved to a top-level reference.
             Assert.Equal(JsonSchemaType.Object, requestBodySchema2.AllOf[0].Type);
-            Assert.Null(requestBodySchema.AllOf[1].Properties["title"].Reference);
-            Assert.Null(requestBodySchema2.AllOf[1].Properties["title"].Reference);
+            Assert.IsNotType<OpenApiSchemaReference>(requestBodySchema.AllOf[1].Properties["title"]);
+            Assert.IsNotType<OpenApiSchemaReference>(requestBodySchema2.AllOf[1].Properties["title"]);
         });
     }
 
@@ -256,13 +261,13 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // }
 
             // Both list types should be inlined
-            Assert.Null(requestBodySchema.Reference);
-            Assert.Equal(requestBodySchema.Reference, requestBodySchema2.Reference);
+            Assert.IsNotType<OpenApiSchemaReference>(requestBodySchema);
+            Assert.IsNotType<OpenApiSchemaReference>(requestBodySchema2);
             // And have an `array` type
             Assert.Equal(JsonSchemaType.Array, requestBodySchema.Type);
             // With an `items` sub-schema should consist of a $ref to Todo
-            Assert.Equal("Todo", requestBodySchema.Items.Reference.Id);
-            Assert.Equal(requestBodySchema.Items.Reference.Id, requestBodySchema2.Items.Reference.Id);
+            Assert.Equal("Todo", ((OpenApiSchemaReference)requestBodySchema.Items).Reference.Id);
+            Assert.Equal(((OpenApiSchemaReference)requestBodySchema.Items).Reference.Id, ((OpenApiSchemaReference)requestBodySchema2.Items).Reference.Id);
             Assert.Equal(4, requestBodySchema.Items.Properties.Count);
         });
     }
@@ -293,7 +298,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var getOperation = path.Operations[OperationType.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             // Schemas are distinct because of applied transformer so no reference is used.
-            Assert.NotEqual(requestSchema.Reference.Id, responseSchema.Reference.Id);
+            Assert.NotEqual(((OpenApiSchemaReference)requestSchema).Reference.Id, ((OpenApiSchemaReference)responseSchema).Reference.Id);
             Assert.Equal("todo", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
         });
@@ -346,14 +351,14 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             // }
 
             // Both container types should point to the same reference ID
-            Assert.Equal("TodoListContainer", requestBodySchema.Reference.Id);
-            Assert.Equal(requestBodySchema.Reference.Id, requestBodySchema2.Reference.Id);
+            Assert.Equal("TodoListContainer", ((OpenApiSchemaReference)requestBodySchema).Reference.Id);
+            Assert.Equal(((OpenApiSchemaReference)requestBodySchema).Reference.Id, ((OpenApiSchemaReference)requestBodySchema2).Reference.Id);
             // The referenced schema should have an array type with items pointing to Todo
             var effectiveSchema = requestBodySchema;
             var todosProperty = effectiveSchema.Properties["todos"];
             Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Array, todosProperty.Type);
             var itemsSchema = todosProperty.Items;
-            Assert.Equal("Todo", itemsSchema.Reference.Id);
+            Assert.Equal("Todo", ((OpenApiSchemaReference)itemsSchema).Reference.Id);
             Assert.Equal(4, itemsSchema.Properties.Count);
         }
     }
@@ -377,19 +382,19 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
-            Assert.Equal("Level1", requestSchema.Reference.Id);
+            Assert.Equal("Level1", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that $ref is used for Level1.Item2
             var level1Schema = requestSchema;
-            Assert.Equal("Level2", level1Schema.Properties["item2"].Reference.Id);
+            Assert.Equal("Level2", ((OpenApiSchemaReference)level1Schema.Properties["item2"]).Reference.Id);
 
             // Assert that $ref is used for Level2.Item3
             var level2Schema = level1Schema.Properties["item2"];
-            Assert.Equal("Level3", level2Schema.Properties["item3"].Reference.Id);
+            Assert.Equal("Level3", ((OpenApiSchemaReference)level2Schema.Properties["item3"]).Reference.Id);
 
             // Assert that no $ref is used for string property
             var level3Schema = level2Schema.Properties["item3"];
-            Assert.Null(level3Schema.Properties["terminate"].Reference);
+            Assert.IsNotType<OpenApiSchemaReference>(level3Schema.Properties["terminate"]);
         });
     }
 
@@ -441,42 +446,15 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
-            Assert.Equal("DeeplyNestedLevel1", requestSchema.Reference.Id);
+            Assert.Equal("DeeplyNestedLevel1", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that $ref is used for all nested levels
             var levelSchema = requestSchema;
             for (var level = 2; level < 36; level++)
             {
-                Assert.Equal($"DeeplyNestedLevel{level}", levelSchema.Properties[$"item{level}"].Reference.Id);
+                Assert.Equal($"DeeplyNestedLevel{level}", ((OpenApiSchemaReference)levelSchema.Properties[$"item{level}"]).Reference.Id);
                 levelSchema = levelSchema.Properties[$"item{level}"];
             }
-        });
-    }
-
-    [Fact]
-    public async Task SelfReferenceMapperOnlyOperatesOnSchemaReferenceTypes()
-    {
-        var builder = CreateBuilder();
-
-        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
-
-        var options = new OpenApiOptions();
-        options.AddSchemaTransformer((schema, context, cancellationToken) =>
-        {
-            if (context.JsonTypeInfo.Type == typeof(Todo))
-            {
-                schema.Reference = new OpenApiReference { Id = "#", Type = ReferenceType.Link };
-            }
-            return Task.CompletedTask;
-        });
-
-        await VerifyOpenApiDocument(builder, options, document =>
-        {
-            var operation = document.Paths["/todo"].Operations[OperationType.Get];
-            var response = operation.Responses["200"].Content["application/json"];
-            var responseSchema = response.Schema;
-            Assert.Equal("#", responseSchema.Reference.Id);
-            Assert.Equal(ReferenceType.Link, responseSchema.Reference.Type);
         });
     }
 
@@ -494,7 +472,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
-            Assert.Equal("LocationContainer", requestSchema.Reference.Id);
+            Assert.Equal("LocationContainer", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that only expected schema references are generated
             Assert.Equal(3, document.Components.Schemas.Count);
@@ -571,7 +549,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
-            Assert.Equal("ParentObject", requestSchema.Reference.Id);
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that only two schemas are generated
             Assert.Equal(2, document.Components.Schemas.Count);
@@ -640,13 +618,65 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
-            Assert.Equal("Root", requestSchema.Reference.Id);
+            Assert.Equal("Root", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that $ref is used for nested Item1
-            Assert.Equal("Item", requestSchema.Properties["item1"].Reference.Id);
+            Assert.Equal("Item", ((OpenApiSchemaReference)requestSchema.Properties["item1"]).Reference.Id);
 
             // Assert that $ref is used for nested Item2
-            Assert.Equal("Item", requestSchema.Properties["item2"].Reference.Id);
+            Assert.Equal("Item", ((OpenApiSchemaReference)requestSchema.Properties["item2"]).Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task SupportsListOfNestedSchemasWithSelfReference()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/list", (List<LocationContainer> items) => { });
+        builder.MapPost("/array", (LocationContainer[] items) => { });
+        builder.MapPost("/dictionary", (Dictionary<string, LocationContainer> items) => { });
+        builder.MapPost("/", (LocationContainer item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var listOperation = document.Paths["/list"].Operations[OperationType.Post];
+            var listRequestSchema = listOperation.RequestBody.Content["application/json"].Schema;
+
+            var arrayOperation = document.Paths["/array"].Operations[OperationType.Post];
+            var arrayRequestSchema = arrayOperation.RequestBody.Content["application/json"].Schema;
+
+            var dictionaryOperation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            var dictionaryRequestSchema = dictionaryOperation.RequestBody.Content["application/json"].Schema;
+
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("LocationContainer", ((OpenApiSchemaReference)listRequestSchema.Items).Reference.Id);
+            Assert.Equal("LocationContainer", ((OpenApiSchemaReference)arrayRequestSchema.Items).Reference.Id);
+            Assert.Equal("LocationContainer", ((OpenApiSchemaReference)dictionaryRequestSchema.AdditionalProperties).Reference.Id);
+            Assert.Equal("LocationContainer", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Assert that $ref is used for nested LocationDto
+            var locationContainerSchema = requestSchema;
+            Assert.Equal("LocationDto", ((OpenApiSchemaReference)locationContainerSchema.Properties["location"]).Reference.Id);
+
+            // Assert that $ref is used for nested AddressDto
+            var locationSchema = locationContainerSchema.Properties["location"];
+            Assert.Equal("AddressDto", ((OpenApiSchemaReference)locationSchema.Properties["address"]).Reference.Id);
+
+            // Assert that $ref is used for related LocationDto
+            var addressSchema = locationSchema.Properties["address"];
+            Assert.Equal("LocationDto", ((OpenApiSchemaReference)addressSchema.Properties["relatedLocation"]).Reference.Id);
+
+            // Assert that only expected schemas are generated at the top-level
+            Assert.Equal(3, document.Components.Schemas.Count);
+            Assert.Collection(document.Components.Schemas.Keys,
+                key => Assert.Equal("AddressDto", key),
+                key => Assert.Equal("LocationContainer", key),
+                key => Assert.Equal("LocationDto", key));
         });
     }
 

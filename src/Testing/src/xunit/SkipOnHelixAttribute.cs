@@ -68,7 +68,8 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
 
         // We have "QueueName" and "QueueName.Open" queues for internal and public builds
         // If we want to skip the test in the public queue, we want to skip it in the internal queue, and vice versa
-        return Queues.ToLowerInvariant().Split(';').Any(q => q.Equals(targetQueue, StringComparison.Ordinal) || q.StartsWith(targetQueue, StringComparison.Ordinal) || 
+        return Queues.ToLowerInvariant().Split([';'], StringSplitOptions.RemoveEmptyEntries)
+            .Any(q => q.Equals(targetQueue, StringComparison.Ordinal) || q.StartsWith(targetQueue, StringComparison.Ordinal) || 
             targetQueue.StartsWith(q, StringComparison.Ordinal));
     }
 

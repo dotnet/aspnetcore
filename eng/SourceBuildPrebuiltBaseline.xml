@@ -47,6 +47,40 @@
 
     <!-- Transitive dependency of System.Security.Cryptography.Pkcs.5.0.*. -->
     <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
+    <UsagePattern IdentityGlob="System.Formats.Asn1/5.0.0" />
+
+    <!-- Transitive dependency of Microsoft.CodeAnalysis.Workspaces.Common, which gets bumped to latest in full product build -->
+    <UsagePattern IdentityGlob="Microsoft.NETCore.Targets/1.1.0" />
+    <UsagePattern IdentityGlob="System.Buffers/4.4.0" />
+    <UsagePattern IdentityGlob="System.Collections/4.3.0" />
+    <UsagePattern IdentityGlob="System.Collections.Immutable/1.5.0" />
+    <UsagePattern IdentityGlob="System.Composition.AttributedModel/1.0.31" />
+    <UsagePattern IdentityGlob="System.Composition.Convention/1.0.31" />
+    <UsagePattern IdentityGlob="System.Composition.Hosting/1.0.31" />
+    <UsagePattern IdentityGlob="System.Composition.Runtime/1.0.31" />
+    <UsagePattern IdentityGlob="System.Composition.TypedParts/1.0.31" />
+    <UsagePattern IdentityGlob="System.Diagnostics.Debug/4.3.0" />
+    <UsagePattern IdentityGlob="System.Diagnostics.Tools/4.3.0" />
+    <UsagePattern IdentityGlob="System.Globalization/4.3.0" />
+    <UsagePattern IdentityGlob="System.IO/4.3.0" />
+    <UsagePattern IdentityGlob="System.Linq/4.3.0" />
+    <UsagePattern IdentityGlob="System.Linq.Expressions/4.3.0" />
+    <UsagePattern IdentityGlob="System.Memory/4.5.3" />
+    <UsagePattern IdentityGlob="System.ObjectModel/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Emit/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Emit.ILGeneration/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Emit.Lightweight/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Extensions/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/1.6.0" />
+    <UsagePattern IdentityGlob="System.Reflection.Primitives/4.3.0" />
+    <UsagePattern IdentityGlob="System.Reflection.TypeExtensions/4.3.0" />
+    <UsagePattern IdentityGlob="System.Resources.ResourceManager/4.3.0" />
+    <UsagePattern IdentityGlob="System.Runtime/4.3.0" />
+    <UsagePattern IdentityGlob="System.Runtime.Extensions/4.3.0" />
+    <UsagePattern IdentityGlob="System.Text.Encoding/4.3.0" />
+    <UsagePattern IdentityGlob="System.Threading/4.3.0" />
+    <UsagePattern IdentityGlob="System.Threading.Tasks/4.3.0" />
   </IgnorePatterns>
 
   <!-- Transitive dependencies, suppressed as per https://github.com/dotnet/aspnetcore/pull/57887#issuecomment-2362241518-->

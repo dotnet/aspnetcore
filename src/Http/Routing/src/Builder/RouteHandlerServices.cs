@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,7 @@ public static class RouteHandlerServices
     /// <returns>The <see cref="RouteHandlerBuilder"/>>.</returns>
     public static RouteHandlerBuilder Map(
             IEndpointRouteBuilder endpoints,
-            string pattern,
+            [StringSyntax("Route")] string pattern,
             Delegate handler,
             IEnumerable<string>? httpMethods,
             Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
@@ -62,7 +63,7 @@ public static class RouteHandlerServices
     /// <returns>The <see cref="RouteHandlerBuilder"/>>.</returns>
     public static RouteHandlerBuilder Map(
             IEndpointRouteBuilder endpoints,
-            string pattern,
+            [StringSyntax("Route")] string pattern,
             Delegate handler,
             IEnumerable<string>? httpMethods,
             Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
