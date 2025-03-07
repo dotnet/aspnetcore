@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCoreVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="${MicrosoftDataSqlClientVersion}" Condition="'$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
@@ -30,6 +31,8 @@
     <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="${MicrosoftIdentityWebGraphServiceClientVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
+    <PackageReference Include="System.Drawing.Common" Version="${SystemDrawingCommonVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <PackageReference Include="System.Text.Json" Version="${SystemTextJsonVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
   </ItemGroup>
 
   <!--#endif -->
