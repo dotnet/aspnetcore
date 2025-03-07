@@ -14,6 +14,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -55,7 +56,7 @@ internal sealed class OpenApiDocumentService(
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
 
-    public async Task<OpenApiDocument> GetOpenApiDocumentAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken = default)
+    public async Task<OpenApiDocument> GetOpenApiDocumentAsync(IServiceProvider scopedServiceProvider, HttpRequest? httpRequest = null, CancellationToken cancellationToken = default)
     {
         // For good hygiene, operation-level tags must also appear in the document-level
         // tags collection. This set captures all tags that have been seen so far.
@@ -74,7 +75,7 @@ internal sealed class OpenApiDocumentService(
         {
             Info = GetOpenApiInfo(),
             Paths = await GetOpenApiPathsAsync(capturedTags, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken),
-            Servers = GetOpenApiServers(),
+            Servers = GetOpenApiServers(httpRequest),
             Tags = [.. capturedTags]
         };
         try
@@ -192,12 +193,26 @@ internal sealed class OpenApiDocumentService(
         };
     }
 
-    internal List<OpenApiServer> GetOpenApiServers()
+    // Resolve server URL from the request to handle reverse proxies.
+    // If there is active request object, assume a development environment and use the server addresses.
+    internal List<OpenApiServer> GetOpenApiServers(HttpRequest? httpRequest = null)
+    {
+        if (httpRequest is not null)
+        {
+            var serverUrl = UriHelper.BuildAbsolute(httpRequest.Scheme, httpRequest.Host, httpRequest.PathBase);
+            return [new OpenApiServer { Url = serverUrl }];
+        }
+        else
+        {
+            return GetDevelopmentOpenApiServers();
+        }
+    }
+    private List<OpenApiServer> GetDevelopmentOpenApiServers()
     {
         if (hostEnvironment.IsDevelopment() &&
             server?.Features.Get<IServerAddressesFeature>()?.Addresses is { Count: > 0 } addresses)
         {
-            return addresses.Select(address => new OpenApiServer { Url = address }).ToList();
+            return [.. addresses.Select(address => new OpenApiServer { Url = address })];
         }
         return [];
     }
