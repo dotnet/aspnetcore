@@ -92,6 +92,7 @@ internal sealed class PersistentServicesRegistry
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentComponentRegistration))]
     internal void Restore(PersistentComponentState state)
     {
         if (state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) && registry != null)
