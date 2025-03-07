@@ -305,6 +305,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
         Services.AddLogging(builder =>
