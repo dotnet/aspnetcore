@@ -44,6 +44,8 @@ public class ComponentState : IAsyncDisposable
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
 
+        _renderer.RegisterComponentState(component, ComponentId, this);
+
         if (_cascadingParameters.Count != 0)
         {
             _hasCascadingParameters = true;
