@@ -112,63 +112,51 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         try
         {
             Span<byte> keyBuffer = stackalloc byte[1024];
+            var currentBuffer = keyBuffer;
             preKey.CopyTo(keyBuffer);
+            currentBuffer = currentBuffer[preKey.Length..];
             if (key is IUtf8SpanFormattable spanFormattable)
             {
                 var wroteKey = false;
                 while (!wroteKey)
                 {
-                    wroteKey = spanFormattable.TryFormat(keyBuffer[preKey.Length..], out var written, "", CultureInfo.InvariantCulture);
+                    wroteKey = spanFormattable.TryFormat(currentBuffer, out var written, "", CultureInfo.InvariantCulture);
                     if (!wroteKey)
                     {
                         // It is really unlikely that we will enter here, but we need to handle this case
                         Debug.Assert(written == 0);
-                        GrowBuffer(preKey, ref pool, ref keyBuffer);
+                        GrowBuffer(ref pool, ref keyBuffer);
                     }
                     else
                     {
-                        keyBuffer = keyBuffer[..(preKey.Length + written)];
+                        currentBuffer = currentBuffer[..written];
                     }
                 }
             }
-            else if (key is IFormattable formattable)
+            else
             {
-                var keyString = formattable.ToString("", CultureInfo.InvariantCulture);
+                var keySpan = ResolveKeySpan(key);
                 var wroteKey = false;
                 while (!wroteKey)
                 {
-                    wroteKey = Encoding.UTF8.TryGetBytes(keyString, keyBuffer[preKey.Length..], out var written);
+                    wroteKey = Encoding.UTF8.TryGetBytes(keySpan, currentBuffer, out var written);
                     if (!wroteKey)
                     {
+                        // It is really unlikely that we will enter here, but we need to handle this case
                         Debug.Assert(written == 0);
-                        GrowBuffer(preKey, ref pool, ref keyBuffer);
+                        GrowBuffer(ref pool, ref keyBuffer);
                     }
                     else
                     {
-                        keyBuffer = keyBuffer[..(preKey.Length + written)];
-                    }
-                }
-            }
-            else if (key is IConvertible convertible)
-            {
-                var keyString = convertible.ToString(CultureInfo.InvariantCulture);
-                var wroteKey = false;
-                while (!wroteKey)
-                {
-                    wroteKey = Encoding.UTF8.TryGetBytes(keyString, keyBuffer[preKey.Length..], out var written);
-                    if (!wroteKey)
-                    {
-                        Debug.Assert(written == 0);
-                        GrowBuffer(preKey, ref pool, ref keyBuffer);
-                    }
-                    else
-                    {
-                        keyBuffer = keyBuffer[..(preKey.Length + written)];
+                        currentBuffer = currentBuffer[..written];
                     }
                 }
             }
 
-            Debug.Assert(SHA256.TryHashData(keyBuffer, keyHash, out _));
+            keyBuffer = keyBuffer[..(keyBuffer.Length - currentBuffer.Length)];
+
+            var hashSucceeded = SHA256.TryHashData(keyBuffer, keyHash, out _);
+            Debug.Assert(hashSucceeded);
             return Convert.ToBase64String(keyHash);
         }
         finally
@@ -180,10 +168,25 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         }
     }
 
-    private static void GrowBuffer(byte[] preKey, ref byte[]? pool, ref Span<byte> keyBuffer)
+    private static ReadOnlySpan<char> ResolveKeySpan(object? key)
+    {
+        if (key is IFormattable formattable)
+        {
+            var keyString = formattable.ToString("", CultureInfo.InvariantCulture);
+            return keyString.AsSpan();
+        }
+        else if (key is IConvertible convertible)
+        {
+            var keyString = convertible.ToString(CultureInfo.InvariantCulture);
+            return keyString.AsSpan();
+        }
+        return default;
+    }
+
+    private static void GrowBuffer(ref byte[]? pool, ref Span<byte> keyBuffer)
     {
         var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
-        keyBuffer[0..preKey.Length].CopyTo(newPool);
+        keyBuffer.CopyTo(newPool);
         keyBuffer = newPool;
         if (pool != null)
         {
