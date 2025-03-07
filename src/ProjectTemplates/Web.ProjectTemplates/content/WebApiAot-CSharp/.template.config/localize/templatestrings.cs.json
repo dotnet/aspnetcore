@@ -10,6 +10,7 @@
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
+  "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
 }

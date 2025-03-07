@@ -10,6 +10,7 @@
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",
+  "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
 }

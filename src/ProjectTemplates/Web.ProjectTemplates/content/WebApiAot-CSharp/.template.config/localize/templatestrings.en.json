@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ASP.NET Core Web API (native AOT)",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
   "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
@@ -10,6 +10,7 @@
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
+  "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }
