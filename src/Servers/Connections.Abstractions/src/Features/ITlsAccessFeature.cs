@@ -13,12 +13,12 @@ using Microsoft.AspNetCore.Connections.Abstractions.TLS;
 namespace Microsoft.AspNetCore.Connections.Features;
 
 /// <summary>
-/// Represents the details about the TLS fingerprinting.
+/// Allows to access underlying TLS data.
 /// </summary>
-public interface ITlsFingerprintingFeature
+public interface ITlsAccessFeature
 {
     /// <summary>
-    /// Returns the TLS client hello details, if any.
+    /// Returns the raw bytes of TLS client hello message.
     /// </summary>
-    TLS_CLIENT_HELLO GetTlsClientHello();
+    byte[]? GetTlsClientHelloMessageBytes();
 }

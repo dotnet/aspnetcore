@@ -8,7 +8,6 @@ using System.Net;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Connections.Abstractions.TLS;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -25,7 +24,7 @@ internal partial class RequestContext :
     IHttpResponseBodyFeature,
     ITlsConnectionFeature,
     ITlsHandshakeFeature,
-    ITlsFingerprintingFeature,
+    ITlsAccessFeature,
     // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
     IHttpRequestLifetimeFeature,
     IHttpAuthenticationFeature,
@@ -384,7 +383,7 @@ internal partial class RequestContext :
         return Request.IsHttps ? this : null;
     }
 
-    internal ITlsFingerprintingFeature? GetTlsFingerprintingFeature()
+    internal ITlsAccessFeature? GetTlsFingerprintingFeature()
     {
         return Request.IsHttps ? this : null;
     }

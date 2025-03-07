@@ -3,9 +3,7 @@
 
 using System.Buffers;
 using System.Runtime.InteropServices;
-using System.Security.Authentication;
 using System.Security.Principal;
-using Microsoft.AspNetCore.Connections.Abstractions.TLS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -235,7 +233,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe TLS_CLIENT_HELLO TryGetTlsClientHello()
+    /// <summary>
+    /// Attempts to get the client hello message bytes from the http.sys.
+    /// If not successful, will return `null`
+    /// </summary>
+    internal unsafe byte[]? GetTlsClientHelloMessageBytes()
     {
         if (!HttpApi.HttpGetRequestPropertySupported)
         {
@@ -244,84 +246,63 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         uint bytesReturnedValue = 0;
         uint* bytesReturned = &bytesReturnedValue;
+        uint statusCode;
 
-        var buffer = new byte[256];
+        var buffer = ArrayPool<byte>.Shared.Rent(256);
         try
         {
             fixed (byte* pBuffer = buffer)
             {
-                var statusCode = HttpApi.HttpGetRequestProperty(
-                    Server.RequestQueue.Handle,
-                    RequestId,
+                statusCode = HttpApi.HttpGetRequestProperty(
+                    Server.RequestQueue.Handle, RequestId,
                     11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                    qualifier: null,
-                    qualifierSize: 0,
-                    pBuffer,
-                    (uint)buffer.Length,
-                    bytesReturned: (IntPtr)bytesReturned,
-                    IntPtr.Zero);
+                    qualifier: null, qualifierSize: 0,
+                    pBuffer, (uint)buffer.Length,
+                    bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
 
-                if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+                if (statusCode is ErrorCodes.ERROR_SUCCESS)
                 {
-                    // The buffer is too small, we need to allocate a larger one.
-                    // Firstly, return the initial buffer to not leak
-                    // ArrayPool<byte>.Shared.Return(buffer);
-
-                    // then reallocate the buffer of size as `bytesReturned`
-                    buffer = new byte[(int)bytesReturned];
-
-                    // and try again!
-                    statusCode = HttpApi.HttpGetRequestProperty(
-                        Server.RequestQueue.Handle,
-                        RequestId,
-                        11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                        qualifier: null,
-                        qualifierSize: 0,
-                        pBuffer,
-                        (uint)buffer.Length,
-                        bytesReturned: (IntPtr)bytesReturned,
-                        IntPtr.Zero);
+                    return buffer.AsSpan().ToArray();
                 }
-
-                if (statusCode == ErrorCodes.ERROR_SUCCESS)
-                {
-                    try
-                    {
-                        var tlsMajorVersion = pBuffer[1];
-                        var tlsMinorVersion = pBuffer[2];
-
-                        return new TLS_CLIENT_HELLO
-                        {
-                            ProtocolVersion = tlsMinorVersion switch
-                            {
-                                4 => SslProtocols.Tls13,
-                                3 => SslProtocols.Tls12,
-#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
-                                2 => SslProtocols.Tls11,
-                                1 => SslProtocols.Tls,
-#pragma warning restore SYSLIB0039
-#pragma warning disable CS0618 // Type or member is obsolete
-                                0 => SslProtocols.Ssl3,
-#pragma warning restore CS0618 // Type or member is obsolete
-                                _ => SslProtocols.None,
-                            }
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.TlsClientHelloParseError(Logger, ex);
-                    }
-                }
-
-                // if not returned here, we got a non-success status code
-                Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
-                return default;
             }
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer);
         }
+
+        // if buffer supplied is too small, `bytesReturned` will have proper size
+        // so retry should succeed with the properly allocated buffer
+        if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+        {
+            try
+            {
+                var correctSize = (int)bytesReturnedValue;
+                buffer = ArrayPool<byte>.Shared.Rent(correctSize);
+
+                fixed (byte* pBuffer = buffer)
+                {
+                    statusCode = HttpApi.HttpGetRequestProperty(
+                        Server.RequestQueue.Handle, RequestId,
+                        11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        qualifier: null, qualifierSize: 0,
+                        pBuffer, (uint)buffer.Length,
+                        bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
+
+                    if (statusCode is ErrorCodes.ERROR_SUCCESS)
+                    {
+                        return buffer.AsSpan(0, correctSize).ToArray();
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
+        return default;
     }
 
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()

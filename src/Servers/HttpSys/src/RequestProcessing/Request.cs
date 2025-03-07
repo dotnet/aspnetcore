@@ -366,7 +366,7 @@ internal sealed partial class Request
 
     private void ParseTlsClientHello()
     {
-        TlsClientHelloMessage = RequestContext.TryGetTlsClientHello();
+        TlsClientHelloMessageBytes = RequestContext.GetTlsClientHelloMessageBytes();
     }
 
     public X509Certificate2? ClientCertificate
