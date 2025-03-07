@@ -339,7 +339,10 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
-    public TLS_CLIENT_HELLO TlsClientHelloMessage { get; private set; }
+    /// <summary>
+    /// Raw bytes of TLS client hello message
+    /// </summary>
+    public byte[]? TlsClientHelloMessageBytes { get; private set; }
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
@@ -378,7 +381,7 @@ internal sealed partial class Request
 
     private void ParseTlsClientHello()
     {
-        TlsClientHelloMessage = RequestContext.TryGetTlsClientHello();
+        TlsClientHelloMessageBytes = RequestContext.GetTlsClientHelloMessageBytes();
     }
 
     public X509Certificate2? ClientCertificate

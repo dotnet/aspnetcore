@@ -19,7 +19,7 @@ internal sealed class StandardFeatureCollection : IFeatureCollection
         { typeof(IHttpResponseFeature), _identityFunc },
         { typeof(IHttpResponseBodyFeature), _identityFunc },
         { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-        { typeof(ITlsFingerprintingFeature), ctx => ctx.GetTlsFingerprintingFeature() },
+        { typeof(ITlsAccessFeature), ctx => ctx.GetTlsFingerprintingFeature() },
         { typeof(IHttpRequestLifetimeFeature), _identityFunc },
         { typeof(IHttpAuthenticationFeature), _identityFunc },
         { typeof(IHttpRequestIdentifierFeature), _identityFunc },
