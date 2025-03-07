@@ -37,12 +37,12 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
                 // Compare the last segments of the reference paths
                 // to handle equivalent types in different contexts,
                 // like the same schema in a dictionary value or list
-                var xRefParts = xFullReferencePath.Split('/');
-                var yRefParts = yFullReferencePath.Split('/');
+                var xLastIndexOf = xFullReferencePath.LastIndexOf('/');
+                var yLastIndexOf = yFullReferencePath.LastIndexOf('/');
 
-                if (xRefParts?.Length > 0 && yRefParts?.Length > 0)
+                if (xLastIndexOf != -1 && yLastIndexOf != -1)
                 {
-                    return xRefParts[^1] == yRefParts[^1];
+                    return xFullReferencePath[xLastIndexOf..] == yFullReferencePath[yLastIndexOf..];;
                 }
             }
         }

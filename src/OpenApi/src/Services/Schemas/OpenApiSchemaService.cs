@@ -297,20 +297,21 @@ internal sealed class OpenApiSchemaService(
         }
 
         // Remove the leading "#/" and split the path into segments
-        var segments = pointer[2..].Split('/');
+        var jsonPointer = pointer.AsSpan(2);
+        var segments = jsonPointer.Split('/');
         var currentNode = root;
 
         foreach (var segment in segments)
         {
             if (currentNode is JsonObject jsonObj)
             {
-                if (!jsonObj.TryGetPropertyValue(segment, out var nextNode))
+                if (!jsonObj.TryGetPropertyValue(jsonPointer[segment].ToString(), out var nextNode))
                 {
                     return null; // Path segment not found
                 }
                 currentNode = nextNode;
             }
-            else if (currentNode is JsonArray jsonArray && int.TryParse(segment, out var index))
+            else if (currentNode is JsonArray jsonArray && int.TryParse(jsonPointer[segment], out var index))
             {
                 if (index < 0 || index >= jsonArray.Count)
                 {
