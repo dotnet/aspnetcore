@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Webová aplikace ASP.NET Core",
+  "name": "Webová aplikace ASP.NET Core (Razor Pages)",
   "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkou obsahu ASP.NET Core Razor Pages",
   "symbols/auth/choices/None/description": "Bez ověřování",
   "symbols/auth/choices/Individual/description": "Ověřování Individual",
@@ -30,7 +30,7 @@
   "symbols/NoHttps/description": "Určuje, jestli se má protokol HTTPS vypnout. Tato možnost platí jenom v případě, že se pro --auth nepoužívají IndividualB2C, SingleOrg ani MultiOrg.",
   "symbols/UseLocalDB/description": "Určuje, jestli se má použít LocalDB namísto SQLite. Tato možnost platí jenom v případě, že je zadáno --auth Individual nebo --auth IndividualB2C.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net10.0/description": "Target net10.0",
+  "symbols/Framework/choices/net10.0/description": "Cíl net10.0",
   "symbols/CalledApiUrl/description": "Adresa URL rozhraní API, která se má volat z webové aplikace. Tato možnost platí jenom v případě, že je zadáno --auth SingleOrg, --auth MultiOrg nebo --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Určuje, jestli webová aplikace volá Microsoft Graph. Tato možnost platí pouze v případě, že je zadáno --auth SingleOrg nebo --auth MultiOrg.",
   "symbols/CalledApiScopes/description": "Obory, které se mají požádat o volání rozhraní API z webové aplikace Tato možnost platí jenom v případě, že je zadaná možnost --auth SingleOrg, --auth MultiOrg nebo --auth IndividualB2C.",

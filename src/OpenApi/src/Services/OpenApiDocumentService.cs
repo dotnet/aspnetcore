@@ -75,7 +75,6 @@ internal sealed class OpenApiDocumentService(
             Servers = GetOpenApiServers(httpRequest)
         };
         document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
-        document.Tags = document.Tags?.Distinct(OpenApiTagComparer.Instance).ToList();
         try
         {
             await ApplyTransformersAsync(document, scopedServiceProvider, cancellationToken);
@@ -327,15 +326,15 @@ internal sealed class OpenApiDocumentService(
         => description.ActionDescriptor.AttributeRouteInfo?.Name ??
             description.ActionDescriptor.EndpointMetadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName;
 
-    private static List<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
+    private static HashSet<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
         {
-            List<OpenApiTagReference> tags = [];
+            HashSet<OpenApiTagReference> tags = [];
             foreach (var tag in tagsMetadata.Tags)
             {
-                document.Tags ??= [];
+                document.Tags ??= new HashSet<OpenApiTag>();
                 document.Tags.Add(new OpenApiTag { Name = tag });
                 tags.Add(new OpenApiTagReference(tag, document));
 
@@ -345,9 +344,9 @@ internal sealed class OpenApiDocumentService(
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         var controllerName = description.ActionDescriptor.RouteValues["controller"];
-        document.Tags ??= [];
+        document.Tags ??= new HashSet<OpenApiTag>();
         document.Tags.Add(new OpenApiTag { Name = controllerName });
-        return [new OpenApiTagReference(controllerName, document)];
+        return [new(controllerName, document)];
     }
 
     private async Task<OpenApiResponses> GetResponsesAsync(
