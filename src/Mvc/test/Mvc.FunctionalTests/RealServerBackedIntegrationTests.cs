@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -31,7 +35,10 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWapFac
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-        Assert.Equal(5000, client.BaseAddress.Port);
+        var kestrelServer = Factory.Services.GetRequiredService<IServer>();
+        var kestrelAddress = kestrelServer.Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
+
+        Assert.Contains(client.BaseAddress?.Port.ToString(CultureInfo.InvariantCulture) ?? "", kestrelAddress);
 
         Assert.Contains("first", responseContent);
         Assert.Contains("second", responseContent);
@@ -42,9 +49,6 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWapFac
     [Fact]
     public async Task ServerReachableViaGenericHttpClient()
     {
-        // Arrange
-        var baseAddress = new Uri("http://localhost:5000");
-
         // Act
         using var factoryClient = Factory.CreateClient();
         using var client = new HttpClient() { BaseAddress = factoryClient.BaseAddress };

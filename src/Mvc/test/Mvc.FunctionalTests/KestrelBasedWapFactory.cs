@@ -9,6 +9,6 @@ public class KestrelBasedWapFactory : WebApplicationFactory<SimpleWebSite.Startu
 {
     public KestrelBasedWapFactory() : base()
     {
-        this.UseKestrel();
+        UseKestrel(0);
     }
 }
