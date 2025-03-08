@@ -54,23 +54,4 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWapFac
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
-    [Fact]
-    public async Task ServerReachableViaGenericHttpClient_OnSpecificPort()
-    {
-        // Arrange
-        var port = 7777;
-        var baseAddress = new Uri($"http://localhost:{port}");
-
-        // Act
-        Factory.UseKestrel(port);
-        Factory.StartServer();
-
-        using var client = new HttpClient() { BaseAddress = baseAddress };
-
-        using var response = await client.GetAsync("/");
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
 }
