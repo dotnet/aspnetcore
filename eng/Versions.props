@@ -69,10 +69,10 @@
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelVersion>10.0.0-preview.3.25155.12</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftNETCoreAppRefVersion>10.0.0-preview.3.25155.12</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>10.0.0-preview.3.25157.12</MicrosoftNETCoreAppRuntimewinx64Version>
+    <MicrosoftNETCoreAppRuntimewinx64Version>10.0.0-preview.3.25157.13</MicrosoftNETCoreAppRuntimewinx64Version>
     <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>10.0.0-preview.3.25155.12</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
     <MicrosoftNETRuntimeWebAssemblySdkVersion>10.0.0-preview.3.25155.12</MicrosoftNETRuntimeWebAssemblySdkVersion>
-    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>10.0.0-preview.3.25157.12</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
+    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>10.0.0-preview.3.25157.13</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>10.0.0-preview.3.25155.12</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-preview.3.25155.12</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>10.0.0-preview.3.25155.12</MicrosoftExtensionsCachingMemoryVersion>
