@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,9 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// Typically the Startup or Program classes can be used.</typeparam>
 public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
 {
-    private bool _useKestrel;
     private bool _disposed;
     private bool _disposedAsync;
+
+    private bool _useKestrel;
+    private int? _kestrelPort;
+    private Action<KestrelServerOptions>? _configureKestrelOptions;
+
     private TestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
@@ -74,12 +79,17 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <summary>
     /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
-    public TestServer? Server
+    public TestServer Server
     {
         get
         {
-            Initialize();
-            return _server;
+            if (_useKestrel)
+            {
+                throw new NotSupportedException();
+            }
+
+            StartServer();
+            return _server!;
         }
     }
 
@@ -90,7 +100,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         get
         {
-            Initialize();
+            StartServer();
             if (_useKestrel)
             {
                 return _webHost!.Services;
@@ -157,9 +167,55 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         _useKestrel = true;
     }
 
-    private static IWebHost CreateKestrelServer(IWebHostBuilder builder)
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    /// <param name="port">The port to listen to when the server starts. Use `0` to allow dynamic port selection.</param>
+    /// <exception cref="InvalidOperationException">Thrown, if this method is called after the WebHostFactory has been initialized.</exception>
+    /// <remarks>This method should be called before the factory is initialized either via one of the <see cref="CreateClient()"/> methods
+    /// or via the <see cref="StartServer"/> method.</remarks>
+    public void UseKestrel(int port)
     {
-        var host = builder.UseKestrel().Build();
+        UseKestrel();
+
+        this._kestrelPort = port;
+    }
+
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    /// <param name="configureKestrelOptions">A callback handler that will be used for configuring the server when it starts.</param>
+    /// <exception cref="InvalidOperationException">Thrown, if this method is called after the WebHostFactory has been initialized.</exception>
+    /// <remarks>This method should be called before the factory is initialized either via one of the <see cref="CreateClient()"/> methods
+    /// or via the <see cref="StartServer"/> method.</remarks>
+    public void UseKestrel(Action<KestrelServerOptions> configureKestrelOptions)
+    {
+        UseKestrel();
+
+        this._configureKestrelOptions = configureKestrelOptions;
+    }
+
+    private IWebHost CreateKestrelServer(IWebHostBuilder builder)
+    {
+        if (_configureKestrelOptions is not null)
+        {
+            builder.UseKestrel(_configureKestrelOptions);
+        }
+        else
+        {
+            builder.UseKestrel();
+        }
+
+        var host = builder.Build();
+
+        if (_kestrelPort.HasValue)
+        {
+            var saf = host.Services.GetRequiredService<IServerAddressesFeature>();
+            saf.Addresses.Clear();
+            saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
+            saf.PreferHostingUrls = true;
+        }
+
         host.Start();
         return host;
     }
@@ -168,7 +224,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// Initializes the instance by configurating the host builder.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
-    public void Initialize()
+    public void StartServer()
     {
         if (_server != null || _webHost != null)
         {
@@ -542,7 +598,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <returns>The <see cref="HttpClient"/>.</returns>
     public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers)
     {
-        Initialize();
+        StartServer();
 
         HttpClient client;
         if (handlers == null || handlers.Length == 0)
