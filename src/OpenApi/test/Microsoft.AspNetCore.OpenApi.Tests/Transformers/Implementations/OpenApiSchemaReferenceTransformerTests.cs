@@ -680,6 +680,162 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         });
     }
 
+    // Test for: https://github.com/dotnet/aspnetcore/issues/60381
+    [Fact]
+    public async Task ResolvesListBasedReferencesCorrectly()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (ContainerType item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ContainerType", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Get effective schema for ContainerType
+            Assert.Equal(2, requestSchema.Properties.Count);
+
+            // Check Seq1 and Seq2 properties
+            var seq1Schema = requestSchema.Properties["seq1"];
+            var seq2Schema = requestSchema.Properties["seq2"];
+
+            // Assert both are array types
+            Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, seq1Schema.Type);
+            Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, seq2Schema.Type);
+
+            // Assert items are arrays of strings
+            Assert.Equal(JsonSchemaType.Array, seq1Schema.Items.Type);
+            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
+            // Assert.Equal(JsonSchemaType.Array, seq2Schema.Items.Type);
+
+            // Since both Seq1 and Seq2 are the same type (List<List<string>>),
+            // they should reference the same schema structure
+            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
+            // Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
+
+            // Verify the inner arrays contain strings
+            Assert.Equal(JsonSchemaType.String, seq1Schema.Items.Items.Type);
+            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
+            // Assert.Equal(JsonSchemaType.String, seq2Schema.Items.Items.Type);
+
+            Assert.Equal(["ContainerType"], document.Components.Schemas.Keys);
+        });
+    }
+
+    // Tests for: https://github.com/dotnet/aspnetcore/issues/60012
+    [Fact]
+    public async Task SupportsListOfClassInSelfReferentialSchema()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Category item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Assert that $ref is used for nested Tags
+            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
+            // Assert.Equal("Tag", ((OpenApiSchemaReference)requestSchema.Properties["tags"].Items).Reference.Id);
+
+            // Assert that $ref is used for nested Parent
+            Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema.Properties["parent"]).Reference.Id);
+
+            // Assert that no duplicate schemas are emitted
+            Assert.Collection(document.Components.Schemas,
+                schema =>
+                {
+                    Assert.Equal("Category", schema.Key);
+                },
+                schema =>
+                {
+                    Assert.Equal("Tag", schema.Key);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task UsesSameReferenceForSameTypeInDifferentLocations()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/parent-object", (ParentObject item) => { });
+        builder.MapPost("/list", (List<ParentObject> item) => { });
+        builder.MapPost("/dictionary", (Dictionary<string, ParentObject> item) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/parent-object"].Operations[OperationType.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Assert that $ref is used for nested Children
+            Assert.Equal("ChildObject", ((OpenApiSchemaReference)requestSchema.Properties["children"].Items).Reference.Id);
+
+            // Assert that $ref is used for nested Parent
+            var childSchema = requestSchema.Properties["children"].Items;
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)childSchema.Properties["parent"]).Reference.Id);
+
+            operation = document.Paths["/list"].Operations[OperationType.Post];
+            requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for items in the list definition
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)requestSchema.Items).Reference.Id);
+            var parentSchema = requestSchema.Items;
+            Assert.Equal("ChildObject", ((OpenApiSchemaReference)parentSchema.Properties["children"].Items).Reference.Id);
+
+            childSchema = parentSchema.Properties["children"].Items;
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)childSchema.Properties["parent"]).Reference.Id);
+
+            operation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            requestSchema = operation.RequestBody.Content["application/json"].Schema;
+
+            // Assert $ref used for items in the dictionary definition
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)requestSchema.AdditionalProperties).Reference.Id);
+            parentSchema = requestSchema.AdditionalProperties;
+            Assert.Equal("ChildObject", ((OpenApiSchemaReference)parentSchema.Properties["children"].Items).Reference.Id);
+
+            childSchema = parentSchema.Properties["children"].Items;
+            Assert.Equal("ParentObject", ((OpenApiSchemaReference)childSchema.Properties["parent"]).Reference.Id);
+
+            // Assert that only the expected schemas are registered
+            Assert.Equal(["ChildObject", "ParentObject"], document.Components.Schemas.Keys);
+        });
+    }
+
+    private class Category
+    {
+        public required string Name { get; set; }
+
+        public Category Parent { get; set; }
+
+        public IEnumerable<Tag> Tags { get; set; } = [];
+    }
+
+    public class Tag
+    {
+        public required string Name { get; set; }
+    }
+
+    private class ContainerType
+    {
+        public List<List<string>> Seq1 { get; set; } = [];
+        public List<List<string>> Seq2 { get; set; } = [];
+    }
+
     private class Root
     {
         public Item Item1 { get; set; } = null!;
