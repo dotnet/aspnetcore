@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -210,7 +211,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         if (_kestrelPort.HasValue)
         {
-            var saf = host.Services.GetRequiredService<IServerAddressesFeature>();
+            var kestrelServer = host.Services.GetRequiredService<IServer>();
+            var saf = kestrelServer.Features.GetRequiredFeature<IServerAddressesFeature>();
             saf.Addresses.Clear();
             saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
             saf.PreferHostingUrls = true;
@@ -288,7 +290,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             {
                 _webHost = CreateKestrelServer(builder);
 
-                var serverAddressFeature = _webHost.ServerFeatures.Get<IServerAddressesFeature>();
+                var serverAddressFeature = _webHost.ServerFeatures.GetRequiredFeature<IServerAddressesFeature>();
                 if (serverAddressFeature?.Addresses.Count > 0)
                 {
                     // Store the web host address as it's going to be used every time a client is created to communicate to the server
