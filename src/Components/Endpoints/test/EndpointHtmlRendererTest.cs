@@ -664,7 +664,6 @@ public class EndpointHtmlRendererTest
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
-        collection.TryAddScoped<WebAssemblySettingsEmitter>();
         collection.TryAddSingleton(_dataprotectorProvider);
         collection.TryAddSingleton<WebAssemblyComponentSerializer>();
 
@@ -1682,6 +1681,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
         services.AddScoped<ResourceCollectionProvider>();
+        services.AddSingleton(new WebAssemblySettingsEmitter(new TestEnvironment(Environments.Development)));
         return services;
     }
 
