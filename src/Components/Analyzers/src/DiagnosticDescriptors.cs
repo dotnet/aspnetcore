@@ -42,7 +42,7 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor ComponentParametersShouldBePublic = new(
         "BL0004",
-        CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Title )),
+        CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Format)),
         Encapsulation,
         DiagnosticSeverity.Error,
@@ -51,7 +51,7 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent = new(
         "BL0005",
-        CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title  )),
+        CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Format)),
         Usage,
         DiagnosticSeverity.Warning,
