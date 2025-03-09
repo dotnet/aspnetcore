@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             global::System.Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }

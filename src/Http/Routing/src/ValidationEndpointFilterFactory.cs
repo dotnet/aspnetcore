@@ -57,9 +57,9 @@ internal static class ValidationEndpointFilterFactory
                 // initialize an explicit DisplayName. We can suppress the warning here.
                 // Eventually, this can be removed when the code is updated to
                 // use https://github.com/dotnet/runtime/issues/113134.
-                var validationContext = CreateValidationContext(argument, validatableParameter, context.HttpContext.RequestServices);
+                var validationContext = CreateValidationContext(argument, context.HttpContext.RequestServices);
                 validatableContext.ValidationContext = validationContext;
-                await validatableParameter.Validate(argument, validatableContext);
+                await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
             }
 
             if (validatableContext.ValidationErrors is { Count: > 0 })
@@ -80,6 +80,6 @@ internal static class ValidationEndpointFilterFactory
     /// use https://github.com/dotnet/runtime/issues/113134.
     /// </remarks>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = ValidationContextJustification)]
-    private static ValidationContext CreateValidationContext(object argument, ValidatableParameterInfo validatableParameter, IServiceProvider serviceProvider)
-        => new(argument, serviceProvider, items: null) { DisplayName = validatableParameter.DisplayName };
+    private static ValidationContext CreateValidationContext(object argument, IServiceProvider serviceProvider)
+        => new(argument, serviceProvider, items: null) { DisplayName = string.Empty };
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
-public abstract class ValidatableTypeInfo
+public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
     private readonly int _validatableSubtypesCount;
@@ -39,34 +39,35 @@ public abstract class ValidatableTypeInfo
     /// <summary>
     /// The type being validated.
     /// </summary>
-    public Type Type { get; }
+    internal Type Type { get; }
 
     /// <summary>
     /// The members that can be validated.
     /// </summary>
-    public IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+    internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
     /// <summary>
     /// The sub-types that can be validated.
     /// </summary>
-    public IReadOnlyList<Type>? ValidatableSubTypes { get; }
+    internal IReadOnlyList<Type>? ValidatableSubTypes { get; }
 
     /// <summary>
     /// Indicates whether the type implements IValidatableObject.
     /// </summary>
-    public bool IsIValidatableObject { get; }
+    internal bool IsIValidatableObject { get; }
 
     /// <summary>
     /// Validates the specified value.
     /// </summary>
     /// <param name="value">The value to validate.</param>
     /// <param name="context">The validation context.</param>
-    public virtual Task Validate(object? value, ValidatableContext context)
+    /// <param name="cancellationToken"></param>
+    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
         if (value == null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         // Check if we've exceeded the maximum depth
@@ -86,7 +87,7 @@ public abstract class ValidatableTypeInfo
             // First validate members
             for (var i = 0; i < _membersCount; i++)
             {
-                Members[i].Validate(value, context);
+                await Members[i].ValidateAsync(value, context, cancellationToken);
                 context.Prefix = originalPrefix;
             }
 
@@ -102,7 +103,7 @@ public abstract class ValidatableTypeInfo
                     {
                         if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
                         {
-                            subTypeInfo.Validate(value, context);
+                            await subTypeInfo.ValidateAsync(value, context, cancellationToken);
                             context.Prefix = originalPrefix;
                         }
                     }
@@ -142,7 +143,6 @@ public abstract class ValidatableTypeInfo
 
             // Always restore original prefix
             context.Prefix = originalPrefix;
-            return Task.CompletedTask;
         }
         finally
         {

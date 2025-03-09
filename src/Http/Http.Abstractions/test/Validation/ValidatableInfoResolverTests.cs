@@ -72,10 +72,7 @@ public class ValidatableInfoResolverTests
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
             typeof(string),
             "model",
-            "model",
-            false,
-            false,
-            false).Object;
+            "model").Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
         resolver.Setup(r => r.GetValidatableParameterInfo(parameter)).Returns(mockParamInfo);
@@ -147,12 +144,8 @@ public class ValidatableInfoResolverTests
             Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }
@@ -168,11 +161,8 @@ public class ValidatableInfoResolverTests
             Type parameterType,
             string name,
             string displayName,
-            bool isNullable,
-            bool isRequired,
-            bool isEnumerable,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
+            : base(parameterType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }

@@ -4,14 +4,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
-public abstract class ValidatablePropertyInfo
+public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -21,62 +20,49 @@ public abstract class ValidatablePropertyInfo
         Type declaringType,
         Type propertyType,
         string name,
-        string displayName,
-        bool isEnumerable,
-        bool isNullable,
-        bool isRequired,
-        bool hasValidatableType)
+        string displayName)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
-        IsEnumerable = isEnumerable;
-        IsNullable = isNullable;
-        IsRequired = isRequired;
-        HasValidatableType = hasValidatableType;
     }
 
     /// <summary>
     /// Gets the member type.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-    public Type DeclaringType { get; }
+    internal Type DeclaringType { get; }
 
     /// <summary>
     /// Gets the member type.
     /// </summary>
-    public Type PropertyType { get; }
+    internal Type PropertyType { get; }
 
     /// <summary>
     /// Gets the member name.
     /// </summary>
-    public string Name { get; }
+    internal string Name { get; }
 
     /// <summary>
     /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
     /// </summary>
-    public string DisplayName { get; }
+    internal string DisplayName { get; }
 
     /// <summary>
     /// Gets whether the member is enumerable.
     /// </summary>
-    public bool IsEnumerable { get; }
+    internal bool IsEnumerable { get; }
 
     /// <summary>
     /// Gets whether the member is nullable.
     /// </summary>
-    public bool IsNullable { get; }
+    internal bool IsNullable { get; }
 
     /// <summary>
     /// Gets whether the member is annotated with the <see cref="RequiredAttribute"/>.
     /// </summary>
     public bool IsRequired { get; }
-
-    /// <summary>
-    /// Gets whether the member's type is validatable.
-    /// </summary>
-    public bool HasValidatableType { get; }
 
     /// <summary>
     /// Gets the validation attributes for this member.
@@ -87,15 +73,16 @@ public abstract class ValidatablePropertyInfo
     /// <summary>
     /// Validates the member's value.
     /// </summary>
-    /// <param name="obj">The object containing the member to validate.</param>
+    /// <param name="value">The object containing the member to validate.</param>
     /// <param name="context">The context for the validation.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public virtual Task Validate(object obj, ValidatableContext context)
+    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
 
         var property = DeclaringType.GetProperty(Name)!;
-        var value = property.GetValue(obj);
+        var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -113,20 +100,20 @@ public abstract class ValidatablePropertyInfo
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
-        if (IsRequired && validationAttributes.OfType<RequiredAttribute>().SingleOrDefault() is { } requiredAttribute)
+        if (validationAttributes.TryGetRequiredAttribute(out var requiredAttribute))
         {
-            var result = requiredAttribute.GetValidationResult(value, context.ValidationContext);
+            var result = requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
                 context.AddValidationError(context.Prefix, [result!.ErrorMessage!]);
                 context.Prefix = originalPrefix; // Restore prefix
-                return Task.CompletedTask;
+                return;
             }
         }
 
         // Validate any other attributes
-        ValidateValue(value, context.Prefix, validationAttributes);
+        ValidateValue(propertyValue, context.Prefix, validationAttributes);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -143,7 +130,7 @@ public abstract class ValidatablePropertyInfo
         try
         {
             // Handle enumerable values
-            if (IsEnumerable && value is System.Collections.IEnumerable enumerable)
+            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.Prefix;
@@ -152,12 +139,12 @@ public abstract class ValidatablePropertyInfo
                 {
                     context.Prefix = $"{currentPrefix}[{index}]";
 
-                    if (HasValidatableType && item != null)
+                    if (item != null)
                     {
                         var itemType = item.GetType();
                         if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            validatableType.Validate(item, context);
+                            await validatableType.ValidateAsync(item, context, cancellationToken);
                         }
                     }
 
@@ -167,17 +154,15 @@ public abstract class ValidatablePropertyInfo
                 // Restore prefix to the property name before validating the next item
                 context.Prefix = currentPrefix;
             }
-            else if (HasValidatableType && value != null)
+            else if (propertyValue != null)
             {
                 // Validate as a complex object
-                var valueType = value.GetType();
+                var valueType = propertyValue.GetType();
                 if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
-                    validatableType.Validate(value, context);
+                    await validatableType.ValidateAsync(propertyValue, context, cancellationToken);
                 }
             }
-
-            return Task.CompletedTask;
         }
         finally
         {

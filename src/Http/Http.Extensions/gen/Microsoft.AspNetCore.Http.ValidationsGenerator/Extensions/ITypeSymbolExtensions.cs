@@ -8,17 +8,6 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
 internal static class ITypeSymbolExtensions
 {
-    public static bool IsNullable(this ITypeSymbol type)
-    {
-        if (type is INamedTypeSymbol namedType)
-        {
-            return namedType.IsGenericType &&
-                namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
-        }
-
-        return false;
-    }
-
     public static bool IsEnumerable(this ITypeSymbol type, INamedTypeSymbol enumerable)
     {
         if (type.SpecialType == SpecialType.System_String)

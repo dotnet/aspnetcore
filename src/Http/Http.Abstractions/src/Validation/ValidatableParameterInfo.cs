@@ -4,70 +4,46 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
 /// Contains validation information for a parameter.
 /// </summary>
-public abstract class ValidatableParameterInfo
+public abstract class ValidatableParameterInfo : IValidatableInfo
 {
-    private ValidationAttribute? _requiredAttribute;
+    private RequiredAttribute? _requiredAttribute;
+
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
     /// <param name="displayName">The display name for the parameter.</param>
-    /// <param name="isNullable">Whether the parameter is optional.</param>
-    /// <param name="isRequired"></param>
-    /// <param name="isEnumerable">Whether the parameter is enumerable.</param>
     public ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
-        bool isNullable,
-        bool isRequired,
-        bool isEnumerable)
+        string displayName)
     {
         ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
-        IsNullable = isNullable;
-        IsRequired = isRequired;
-        IsEnumerable = isEnumerable;
     }
 
     /// <summary>
     /// Gets the parameter type.
     /// </summary>
-    public Type ParameterType { get; }
+    internal Type ParameterType { get; }
 
     /// <summary>
     /// Gets the parameter name.
     /// </summary>
-    public string Name { get; }
+    internal string Name { get; }
 
     /// <summary>
     /// Gets the display name for the parameter.
     /// </summary>
-    public string DisplayName { get; }
-
-    /// <summary>
-    /// Gets whether the parameter is optional.
-    /// </summary>
-    public bool IsNullable { get; }
-
-    /// <summary>
-    /// Gets whether the parameter is annotated with the <see cref="RequiredAttribute"/>.
-    /// </summary>
-    public bool IsRequired { get; }
-
-    /// <summary>
-    /// Gets whether the parameter is enumerable.
-    /// </summary>
-    public bool IsEnumerable { get; }
+    internal string DisplayName { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -80,19 +56,20 @@ public abstract class ValidatableParameterInfo
     /// </summary>
     /// <param name="value">The value to validate.</param>
     /// <param name="context">The context for the validation.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     /// If the parameter is a collection, each item in the collection will be validated.
     /// If the parameter is not a collection but has a validatable type, the single value will be validated.
     /// </remarks>
-    public virtual Task Validate(object? value, ValidatableContext context)
+    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
 
         // Skip validation if value is null and parameter is optional
-        if (value == null && IsNullable && !IsRequired)
+        if (value == null && ParameterType.IsNullable())
         {
-            return Task.CompletedTask;
+            return;
         }
 
         context.ValidationContext.DisplayName = DisplayName;
@@ -100,18 +77,15 @@ public abstract class ValidatableParameterInfo
 
         var validationAttributes = GetValidationAttributes();
 
-        if (IsRequired)
+        if (_requiredAttribute is not null && validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            _requiredAttribute ??= validationAttributes.OfType<RequiredAttribute>()
-                .FirstOrDefault();
-            Debug.Assert(_requiredAttribute is not null, "RequiredAttribute should be present if IsRequired is true");
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
                 var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
                 context.AddValidationError(key, [result.ErrorMessage!]);
-                return Task.CompletedTask;
+                return;
             }
         }
 
@@ -136,7 +110,7 @@ public abstract class ValidatableParameterInfo
         }
 
         // If the parameter is a collection, validate each item
-        if (IsEnumerable && value is IEnumerable enumerable)
+        if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
         {
             var index = 0;
             foreach (var item in enumerable)
@@ -149,7 +123,7 @@ public abstract class ValidatableParameterInfo
 
                     if (context.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        validatableType.Validate(item, context);
+                        await validatableType.ValidateAsync(item, context, cancellationToken);
                     }
                 }
                 index++;
@@ -161,10 +135,8 @@ public abstract class ValidatableParameterInfo
             var valueType = value.GetType();
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
-                validatableType.Validate(value, context);
+                await validatableType.ValidateAsync(value, context, cancellationToken);
             }
         }
-
-        return Task.CompletedTask;
     }
 }

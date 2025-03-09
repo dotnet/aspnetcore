@@ -94,11 +94,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 Type: member.Type,
                 Name: member.Name,
                 DisplayName: member.GetDisplayName(requiredSymbols.DisplayAttribute),
-                IsEnumerable: member.Type.IsEnumerable(requiredSymbols.IEnumerable),
-                IsNullable: member.Type.IsNullable(),
-                IsRequired: isRequired,
-                Attributes: attributes,
-                HasValidatableType: hasValidatableType));
+                Attributes: attributes));
         }
 
         return [.. members];

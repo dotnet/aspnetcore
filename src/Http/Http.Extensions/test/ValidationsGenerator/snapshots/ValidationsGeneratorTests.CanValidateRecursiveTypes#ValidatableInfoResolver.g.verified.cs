@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             global::System.Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }
@@ -84,10 +80,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "Value",
                         displayName: "Value",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), [10, 100], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -95,10 +87,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::RecursiveType),
                         name: "Next",
                         displayName: "Next",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: true,
                         validationAttributes: []
                     ),
                 ],

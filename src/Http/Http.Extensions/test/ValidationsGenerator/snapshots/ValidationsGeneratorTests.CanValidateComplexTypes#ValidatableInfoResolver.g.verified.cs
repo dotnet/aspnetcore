@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             global::System.Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }
@@ -92,10 +88,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(string),
                         name: "RequiredProperty",
                         displayName: "RequiredProperty",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: true,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -103,10 +95,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(string),
                         name: "StringWithLength",
                         displayName: "StringWithLength",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.StringLengthAttribute), [10], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.StringLengthAttribute")]
                     ),
                 ],
@@ -124,10 +112,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(string),
                         name: "EmailString",
                         displayName: "EmailString",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.EmailAddressAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.EmailAddressAttribute")]
                     ),
                 ],
@@ -145,10 +129,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "IntegerWithRange",
                         displayName: "IntegerWithRange",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), [10, 100], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -156,10 +136,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "IntegerWithRangeAndDisplayName",
                         displayName: "Valid identifier",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), [10, 100], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -167,10 +143,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::SubType),
                         name: "PropertyWithMemberAttributes",
                         displayName: "PropertyWithMemberAttributes",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: true,
-                        hasValidatableType: true,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -178,10 +150,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::SubType),
                         name: "PropertyWithoutMemberAttributes",
                         displayName: "PropertyWithoutMemberAttributes",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: true,
                         validationAttributes: []
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -189,10 +157,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::SubTypeWithInheritance),
                         name: "PropertyWithInheritance",
                         displayName: "PropertyWithInheritance",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: true,
                         validationAttributes: []
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -200,10 +164,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
                         name: "ListOfSubTypes",
                         displayName: "ListOfSubTypes",
-                        isEnumerable: true,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: true,
                         validationAttributes: []
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -211,10 +171,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "IntegerWithDerivedValidationAttribute",
                         displayName: "IntegerWithDerivedValidationAttribute",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::DerivedValidationAttribute), [], new global::System.Collections.Generic.Dictionary<string, object> { { "ErrorMessage", "Value must be an even number" } }) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::DerivedValidationAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -222,10 +178,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "IntegerWithCustomValidation",
                         displayName: "IntegerWithCustomValidation",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.CustomValidationAttribute), [typeof(CustomValidators), "Validate"], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.CustomValidationAttribute")]
                     ),
                     new GeneratedValidatablePropertyInfo(
@@ -233,10 +185,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(int),
                         name: "PropertyWithMultipleAttributes",
                         displayName: "PropertyWithMultipleAttributes",
-                        isEnumerable: false,
-                        isNullable: false,
-                        isRequired: false,
-                        hasValidatableType: false,
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::DerivedValidationAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::DerivedValidationAttribute"), ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RangeAttribute), [10, 100], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RangeAttribute")]
                     ),
                 ],

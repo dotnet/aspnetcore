@@ -20,27 +20,8 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
             displayName: GetDisplayName(parameterInfo),
-            isNullable: IsNullable(parameterInfo),
-            isRequired: validationAttributes.Any(a => a is RequiredAttribute),
-            isEnumerable: IsEnumerable(parameterInfo),
             validationAttributes: validationAttributes
         );
-    }
-
-    private static bool IsNullable(ParameterInfo parameterInfo)
-    {
-        if (parameterInfo.ParameterType.IsValueType)
-        {
-            return false;
-        }
-
-        if (parameterInfo.ParameterType.IsGenericType &&
-            parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     private static string GetDisplayName(ParameterInfo parameterInfo)
@@ -54,22 +35,6 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
         return parameterInfo.Name!;
     }
 
-    private static bool IsEnumerable(ParameterInfo parameterInfo)
-    {
-        if (parameterInfo.ParameterType.IsGenericType &&
-            parameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-        {
-            return true;
-        }
-
-        if (parameterInfo.ParameterType.IsArray)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
     {
         return null;
@@ -79,11 +44,8 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
         Type parameterType,
         string name,
         string displayName,
-        bool isNullable,
-        bool isRequired,
-        bool isEnumerable,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
+            ValidatableParameterInfo(parameterType, name, displayName)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 

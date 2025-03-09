@@ -17,15 +17,12 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: true,
-            isRequired: true,
-            isEnumerable: false,
             validationAttributes: [new RequiredAttribute()]);
 
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate(null, context);
+        await paramInfo.ValidateAsync(null, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -43,15 +40,12 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: true,
-            isRequired: false,
-            isEnumerable: false,
             validationAttributes: [new StringLengthAttribute(10)]);
 
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate(null, context);
+        await paramInfo.ValidateAsync(null, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -66,15 +60,12 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: false,
             validationAttributes: [new RangeAttribute(10, 100)]);
 
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate(5, context);
+        await paramInfo.ValidateAsync(5, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -92,15 +83,12 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(string),
             name: "testParam",
             displayName: "Custom Display Name",
-            isNullable: false,
-            isRequired: true,
-            isEnumerable: false,
             validationAttributes: [new RequiredAttribute()]);
 
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate(null, context);
+        await paramInfo.ValidateAsync(null, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -123,10 +111,6 @@ public class ValidatableParameterInfoTests
                     typeof(string),
                     "Name",
                     "Name",
-                    false,
-                    false,
-                    true,
-                    false,
                     [new RequiredAttribute()])
             ],
             false);
@@ -135,10 +119,7 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(Person),
             name: "person",
             displayName: "Person",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: false,
-            validationAttributes: Array.Empty<ValidationAttribute>());
+            validationAttributes: []);
 
         var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
         {
@@ -149,7 +130,7 @@ public class ValidatableParameterInfoTests
         var person = new Person(); // Name is null, so should fail validation
 
         // Act
-        await paramInfo.Validate(person, context);
+        await paramInfo.ValidateAsync(person, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -171,10 +152,6 @@ public class ValidatableParameterInfoTests
                     typeof(string),
                     "Name",
                     "Name",
-                    false,
-                    false,
-                    true,
-                    false,
                     [new RequiredAttribute()])
             ],
             false);
@@ -183,10 +160,7 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(IEnumerable<Person>),
             name: "people",
             displayName: "People",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: true,
-            validationAttributes: Array.Empty<ValidationAttribute>());
+            validationAttributes: []);
 
         var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
         {
@@ -201,7 +175,7 @@ public class ValidatableParameterInfoTests
         };
 
         // Act
-        await paramInfo.Validate(people, context);
+        await paramInfo.ValidateAsync(people, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -219,9 +193,6 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: false,
             validationAttributes:
             [
                 new RangeAttribute(10, 100) { ErrorMessage = "Range error" },
@@ -231,7 +202,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate(5, context);
+        await paramInfo.ValidateAsync(5, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -251,16 +222,13 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(int),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: false,
             validationAttributes: [new RangeAttribute(10, 100)]);
 
         var context = CreateValidatableContext();
         context.Prefix = "parent";
 
         // Act
-        await paramInfo.Validate(5, context);
+        await paramInfo.ValidateAsync(5, context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -278,15 +246,12 @@ public class ValidatableParameterInfoTests
             parameterType: typeof(string),
             name: "testParam",
             displayName: "Test Parameter",
-            isNullable: false,
-            isRequired: false,
-            isEnumerable: false,
             validationAttributes: [new ThrowingValidationAttribute()]);
 
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.Validate("test", context);
+        await paramInfo.ValidateAsync("test", context, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -300,18 +265,12 @@ public class ValidatableParameterInfoTests
         Type parameterType,
         string name,
         string displayName,
-        bool isNullable,
-        bool isRequired,
-        bool isEnumerable,
         ValidationAttribute[] validationAttributes)
     {
         return new TestValidatableParameterInfo(
             parameterType,
             name,
             displayName,
-            isNullable,
-            isRequired,
-            isEnumerable,
             validationAttributes);
     }
 
@@ -336,11 +295,8 @@ public class ValidatableParameterInfoTests
             Type parameterType,
             string name,
             string displayName,
-            bool isNullable,
-            bool isRequired,
-            bool isEnumerable,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName, isNullable, isRequired, isEnumerable)
+            : base(parameterType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }
@@ -357,12 +313,8 @@ public class ValidatableParameterInfoTests
             Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }

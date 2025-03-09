@@ -60,11 +60,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             global::System.Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }
@@ -490,10 +486,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         cw.WriteLine($"name: \"{member.Name}\",");
         cw.WriteLine($"displayName: \"{member.DisplayName}\",");
-        cw.WriteLine($"isEnumerable: {(member.IsEnumerable ? "true" : "false")},");
-        cw.WriteLine($"isNullable: {(member.IsNullable ? "true" : "false")},");
-        cw.WriteLine($"isRequired: {(member.IsRequired ? "true" : "false")},");
-        cw.WriteLine($"hasValidatableType: {(member.HasValidatableType ? "true" : "false")},");
         cw.WriteLine($"validationAttributes: {validationAttributes}");
         cw.Indent--;
         cw.WriteLine("),");

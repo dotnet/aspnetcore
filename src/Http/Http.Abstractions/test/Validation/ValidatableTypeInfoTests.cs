@@ -15,11 +15,11 @@ public class ValidatableTypeInfoTests
         var personType = new TestValidatableTypeInfo(
             typeof(Person),
             [
-                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", false, false, true, false,
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Person), typeof(int), "Age", "Age", false, false, false, false,
+                CreatePropertyInfo(typeof(Person), typeof(int), "Age", "Age",
                     [new RangeAttribute(0, 120)]),
-                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address", false, false, false, true,
+                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
                     [])
             ],
             false
@@ -28,9 +28,9 @@ public class ValidatableTypeInfoTests
         var addressType = new TestValidatableTypeInfo(
             typeof(Address),
             [
-                CreatePropertyInfo(typeof(Address), typeof(string), "Street", "Street", false, false, true, false,
+                CreatePropertyInfo(typeof(Address), typeof(string), "Street", "Street",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Address), typeof(string), "City", "City", false, false, true, false,
+                CreatePropertyInfo(typeof(Address), typeof(string), "City", "City",
                     [new RequiredAttribute()])
             ],
             false
@@ -55,7 +55,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(personWithMissingRequiredFields);
 
         // Act
-        await personType.Validate(personWithMissingRequiredFields, context);
+        await personType.ValidateAsync(personWithMissingRequiredFields, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -89,11 +89,11 @@ public class ValidatableTypeInfoTests
         var employeeType = new TestValidatableTypeInfo(
             typeof(Employee),
             [
-                CreatePropertyInfo(typeof(Employee), typeof(string), "Name", "Name", false, false, true, false,
+                CreatePropertyInfo(typeof(Employee), typeof(string), "Name", "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Employee), typeof(string), "Department", "Department", false, false, false, false,
+                CreatePropertyInfo(typeof(Employee), typeof(string), "Department", "Department",
                     []),
-                CreatePropertyInfo(typeof(Employee), typeof(decimal), "Salary", "Salary", false, false, false, false,
+                CreatePropertyInfo(typeof(Employee), typeof(decimal), "Salary", "Salary",
                     [])
             ],
             true // Implements IValidatableObject
@@ -116,7 +116,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(employee);
 
         // Act
-        await employeeType.Validate(employee, context);
+        await employeeType.ValidateAsync(employee, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -132,9 +132,9 @@ public class ValidatableTypeInfoTests
         var baseType = new TestValidatableTypeInfo(
             typeof(Vehicle),
             [
-                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Make", "Make", false, false, true, false,
+                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Make", "Make",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Model", "Model", false, false, true, false,
+                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Model", "Model",
                     [new RequiredAttribute()])
             ],
             false
@@ -143,7 +143,7 @@ public class ValidatableTypeInfoTests
         var derivedType = new TestValidatableTypeInfo(
             typeof(Car),
             [
-                CreatePropertyInfo(typeof(Car), typeof(int), "Doors", "Doors", false, false, false, false,
+                CreatePropertyInfo(typeof(Car), typeof(int), "Doors", "Doors",
                     [new RangeAttribute(2, 5)])
             ],
             false,
@@ -167,7 +167,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(car);
 
         // Act
-        await derivedType.Validate(car, context);
+        await derivedType.ValidateAsync(car, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -196,9 +196,9 @@ public class ValidatableTypeInfoTests
         var itemType = new TestValidatableTypeInfo(
             typeof(OrderItem),
             [
-                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName", "ProductName", false, false, true, false,
+                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName", "ProductName",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity", false, false, false, false,
+                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity",
                     [new RangeAttribute(1, 100)])
             ],
             false
@@ -207,9 +207,9 @@ public class ValidatableTypeInfoTests
         var orderType = new TestValidatableTypeInfo(
             typeof(Order),
             [
-                CreatePropertyInfo(typeof(Order), typeof(string), "OrderNumber", "OrderNumber", false, false, true, false,
+                CreatePropertyInfo(typeof(Order), typeof(string), "OrderNumber", "OrderNumber",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items", "Items", true, false, false, true,
+                CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items", "Items",
                     [])
             ],
             false
@@ -237,7 +237,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(order);
 
         // Act
-        await orderType.Validate(order, context);
+        await orderType.ValidateAsync(order, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -266,9 +266,9 @@ public class ValidatableTypeInfoTests
         var personType = new TestValidatableTypeInfo(
             typeof(Person),
             [
-                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", false, true, false, false,
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
                     []),
-                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address", false, true, false, true,
+                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
                     [])
             ],
             false
@@ -290,7 +290,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(person);
 
         // Act
-        await personType.Validate(person, context);
+        await personType.ValidateAsync(person, context, default);
 
         // Assert
         Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
@@ -304,11 +304,11 @@ public class ValidatableTypeInfoTests
         var nodeType = new TestValidatableTypeInfo(
             typeof(TreeNode),
             [
-                CreatePropertyInfo(typeof(TreeNode), typeof(string), "Name", "Name", false, false, true, false,
+                CreatePropertyInfo(typeof(TreeNode), typeof(string), "Name", "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(TreeNode), typeof(TreeNode), "Parent", "Parent", false, true, false, true,
+                CreatePropertyInfo(typeof(TreeNode), typeof(TreeNode), "Parent", "Parent",
                     []),
-                CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children", "Children", true, false, false, true,
+                CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children", "Children",
                     [])
             ],
             false
@@ -348,7 +348,7 @@ public class ValidatableTypeInfoTests
 
         // Act + Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-        async () => await nodeType.Validate(rootNode, context));
+        async () => await nodeType.ValidateAsync(rootNode, context, default));
 
         Assert.NotNull(exception);
         Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
@@ -361,7 +361,7 @@ public class ValidatableTypeInfoTests
         var productType = new TestValidatableTypeInfo(
             typeof(Product),
             [
-                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", false, false, true, false, [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
+                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
             ],
             false
         );
@@ -378,7 +378,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(product);
 
         // Act
-        await productType.Validate(product, context);
+        await productType.ValidateAsync(product, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -394,7 +394,7 @@ public class ValidatableTypeInfoTests
         var userType = new TestValidatableTypeInfo(
             typeof(User),
             [
-                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password", false, false, true, false,
+                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password",
                     [
                         new RequiredAttribute(),
                         new MinLengthAttribute(8) { ErrorMessage = "Password must be at least 8 characters." },
@@ -416,7 +416,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(user);
 
         // Act
-        await userType.Validate(user, context);
+        await userType.ValidateAsync(user, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -433,7 +433,7 @@ public class ValidatableTypeInfoTests
         var baseType = new TestValidatableTypeInfo(
             typeof(BaseEntity),
             [
-                CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", false, false, false, false, [])
+                CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", [])
             ],
             false
         );
@@ -441,7 +441,7 @@ public class ValidatableTypeInfoTests
         var intermediateType = new TestValidatableTypeInfo(
             typeof(IntermediateEntity),
             [
-                CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", false, false, false, false, [new PastDateAttribute()])
+                CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", [new PastDateAttribute()])
             ],
             false,
             [typeof(BaseEntity)]
@@ -450,7 +450,7 @@ public class ValidatableTypeInfoTests
         var derivedType = new TestValidatableTypeInfo(
             typeof(DerivedEntity),
             [
-                CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", false, false, true, false, [new RequiredAttribute()])
+                CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", [new RequiredAttribute()])
             ],
             false,
             [typeof(IntermediateEntity)]
@@ -474,7 +474,7 @@ public class ValidatableTypeInfoTests
         context.ValidationContext = new ValidationContext(entity);
 
         // Act
-        await derivedType.Validate(entity, context);
+        await derivedType.ValidateAsync(entity, context, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -496,10 +496,6 @@ public class ValidatableTypeInfoTests
         Type propertyType,
         string name,
         string displayName,
-        bool isEnumerable,
-        bool isNullable,
-        bool isRequired,
-        bool hasValidatableType,
         ValidationAttribute[] validationAttributes)
     {
         return new TestValidatablePropertyInfo(
@@ -507,10 +503,6 @@ public class ValidatableTypeInfoTests
             propertyType,
             name,
             displayName,
-            isEnumerable,
-            isNullable,
-            isRequired,
-            hasValidatableType,
             validationAttributes);
     }
 
@@ -653,12 +645,8 @@ public class ValidatableTypeInfoTests
             Type propertyType,
             string name,
             string displayName,
-            bool isEnumerable,
-            bool isNullable,
-            bool isRequired,
-            bool hasValidatableType,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+            : base(containingType, propertyType, name, displayName)
         {
             _validationAttributes = validationAttributes;
         }

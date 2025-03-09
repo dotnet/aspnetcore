@@ -108,7 +108,7 @@ public class ValidatableTypeInfoBenchmark
     public async Task ValidateSimpleModel()
     {
         _context.ValidationErrors.Clear();
-        await _simpleTypeInfo.Validate(_simpleModel, _context);
+        await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
 
     [Benchmark(Description = "Validate Complex Model")]
@@ -116,7 +116,7 @@ public class ValidatableTypeInfoBenchmark
     public async Task ValidateComplexModel()
     {
         _context.ValidationErrors.Clear();
-        await _complexTypeInfo.Validate(_complexModel, _context);
+        await _complexTypeInfo.ValidateAsync(_complexModel, _context, default);
     }
 
     [Benchmark(Description = "Validate Hierarchical Model")]
@@ -124,7 +124,7 @@ public class ValidatableTypeInfoBenchmark
     public async Task ValidateHierarchicalModel()
     {
         _context.ValidationErrors.Clear();
-        await _hierarchicalTypeInfo.Validate(_hierarchicalModel, _context);
+        await _hierarchicalTypeInfo.ValidateAsync(_hierarchicalModel, _context, default);
     }
 
     [Benchmark(Description = "Validate IValidatableObject Model")]
@@ -132,7 +132,7 @@ public class ValidatableTypeInfoBenchmark
     public async Task ValidateIValidatableObjectModel()
     {
         _context.ValidationErrors.Clear();
-        await _ivalidatableObjectTypeInfo.Validate(_validatableObjectModel, _context);
+        await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
     }
 
     [Benchmark(Description = "Validate invalid Simple Model")]
@@ -141,7 +141,7 @@ public class ValidatableTypeInfoBenchmark
     {
         _context.ValidationErrors.Clear();
         _simpleModel.Email = "invalid-email";
-        await _simpleTypeInfo.Validate(_simpleModel, _context);
+        await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
 
     [Benchmark(Description = "Validate invalid IValidatableObject Model")]
@@ -150,22 +150,18 @@ public class ValidatableTypeInfoBenchmark
     {
         _context.ValidationErrors.Clear();
         _validatableObjectModel.CustomField = "Invalid";
-        await _ivalidatableObjectTypeInfo.Validate(_validatableObjectModel, _context);
+        await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
     }
 
     #region Helper methods to create type info instances manually if needed
 
-    private ValidatablePropertyInfo CreatePropertyInfo(string name, Type type, bool isRequired, params ValidationAttribute[] attributes)
+    private ValidatablePropertyInfo CreatePropertyInfo(string name, Type type, params ValidationAttribute[] attributes)
     {
         return new MockValidatablePropertyInfo(
             typeof(SimpleModel),
             type,
             name,
             name,
-            type.IsAssignableTo(typeof(System.Collections.IEnumerable)) && type != typeof(string),
-            type.IsValueType ? Nullable.GetUnderlyingType(type) != null : true,
-            isRequired,
-            false,
             attributes);
     }
 
@@ -251,11 +247,7 @@ public class ValidatableTypeInfoBenchmark
         Type propertyType,
         string name,
         string displayName,
-        bool isEnumerable,
-        bool isNullable,
-        bool isRequired,
-        bool hasValidatableType,
-        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, isEnumerable, isNullable, isRequired, hasValidatableType)
+        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName)
     {
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
 
@@ -298,9 +290,9 @@ public class ValidatableTypeInfoBenchmark
             return new MockValidatableTypeInfo(
                 typeof(SimpleModel),
                 [
-                    CreatePropertyInfo(typeof(SimpleModel), "Id", typeof(int), false),
-                    CreatePropertyInfo(typeof(SimpleModel), "Name", typeof(string), true),
-                    CreatePropertyInfo(typeof(SimpleModel), "Email", typeof(string), false, new EmailAddressAttribute())
+                    CreatePropertyInfo(typeof(SimpleModel), "Id", typeof(int)),
+                    CreatePropertyInfo(typeof(SimpleModel), "Name", typeof(string)),
+                    CreatePropertyInfo(typeof(SimpleModel), "Email", typeof(string), new EmailAddressAttribute())
                 ],
                 false);
         }
@@ -310,11 +302,11 @@ public class ValidatableTypeInfoBenchmark
             return new MockValidatableTypeInfo(
                 typeof(ComplexModel),
                 [
-                    CreatePropertyInfo(typeof(ComplexModel), "Id", typeof(int), false),
-                    CreatePropertyInfo(typeof(ComplexModel), "Name", typeof(string), true),
-                    CreatePropertyInfo(typeof(ComplexModel), "Properties", typeof(Dictionary<string, string>), false),
-                    CreatePropertyInfo(typeof(ComplexModel), "Items", typeof(List<string>), false),
-                    CreatePropertyInfo(typeof(ComplexModel), "CreatedOn", typeof(DateTime), false)
+                    CreatePropertyInfo(typeof(ComplexModel), "Id", typeof(int)),
+                    CreatePropertyInfo(typeof(ComplexModel), "Name", typeof(string)),
+                    CreatePropertyInfo(typeof(ComplexModel), "Properties", typeof(Dictionary<string, string>)),
+                    CreatePropertyInfo(typeof(ComplexModel), "Items", typeof(List<string>)),
+                    CreatePropertyInfo(typeof(ComplexModel), "CreatedOn", typeof(DateTime))
                 ],
                 false);
         }
@@ -324,9 +316,9 @@ public class ValidatableTypeInfoBenchmark
             return new MockValidatableTypeInfo(
                 typeof(ChildModel),
                 [
-                    CreatePropertyInfo(typeof(ChildModel), "Id", typeof(int), false),
-                    CreatePropertyInfo(typeof(ChildModel), "Name", typeof(string), true),
-                    CreatePropertyInfo(typeof(ChildModel), "ParentId", typeof(int), false)
+                    CreatePropertyInfo(typeof(ChildModel), "Id", typeof(int)),
+                    CreatePropertyInfo(typeof(ChildModel), "Name", typeof(string)),
+                    CreatePropertyInfo(typeof(ChildModel), "ParentId", typeof(int))
                 ],
                 false);
         }
@@ -336,10 +328,10 @@ public class ValidatableTypeInfoBenchmark
             return new MockValidatableTypeInfo(
                 typeof(HierarchicalModel),
                 [
-                    CreatePropertyInfo(typeof(HierarchicalModel), "Id", typeof(int), false),
-                    CreatePropertyInfo(typeof(HierarchicalModel), "Name", typeof(string), true),
-                    CreatePropertyInfo(typeof(HierarchicalModel), "Child", typeof(ChildModel), false),
-                    CreatePropertyInfo(typeof(HierarchicalModel), "Siblings", typeof(List<SimpleModel>), false)
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Id", typeof(int)),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Name", typeof(string)),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Child", typeof(ChildModel)),
+                    CreatePropertyInfo(typeof(HierarchicalModel), "Siblings", typeof(List<SimpleModel>))
                 ],
                 false);
         }
@@ -349,24 +341,20 @@ public class ValidatableTypeInfoBenchmark
             return new MockValidatableTypeInfo(
                 typeof(ValidatableObjectModel),
                 [
-                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Id", typeof(int), false),
-                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Name", typeof(string), true),
-                    CreatePropertyInfo(typeof(ValidatableObjectModel), "CustomField", typeof(string), false)
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Id", typeof(int)),
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "Name", typeof(string)),
+                    CreatePropertyInfo(typeof(ValidatableObjectModel), "CustomField", typeof(string))
                 ],
                 true);
         }
 
-        private ValidatablePropertyInfo CreatePropertyInfo(Type containingType, string name, Type type, bool isRequired, params ValidationAttribute[] attributes)
+        private ValidatablePropertyInfo CreatePropertyInfo(Type containingType, string name, Type type, params ValidationAttribute[] attributes)
         {
             return new MockValidatablePropertyInfo(
                 containingType,
                 type,
                 name,
                 name, // Use name as display name
-                type.IsAssignableTo(typeof(System.Collections.IEnumerable)) && type != typeof(string),
-                type.IsValueType ? Nullable.GetUnderlyingType(type) != null : true,
-                isRequired,
-                type != typeof(string) && !type.IsValueType && type.IsClass && !type.IsAssignableTo(typeof(System.Collections.IEnumerable)), // hasValidatableType
                 attributes);
         }
     }
