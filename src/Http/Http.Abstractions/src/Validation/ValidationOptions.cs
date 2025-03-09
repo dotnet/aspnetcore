@@ -35,12 +35,11 @@ public class ValidationOptions
     /// <param name="validatableTypeInfo">When this method returns, contains the validation information for the specified type,
     /// if the type was found; otherwise, null.</param>
     /// <returns>true if validation information was found for the specified type; otherwise, false.</returns>
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out ValidatableTypeInfo? validatableTypeInfo)
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableTypeInfo)
     {
         foreach (var resolver in Resolvers)
         {
-            validatableTypeInfo = resolver.GetValidatableTypeInfo(type);
-            if (validatableTypeInfo is not null)
+            if (resolver.TryGetValidatableTypeInfo(type, out validatableTypeInfo))
             {
                 return true;
             }
@@ -54,21 +53,20 @@ public class ValidationOptions
     /// Attempts to get validation information for the specified parameter.
     /// </summary>
     /// <param name="parameterInfo">The parameter to get validation information for.</param>
-    /// <param name="validatableParameterInfo">When this method returns, contains the validation information for the specified parameter,
+    /// <param name="validatableInfo">When this method returns, contains the validation information for the specified parameter,
     /// if validation information was found; otherwise, null.</param>
     /// <returns>true if validation information was found for the specified parameter; otherwise, false.</returns>
-    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out ValidatableParameterInfo? validatableParameterInfo)
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
         foreach (var resolver in Resolvers)
         {
-            validatableParameterInfo = resolver.GetValidatableParameterInfo(parameterInfo);
-            if (validatableParameterInfo is not null)
+            if (resolver.TryGetValidatableParameterInfo(parameterInfo, out validatableInfo))
             {
                 return true;
             }
         }
 
-        validatableParameterInfo = null;
+        validatableInfo = null;
         return false;
     }
 }

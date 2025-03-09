@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -12,16 +13,20 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public interface IValidatableInfoResolver
 {
     /// <summary>
-    /// Gets validation type information for the specified type.
+    /// Gets validation information for the specified type.
     /// </summary>
     /// <param name="type">The type to get validation information for.</param>
-    /// <returns>The validation type information, or null if the type is not validatable.</returns>
-    ValidatableTypeInfo? GetValidatableTypeInfo(Type type);
+    /// <param name="validatableInfo">
+    /// The output parameter that will contain the validatable information if found.
+    /// </param>
+    /// <returns><see langword="true" /> if the validatable type information was found; otherwise, false.</returns>
+    bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo);
 
     /// <summary>
-    /// Gets validation parameter information for the specified parameter.
+    /// Gets validation information for the specified parameter.
     /// </summary>
-    /// <param name="parameterInfo">The parameter information to get validation for.</param>
-    /// <returns>The validation parameter information, or null if the parameter is not validatable.</returns>
-    ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo);
+    /// <param name="parameterInfo">The parameter to get validation information for.</param>
+    /// <param name="validatableInfo">The output parameter that will contain the validatable information if found.</param>
+    /// <returns><see langword="true" /> if the validatable parameter information was found; otherwise, false.</returns>
+    bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo);
 }

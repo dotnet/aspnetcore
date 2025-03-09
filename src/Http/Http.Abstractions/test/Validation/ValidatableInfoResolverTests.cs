@@ -4,24 +4,30 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
 public class ValidatableInfoResolverTests
 {
+    public delegate void TryGetValidatableTypeInfoCallback(Type type, out IValidatableInfo? validatableInfo);
+    public delegate void TryGetValidatableParameterInfoCallback(ParameterInfo parameter, out IValidatableInfo? validatableInfo);
+
     [Fact]
     public void GetValidatableTypeInfo_ReturnsNull_ForNonValidatableType()
     {
         // Arrange
         var resolver = new Mock<IValidatableInfoResolver>();
-        resolver.Setup(r => r.GetValidatableTypeInfo(It.IsAny<Type>())).Returns((Type t) => null);
+        IValidatableInfo? validatableInfo = null;
+        resolver.Setup(r => r.TryGetValidatableTypeInfo(It.IsAny<Type>(), out validatableInfo)).Returns(false);
 
         // Act
-        var result = resolver.Object.GetValidatableTypeInfo(typeof(NonValidatableType));
+        var result = resolver.Object.TryGetValidatableTypeInfo(typeof(NonValidatableType), out validatableInfo);
 
         // Assert
-        Assert.Null(result);
+        Assert.False(result);
+        Assert.Null(validatableInfo);
     }
 
     [Fact]
@@ -30,19 +36,25 @@ public class ValidatableInfoResolverTests
         // Arrange
         var mockTypeInfo = new Mock<ValidatableTypeInfo>(
             typeof(ValidatableType),
-            Array.Empty<ValidatablePropertyInfo>(),
-            false,
-            null).Object;
+            Array.Empty<ValidatablePropertyInfo>()).Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
-        resolver.Setup(r => r.GetValidatableTypeInfo(typeof(ValidatableType))).Returns(mockTypeInfo);
+        IValidatableInfo? validatableInfo = null;
+        resolver
+            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out validatableInfo))
+            .Callback(new TryGetValidatableTypeInfoCallback((t, out info) =>
+            {
+                info = mockTypeInfo; // Set the out parameter to our mock
+            }))
+            .Returns(true);
 
         // Act
-        var result = resolver.Object.GetValidatableTypeInfo(typeof(ValidatableType));
+        var result = resolver.Object.TryGetValidatableTypeInfo(typeof(ValidatableType), out validatableInfo);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(typeof(ValidatableType), result.Type);
+        Assert.True(result);
+        var validatableTypeInfo = Assert.IsAssignableFrom<ValidatableTypeInfo>(validatableInfo);
+        Assert.Equal(typeof(ValidatableType), validatableTypeInfo.Type);
     }
 
     [Fact]
@@ -53,13 +65,14 @@ public class ValidatableInfoResolverTests
         var parameter = method.GetParameters()[0];
 
         var resolver = new Mock<IValidatableInfoResolver>();
-        resolver.Setup(r => r.GetValidatableParameterInfo(It.IsAny<ParameterInfo>())).Returns((ParameterInfo p) => null);
+        IValidatableInfo? validatableInfo = null;
+        resolver.Setup(r => r.TryGetValidatableParameterInfo(It.IsAny<ParameterInfo>(), out validatableInfo)).Returns(false);
 
         // Act
-        var result = resolver.Object.GetValidatableParameterInfo(parameter);
+        var result = resolver.Object.TryGetValidatableParameterInfo(parameter, out validatableInfo);
 
         // Assert
-        Assert.Null(result);
+        Assert.False(result);
     }
 
     [Fact]
@@ -75,14 +88,22 @@ public class ValidatableInfoResolverTests
             "model").Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
-        resolver.Setup(r => r.GetValidatableParameterInfo(parameter)).Returns(mockParamInfo);
+
+        // Setup using the same pattern as in the type info test
+        resolver.Setup(r => r.TryGetValidatableParameterInfo(parameter, out It.Ref<IValidatableInfo?>.IsAny))
+            .Callback(new TryGetValidatableParameterInfoCallback((ParameterInfo p, out IValidatableInfo? info) =>
+            {
+                info = mockParamInfo; // Set the out parameter to our mock
+            }))
+            .Returns(true);
 
         // Act
-        var result = resolver.Object.GetValidatableParameterInfo(parameter);
+        var result = resolver.Object.TryGetValidatableParameterInfo(parameter, out var validatableInfo);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("model", result.Name);
+        Assert.True(result);
+        var validatableParamInfo = Assert.IsAssignableFrom<ValidatableParameterInfo>(validatableInfo);
+        Assert.Equal("model", validatableParamInfo.Name);
     }
 
     [Fact]
@@ -95,27 +116,49 @@ public class ValidatableInfoResolverTests
         var resolver2 = new Mock<IValidatableInfoResolver>();
         var resolver3 = new Mock<IValidatableInfoResolver>();
 
-        resolver1.Setup(r => r.GetValidatableTypeInfo(typeof(ValidatableType))).Returns((Type t) => null);
-        resolver2.Setup(r => r.GetValidatableTypeInfo(typeof(ValidatableType))).Returns(
-            new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>(), false, null).Object);
+        // Create the object that will be returned by resolver2
+        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>()).Object;
 
-        services.AddSingleton(resolver1.Object);
-        services.AddSingleton(resolver2.Object);
-        services.AddSingleton(resolver3.Object);
+        // Setup resolver1 to return false (doesn't handle this type)
+        resolver1
+            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny))
+            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableInfo? info) =>
+            {
+                info = null;
+            }))
+            .Returns(false);
+
+        // Setup resolver2 to return true and set the mock type info
+        resolver2
+            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny))
+            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableInfo? info) =>
+            {
+                info = mockTypeInfo;
+            }))
+            .Returns(true);
+
+        services.AddValidation(Options =>
+        {
+            Options.Resolvers.Add(resolver1.Object);
+            Options.Resolvers.Add(resolver2.Object);
+            Options.Resolvers.Add(resolver3.Object);
+        });
 
         var serviceProvider = services.BuildServiceProvider();
-        var resolvers = serviceProvider.GetServices<IValidatableInfoResolver>().ToList();
+        var validationOptions = serviceProvider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
         // Act
-        var result = resolvers.Select(r => r.GetValidatableTypeInfo(typeof(ValidatableType)))
-            .FirstOrDefault(info => info != null);
+        var result = validationOptions.TryGetValidatableTypeInfo(typeof(ValidatableType), out var validatableInfo);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(typeof(ValidatableType), result.Type);
-        resolver1.Verify(r => r.GetValidatableTypeInfo(typeof(ValidatableType)), Times.Once);
-        resolver2.Verify(r => r.GetValidatableTypeInfo(typeof(ValidatableType)), Times.Once);
-        resolver3.Verify(r => r.GetValidatableTypeInfo(typeof(ValidatableType)), Times.Never);
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+        Assert.Equal(typeof(ValidatableType), ((ValidatableTypeInfo)validatableInfo).Type);
+
+        // Verify that resolvers were called in the expected order
+        resolver1.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Once);
+        resolver2.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Once);
+        resolver3.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Never);
     }
 
     // Test types
@@ -170,15 +213,9 @@ public class ValidatableInfoResolverTests
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
 
-    private class TestValidatableTypeInfo : ValidatableTypeInfo
+    private class TestValidatableTypeInfo(
+        Type type,
+        ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
-        public TestValidatableTypeInfo(
-            Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            Type[]? validatableSubTypes = null)
-            : base(type, members, implementsIValidatableObject, validatableSubTypes)
-        {
-        }
     }
 }

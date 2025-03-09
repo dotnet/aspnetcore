@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +13,10 @@ namespace Microsoft.AspNetCore.Http.Microbenchmarks;
 
 public class ValidatableTypeInfoBenchmark
 {
-    private ValidatableTypeInfo _simpleTypeInfo = null!;
-    private ValidatableTypeInfo _complexTypeInfo = null!;
-    private ValidatableTypeInfo _hierarchicalTypeInfo = null!;
-    private ValidatableTypeInfo _ivalidatableObjectTypeInfo = null!;
+    private IValidatableInfo _simpleTypeInfo = null!;
+    private IValidatableInfo _complexTypeInfo = null!;
+    private IValidatableInfo _hierarchicalTypeInfo = null!;
+    private IValidatableInfo _ivalidatableObjectTypeInfo = null!;
 
     private ValidatableContext _context = null!;
     private SimpleModel _simpleModel = null!;
@@ -238,7 +240,7 @@ public class ValidatableTypeInfoBenchmark
 
     #region Mock Implementations for Testing
 
-    private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members, bool isIValidatableObject) : ValidatableTypeInfo(type, members, isIValidatableObject)
+    private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
     }
 
@@ -274,17 +276,6 @@ public class ValidatableTypeInfoBenchmark
             _typeInfoCache[typeof(ChildModel)] = CreateChildModelTypeInfo();
         }
 
-        public ValidatableTypeInfo GetValidatableTypeInfo(Type type)
-        {
-            return _typeInfoCache.TryGetValue(type, out var typeInfo) ? typeInfo : null;
-        }
-
-        public ValidatableParameterInfo GetValidatableParameterInfo(System.Reflection.ParameterInfo parameterInfo)
-        {
-            // This is not used in our benchmark tests
-            return null;
-        }
-
         private ValidatableTypeInfo CreateSimpleModelTypeInfo()
         {
             return new MockValidatableTypeInfo(
@@ -293,8 +284,7 @@ public class ValidatableTypeInfoBenchmark
                     CreatePropertyInfo(typeof(SimpleModel), "Id", typeof(int)),
                     CreatePropertyInfo(typeof(SimpleModel), "Name", typeof(string)),
                     CreatePropertyInfo(typeof(SimpleModel), "Email", typeof(string), new EmailAddressAttribute())
-                ],
-                false);
+                ]);
         }
 
         private ValidatableTypeInfo CreateComplexModelTypeInfo()
@@ -307,8 +297,7 @@ public class ValidatableTypeInfoBenchmark
                     CreatePropertyInfo(typeof(ComplexModel), "Properties", typeof(Dictionary<string, string>)),
                     CreatePropertyInfo(typeof(ComplexModel), "Items", typeof(List<string>)),
                     CreatePropertyInfo(typeof(ComplexModel), "CreatedOn", typeof(DateTime))
-                ],
-                false);
+                ]);
         }
 
         private ValidatableTypeInfo CreateChildModelTypeInfo()
@@ -319,8 +308,7 @@ public class ValidatableTypeInfoBenchmark
                     CreatePropertyInfo(typeof(ChildModel), "Id", typeof(int)),
                     CreatePropertyInfo(typeof(ChildModel), "Name", typeof(string)),
                     CreatePropertyInfo(typeof(ChildModel), "ParentId", typeof(int))
-                ],
-                false);
+                ]);
         }
 
         private ValidatableTypeInfo CreateHierarchicalModelTypeInfo()
@@ -332,8 +320,7 @@ public class ValidatableTypeInfoBenchmark
                     CreatePropertyInfo(typeof(HierarchicalModel), "Name", typeof(string)),
                     CreatePropertyInfo(typeof(HierarchicalModel), "Child", typeof(ChildModel)),
                     CreatePropertyInfo(typeof(HierarchicalModel), "Siblings", typeof(List<SimpleModel>))
-                ],
-                false);
+                ]);
         }
 
         private ValidatableTypeInfo CreateValidatableObjectModelTypeInfo()
@@ -344,8 +331,7 @@ public class ValidatableTypeInfoBenchmark
                     CreatePropertyInfo(typeof(ValidatableObjectModel), "Id", typeof(int)),
                     CreatePropertyInfo(typeof(ValidatableObjectModel), "Name", typeof(string)),
                     CreatePropertyInfo(typeof(ValidatableObjectModel), "CustomField", typeof(string))
-                ],
-                true);
+                ]);
         }
 
         private ValidatablePropertyInfo CreatePropertyInfo(Type containingType, string name, Type type, params ValidationAttribute[] attributes)
@@ -356,6 +342,23 @@ public class ValidatableTypeInfoBenchmark
                 name,
                 name, // Use name as display name
                 attributes);
+        }
+
+        public bool TryGetValidatableTypeInfo(Type type, out IValidatableInfo validatableInfo)
+        {
+            if (_typeInfoCache.TryGetValue(type, out var typeInfo))
+            {
+                validatableInfo = typeInfo;
+                return true;
+            }
+            validatableInfo = null;
+            return false;
+        }
+
+        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, out IValidatableInfo validatableInfo)
+        {
+            validatableInfo = null;
+            return false;
         }
     }
     #endregion

@@ -46,44 +46,49 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         public GeneratedValidatableTypeInfo(
             global::System.Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            global::System.Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
+            ValidatablePropertyInfo[] members) : base(type, members) { }
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(global::System.Type type)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
+            validatableInfo = null;
         if (type == typeof(global::DerivedType))
         {
-            return CreateDerivedType();
+            validatableInfo = CreateDerivedType();
+            return true;
         }
         if (type == typeof(global::BaseType))
         {
-            return CreateBaseType();
+            validatableInfo = CreateBaseType();
+            return true;
         }
         if (type == typeof(global::DerivedValidatableType))
         {
-            return CreateDerivedValidatableType();
+            validatableInfo = CreateDerivedValidatableType();
+            return true;
         }
         if (type == typeof(global::BaseValidatableType))
         {
-            return CreateBaseValidatableType();
+            validatableInfo = CreateBaseValidatableType();
+            return true;
         }
         if (type == typeof(global::ContainerType))
         {
-            return CreateContainerType();
+            validatableInfo = CreateContainerType();
+            return true;
         }
 
-            return null;
+            return false;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
-            return null;
+            validatableInfo = null;
+            return false;
         }
 
         private ValidatableTypeInfo CreateDerivedType()
@@ -98,9 +103,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         displayName: "Value3",
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.Base64StringAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.Base64StringAttribute")]
                     ),
-                ],
-                implementsIValidatableObject: false,
-                validatableSubTypes: [typeof(BaseType)]
+                ]
             );
         }
         private ValidatableTypeInfo CreateBaseType()
@@ -122,9 +125,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         displayName: "Value2",
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.EmailAddressAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.EmailAddressAttribute"), ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.RequiredAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.RequiredAttribute")]
                     ),
-                ],
-                implementsIValidatableObject: false,
-                validatableSubTypes: null
+                ]
             );
         }
         private ValidatableTypeInfo CreateDerivedValidatableType()
@@ -139,9 +140,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         displayName: "Value3",
                         validationAttributes: [ValidationAttributeCache.GetOrCreateValidationAttribute(typeof(global::System.ComponentModel.DataAnnotations.EmailAddressAttribute), [], []) ?? throw new global::System.InvalidOperationException(@"Failed to create validation attribute global::System.ComponentModel.DataAnnotations.EmailAddressAttribute")]
                     ),
-                ],
-                implementsIValidatableObject: true,
-                validatableSubTypes: [typeof(BaseValidatableType)]
+                ]
             );
         }
         private ValidatableTypeInfo CreateBaseValidatableType()
@@ -156,9 +155,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         displayName: "Value 1",
                         validationAttributes: []
                     ),
-                ],
-                implementsIValidatableObject: true,
-                validatableSubTypes: null
+                ]
             );
         }
         private ValidatableTypeInfo CreateContainerType()
@@ -180,9 +177,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         displayName: "BaseValidatableType",
                         validationAttributes: []
                     ),
-                ],
-                implementsIValidatableObject: false,
-                validatableSubTypes: null
+                ]
             );
         }
 

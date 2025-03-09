@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -13,27 +14,21 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
-    private readonly int _validatableSubtypesCount;
+    private readonly IEnumerable<Type> _subTypes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
-    /// <param name="implementsIValidatableObject">Indicates whether the type implements IValidatableObject.</param>
-    /// <param name="validatableSubTypes">The sub-types that can be validated.</param>
     public ValidatableTypeInfo(
-        Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members,
-        bool implementsIValidatableObject,
-        IReadOnlyList<Type>? validatableSubTypes = null)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
+        IReadOnlyList<ValidatablePropertyInfo> members)
     {
         Type = type;
         Members = members;
-        IsIValidatableObject = implementsIValidatableObject;
-        ValidatableSubTypes = validatableSubTypes;
         _membersCount = members.Count;
-        _validatableSubtypesCount = validatableSubTypes?.Count ?? 0;
+        _subTypes = type.GetAllImplementedTypes();
     }
 
     /// <summary>
@@ -45,16 +40,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// The members that can be validated.
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
-
-    /// <summary>
-    /// The sub-types that can be validated.
-    /// </summary>
-    internal IReadOnlyList<Type>? ValidatableSubTypes { get; }
-
-    /// <summary>
-    /// Indicates whether the type implements IValidatableObject.
-    /// </summary>
-    internal bool IsIValidatableObject { get; }
 
     /// <summary>
     /// Validates the specified value.
@@ -92,26 +77,22 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Then validate sub-types if any
-            if (ValidatableSubTypes is not null)
+            foreach (var subType in _subTypes)
             {
-                for (var i = 0; i < _validatableSubtypesCount; i++)
+                // Check if the actual type is assignable to the sub-type
+                // and validate it if it is
+                if (subType.IsAssignableFrom(actualType))
                 {
-                    var subType = ValidatableSubTypes[i];
-                    // Check if the actual type is assignable to the sub-type
-                    // and validate it if it is
-                    if (subType.IsAssignableFrom(actualType))
+                    if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
                     {
-                        if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
-                        {
-                            await subTypeInfo.ValidateAsync(value, context, cancellationToken);
-                            context.Prefix = originalPrefix;
-                        }
+                        await subTypeInfo.ValidateAsync(value, context, cancellationToken);
+                        context.Prefix = originalPrefix;
                     }
                 }
             }
 
             // Finally validate IValidatableObject if implemented
-            if (IsIValidatableObject && value is IValidatableObject validatable)
+            if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
             {
                 // Important: Set the DisplayName to the type name for top-level validations
                 // and restore the original validation context properties

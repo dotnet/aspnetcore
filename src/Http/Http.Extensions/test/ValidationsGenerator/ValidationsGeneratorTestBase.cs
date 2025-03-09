@@ -71,7 +71,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
                 : "snapshots");
     }
 
-    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidatableTypeInfo> verifyFunc)
+    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<IValidatableInfo> verifyFunc)
     {
         if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
         {

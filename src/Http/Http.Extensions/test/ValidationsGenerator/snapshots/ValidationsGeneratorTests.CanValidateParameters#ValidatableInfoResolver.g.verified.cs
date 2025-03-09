@@ -46,24 +46,24 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         public GeneratedValidatableTypeInfo(
             global::System.Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            global::System.Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
+            ValidatablePropertyInfo[] members) : base(type, members) { }
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(global::System.Type type)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
+            validatableInfo = null;
 
-            return null;
+            return false;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
-            return null;
+            validatableInfo = null;
+            return false;
         }
 
 

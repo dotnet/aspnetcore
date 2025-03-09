@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -112,8 +113,7 @@ public class ValidatableParameterInfoTests
                     "Name",
                     "Name",
                     [new RequiredAttribute()])
-            ],
-            false);
+            ]);
 
         var paramInfo = CreateTestParameterInfo(
             parameterType: typeof(Person),
@@ -153,8 +153,7 @@ public class ValidatableParameterInfoTests
                     "Name",
                     "Name",
                     [new RequiredAttribute()])
-            ],
-            false);
+            ]);
 
         var paramInfo = CreateTestParameterInfo(
             parameterType: typeof(IEnumerable<Person>),
@@ -322,16 +321,10 @@ public class ValidatableParameterInfoTests
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
 
-    private class TestValidatableTypeInfo : ValidatableTypeInfo
+    private class TestValidatableTypeInfo(
+        Type type,
+        ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
-        public TestValidatableTypeInfo(
-            Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            Type[]? validatableSubTypes = null)
-            : base(type, members, implementsIValidatableObject, validatableSubTypes)
-        {
-        }
     }
 
     private class TestValidationOptions : ValidationOptions
@@ -355,7 +348,7 @@ public class ValidatableParameterInfoTests
                 _typeInfoMappings = typeInfoMappings;
             }
 
-            public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
+            public ValidatableTypeInfo? TryGetValidatableTypeInfo(Type type)
             {
                 _typeInfoMappings.TryGetValue(type, out var info);
                 return info;
@@ -365,6 +358,23 @@ public class ValidatableParameterInfoTests
             {
                 // Not implemented in the test
                 return null;
+            }
+
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            {
+                if (_typeInfoMappings.TryGetValue(type, out var validatableTypeInfo))
+                {
+                    validatableInfo = validatableTypeInfo;
+                    return true;
+                }
+                validatableInfo = null;
+                return false;
+            }
+
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            {
+                validatableInfo = null;
+                return false;
             }
         }
     }

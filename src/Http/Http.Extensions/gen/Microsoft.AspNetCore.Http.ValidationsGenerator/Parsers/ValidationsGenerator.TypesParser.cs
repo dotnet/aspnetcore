@@ -50,13 +50,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
-        List<string>? validatableSubTypes = current != null && current.SpecialType != SpecialType.System_Object
-            ? []
-            : null;
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
             _ = TryExtractValidatableType(current, requiredSymbols, ref validatableTypes, ref visitedTypes);
-            validatableSubTypes?.Add(current.Name);
             current = current.BaseType;
         }
 
@@ -65,7 +61,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(requiredSymbols.JsonDerivedTypeAttribute);
-        var derivedTypeNames = derivedTypes?.Select(t => t.ToDisplayString(_symbolDisplayFormat)).ToArray() ?? [];
         foreach (var derivedType in derivedTypes ?? [])
         {
             _ = TryExtractValidatableType(derivedType, requiredSymbols, ref validatableTypes, ref visitedTypes);
@@ -74,10 +69,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Add the type itself as a validatable type itself.
         validatableTypes.Add(new ValidatableType(
             Type: typeSymbol,
-            Members: members,
-            IsIValidatableObject: typeSymbol.ImplementsInterface(requiredSymbols.IValidatableObject),
-            ValidatableSubTypeNames: validatableSubTypes?.Count > 0 ? [.. validatableSubTypes] : ImmutableArray<string>.Empty,
-            ValidatableDerivedTypeNames: [.. derivedTypeNames]));
+            Members: members));
 
         return true;
     }

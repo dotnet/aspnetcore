@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Validation.Tests;
@@ -21,9 +22,7 @@ public class ValidatableTypeInfoTests
                     [new RangeAttribute(0, 120)]),
                 CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
                     [])
-            ],
-            false
-        );
+            ]);
 
         var addressType = new TestValidatableTypeInfo(
             typeof(Address),
@@ -32,9 +31,7 @@ public class ValidatableTypeInfoTests
                     [new RequiredAttribute()]),
                 CreatePropertyInfo(typeof(Address), typeof(string), "City", "City",
                     [new RequiredAttribute()])
-            ],
-            false
-        );
+            ]);
 
         var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
         {
@@ -95,9 +92,7 @@ public class ValidatableTypeInfoTests
                     []),
                 CreatePropertyInfo(typeof(Employee), typeof(decimal), "Salary", "Salary",
                     [])
-            ],
-            true // Implements IValidatableObject
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -136,19 +131,14 @@ public class ValidatableTypeInfoTests
                     [new RequiredAttribute()]),
                 CreatePropertyInfo(typeof(Vehicle), typeof(string), "Model", "Model",
                     [new RequiredAttribute()])
-            ],
-            false
-        );
+            ]);
 
         var derivedType = new TestValidatableTypeInfo(
             typeof(Car),
             [
                 CreatePropertyInfo(typeof(Car), typeof(int), "Doors", "Doors",
                     [new RangeAttribute(2, 5)])
-            ],
-            false,
-            [typeof(Vehicle)] // validatableSubTypes
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -200,9 +190,7 @@ public class ValidatableTypeInfoTests
                     [new RequiredAttribute()]),
                 CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity",
                     [new RangeAttribute(1, 100)])
-            ],
-            false
-        );
+            ]);
 
         var orderType = new TestValidatableTypeInfo(
             typeof(Order),
@@ -211,9 +199,7 @@ public class ValidatableTypeInfoTests
                     [new RequiredAttribute()]),
                 CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items", "Items",
                     [])
-            ],
-            false
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -270,9 +256,7 @@ public class ValidatableTypeInfoTests
                     []),
                 CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
                     [])
-            ],
-            false
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -310,9 +294,7 @@ public class ValidatableTypeInfoTests
                     []),
                 CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children", "Children",
                     [])
-            ],
-            false
-        );
+            ]);
 
         // Create a validation options with a small max depth
         var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
@@ -362,9 +344,7 @@ public class ValidatableTypeInfoTests
             typeof(Product),
             [
                 CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
-            ],
-            false
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -400,9 +380,7 @@ public class ValidatableTypeInfoTests
                         new MinLengthAttribute(8) { ErrorMessage = "Password must be at least 8 characters." },
                         new PasswordComplexityAttribute()
                     ])
-            ],
-            false
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -434,27 +412,19 @@ public class ValidatableTypeInfoTests
             typeof(BaseEntity),
             [
                 CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", [])
-            ],
-            false
-        );
+            ]);
 
         var intermediateType = new TestValidatableTypeInfo(
             typeof(IntermediateEntity),
             [
                 CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", [new PastDateAttribute()])
-            ],
-            false,
-            [typeof(BaseEntity)]
-        );
+            ]);
 
         var derivedType = new TestValidatableTypeInfo(
             typeof(DerivedEntity),
             [
                 CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", [new RequiredAttribute()])
-            ],
-            false,
-            [typeof(IntermediateEntity)]
-        );
+            ]);
 
         var context = new ValidatableContext
         {
@@ -622,8 +592,8 @@ public class ValidatableTypeInfoTests
         {
             if (value is string password)
             {
-                bool hasDigit = password.Any(c => char.IsDigit(c));
-                bool hasSpecial = password.Any(c => !char.IsLetterOrDigit(c));
+                var hasDigit = password.Any(c => char.IsDigit(c));
+                var hasSpecial = password.Any(c => !char.IsLetterOrDigit(c));
 
                 if (!hasDigit || !hasSpecial)
                 {
@@ -658,10 +628,8 @@ public class ValidatableTypeInfoTests
     {
         public TestValidatableTypeInfo(
             Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            Type[]? validatableSubTypes = null)
-            : base(type, members, implementsIValidatableObject, validatableSubTypes)
+            ValidatablePropertyInfo[] members)
+            : base(type, members)
         {
         }
     }
@@ -687,16 +655,21 @@ public class ValidatableTypeInfoTests
                 _typeInfoMappings = typeInfoMappings;
             }
 
-            public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
             {
-                _typeInfoMappings.TryGetValue(type, out var info);
-                return info;
+                if (_typeInfoMappings.TryGetValue(type, out var info))
+                {
+                    validatableInfo = info;
+                    return true;
+                }
+                validatableInfo = null;
+                return false;
             }
 
-            public ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
             {
-                // Not implemented in the test
-                return null;
+                validatableInfo = null;
+                return false;
             }
         }
     }

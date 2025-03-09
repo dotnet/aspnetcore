@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -10,18 +11,25 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
-    public ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo)
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    {
+        validatableInfo = null;
+        return false;
+    }
+
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
         Debug.Assert(parameterInfo.Name != null, "Parameter must have name");
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();
-        return new RuntimeValidatableParameterInfo(
+        validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
             displayName: GetDisplayName(parameterInfo),
             validationAttributes: validationAttributes
         );
+        return true;
     }
 
     private static string GetDisplayName(ParameterInfo parameterInfo)
@@ -33,11 +41,6 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
         }
 
         return parameterInfo.Name!;
-    }
-
-    public ValidatableTypeInfo? GetValidatableTypeInfo(Type type)
-    {
-        return null;
     }
 
     private class RuntimeValidatableParameterInfo(

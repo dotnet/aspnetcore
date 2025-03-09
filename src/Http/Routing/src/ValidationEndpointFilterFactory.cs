@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +23,8 @@ internal static class ValidationEndpointFilterFactory
         }
 
         var parameterCount = parameters.Length;
-        var validatableParameters = new ValidatableParameterInfo[parameterCount];
+        var validatableParameters = new IValidatableInfo[parameterCount];
+        var parameterDisplayNames = new string[parameterCount];
         var hasValidatableParameters = false;
 
         for (var i = 0; i < parameterCount; i++)
@@ -30,6 +32,7 @@ internal static class ValidationEndpointFilterFactory
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
                 validatableParameters[i] = validatableParameter;
+                parameterDisplayNames[i] = GetDisplayName(parameters[i]);
                 hasValidatableParameters = true;
             }
         }
@@ -47,6 +50,7 @@ internal static class ValidationEndpointFilterFactory
             for (var i = 0; i < context.Arguments.Count; i++)
             {
                 var validatableParameter = validatableParameters[i];
+                var displayName = parameterDisplayNames[i];
 
                 var argument = context.Arguments[i];
                 if (argument is null || validatableParameter is null)
@@ -57,7 +61,7 @@ internal static class ValidationEndpointFilterFactory
                 // initialize an explicit DisplayName. We can suppress the warning here.
                 // Eventually, this can be removed when the code is updated to
                 // use https://github.com/dotnet/runtime/issues/113134.
-                var validationContext = CreateValidationContext(argument, context.HttpContext.RequestServices);
+                var validationContext = CreateValidationContext(argument, displayName, context.HttpContext.RequestServices);
                 validatableContext.ValidationContext = validationContext;
                 await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
             }
@@ -80,6 +84,17 @@ internal static class ValidationEndpointFilterFactory
     /// use https://github.com/dotnet/runtime/issues/113134.
     /// </remarks>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = ValidationContextJustification)]
-    private static ValidationContext CreateValidationContext(object argument, IServiceProvider serviceProvider)
-        => new(argument, serviceProvider, items: null) { DisplayName = string.Empty };
+    private static ValidationContext CreateValidationContext(object argument, string displayName, IServiceProvider serviceProvider)
+        => new(argument, serviceProvider, items: null) { DisplayName = displayName };
+
+    private static string GetDisplayName(ParameterInfo parameterInfo)
+    {
+        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+        if (displayAttribute != null)
+        {
+            return displayAttribute.Name ?? parameterInfo.Name!;
+        }
+
+        return parameterInfo.Name!;
+    }
 }

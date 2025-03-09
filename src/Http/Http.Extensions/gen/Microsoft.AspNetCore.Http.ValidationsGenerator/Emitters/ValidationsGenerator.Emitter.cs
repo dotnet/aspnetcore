@@ -73,24 +73,24 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {
         public GeneratedValidatableTypeInfo(
             global::System.Type type,
-            ValidatablePropertyInfo[] members,
-            bool implementsIValidatableObject,
-            global::System.Type[]? validatableSubTypes = null) : base(type, members, implementsIValidatableObject, validatableSubTypes) { }
+            ValidatablePropertyInfo[] members) : base(type, members) { }
     }
 
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.AspNetCore.Http.Validation.IValidatableInfoResolver
     {
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo? GetValidatableTypeInfo(global::System.Type type)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
+            validatableInfo = null;
 {{EmitTypeChecks(validatableTypes)}}
-            return null;
+            return false;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public global::Microsoft.AspNetCore.Http.Validation.ValidatableParameterInfo? GetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo validatableInfo)
         {
-            return null;
+            validatableInfo = null;
+            return false;
         }
 
 {{EmitCreateMethods(validatableTypes)}}
@@ -431,7 +431,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"return Create{SanitizeTypeName(validatableType.Type.MetadataName)}();");
+            cw.WriteLine($"validatableInfo = Create{SanitizeTypeName(validatableType.Type.MetadataName)}();");
+            cw.WriteLine("return true;");
             cw.EndBlock();
         }
         return sw.ToString();
@@ -443,9 +444,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         var cw = new CodeWriter(sw, baseIndent: 2);
         foreach (var validatableType in validatableTypes)
         {
-            var validatableSubTypes = validatableType.ValidatableSubTypeNames.IsDefaultOrEmpty
-                ? "null"
-                : $"[{string.Join(", ", validatableType.ValidatableSubTypeNames.Select(t => $"typeof({t})"))}]";
             cw.WriteLine($@"private ValidatableTypeInfo Create{SanitizeTypeName(validatableType.Type.MetadataName)}()");
             cw.StartBlock();
             cw.WriteLine("return new GeneratedValidatableTypeInfo(");
@@ -464,10 +462,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     EmitValidatableMemberForCreate(member, cw);
                 }
                 cw.Indent--;
-                cw.WriteLine("],");
+                cw.WriteLine("]");
             }
-            cw.WriteLine($"implementsIValidatableObject: {(validatableType.IsIValidatableObject ? "true" : "false")},");
-            cw.WriteLine($"validatableSubTypes: {validatableSubTypes}");
             cw.Indent--;
             cw.WriteLine(");");
             cw.EndBlock();
