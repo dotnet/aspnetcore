@@ -8,9 +8,12 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage.Services;
 
 namespace TestServer;
 
@@ -39,6 +42,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        services.AddScoped<InteractiveWebAssemblyService>();
+        services.AddScoped<InteractiveServerService>();
+        services.AddScoped<InteractiveAutoService>();
+
+        services.AddPersistentService<InteractiveServerService>(RenderMode.InteractiveServer);
+        services.AddPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto);
+        services.AddPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly);
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
