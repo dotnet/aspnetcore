@@ -35,16 +35,16 @@ public abstract class OpenApiDocumentServiceTestBase
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, cancellationToken);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
-    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument)
+    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var builder = CreateBuilder();
         var documentService = CreateDocumentService(builder, action);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null);
         verifyOpenApiDocument(document);
     }
 
