@@ -9,7 +9,7 @@
   ],
   "name": "ASP.NET Core Web API (native AOT)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "groupIdentity": "Microsoft.Web.WebApiAot",
   "precedence": "10000",
   "identity": "Microsoft.Web.WebApiAot.CSharp.10.0",
@@ -130,6 +130,16 @@
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "DisableOpenAPI": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "false",
+      "description": "Disable OpenAPI (Swagger) support"
+    },
+    "EnableOpenAPI": {
+      "type": "computed",
+      "value": "(!DisableOpenAPI)"
     }
   },
   "primaryOutputs": [

@@ -21,6 +21,10 @@
     "UseProgramMain": {
       "longName": "use-program-main",
       "shortName": ""
+    },
+    "DisableOpenAPI": {
+      "longName": "no-openapi",
+      "shortName": ""
     }
   },
   "usageExamples": [
