@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
+    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
+
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
     public bool IsFixed => false;
@@ -61,10 +64,29 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
-                var property = subscriber.Component.GetType().GetProperty(propertyName)!.GetValue(subscriber.Component)!;
+                var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
+                var property = propertyGetter.GetValue(subscriber.Component);
+                if (property == null)
+                {
+                    return Task.CompletedTask;
+                }
                 state.PersistAsJson(storageKey, property, propertyType);
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
+    }
+
+    private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
+    {
+        return _propertyGetterCache.GetOrAdd((type, propertyName), (key) =>
+        {
+            var (type, propertyName) = key;
+            var propertyInfo = type.GetProperty(propertyName);
+            if (propertyInfo == null)
+            {
+                throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
+            }
+            return new PropertyGetter(type, propertyInfo);
+        });
     }
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
