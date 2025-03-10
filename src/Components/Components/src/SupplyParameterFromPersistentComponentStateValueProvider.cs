@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -76,18 +77,23 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
     }
 
-    private static PropertyGetter ResolvePropertyGetter([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
+    private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
     {
-        return _propertyGetterCache.GetOrAdd((type, propertyName), (key) =>
+        return _propertyGetterCache.GetOrAdd((type, propertyName), PropertyGetterFactory);
+    }
+
+    private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
+    {
+        var (type, propertyName) = key;
+        var propertyInfo = GetPropertyInfo(type, propertyName);
+        if (propertyInfo == null)
         {
-            var (type, propertyName) = key;
-            var propertyInfo = type.GetProperty(propertyName);
-            if (propertyInfo == null)
-            {
-                throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
-            }
-            return new PropertyGetter(type, propertyInfo);
-        });
+            throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
+        }
+        return new PropertyGetter(type, propertyInfo);
+
+        static PropertyInfo? GetPropertyInfo([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
+            => type.GetProperty(propertyName);
     }
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
