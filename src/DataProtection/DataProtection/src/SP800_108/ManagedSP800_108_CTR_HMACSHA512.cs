@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Internal;
@@ -51,7 +52,18 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var validationSubKeyIndex = 0;
         var outputCount = operationSubkey.Length + validationSubkey.Length;
 
-        byte[]? prfOutput = null;
+        int prfOutputSizeInBytes =
+#if NET10_0_OR_GREATER
+            HMACSHA512.HashSizeInBytes;
+#else
+            prf.GetDigestSizeInBytes();
+#endif
+
+#if NET10_0_OR_GREATER
+        Span<byte> prfOutput = prfOutputSizeInBytes <= 128
+            ? stackalloc byte[128].Slice(0, prfOutputSizeInBytes)
+            : new byte[prfOutputSizeInBytes];
+#endif
 
         // See SP800-108, Sec. 5.1 for the format of the input to the PRF routine.
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
@@ -59,7 +71,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
         byte[]? prfInputArray = null;
         Span<byte> prfInput = prfInputLength <= 128
-            ? stackalloc byte[prfInputLength]
+            ? stackalloc byte[128].Slice(0, prfInputLength)
             : (prfInputArray = new byte[prfInputLength]);
 #else
         var prfInputArray = new byte[prfInputLength];
@@ -80,12 +92,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
             contextHeader.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1));
             contextData.CopyTo(prfInput.Slice(sizeof(uint) + label.Length + 1 + contextHeader.Length));
 
-            int prfOutputSizeInBytes =
-#if NET10_0_OR_GREATER
-            HMACSHA512.HashSizeInBytes;
-#else
-            prf.GetDigestSizeInBytes();
-#endif
             for (uint i = 1; outputCount > 0; i++)
             {
                 // Copy [i]_2 to prfInput since it mutates with each iteration
@@ -95,12 +101,12 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 prfInput[3] = (byte)(i);
 
 #if NET10_0_OR_GREATER
-                // not using stackalloc here, because we are in a loop
-                // and potentially can exhaust the stack memory: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2014
-                prfOutput = new byte[prfOutputSizeInBytes];
-                HMACSHA512.TryHashData(kdk, prfInput, prfOutput, out _);
+                var success = HMACSHA512.TryHashData(kdk, prfInput, prfOutput, out var bytesWritten);
+                Debug.Assert(success);
+                Debug.Assert(bytesWritten == prfOutputSizeInBytes);
 #else
-                prfOutput = prf.ComputeHash(prfInputArray);
+                var prfOutputArray = prf.ComputeHash(prfInputArray);
+                var prfOutput = prfOutputArray.AsSpan();
 #endif
                 CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
                 var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
@@ -113,17 +119,21 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 if (operationSubKeyIndex < operationSubkey.Length) // meaning we need to write to operationSubKey
                 {
                     var destination = operationSubkey.Slice(operationSubKeyIndex, bytesToWrite);
-                    prfOutput.AsSpan(0, bytesToWrite).CopyTo(destination);
+                    prfOutput.Slice(0, bytesToWrite).CopyTo(destination);
                     operationSubKeyIndex += bytesToWrite;
                 }
                 if (operationSubKeyIndex == operationSubkey.Length && leftOverBytes != 0) // we have filled the operationSubKey. It's time for the validationSubKey
                 {
                     var destination = validationSubkey.Slice(validationSubKeyIndex, leftOverBytes);
-                    prfOutput.AsSpan(bytesToWrite, leftOverBytes).CopyTo(destination);
+                    prfOutput.Slice(bytesToWrite, leftOverBytes).CopyTo(destination);
                     validationSubKeyIndex += leftOverBytes;
                 }
 
                 outputCount -= numBytesToCopyThisIteration;
+
+#if !NET10_0_OR_GREATER
+                prfOutput.Clear();
+#endif
             }
         }
         finally
@@ -133,24 +143,9 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 disposablePrf.Dispose();
             }
 
+            prfInput.Clear();
 #if NET10_0_OR_GREATER
-            if (prfOutput is not null)
-            {
-                Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
-            }
-
-            if (prfInputArray is not null)
-            {
-                Array.Clear(prfInputArray, 0, prfInputArray.Length); // contains key material, so delete it
-            }
-            else
-            {
-                // to be extra careful - clear the stackalloc memory
-                prfInput.Clear();
-            }
-#else
-            Array.Clear(prfInputArray, 0, prfInputArray.Length); // contains key material, so delete it
-            Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
+            prfOutput.Clear();
 #endif
         }
     }
