@@ -11,10 +11,17 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
         var source = """
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
 
 var app = builder.Build();
 
@@ -33,12 +40,45 @@ public class CustomValidationAttribute : ValidationAttribute
 }
 """;
         await Verify(source, out var compilation);
-        VerifyEndpoint(compilation, "/params", async endpoint =>
+        await VerifyEndpoint(compilation, "/params", async (endpoint, serviceProvider) =>
         {
-            var context = CreateHttpContext();
+            var context = CreateHttpContext(serviceProvider);
             context.Request.QueryString = new QueryString("?value1=5&value2=5&value3=&value4=3&value5=5");
             await endpoint.RequestDelegate(context);
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("value1", error.Key);
+                    Assert.Equal("The field value1 must be between 10 and 100.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("value2", error.Key);
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("value3", error.Key);
+                    Assert.Equal("The value3 field is required.", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("value4", error.Key);
+                    Assert.Equal("Value must be an even number", error.Value.Single());
+                },
+                error =>
+                {
+                    Assert.Equal("value5", error.Key);
+                    Assert.Collection(error.Value, error =>
+                    {
+                        Assert.Equal("The field value5 is invalid.", error);
+                    },
+                    error =>
+                    {
+                        Assert.Equal("The field value5 must be between 10 and 100.", error);
+                    });
+                });
         });
     }
 }
