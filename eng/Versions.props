@@ -218,6 +218,7 @@
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
     <SystemNetSocketsVersion>4.3.0</SystemNetSocketsVersion>
     <SystemSecurityCryptographyX509CertificatesVersion>4.3.2</SystemSecurityCryptographyX509CertificatesVersion>
     <SystemRuntimeInteropServicesRuntimeInformationVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationVersion>
