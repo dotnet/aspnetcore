@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
+virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.NotFoundCore() -> void

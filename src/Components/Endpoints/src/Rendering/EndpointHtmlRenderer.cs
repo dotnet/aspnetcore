@@ -70,7 +70,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    internal static async Task InitializeStandardComponentServicesAsync(
+    internal async Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
@@ -78,6 +78,14 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+
+        if (navigationManager is HttpNavigationManager httpNavigationManager)
+        {
+            httpNavigationManager.NotFoundEvent += (sender, args) =>
+            {
+                SetNotFoundResponse();
+            };
+        }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
