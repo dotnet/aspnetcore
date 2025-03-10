@@ -82,6 +82,11 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         return _propertyGetterCache.GetOrAdd((type, propertyName), PropertyGetterFactory);
     }
 
+    [UnconditionalSuppressMessage(
+    "Trimming",
+    "IL2077:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The source field does not have matching annotations.",
+    Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
+
     private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
     {
         var (type, propertyName) = key;
