@@ -126,6 +126,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -199,6 +200,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -1068,6 +1070,7 @@ public class EndpointHtmlRendererTest
         var lines = content.Replace("\r\n", "\n").Split('\n');
         var serverMarkerMatch = Regex.Match(lines[0], PrerenderedComponentPattern);
         var serverNonPrerenderedMarkerMatch = Regex.Match(lines[1], ComponentPattern);
+        lines[2] = AssertAndStripWebAssemblyOptions(lines[2]);
         var webAssemblyMarkerMatch = Regex.Match(lines[2], PrerenderedComponentPattern);
         var webAssemblyNonPrerenderedMarkerMatch = Regex.Match(lines[3], ComponentPattern);
 
