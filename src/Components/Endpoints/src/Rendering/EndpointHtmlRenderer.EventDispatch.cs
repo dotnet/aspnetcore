@@ -74,7 +74,7 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    public void SetNotFoundResponse()
+    private void SetNotFoundResponse(object sender, EventArgs args)
     {
         _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
     }
