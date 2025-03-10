@@ -1111,6 +1111,41 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
+    [Theory]
+    [InlineData("server", "Server state", "Auto state", "not restored")]
+    [InlineData("auto", "Server state", "Auto state", "not restored")]
+    public void CanPersistPrerenderedState_ServicesState_PersistsOnServer(string mode, string expectedServerState, string expectedAutoState, string expectedWebAssemblyState)
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        if (mode == "auto")
+        {
+            BlockWebAssemblyResourceLoad();
+        }
+
+        Navigate($"{ServerPathBase}/persist-services-state?mode={mode}");
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
+        Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
+        Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+    }
+
+    [Theory]
+    [InlineData("auto", "not restored", "Auto state", "WebAssembly state")]
+    [InlineData("wasm", "not restored", "Auto state", "WebAssembly state")]
+    public void CanPersistPrerenderedState_ServicesState_PersistsOnWasm(string mode, string expectedServerState, string expectedAutoState, string expectedWebAssemblyState)
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Navigate($"{ServerPathBase}/persist-services-state?mode={mode}");
+
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
+        Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
+        Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+    }
+
     [Fact]
     public void CanPersistPrerenderedStateDeclaratively_Auto_PersistsOnServer()
     {
