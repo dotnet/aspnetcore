@@ -42,7 +42,7 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
 
                 if (xLastIndexOf != -1 && yLastIndexOf != -1)
                 {
-                    return xFullReferencePath[xLastIndexOf..] == yFullReferencePath[yLastIndexOf..];;
+                    return xFullReferencePath.AsSpan(xLastIndexOf).Equals(yFullReferencePath.AsSpan(yLastIndexOf), StringComparison.OrdinalIgnoreCase);
                 }
             }
         }
