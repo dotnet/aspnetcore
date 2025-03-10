@@ -15,16 +15,34 @@ public class ComponentStatePersistenceManager
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
     private bool _stateIsPersisted;
+    private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
+    /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
         State = new PersistentComponentState(_currentState, _registeredCallbacks);
         _logger = logger;
     }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="serviceProvider"></param>
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
+    {
+        _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
+    }
+
+    // For testing purposes only
+    internal PersistentServicesRegistry? ServicesRegistry => _servicesRegistry;
+
+    // For testing purposes only
+    internal List<PersistComponentStateRegistration> RegisteredCallbacks => _registeredCallbacks;
 
     /// <summary>
     /// Gets the <see cref="ComponentStatePersistenceManager"/> associated with the <see cref="ComponentStatePersistenceManager"/>.
@@ -40,6 +58,7 @@ public class ComponentStatePersistenceManager
     {
         var data = await store.GetPersistedStateAsync();
         State.InitializeExistingState(data);
+        _servicesRegistry?.Restore(State);
     }
 
     /// <summary>
@@ -59,6 +78,9 @@ public class ComponentStatePersistenceManager
 
         async Task PauseAndPersistState()
         {
+            // Ensure that we register the services before we start persisting the state.
+            _servicesRegistry?.RegisterForPersistence(State);
+
             State.PersistingState = true;
 
             if (store is IEnumerable<IPersistentComponentStateStore> compositeStore)
@@ -72,24 +94,53 @@ public class ComponentStatePersistenceManager
                 // the next store can start with a clean slate.
                 foreach (var store in compositeStore)
                 {
-                    await PersistState(store);
+                    var result = await TryPersistState(store);
+                    if (!result)
+                    {
+                        break;
+                    }
                     _currentState.Clear();
                 }
             }
             else
             {
-                await PersistState(store);
+                await TryPersistState(store);
             }
 
             State.PersistingState = false;
             _stateIsPersisted = true;
         }
 
-        async Task PersistState(IPersistentComponentStateStore store)
+        async Task<bool> TryPersistState(IPersistentComponentStateStore store)
         {
-            await PauseAsync(store);
+            if (!await TryPauseAsync(store))
+            {
+                _currentState.Clear();
+                return false;
+            }
+
             await store.PersistStateAsync(_currentState);
+            return true;
         }
+    }
+
+    /// <summary>
+    /// Initializes the render mode for state persisted by the platform.
+    /// </summary>
+    /// <param name="renderMode">The render mode to use for state persisted by the platform.</param>
+    /// <exception cref="InvalidOperationException">when the render mode is already set.</exception>
+    public void SetPlatformRenderMode(IComponentRenderMode renderMode)
+    {
+        if (_servicesRegistry == null)
+        {
+            return;
+        }
+        else if (_servicesRegistry?.RenderMode != null)
+        {
+            throw new InvalidOperationException("Render mode already set.");
+        }
+
+        _servicesRegistry!.RenderMode = renderMode;
     }
 
     private void InferRenderModes(Renderer renderer)
@@ -125,11 +176,17 @@ public class ComponentStatePersistenceManager
         }
     }
 
-    internal Task PauseAsync(IPersistentComponentStateStore store)
+    internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store)
     {
-        List<Task>? pendingCallbackTasks = null;
+        List<Task<bool>>? pendingCallbackTasks = null;
 
-        for (var i = 0; i < _registeredCallbacks.Count; i++)
+        // We are iterating backwards to allow the callbacks to remove themselves from the list.
+        // Otherwise, we would have to make a copy of the list to avoid running into situations
+        // where we don't run all the callbacks because the count of the list changed while we
+        // were iterating over it.
+        // It is not allowed to register a callback while we are persisting the state, so we don't
+        // need to worry about new callbacks being added to the list.
+        for (var i = _registeredCallbacks.Count - 1; i >= 0; i--)
         {
             var registration = _registeredCallbacks[i];
 
@@ -142,31 +199,38 @@ public class ComponentStatePersistenceManager
                 continue;
             }
 
-            var result = ExecuteCallback(registration.Callback, _logger);
+            var result = TryExecuteCallback(registration.Callback, _logger);
             if (!result.IsCompletedSuccessfully)
             {
-                pendingCallbackTasks ??= new();
+                pendingCallbackTasks ??= [];
                 pendingCallbackTasks.Add(result);
+            }
+            else
+            {
+                if (!result.Result)
+                {
+                    return Task.FromResult(false);
+                }
             }
         }
 
         if (pendingCallbackTasks != null)
         {
-            return Task.WhenAll(pendingCallbackTasks);
+            return AnyTaskFailed(pendingCallbackTasks);
         }
         else
         {
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
-        static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
+        static Task<bool> TryExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
         {
             try
             {
                 var current = callback();
                 if (current.IsCompletedSuccessfully)
                 {
-                    return current;
+                    return Task.FromResult(true);
                 }
                 else
                 {
@@ -176,21 +240,35 @@ public class ComponentStatePersistenceManager
             catch (Exception ex)
             {
                 logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             }
 
-            static async Task Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
+            static async Task<bool> Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
             {
                 try
                 {
                     await task;
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                    return;
+                    return false;
                 }
             }
+        }
+
+        static async Task<bool> AnyTaskFailed(List<Task<bool>> pendingCallbackTasks)
+        {
+            foreach (var result in await Task.WhenAll(pendingCallbackTasks))
+            {
+                if (!result)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

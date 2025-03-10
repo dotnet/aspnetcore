@@ -1054,9 +1054,27 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void CanPersistPrerenderedStateDeclaratively_Server()
+    {
+        Navigate($"{ServerPathBase}/persist-state?server=true&declarative=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+    }
+
+    [Fact]
     public void CanPersistPrerenderedState_WebAssembly()
     {
         Navigate($"{ServerPathBase}/persist-state?wasm=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedStateDeclaratively_WebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-state?wasm=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
@@ -1072,6 +1090,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void CanPersistPrerenderedStateDeclaratively_Auto_PersistsOnWebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+    }
+
+    [Fact]
     public void CanPersistPrerenderedState_Auto_PersistsOnServer()
     {
         Navigate(ServerPathBase);
@@ -1079,6 +1106,54 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         BlockWebAssemblyResourceLoad();
 
         Navigate($"{ServerPathBase}/persist-state?auto=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+    }
+
+    [Theory]
+    [InlineData("server", "Server state", "Auto state", "not restored")]
+    [InlineData("auto", "Server state", "Auto state", "not restored")]
+    public void CanPersistPrerenderedState_ServicesState_PersistsOnServer(string mode, string expectedServerState, string expectedAutoState, string expectedWebAssemblyState)
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        if (mode == "auto")
+        {
+            BlockWebAssemblyResourceLoad();
+        }
+
+        Navigate($"{ServerPathBase}/persist-services-state?mode={mode}");
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
+        Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
+        Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+    }
+
+    [Theory]
+    [InlineData("auto", "not restored", "Auto state", "WebAssembly state")]
+    [InlineData("wasm", "not restored", "Auto state", "WebAssembly state")]
+    public void CanPersistPrerenderedState_ServicesState_PersistsOnWasm(string mode, string expectedServerState, string expectedAutoState, string expectedWebAssemblyState)
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Navigate($"{ServerPathBase}/persist-services-state?mode={mode}");
+
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
+        Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
+        Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedStateDeclaratively_Auto_PersistsOnServer()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+
+        Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
@@ -1271,5 +1346,57 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     private void ClearBrowserLogs()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
+    }
+
+    [Fact]
+    public void CanPersistMultiplePrerenderedStateDeclaratively_Server()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-state-declaratively?server=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("server-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("server-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultiplePrerenderedStateDeclaratively_WebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-state-declaratively?wasm=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("wasm-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("wasm-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultiplePrerenderedStateDeclaratively_Auto_PersistsOnServer()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+
+        Navigate($"{ServerPathBase}/persist-multiple-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultiplePrerenderedStateDeclaratively_Auto_PersistsOnWebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
     }
 }

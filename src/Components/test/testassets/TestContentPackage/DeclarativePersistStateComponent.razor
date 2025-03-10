@@ -1,0 +1,21 @@
+﻿<p>Application state is <span id="@KeyName">@Value</span></p>
+<p>Render mode: <span id="render-mode-@KeyName">@_renderMode</span></p>
+
+@code {
+    [Parameter, EditorRequired]
+    public string InitialValue { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string KeyName { get; set; } = "";
+
+    [SupplyParameterFromPersistentComponentState]
+    public string Value { get; set; }
+
+    private string _renderMode = "SSR";
+
+    protected override void OnInitialized()
+    {
+        Value ??= !RendererInfo.IsInteractive ? InitialValue : "not restored";
+        _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+    }
+}
