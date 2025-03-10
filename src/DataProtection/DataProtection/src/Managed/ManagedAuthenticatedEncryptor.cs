@@ -139,17 +139,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         return retVal;
     }
 
-    private SymmetricAlgorithm CreateSymmetricAlgorithm(byte[]? key = null)
+    private SymmetricAlgorithm CreateSymmetricAlgorithm()
     {
         var retVal = _symmetricAlgorithmFactory();
         CryptoUtil.Assert(retVal != null, "retVal != null");
 
         retVal.Mode = CipherMode.CBC;
         retVal.Padding = PaddingMode.PKCS7;
-        if (key is not null)
-        {
-            retVal.Key = key;
-        }
 
         return retVal;
     }
@@ -213,9 +209,14 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
                 : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
 
-            // The best optimization is to stackalloc. If the size is too big, we need to allocate an array
-            // Renting instead is NOT an option due to safety concerns. See https://github.com/dotnet/aspnetcore/pull/59424#issuecomment-2599375329
-            var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+#if NET10_0_OR_GREATER
+            Span<byte> decryptionSubkey =
+                _symmetricAlgorithmSubkeyLengthInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
+                : new byte[_symmetricAlgorithmBlockSizeInBytes];
+#else
+            byte[] decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+#endif
 
             // calling "fixed" is basically pinning the array, meaning the GC won't move it around. (Also for safety concerns)
             // note: it is safe to call `fixed` on null - it is just a no-op
@@ -247,7 +248,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
 #if NET10_0_OR_GREATER
-                    using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: decryptionSubkey);
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
+                    symmetricAlgorithm.SetKey(decryptionSubkey); // setKey is a single-shot usage of symmetricAlgorithm. Not allocatey
 
                     // note: here protectedPayload.Array is taken without an offset (can't use AsSpan() on ArraySegment)
                     var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
@@ -275,11 +277,11 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 finally
                 {
                     // delete since these contain secret material
-                    Array.Clear(decryptionSubkey, 0, decryptionSubkey.Length);
                     validationSubkey.Clear();
 
 #if NET10_0_OR_GREATER
                     decryptedKdk.Clear();
+                    decryptionSubkey.Clear();
 #else
                     Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
 #endif
@@ -322,8 +324,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             var validationSubkey = validationSubkeyArray.AsSpan();
 #endif
 
-            // TODO to be optimized with changed dotnet/runtime API, see https://github.com/dotnet/runtime/issues/111154
-            var encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+#if NET10_0_OR_GREATER
+            Span<byte> encryptionSubkey = _symmetricAlgorithmSubkeyLengthInBytes <= 128
+                ? stackalloc byte[128].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
+                : new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+#else
+            byte[] encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+#endif
 
             fixed (byte* decryptedKdkUnsafe = decryptedKdk)
             fixed (byte* __unused__1 = encryptionSubkey)
@@ -357,7 +364,10 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     // idea of optimization here is firstly get all the types preset
                     // for calculating length of the output array and allocating it.
                     // then we are filling it with the data directly, without any additional copying
-                    using var symmetricAlgorithm = CreateSymmetricAlgorithm(key: encryptionSubkey);
+
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
+                    symmetricAlgorithm.SetKey(encryptionSubkey); // setKey is a single-shot usage of symmetricAlgorithm. Not allocatey
+
                     using var validationAlgorithm = CreateValidationAlgorithm();
 
                     // Later framework has an API to pre-calculate optimal length of the ciphertext.
