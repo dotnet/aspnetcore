@@ -1,3 +1,4 @@
+# Policybot docs live at https://eng.ms/docs/more/github-inside-microsoft/policies/resource-management
 id: 
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
