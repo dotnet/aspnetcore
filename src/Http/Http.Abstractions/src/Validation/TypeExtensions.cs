@@ -9,13 +9,19 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class TypeExtensions
 {
+    /// <summary>
+    /// Determines whether the specified type is an enumerable type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns><see langword="true"/> if the type is enumerable; otherwise, <see langword="false"/>.</returns>
     public static bool IsEnumerable(this Type type)
     {
         // Check if type itself is an IEnumerable
         if (type.IsGenericType &&
             (type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
             type.GetGenericTypeDefinition() == typeof(ICollection<>) ||
-            type.GetGenericTypeDefinition() == typeof(List<>)))
+            type.GetGenericTypeDefinition() == typeof(List<>) ||
+            type.GetGenericTypeDefinition() == typeof(IList<>)))
         {
             return true;
         }
@@ -36,6 +42,11 @@ internal static class TypeExtensions
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a nullable type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns><see langword="true"/> if the type is nullable; otherwise, <see langword="false"/>.</returns>
     public static bool IsNullable(this Type type)
     {
         if (type.IsValueType)
@@ -52,6 +63,12 @@ internal static class TypeExtensions
         return false;
     }
 
+    /// <summary>
+    /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
+    /// </summary>
+    /// <param name="attributes">The array of <see cref="ValidationAttribute"/> to search.</param>
+    /// <param name="requiredAttribute">The found <see cref="RequiredAttribute"/> if available, otherwise null.</param>
+    /// <returns><see langword="true"/> if a <see cref="RequiredAttribute"/> is found; otherwise, <see langword="false"/>.</returns>
     public static bool TryGetRequiredAttribute(this ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
     {
         foreach (var attribute in attributes)

@@ -14,24 +14,14 @@ var app = builder.Build();
 app.MapGet("/customers/{id}", ([Range(1, int.MaxValue)] int id) =>
     $"Getting customer with ID: {id}");
 
-app.MapPost("/customers", (Customer customer) =>
-{
-    // Validation happens automatically before this code runs
-    return TypedResults.Created($"/customers/{customer.Name}", customer);
-});
+app.MapPost("/customers", (Customer customer) => TypedResults.Created($"/customers/{customer.Name}", customer));
 
-app.MapPost("/orders", (Order order) =>
-{
-    // Both attribute validation and IValidatableObject.Validate are called automatically
-    return TypedResults.Created($"/orders/{order.OrderId}", order);
-});
+app.MapPost("/orders", (Order order) => TypedResults.Created($"/orders/{order.OrderId}", order));
 
-app.MapPost("/products", ([EvenNumberAttribute(ErrorMessage = "Product ID must be even")] int productId,
-    [Required] string name) =>
-{
-    return TypedResults.Ok(new { productId, name });
-})
-.DisableValidation();
+app.MapPost("/products",
+    ([EvenNumber(ErrorMessage = "Product ID must be even")] int productId, [Required] string name)
+        => TypedResults.Ok(new { productId, name }))
+    .DisableValidation();
 
 app.Run();
 
@@ -71,7 +61,6 @@ public class Address
 }
 
 // Define a type implementing IValidatableObject for custom validation
-[ValidatableType]
 public class Order : IValidatableObject
 {
     [Range(1, int.MaxValue)]

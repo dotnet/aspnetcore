@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// </summary>
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
+    private RequiredAttribute? _requiredAttribute;
+
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
@@ -80,9 +82,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
-        if (validationAttributes.TryGetRequiredAttribute(out var requiredAttribute))
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {

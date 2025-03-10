@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated</InterceptorsNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.ValidationsGenerator/Microsoft.AspNetCore.Http.ValidationsGenerator.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.ValidationsGenerator/Microsoft.AspNetCore.Http.ValidationsGenerator.csproj"
+     OutputItemType="Analyzer"
+     ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>
