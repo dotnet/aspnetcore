@@ -76,16 +76,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         string? handler = null,
         IFormCollection? form = null)
     {
-        var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+        var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        if (navigationManager is HttpNavigationManager httpNavigationManager)
+        navigationManager?.NotFoundEvent += (sender, args) =>
         {
-            httpNavigationManager.NotFoundEvent += (sender, args) =>
-            {
-                SetNotFoundResponse();
-            };
-        }
+            SetNotFoundResponse();
+        };
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
