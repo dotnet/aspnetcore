@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -75,7 +76,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
     }
 
-    private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
+    private static PropertyGetter ResolvePropertyGetter([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
     {
         return _propertyGetterCache.GetOrAdd((type, propertyName), (key) =>
         {
