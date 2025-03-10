@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -18,7 +18,7 @@
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets">
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
     <ItemGroup>
       <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
     </ItemGroup>
