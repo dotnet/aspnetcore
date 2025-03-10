@@ -15,7 +15,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
-    public ValidatablePropertyInfo(
+    protected ValidatablePropertyInfo(
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
@@ -50,34 +50,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string DisplayName { get; }
 
     /// <summary>
-    /// Gets whether the member is enumerable.
-    /// </summary>
-    internal bool IsEnumerable { get; }
-
-    /// <summary>
-    /// Gets whether the member is nullable.
-    /// </summary>
-    internal bool IsNullable { get; }
-
-    /// <summary>
-    /// Gets whether the member is annotated with the <see cref="RequiredAttribute"/>.
-    /// </summary>
-    public bool IsRequired { get; }
-
-    /// <summary>
     /// Gets the validation attributes for this member.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    /// <summary>
-    /// Validates the member's value.
-    /// </summary>
-    /// <param name="value">The object containing the member to validate.</param>
-    /// <param name="context">The context for the validation.</param>
-    /// <param name="cancellationToken"></param>
+    /// <inheritdoc />
     /// <returns>A task representing the asynchronous operation.</returns>
-    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
+    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
 
@@ -86,14 +66,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
-        var originalPrefix = context.Prefix;
+        var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
         {
-            context.Prefix = Name;
+            context.CurrentValidationPath = Name;
         }
         else
         {
-            context.Prefix = $"{originalPrefix}.{Name}";
+            context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
         context.ValidationContext.DisplayName = DisplayName;
@@ -106,20 +86,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                context.AddValidationError(context.Prefix, [result!.ErrorMessage!]);
-                context.Prefix = originalPrefix; // Restore prefix
+                context.AddValidationError(context.CurrentValidationPath, [result!.ErrorMessage!]);
+                context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, context.Prefix, validationAttributes);
+        ValidateValue(propertyValue, context.CurrentValidationPath, validationAttributes);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.Prefix}'. " +
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
@@ -133,11 +113,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
-                var currentPrefix = context.Prefix;
+                var currentPrefix = context.CurrentValidationPath;
 
                 foreach (var item in enumerable)
                 {
-                    context.Prefix = $"{currentPrefix}[{index}]";
+                    context.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
                     if (item != null)
                     {
@@ -152,7 +132,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 }
 
                 // Restore prefix to the property name before validating the next item
-                context.Prefix = currentPrefix;
+                context.CurrentValidationPath = currentPrefix;
             }
             else if (propertyValue != null)
             {
@@ -168,7 +148,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         {
             // Always decrement the depth counter and restore prefix
             context.CurrentDepth--;
-            context.Prefix = originalPrefix;
+            context.CurrentValidationPath = originalPrefix;
         }
 
         void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes)

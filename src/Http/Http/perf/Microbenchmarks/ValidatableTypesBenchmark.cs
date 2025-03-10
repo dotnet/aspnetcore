@@ -18,7 +18,7 @@ public class ValidatableTypeInfoBenchmark
     private IValidatableInfo _hierarchicalTypeInfo = null!;
     private IValidatableInfo _ivalidatableObjectTypeInfo = null!;
 
-    private ValidatableContext _context = null!;
+    private ValidateContext _context = null!;
     private SimpleModel _simpleModel = null!;
     private ComplexModel _complexModel = null!;
     private HierarchicalModel _hierarchicalModel = null!;
@@ -39,7 +39,7 @@ public class ValidatableTypeInfoBenchmark
         var serviceProvider = services.BuildServiceProvider();
         var validationOptions = serviceProvider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
-        _context = new ValidatableContext
+        _context = new ValidateContext
         {
             ValidationOptions = validationOptions,
             ValidationContext = new ValidationContext(new object(), serviceProvider, null),

@@ -42,7 +42,7 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
-        var validatableContext = new ValidatableContext { ValidationOptions = options };
+        var validatableContext = new ValidateContext { ValidationOptions = options };
         return async (context) =>
         {
             validatableContext.ValidationErrors?.Clear();

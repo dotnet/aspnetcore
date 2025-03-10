@@ -224,7 +224,7 @@ public class ValidatableParameterInfoTests
             validationAttributes: [new RangeAttribute(10, 100)]);
 
         var context = CreateValidatableContext();
-        context.Prefix = "parent";
+        context.CurrentValidationPath = "parent";
 
         // Act
         await paramInfo.ValidateAsync(5, context, default);
@@ -273,13 +273,13 @@ public class ValidatableParameterInfoTests
             validationAttributes);
     }
 
-    private ValidatableContext CreateValidatableContext(
+    private ValidateContext CreateValidatableContext(
         Dictionary<Type, ValidatableTypeInfo>? typeMapping = null)
     {
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
         var validationContext = new ValidationContext(new object(), serviceProvider, null);
 
-        return new ValidatableContext
+        return new ValidateContext
         {
             ValidationContext = validationContext,
             ValidationOptions = new TestValidationOptions(typeMapping ?? new Dictionary<Type, ValidatableTypeInfo>())

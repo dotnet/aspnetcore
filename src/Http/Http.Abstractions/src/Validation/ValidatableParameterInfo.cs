@@ -20,7 +20,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
     /// <param name="displayName">The display name for the parameter.</param>
-    public ValidatableParameterInfo(
+    protected ValidatableParameterInfo(
         Type parameterType,
         string name,
         string displayName)
@@ -51,18 +51,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    /// <summary>
-    /// Validates the parameter value.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="context">The context for the validation.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <inheritdoc />
     /// <remarks>
     /// If the parameter is a collection, each item in the collection will be validated.
     /// If the parameter is not a collection but has a validatable type, the single value will be validated.
     /// </remarks>
-    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
+    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
 
@@ -83,7 +77,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
                 context.AddValidationError(key, [result.ErrorMessage!]);
                 return;
             }
@@ -98,13 +92,13 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
                     context.AddOrExtendValidationErrors(key, [result!.ErrorMessage!]);
                 }
             }
             catch (Exception ex)
             {
-                var key = string.IsNullOrEmpty(context.Prefix) ? Name : $"{context.Prefix}.{Name}";
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
                 context.AddValidationError(key, [ex.Message]);
             }
         }
@@ -117,9 +111,9 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             {
                 if (item != null)
                 {
-                    var itemPrefix = string.IsNullOrEmpty(context.Prefix)
+                    var itemPrefix = string.IsNullOrEmpty(context.CurrentValidationPath)
                         ? $"{Name}[{index}]"
-                        : $"{context.Prefix}.{Name}[{index}]";
+                        : $"{context.CurrentValidationPath}.{Name}[{index}]";
 
                     if (context.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {

@@ -21,7 +21,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
-    public ValidatableTypeInfo(
+    protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
         IReadOnlyList<ValidatablePropertyInfo> members)
     {
@@ -41,13 +41,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
-    /// <summary>
-    /// Validates the specified value.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="context">The validation context.</param>
-    /// <param name="cancellationToken"></param>
-    public virtual async ValueTask ValidateAsync(object? value, ValidatableContext context, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
         if (value == null)
@@ -59,7 +54,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.Prefix}'. " +
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
@@ -67,13 +62,13 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         try
         {
             var actualType = value.GetType();
-            var originalPrefix = context.Prefix;
+            var originalPrefix = context.CurrentValidationPath;
 
             // First validate members
             for (var i = 0; i < _membersCount; i++)
             {
                 await Members[i].ValidateAsync(value, context, cancellationToken);
-                context.Prefix = originalPrefix;
+                context.CurrentValidationPath = originalPrefix;
             }
 
             // Then validate sub-types if any
@@ -86,7 +81,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     if (context.ValidationOptions.TryGetValidatableTypeInfo(subType, out var subTypeInfo))
                     {
                         await subTypeInfo.ValidateAsync(value, context, cancellationToken);
-                        context.Prefix = originalPrefix;
+                        context.CurrentValidationPath = originalPrefix;
                     }
                 }
             }
@@ -123,7 +118,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Always restore original prefix
-            context.Prefix = originalPrefix;
+            context.CurrentValidationPath = originalPrefix;
         }
         finally
         {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Represents the context for validating a validatable object.
 /// </summary>
-public sealed class ValidatableContext
+public sealed class ValidateContext
 {
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
@@ -20,7 +20,7 @@ public sealed class ValidatableContext
     /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
     /// This is used to build property paths in validation error messages (e.g., "Customer.Address.Street").
     /// </summary>
-    public string Prefix { get; set; } = string.Empty;
+    public string CurrentValidationPath { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the validation options that control validation behavior,

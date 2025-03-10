@@ -39,7 +39,7 @@ public class ValidatableTypeInfoTests
             { typeof(Address), addressType }
         });
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
         };
@@ -94,7 +94,7 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -140,7 +140,7 @@ public class ValidatableTypeInfoTests
                     [new RangeAttribute(2, 5)])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -201,7 +201,7 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -258,7 +258,7 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -303,7 +303,7 @@ public class ValidatableTypeInfoTests
         });
         validationOptions.MaxDepth = 3; // Set a small max depth to trigger the limit
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
             ValidationErrors = []
@@ -346,7 +346,7 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -382,7 +382,7 @@ public class ValidatableTypeInfoTests
                     ])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
@@ -426,7 +426,7 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", [new RequiredAttribute()])
             ]);
 
-        var context = new ValidatableContext
+        var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
