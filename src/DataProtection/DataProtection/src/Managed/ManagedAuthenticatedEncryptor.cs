@@ -197,16 +197,16 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
 #if NET10_0_OR_GREATER
-            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 128
-                ? stackalloc byte[128].Slice(0, _keyDerivationKey.Length)
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
                 : new byte[_keyDerivationKey.Length];
 #else
             var decryptedKdk = new byte[_keyDerivationKey.Length];
 #endif
 
             byte[]? validationSubkeyArray = null;
-            var validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
-                ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
+            var validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
                 : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
 
 #if NET10_0_OR_GREATER
@@ -307,8 +307,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             var ivLength = _symmetricAlgorithmBlockSizeInBytes;
 
 #if NET10_0_OR_GREATER
-            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 128
-                ? stackalloc byte[128].Slice(0, _keyDerivationKey.Length)
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
                 : new byte[_keyDerivationKey.Length];
 #else
             var decryptedKdk = new byte[_keyDerivationKey.Length];
@@ -316,8 +316,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
 #if NET10_0_OR_GREATER
             byte[]? validationSubkeyArray = null;
-            Span<byte> validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
-                ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
+            Span<byte> validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
                 : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
 #else
             var validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes];
@@ -325,8 +325,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #endif
 
 #if NET10_0_OR_GREATER
-            Span<byte> encryptionSubkey = _symmetricAlgorithmSubkeyLengthInBytes <= 128
-                ? stackalloc byte[128].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
+            Span<byte> encryptionSubkey = _symmetricAlgorithmSubkeyLengthInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
                 : new byte[_symmetricAlgorithmSubkeyLengthInBytes];
 #else
             byte[] encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
