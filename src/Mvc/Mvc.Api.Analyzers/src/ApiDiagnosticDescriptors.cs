@@ -8,12 +8,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 internal static class ApiDiagnosticDescriptors
 {
+    private const string Usage = "Usage";
+
     public static readonly DiagnosticDescriptor API1000_ActionReturnsUndocumentedStatusCode =
         new DiagnosticDescriptor(
             "API1000",
             "Action returns undeclared status code",
             "Action method returns undeclared status code '{0}'",
-            "Usage",
+            Usage,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
 
@@ -22,7 +24,7 @@ internal static class ApiDiagnosticDescriptors
             "API1001",
             "Action returns undeclared success result",
             "Action method returns a success result without a corresponding ProducesResponseType",
-            "Usage",
+            Usage,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
 
@@ -31,7 +33,7 @@ internal static class ApiDiagnosticDescriptors
             "API1002",
             "Action documents status code that is not returned",
             "Action method documents status code '{0}' without a corresponding return type",
-            "Usage",
+            Usage,
             DiagnosticSeverity.Info,
             isEnabledByDefault: false);
 
@@ -40,7 +42,7 @@ internal static class ApiDiagnosticDescriptors
             "API1003",
             "Action methods on ApiController instances do not require explicit model validation check",
             "Action methods on ApiController instances do not require explicit model validation check",
-            "Usage",
+            Usage,
             DiagnosticSeverity.Info,
             isEnabledByDefault: true,
             customTags: new[] { WellKnownDiagnosticTags.Unnecessary });
