@@ -46,18 +46,6 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     }
 
     /// <summary>
-    /// Initializes the <see cref="NavigationManager" />.
-    /// </summary>
-    /// <param name="baseUri">The base URI.</param>
-    /// <param name="uri">The absolute URI.</param>
-    /// <param name="renderer">The optional renderer.</param>
-    public void Initialize(string baseUri, string uri, IEndpointHtmlRenderer? renderer = null)
-    {
-        base.Initialize(baseUri, uri);
-        NotifyLocationChanged(isInterceptedLink: false);
-    }
-
-    /// <summary>
     /// Initializes the <see cref="RemoteNavigationManager"/>.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
