@@ -6,30 +6,30 @@
 @if (Server.GetValueOrDefault())
 {
     <strong>Server Persist State Component 1</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=1 InitialValue="restored 1" KeyName="server-1" @rendermode="@RenderMode.InteractiveServer" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=1 InitialValue="restored 1" KeyName="server-1" @rendermode="@RenderMode.InteractiveServer" />
     <hr />
     <strong>Server Persist State Component 2</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=2 InitialValue="restored 2" KeyName="server-2" @rendermode="@RenderMode.InteractiveServer" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=2 InitialValue="restored 2" KeyName="server-2" @rendermode="@RenderMode.InteractiveServer" />
     <hr />
 }
 
 @if (WebAssembly.GetValueOrDefault())
 {
     <strong>WebAssembly Persist State Component 1</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=1 InitialValue="restored 1" KeyName="wasm-1" @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=1 InitialValue="restored 1" KeyName="wasm-1" @rendermode="@RenderMode.InteractiveWebAssembly" />
     <hr />
     <strong>WebAssembly Persist State Component 2</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=2 InitialValue="restored 2" KeyName="wasm-2" @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=2 InitialValue="restored 2" KeyName="wasm-2" @rendermode="@RenderMode.InteractiveWebAssembly" />
     <hr />
 }
 
 @if (Auto.GetValueOrDefault())
 {
     <strong>Auto Persist State Component 1</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=1 InitialValue="restored 1" KeyName="auto-1" @rendermode="@RenderMode.InteractiveAuto" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=1 InitialValue="restored 1" KeyName="auto-1" @rendermode="@RenderMode.InteractiveAuto" />
     <hr />
     <strong>Auto Persist State Component 2</strong>
-    <TestContentPackage.DeclarativePersistStateComponent @key=2 InitialValue="restored 2" KeyName="auto-2" @rendermode="@RenderMode.InteractiveAuto" />
+    <TestContentPackage.DeclarativePersistStateComponentWrapper KeyDirective=2 InitialValue="restored 2" KeyName="auto-2" @rendermode="@RenderMode.InteractiveAuto" />
     <hr />
 }
 

@@ -15,10 +15,6 @@
 
     protected override void OnInitialized()
     {
-        if (OperatingSystem.IsBrowser())
-        {
-            throw new InvalidOperationException($"{Value ?? ("null")} - {InitialValue}");
-        }
         Value ??= !RendererInfo.IsInteractive ? InitialValue : "not restored";
         _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
     }
