@@ -2,9 +2,6 @@
 Microsoft.AspNetCore.Components.IEndpointHtmlRenderer
 Microsoft.AspNetCore.Components.IEndpointHtmlRenderer.SetNotFoundResponse() -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
-Microsoft.AspNetCore.Components.NavigationManager.NotifyNotFound() -> void
-Microsoft.AspNetCore.Components.NotFoundRenderingException
-Microsoft.AspNetCore.Components.NotFoundRenderingException.NotFoundRenderingException(string! message, System.Exception! innerException) -> void
 Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, Microsoft.AspNetCore.Components.IEndpointHtmlRenderer! renderer) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NotFoundCore() -> void

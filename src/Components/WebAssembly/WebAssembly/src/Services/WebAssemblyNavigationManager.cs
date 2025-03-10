@@ -85,19 +85,6 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
     }
 
-    /// <inheritdoc />
-    protected override void NotFoundCore()
-    {
-        try
-        {
-            NotifyNotFound();
-        }
-        catch (Exception ex)
-        {
-            Log.NotFoundRenderFailed(_logger, ex);
-        }
-    }
-
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
@@ -113,8 +100,5 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
 
         [LoggerMessage(2, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
-
-        [LoggerMessage(3, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
-        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
     }
 }

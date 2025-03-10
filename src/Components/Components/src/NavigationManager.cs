@@ -204,7 +204,10 @@ public abstract class NavigationManager
     /// <summary>
     /// Handles setting the NotFound state.
     /// </summary>
-    protected virtual void NotFoundCore() => throw new NotImplementedException();
+    protected virtual void NotFoundCore()
+    {
+        _notFound?.Invoke(this, new EventArgs());
+    }
 
     /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
@@ -334,21 +337,6 @@ public abstract class NavigationManager
         catch (Exception ex)
         {
             throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
-        }
-    }
-
-    /// <summary>
-    /// Triggers the <see cref="NotFound"/> event with the current URI value.
-    /// </summary>
-    protected void NotifyNotFound()
-    {
-        try
-        {
-            _notFound?.Invoke(this, new EventArgs());
-        }
-        catch (Exception ex)
-        {
-            throw new NotFoundRenderingException("An exception occurred while dispatching a NotFound event.", ex);
         }
     }
 

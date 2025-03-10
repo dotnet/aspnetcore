@@ -160,22 +160,6 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
-    /// <inheritdoc />
-    protected override void NotFoundCore()
-    {
-        Log.RequestingNotFound(_logger);
-
-        try
-        {
-            NotifyNotFound();
-        }
-        catch (Exception ex)
-        {
-            Log.NotFoundRenderFailed(_logger, ex);
-            UnhandledException?.Invoke(this, ex);
-        }
-    }
-
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
@@ -233,8 +217,5 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
         public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
-
-        [LoggerMessage(8, LogLevel.Error, "Failed to render NotFound", EventName = "NotFoundRenderFailed")]
-        public static partial void NotFoundRenderFailed(ILogger logger, Exception exception);
     }
 }
