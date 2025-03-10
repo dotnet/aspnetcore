@@ -315,9 +315,9 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="10.0.0-preview.3.25158.4">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="10.0.0-preview.3.25158.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>84ffa0f02297a8380079cd4df4ee1801ea7cc7a2</Sha>
+      <Sha>d17420560540e4184a78f431de8341f747068c4f</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="10.0.0-preview.3.25155.12">
@@ -325,9 +325,9 @@
       <Sha>7dd74fc403dda02fdccc541b306b8267c9a22aa9</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="10.0.0-preview.3.25158.4">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="10.0.0-preview.3.25158.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>84ffa0f02297a8380079cd4df4ee1801ea7cc7a2</Sha>
+      <Sha>d17420560540e4184a78f431de8341f747068c4f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="10.0.0-preview.3.25155.12">
       <Uri>https://github.com/dotnet/runtime</Uri>
