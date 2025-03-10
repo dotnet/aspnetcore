@@ -1089,7 +1089,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
-
     [Fact]
     public void CanPersistPrerenderedStateDeclaratively_Auto_PersistsOnWebAssembly()
     {
