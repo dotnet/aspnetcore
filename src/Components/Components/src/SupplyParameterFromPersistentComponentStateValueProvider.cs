@@ -114,12 +114,12 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
             Span<byte> keyBuffer = stackalloc byte[1024];
             var currentBuffer = keyBuffer;
             preKey.CopyTo(keyBuffer);
-            currentBuffer = currentBuffer[preKey.Length..];
             if (key is IUtf8SpanFormattable spanFormattable)
             {
                 var wroteKey = false;
                 while (!wroteKey)
                 {
+                    currentBuffer = keyBuffer[preKey.Length..];
                     wroteKey = spanFormattable.TryFormat(currentBuffer, out var written, "", CultureInfo.InvariantCulture);
                     if (!wroteKey)
                     {
@@ -139,12 +139,15 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
                 var wroteKey = false;
                 while (!wroteKey)
                 {
+                    currentBuffer = keyBuffer[preKey.Length..];
                     wroteKey = Encoding.UTF8.TryGetBytes(keySpan, currentBuffer, out var written);
                     if (!wroteKey)
                     {
                         // It is really unlikely that we will enter here, but we need to handle this case
                         Debug.Assert(written == 0);
-                        GrowBuffer(ref pool, ref keyBuffer);
+                        // Since this is utf-8, grab a buffer the size of the key * 4 + the preKey size
+                        // this guarantees we have enough space to encode the key
+                        GrowBuffer(ref pool, ref keyBuffer, keySpan.Length * 4 + preKey.Length);
                     }
                     else
                     {
@@ -153,7 +156,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
                 }
             }
 
-            keyBuffer = keyBuffer[..(keyBuffer.Length - currentBuffer.Length)];
+            keyBuffer = keyBuffer[..(preKey.Length + currentBuffer.Length)];
 
             var hashSucceeded = SHA256.TryHashData(keyBuffer, keyHash, out _);
             Debug.Assert(hashSucceeded);
@@ -183,9 +186,9 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         return default;
     }
 
-    private static void GrowBuffer(ref byte[]? pool, ref Span<byte> keyBuffer)
+    private static void GrowBuffer(ref byte[]? pool, ref Span<byte> keyBuffer, int? size = null)
     {
-        var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
+        var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(size ?? 2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
         keyBuffer.CopyTo(newPool);
         keyBuffer = newPool;
         if (pool != null)

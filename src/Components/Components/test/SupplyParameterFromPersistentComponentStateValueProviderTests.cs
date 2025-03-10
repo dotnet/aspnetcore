@@ -229,6 +229,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         { 123456.789m, -123456.789m },
         { new DateTime(2023, 1, 1), new DateTime(2023, 12, 31) },
         { "key1", "key2" },
+        // Include a very long key to validate logic around growing buffers
+        { new string('a', 10000), new string('b', 10000) },
         { Guid.NewGuid(), Guid.NewGuid() },
         { new DateOnly(2023, 1, 1), new DateOnly(2023, 12, 31) },
         { new TimeOnly(12, 34, 56), new TimeOnly(23, 45, 56) },
