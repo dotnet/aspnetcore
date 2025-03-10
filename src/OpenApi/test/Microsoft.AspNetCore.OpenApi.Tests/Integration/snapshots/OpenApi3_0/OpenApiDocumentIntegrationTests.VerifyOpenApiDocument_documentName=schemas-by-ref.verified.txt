@@ -375,6 +375,138 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/category": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/container": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContainerType"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/root": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Root"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/location": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationContainer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/parent": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentObject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/child": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChildObject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -388,6 +520,113 @@
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "AddressDto": {
+        "required": [
+          "relatedLocation"
+        ],
+        "type": "object",
+        "properties": {
+          "relatedLocation": {
+            "$ref": "#/components/schemas/LocationDto"
+          }
+        }
+      },
+      "Category": {
+        "required": [
+          "name",
+          "parent"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "tags": { }
+        }
+      },
+      "ChildObject": {
+        "required": [
+          "parent"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentObject"
+          }
+        }
+      },
+      "ContainerType": {
+        "type": "object",
+        "properties": {
+          "seq1": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "seq2": {
+            "type": "array",
+            "items": { }
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "name": { },
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LocationContainer": {
+        "required": [
+          "location"
+        ],
+        "type": "object",
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          }
+        }
+      },
+      "LocationDto": {
+        "required": [
+          "address"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          }
+        }
+      },
+      "ParentObject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChildObject"
+            }
           }
         }
       },
@@ -454,6 +693,17 @@
           }
         }
       },
+      "Root": {
+        "type": "object",
+        "properties": {
+          "item1": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "item2": {
+            "$ref": "#/components/schemas/Item"
+          }
+        }
+      },
       "Shape": {
         "required": [
           "$type"
@@ -514,6 +764,17 @@
           "sides": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "Tag": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           }
         }
       },

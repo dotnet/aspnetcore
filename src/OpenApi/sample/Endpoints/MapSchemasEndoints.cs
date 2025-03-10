@@ -30,7 +30,72 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/shape", (Shape shape) => { });
         schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
         schemas.MapPost("/person", (Person person) => { });
+        schemas.MapPost("/category", (Category category) => { });
+        schemas.MapPost("/container", (ContainerType container) => { });
+        schemas.MapPost("/root", (Root root) => { });
+        schemas.MapPost("/location", (LocationContainer location) => { });
+        schemas.MapPost("/parent", (ParentObject parent) => Results.Ok(parent));
+        schemas.MapPost("/child", (ChildObject child) => Results.Ok(child));
 
         return endpointRouteBuilder;
+    }
+
+    public sealed class Category
+    {
+        public required string Name { get; set; }
+
+        public required Category Parent { get; set; }
+
+        public IEnumerable<Tag> Tags { get; set; } = [];
+    }
+
+    public sealed class Tag
+    {
+        public required string Name { get; set; }
+    }
+
+    public sealed class ContainerType
+    {
+        public List<List<string>> Seq1 { get; set; } = [];
+        public List<List<string>> Seq2 { get; set; } = [];
+    }
+
+    public sealed class Root
+    {
+        public Item Item1 { get; set; } = null!;
+        public Item Item2 { get; set; } = null!;
+    }
+
+    public sealed class Item
+    {
+        public string[] Name { get; set; } = null!;
+        public int value { get; set; }
+    }
+
+    public sealed class LocationContainer
+    {
+        public required LocationDto Location { get; set; }
+    }
+
+    public sealed class LocationDto
+    {
+        public required AddressDto Address { get; set; }
+    }
+
+    public sealed class AddressDto
+    {
+        public required LocationDto RelatedLocation { get; set; }
+    }
+
+    public sealed class ParentObject
+    {
+        public int Id { get; set; }
+        public List<ChildObject> Children { get; set; } = [];
+    }
+
+    public sealed class ChildObject
+    {
+        public int Id { get; set; }
+        public required ParentObject Parent { get; set; }
     }
 }
