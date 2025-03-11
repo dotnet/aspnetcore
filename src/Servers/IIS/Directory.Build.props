@@ -5,16 +5,13 @@
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
 
     <EnableManagedPackageReferenceSupport>true</EnableManagedPackageReferenceSupport>
-    <HostArch>$(Platform)</HostArch>
-    <HostArch Condition="'$(Platform)' == 'Win32'">x86</HostArch>
-    <HostArch Condition="'$(Platform)' == 'AnyCPU'">x64</HostArch>
-    <LibNetHostPath>$(NuGetPackageRoot)microsoft.netcore.app.host.win-$(HostArch)\$(MicrosoftNETCoreAppRefVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
+    <LibNetHostPath>$(NuGetPackageRoot)microsoft.netcore.app.host.win-$(TargetArchitecture)\$(MicrosoftNETCoreAppRefVersion)\runtimes\win-$(TargetArchitecture)\native</LibNetHostPath>
     <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
     <PlatformToolsetVersion>143</PlatformToolsetVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
-    <PackageReference Include="Microsoft.NETCore.App.Host.win-$(HostArch)" Version="$(MicrosoftNETCoreAppRefVersion)" PrivateAssets="all" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-$(TargetArchitecture)" Version="$(MicrosoftNETCoreAppRefVersion)" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
 
 </Project>
