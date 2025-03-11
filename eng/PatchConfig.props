@@ -15,6 +15,7 @@ Later on, this will be checked using this condition:
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.1' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Identity;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
