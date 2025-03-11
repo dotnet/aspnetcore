@@ -36,7 +36,10 @@ internal sealed class PersistentServicesRegistry
 
     internal IReadOnlyList<IPersistentComponentRegistration> Registrations => _registrations;
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
     internal void RegisterForPersistence(PersistentComponentState state)
     {
         if (_subscriptions.Count != 0)
@@ -91,7 +94,9 @@ internal sealed class PersistentServicesRegistry
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentComponentRegistration))]
     internal void Restore(PersistentComponentState state)
     {
@@ -103,7 +108,7 @@ internal sealed class PersistentServicesRegistry
         RestoreRegistrationsIfAvailable(state);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
     private void RestoreRegistrationsIfAvailable(PersistentComponentState state)
     {
         foreach (var registration in _registrations)
