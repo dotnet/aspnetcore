@@ -5,13 +5,24 @@
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
 
     <EnableManagedPackageReferenceSupport>true</EnableManagedPackageReferenceSupport>
-    <LibNetHostPath>$(NuGetPackageRoot)microsoft.netcore.app.host.win-$(TargetArchitecture)\$(MicrosoftNETCoreAppRefVersion)\runtimes\win-$(TargetArchitecture)\native</LibNetHostPath>
+    <HostArch>$(Platform)</HostArch>
+    <HostArch Condition="'$(Platform)' == 'Win32'">x86</HostArch>
+    <HostArch Condition="'$(Platform)' == 'AnyCPU'">x64</HostArch>
+    <HostArch Condition="'$(DotNetBuild)' == 'true'">$(TargetArchitecture)</HostArch>
+    <LibNetHostPath>$(NuGetPackageRoot)microsoft.netcore.app.host.win-$(HostArch)\$(MicrosoftNETCoreAppRefVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
     <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
     <PlatformToolsetVersion>143</PlatformToolsetVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
-    <PackageReference Include="Microsoft.NETCore.App.Host.win-$(TargetArchitecture)" Version="$(MicrosoftNETCoreAppRefVersion)" PrivateAssets="all" ExcludeAssets="all" />
+  <!-- Platform is different during restore than during build. Therefore, restore everything when not building the product. -->
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(DotNetBuild)' != 'true'">
+    <PackageDownload Include="Microsoft.NETCore.App.Host.win-x64" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.win-x86" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.win-arm64" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(DotNetBuild)' == 'true'">
+    <PackageDownload Include="Microsoft.NETCore.App.Host.win-$(TargetArchitecture)" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
   </ItemGroup>
 
 </Project>
