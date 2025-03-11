@@ -48,7 +48,7 @@ internal static class ITypeSymbolExtensions
             type = type.OriginalDefinition;
         }
 
-        if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable))
+        if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
         {
             // Extract the T from an IEnumerable<T> or List<T>
             type = namedType.TypeArguments[0];
@@ -85,5 +85,12 @@ internal static class ITypeSymbolExtensions
         }
 
         return derivedTypes.Count == 0 ? null : derivedTypes.ToImmutable();
+    }
+
+    internal static bool IsExemptType(this ITypeSymbol type, RequiredSymbols requiredSymbols)
+    {
+        return SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpContext)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpRequest)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpResponse);
     }
 }

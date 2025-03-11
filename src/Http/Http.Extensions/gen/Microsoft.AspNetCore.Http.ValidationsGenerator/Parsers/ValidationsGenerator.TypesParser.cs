@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -44,6 +43,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         if (visitedTypes.Contains(typeSymbol))
         {
             return true;
+        }
+
+        if (typeSymbol.IsExemptType(requiredSymbols))
+        {
+            return false;
         }
 
         visitedTypes.Add(typeSymbol);
@@ -103,34 +107,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         return [.. members];
-    }
-
-    public ImmutableArray<ITypeSymbol> ExtractPropertyTypes(ITypeSymbol type, CancellationToken cancellationToken)
-    {
-        var builder = ImmutableArray.CreateBuilder<ITypeSymbol>();
-        var processed = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
-
-        void Traverse(ITypeSymbol currentType)
-        {
-            if (currentType == null || currentType.SpecialType != SpecialType.None || processed.Contains(currentType))
-            {
-                return;
-            }
-
-            processed.Add(currentType);
-            builder.Add(currentType);
-
-            foreach (var member in currentType.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.Type is ITypeSymbol propertyType)
-                {
-                    Traverse(propertyType);
-                }
-            }
-        }
-
-        Traverse(type);
-        return builder.ToImmutable();
     }
 
     internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(ISymbol symbol, RequiredSymbols requiredSymbols, out bool isRequired)

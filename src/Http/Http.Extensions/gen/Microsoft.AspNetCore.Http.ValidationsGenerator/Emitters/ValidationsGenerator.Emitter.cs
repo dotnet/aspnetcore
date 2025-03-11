@@ -21,6 +21,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static void Emit(SourceProductionContext context, (InterceptableLocation? AddValidation, ImmutableArray<ValidatableType> ValidatableTypes) emitInputs)
     {
+        if (emitInputs.AddValidation is null)
+        {
+            // Avoid generating code if no AddValidation call was found.
+            return;
+        }
         var source = Emit(emitInputs.AddValidation, emitInputs.ValidatableTypes);
         context.AddSource("ValidatableInfoResolver.g.cs", SourceText.From(source, Encoding.UTF8));
     }

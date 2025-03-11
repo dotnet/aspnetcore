@@ -12,5 +12,8 @@ internal sealed record class RequiredSymbols(
     INamedTypeSymbol IValidatableObject,
     INamedTypeSymbol JsonDerivedTypeAttribute,
     INamedTypeSymbol RequiredAttribute,
-    INamedTypeSymbol CustomValidationAttribute
+    INamedTypeSymbol CustomValidationAttribute,
+    INamedTypeSymbol HttpContext,
+    INamedTypeSymbol HttpRequest,
+    INamedTypeSymbol HttpResponse
 );
