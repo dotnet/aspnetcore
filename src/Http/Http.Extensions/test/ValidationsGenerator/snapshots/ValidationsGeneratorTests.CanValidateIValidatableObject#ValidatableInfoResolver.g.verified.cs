@@ -108,15 +108,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         {
             return new GeneratedValidatableTypeInfo(
                 type: typeof(global::ValidatableSubType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableSubType),
-                        propertyType: typeof(string),
-                        name: "Value3",
-                        displayName: "Value3",
-                        validationAttributes: []
-                    ),
-                ]
+                members: []
             );
         }
         private ValidatableTypeInfo CreateComplexValidatableType()
@@ -124,13 +116,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return new GeneratedValidatableTypeInfo(
                 type: typeof(global::ComplexValidatableType),
                 members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ComplexValidatableType),
-                        propertyType: typeof(int),
-                        name: "Value1",
-                        displayName: "Value 1",
-                        validationAttributes: []
-                    ),
                     new GeneratedValidatablePropertyInfo(
                         containingType: typeof(global::ComplexValidatableType),
                         propertyType: typeof(string),

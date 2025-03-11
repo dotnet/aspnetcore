@@ -50,9 +50,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
+        var hasValidatableBaseType = false;
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
-            _ = TryExtractValidatableType(current, requiredSymbols, ref validatableTypes, ref visitedTypes);
+            hasValidatableBaseType |= TryExtractValidatableType(current, requiredSymbols, ref validatableTypes, ref visitedTypes);
             current = current.BaseType;
         }
 
@@ -61,9 +62,16 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(requiredSymbols.JsonDerivedTypeAttribute);
+        var hasValidatableDerivedTypes = false;
         foreach (var derivedType in derivedTypes ?? [])
         {
-            _ = TryExtractValidatableType(derivedType, requiredSymbols, ref validatableTypes, ref visitedTypes);
+            hasValidatableDerivedTypes |= TryExtractValidatableType(derivedType, requiredSymbols, ref validatableTypes, ref visitedTypes);
+        }
+
+        // No validatable members or derived types found, so we don't need to add this type.
+        if (members.IsDefaultOrEmpty && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        {
+            return false;
         }
 
         // Add the type itself as a validatable type itself.
@@ -81,6 +89,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             var hasValidatableType = TryExtractValidatableType(member.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
             var attributes = ExtractValidationAttributes(member, requiredSymbols, out var isRequired);
+            // If the member has no validation attributes or validatable types and is not required, skip it.
+            if (attributes.IsDefaultOrEmpty && !hasValidatableType && !isRequired)
+            {
+                continue;
+            }
             members.Add(new ValidatableProperty(
                 ContainingType: member.ContainingType,
                 Type: member.Type,
@@ -129,7 +142,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return [];
         }
 
-        // Continue with existing logic...
         var validationAttributes = attributes
             .Where(attribute => attribute.AttributeClass != null)
             .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(requiredSymbols.ValidationAttribute));

@@ -148,15 +148,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         {
             return new GeneratedValidatableTypeInfo(
                 type: typeof(global::BaseValidatableType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::BaseValidatableType),
-                        propertyType: typeof(int),
-                        name: "Value1",
-                        displayName: "Value 1",
-                        validationAttributes: []
-                    ),
-                ]
+                members: []
             );
         }
         private ValidatableTypeInfo CreateContainerType()

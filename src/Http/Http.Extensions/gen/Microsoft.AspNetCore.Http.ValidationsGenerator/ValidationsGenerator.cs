@@ -11,13 +11,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-//         while (!System.Diagnostics.Debugger.IsAttached)
-//         {
-//             System.Threading.Thread.Sleep(1000);
-// #pragma warning disable RS1035 // Do not use APIs banned for analyzers
-//             System.Console.WriteLine($"Waiting for debugger to attach on {System.Diagnostics.Process.GetCurrentProcess().Id}...");
-// #pragma warning restore RS1035 // Do not use APIs banned for analyzers
-//         }
         // Resolve the symbols that will be required when making comparisons
         // in future steps.
         var requiredSymbols = context.CompilationProvider.Select(ExtractRequiredSymbols);
