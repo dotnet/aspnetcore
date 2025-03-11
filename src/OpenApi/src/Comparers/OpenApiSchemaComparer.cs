@@ -24,9 +24,30 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
             return true;
         }
 
-        // If a local reference is present, we can't compare the schema directly
-        // and should instead use the schema ID as a type-check to assert if the schemas are
-        // equivalent.
+        // If both have references, compare the final segments to handle
+        // equivalent types in different contexts, like the same schema
+        // in a dictionary value or list like "#/components/schemas/#/additionalProperties/properties/location/properties/address"
+        if (x.Reference != null && y.Reference != null)
+        {
+            if (x.Reference.Id.StartsWith("#", StringComparison.OrdinalIgnoreCase) &&
+                y.Reference.Id.StartsWith("#", StringComparison.OrdinalIgnoreCase) &&
+                x.Reference.ReferenceV3 is string xFullReferencePath &&
+                y.Reference.ReferenceV3 is string yFullReferencePath)
+            {
+                // Compare the last segments of the reference paths
+                // to handle equivalent types in different contexts,
+                // like the same schema in a dictionary value or list
+                var xLastIndexOf = xFullReferencePath.LastIndexOf('/');
+                var yLastIndexOf = yFullReferencePath.LastIndexOf('/');
+
+                if (xLastIndexOf != -1 && yLastIndexOf != -1)
+                {
+                    return xFullReferencePath.AsSpan(xLastIndexOf).Equals(yFullReferencePath.AsSpan(yLastIndexOf), StringComparison.OrdinalIgnoreCase);
+                }
+            }
+        }
+
+        // If only one has a reference, compare using schema IDs
         if ((x.Reference != null && y.Reference == null)
             || (x.Reference == null && y.Reference != null))
         {
