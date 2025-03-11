@@ -376,7 +376,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
                 }
 
                 // We set the Description to the LAST non-null value we find that matches the status code.
-                apiResponseType.Description ??= responseMetadataTypes.LastOrDefault(x => x.StatusCode == apiResponseType.StatusCode && x.Type == apiResponseType.Type && x.Description is not null)?.Description;
+                apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
 
                 if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
                 {
@@ -397,6 +397,22 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             }
 
             supportedResponseTypes.Add(defaultApiResponseType);
+        }
+
+        static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)
+        {
+            // We set the Description to the LAST non-null value we find that matches the status code.
+            string? matchingDescription = null;
+            foreach (var metadata in responseMetadataTypes)
+            {
+                if (metadata.StatusCode == apiResponseType.StatusCode &&
+                    metadata.Type == apiResponseType.Type &&
+                    metadata.Description is not null)
+                {
+                    matchingDescription = metadata.Description;
+                }
+            }
+            return matchingDescription;
         }
     }
 
