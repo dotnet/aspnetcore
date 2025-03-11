@@ -264,7 +264,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         componentState.LogicalParentComponentState == null ? "" : GetComponentType(componentState.LogicalParentComponentState);
 
     private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
-        Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName));
+        SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName)));
 
     private static bool IsSerializableKey(object key)
     {
