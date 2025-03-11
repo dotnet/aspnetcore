@@ -201,10 +201,7 @@ public abstract class NavigationManager
     /// </summary>
     public virtual void NotFound() => NotFoundCore();
 
-    /// <summary>
-    /// Handles setting the NotFound state.
-    /// </summary>
-    protected virtual void NotFoundCore()
+    private void NotFoundCore()
     {
         _notFound?.Invoke(this, new EventArgs());
     }
