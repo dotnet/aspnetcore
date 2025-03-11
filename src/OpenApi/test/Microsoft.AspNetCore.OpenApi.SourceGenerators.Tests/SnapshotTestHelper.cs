@@ -29,6 +29,9 @@ public static partial class SnapshotTestHelper
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.OpenApi.Generated")]);
 
     public static Task Verify(string source, IIncrementalGenerator generator, out Compilation compilation)
+        => Verify(source, generator, [], out compilation, out _);
+
+    public static Task Verify(string source, IIncrementalGenerator generator, Dictionary<string, List<string>> classLibrarySources, out Compilation compilation, out List<byte[]> generatedAssemblies)
     {
         var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
@@ -47,12 +50,49 @@ public static partial class SnapshotTestHelper
                     MetadataReference.CreateFromFile(typeof(System.Text.Json.Nodes.JsonArray).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
-                ]);
+                ])
+                .ToList();
+
+        var additionalTexts = new List<AdditionalText>();
+        generatedAssemblies = [];
+
+        foreach (var classLibrary in classLibrarySources)
+        {
+            var classLibraryCompilation = CSharpCompilation.Create(classLibrary.Key,
+                classLibrary.Value.Select((source, index) => CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: $"{classLibrary.Key}-{index}.cs")),
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var ms = new MemoryStream();
+            using var xmlStream = new MemoryStream();
+            var emitResult = classLibraryCompilation.Emit(ms, xmlDocumentationStream: xmlStream);
+
+            if (!emitResult.Success)
+            {
+                throw new InvalidOperationException($"Failed to compile class library {classLibrary.Key}: {string.Join(Environment.NewLine, emitResult.Diagnostics)}");
+            }
+
+            ms.Seek(0, SeekOrigin.Begin);
+            xmlStream.Seek(0, SeekOrigin.Begin);
+
+            var assembly = ms.ToArray();
+            generatedAssemblies.Add(assembly);
+            references.Add(MetadataReference.CreateFromImage(assembly));
+
+            var xmlText = Encoding.UTF8.GetString(xmlStream.ToArray());
+            additionalTexts.Add(new TestAdditionalText($"{classLibrary.Key}.xml", xmlText));
+        }
+
         var inputCompilation = CSharpCompilation.Create("OpenApiXmlCommentGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
-        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
+
+        var driver = CSharpGeneratorDriver.Create(
+            generators: [generator.AsSourceGenerator()],
+            additionalTexts: additionalTexts,
+            parseOptions: ParseOptions);
+
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
@@ -62,6 +102,9 @@ public static partial class SnapshotTestHelper
     }
 
     public static async Task VerifyOpenApi(Compilation compilation, Action<OpenApiDocument> verifyFunc)
+        => await VerifyOpenApi(compilation, [], verifyFunc);
+
+    public static async Task VerifyOpenApi(Compilation compilation, List<byte[]> generatedAssemblies, Action<OpenApiDocument> verifyFunc)
     {
         var assemblyName = compilation.AssemblyName;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -100,6 +143,10 @@ public static partial class SnapshotTestHelper
         pdb.Position = 0;
 
         var assembly = AssemblyLoadContext.Default.LoadFromStream(output, pdb);
+        foreach (var generatedAssembly in generatedAssemblies)
+        {
+            AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(generatedAssembly));
+        }
 
         void ConfigureHostBuilder(object hostBuilder)
         {
@@ -148,7 +195,7 @@ public static partial class SnapshotTestHelper
                 return;
             }
 
-            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IDocumntProvider service.");
+            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IDocumentProvider service.");
             using var stream = new MemoryStream();
             var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
             using var writer = new StreamWriter(stream, encoding, bufferSize: 1024, leaveOpen: true);
@@ -508,6 +555,16 @@ public static partial class SnapshotTestHelper
             private sealed class HostAbortedException : Exception
             {
             }
+        }
+    }
+
+    private class TestAdditionalText(string path, string text) : AdditionalText
+    {
+        public override string Path => path;
+
+        public override SourceText GetText(CancellationToken cancellationToken = default)
+        {
+            return SourceText.From(text, Encoding.UTF8);
         }
     }
 }

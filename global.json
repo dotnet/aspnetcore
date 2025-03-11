@@ -21,7 +21,7 @@
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
       ]
     },
-    "xcopy-msbuild": "17.8.5"
+    "xcopy-msbuild": "17.13.0"
   },
   "native-tools": {
     "jdk": "latest"

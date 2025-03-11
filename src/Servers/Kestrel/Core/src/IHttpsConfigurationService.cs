@@ -90,11 +90,21 @@ internal interface IHttpsConfigurationService
 internal readonly struct CertificateAndConfig
 {
     public readonly X509Certificate2 Certificate;
+    public readonly X509Certificate2Collection CertificateChain;
     public readonly CertificateConfig CertificateConfig;
 
     public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig)
+        : this(
+            certificate,
+            certificateConfig,
+            [])
+    {
+    }
+
+    public CertificateAndConfig(X509Certificate2 certificate, CertificateConfig certificateConfig, X509Certificate2Collection certificateChain)
     {
         Certificate = certificate;
         CertificateConfig = certificateConfig;
+        CertificateChain = certificateChain;
     }
 }

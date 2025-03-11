@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Net.ServerSentEvents;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -1067,6 +1068,49 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
     public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary? routeValues)
         => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{TValue}"/> response.
+    /// </summary>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{TValue}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<string> ServerSentEvents(IAsyncEnumerable<string> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<T> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<SseItem<T>> values)
+        => new(values);
 
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.

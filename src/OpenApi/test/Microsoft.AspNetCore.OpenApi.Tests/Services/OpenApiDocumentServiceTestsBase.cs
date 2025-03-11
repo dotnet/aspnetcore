@@ -3,12 +3,10 @@
 
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -29,23 +27,23 @@ using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public abstract class OpenApiDocumentServiceTestBase
 {
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
-        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument, cancellationToken);
+    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
+        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument);
 
     public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, cancellationToken);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
-    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument)
+    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var builder = CreateBuilder();
         var documentService = CreateDocumentService(builder, action);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 

@@ -94,6 +94,17 @@
           ]
         },
         {
+          "condition": "(!UseServer)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor",
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.css",
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.js",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.css",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.js"
+          ]
+        },
+        {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "BlazorWeb-CSharp/Properties/launchSettings.json"

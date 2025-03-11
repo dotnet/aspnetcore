@@ -183,13 +183,29 @@ internal class ProjectBoard
     public int Id { get; set; }
 
     [MinLength(5)]
+    [MaxLength(10)]
     [DefaultValue(null)]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
     public string? Name { get; set; }
 
+    [Length(5, 10)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
+    public string? Description { get; set; }
+
     [DefaultValue(true)]
     public required bool IsPrivate { get; set; }
+
+    [MaxLength(10)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
+    public IList<ProjectBoardItem>? Items { get; set; }
+
+    [Length(5, 10)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Used in tests.")]
+    public IEnumerable<string>? Tags { get; set; }
 }
+
+internal sealed record ProjectBoardItem(string Name);
+
 #nullable restore
 
 internal class Account

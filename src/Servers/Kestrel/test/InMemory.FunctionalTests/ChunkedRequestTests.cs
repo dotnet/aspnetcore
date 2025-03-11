@@ -740,6 +740,9 @@ public class ChunkedRequestTests : LoggedTest
                     "",
                     "");
             }
+
+            // The 400 response should have been logged by default at Error level since the connection wasn't aborted when the bad request was handled.
+            Assert.Contains(TestSink.Writes, w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" && w.EventId.Id == 13 && w.LogLevel > LogLevel.Debug);
         }
     }
 
