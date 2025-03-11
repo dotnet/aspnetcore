@@ -164,6 +164,80 @@
       <DirectoryRef Id="INSTALLDIR">
         <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="$(var.ProductName)">
           <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
+            <?if $(var.Platform) = "arm64" ?>
+            <Component Id="AspNetCoreModuleV2.forwarder"
+                Guid="08968573-05c1-4bf1-8879-7b818ac9525b"
+                Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleV2Dll.forwarder"
+                    Name="aspnetcorev2.dll"
+                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll"
+                    DiskId="1"
+                    Vital="yes"/>
+                <RegistryKey Root="HKLM"
+                    Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable"
+                        Value="[#AspNetCoreModuleV2Dll.forwarder]" />
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                </RegistryKey>
+            </Component>
+            <Component Id="AspNetCoreModuleV2.x64"
+                Guid="1962b1b0-6345-4b37-97b3-a8f2c9e82bee"
+                Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleV2Dll.x64"
+                    Name="aspnetcorev2_x64.dll"
+                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll"
+                    DiskId="1"
+                    Vital="yes"/>
+                <RegistryKey Root="HKLM"
+                    Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable"
+                        Value="[#AspNetCoreModuleV2Dll.x64]" />
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                </RegistryKey>
+            </Component>
+            <Component Id="AspNetCoreModuleV2.arm64"
+                Guid="22f16c6c-7c53-422c-8ad5-831e4870a44e"
+                Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleV2Dll.arm64"
+                    Name="aspnetcorev2_arm64.dll"
+                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
+                    DiskId="1"
+                    Vital="yes"/>
+                <RegistryKey Root="HKLM"
+                    Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable"
+                        Value="[#AspNetCoreModuleV2Dll.arm64]" />
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                </RegistryKey>
+            </Component>
+            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)">
+                <Component Id="AspNetCoreModuleHandler.forwarder"
+                    Guid="51045d90-7231-480c-bac7-2969a2861ece" Win64="$(var.IsWin64)">
+                    <File Id="AspNetCoreModuleHandlerDll.forwarder"
+                        Name="aspnetcorev2_outofprocess.dll"
+                        Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll"
+                        DiskId="1"
+                        Vital="yes"/>
+                </Component>
+                <Component Id="AspNetCoreModuleHandler.x64"
+                    Guid="0b192457-9c6a-4703-ba6a-0c5a58b7c9cb"
+                    Win64="$(var.IsWin64)">
+                    <File Id="AspNetCoreModuleHandlerDll.x64"
+                        Name="aspnetcorev2_outofprocess_x64.dll"
+                        Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll"
+                        DiskId="1"
+                        Vital="yes"/>
+                </Component>
+                <Component Id="AspNetCoreModuleHandler.arm64"
+                    Guid="21cc9da0-ab0a-4717-90df-dbaaa3f68510" Win64="$(var.IsWin64)">
+                    <File Id="AspNetCoreModuleHandlerDll.arm64"
+                        Name="aspnetcorev2_outofprocess_arm64.dll"
+                        Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)"
+                        DiskId="1"
+                        Vital="yes"/>
+                </Component>
+            </Directory>
+            <?else ?>
             <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Win64="$(var.IsWin64)">
                 <File Id="AspNetCoreModuleDll"
                     Name="aspnetcorev2.dll"
@@ -186,6 +260,7 @@
                     </File>
               </Component>
             </Directory>
+            <?endif ?>
           </Directory>
         </Directory>
         <Directory Id="IISConfigDir" Name="config">
@@ -249,8 +324,17 @@
 
         <!-- Feature Definition -->
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
+            <?if $(var.Platform) = "arm64" ?>
+            <ComponentRef Id="AspNetCoreModuleV2.forwarder" />
+            <ComponentRef Id="AspNetCoreModuleHandler.forwarder" />
+            <ComponentRef Id="AspNetCoreModuleV2.x64" />
+            <ComponentRef Id="AspNetCoreModuleHandler.x64" />
+            <ComponentRef Id="AspNetCoreModuleV2.arm64" />
+            <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
+            <?else ?>
             <ComponentRef Id="AspNetCoreModule"/>
             <ComponentRef Id="AspNetCoreModuleHandler"/>
+            <?endif ?>
             <ComponentRef Id="AspNetCoreSchema"/>
             <?if $(var.Platform) != "x86" ?>
                 <ComponentRef Id="AspNetCoreModule.wow"/>

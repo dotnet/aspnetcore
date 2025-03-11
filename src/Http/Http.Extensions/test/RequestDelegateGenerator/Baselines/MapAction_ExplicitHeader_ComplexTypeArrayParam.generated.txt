@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], IsOptional = False, IsParsable = True, IsArray = True, Source = Header)
-                    var p_raw = httpContext.Request.Headers["p"];
+                    var p_raw = httpContext.Request.Headers.GetCommaSeparatedValues("p");
                     var p_temp = p_raw.ToArray();
                     global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[p_temp.Length];
                     for (var i = 0; i < p_temp.Length; i++)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], IsOptional = False, IsParsable = True, IsArray = True, Source = Header)
-                    var p_raw = httpContext.Request.Headers["p"];
+                    var p_raw = httpContext.Request.Headers.GetCommaSeparatedValues("p");
                     var p_temp = p_raw.ToArray();
                     global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[p_temp.Length];
                     for (var i = 0; i < p_temp.Length; i++)

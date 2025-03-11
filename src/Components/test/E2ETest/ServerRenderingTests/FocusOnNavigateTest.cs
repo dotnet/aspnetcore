@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -59,7 +60,10 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         Navigate($"{ServerPathBase}/focus-on-navigate");
         Browser.Click(By.LinkText("Statically rendered"));
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null);
+        Browser.True(
+            () => Browser.SwitchTo().ActiveElement().GetDomAttribute("data-focus-on-navigate") is not null,
+            TimeSpan.FromSeconds(5)
+        );
     }
 
     [Fact]
@@ -67,11 +71,23 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         Navigate($"{ServerPathBase}/focus-on-navigate");
         Browser.Click(By.LinkText("Form submission"));
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "value-to-submit");
-        Browser.FindElement(By.Id("value-to-submit")).ReplaceText("Some value");
-        Browser.Click(By.Id("submit-button"));
+        string valueToSubmit = "value-to-submit";
+        AssertFocusPreserved(valueToSubmit);
+        Browser.FindElement(By.Id(valueToSubmit)).ReplaceText("Some value");
+        string submitButtonId = "submit-button";
+        Browser.Click(By.Id(submitButtonId));
         Browser.Equal("Some value", () => Browser.FindElement(By.Id("submitted-value")).Text);
-        Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "submit-button");
+        AssertFocusPreserved(submitButtonId);
+    }
+
+    private void AssertFocusPreserved(string elementId)
+    {
+        Browser.WaitForElementToBeVisible(By.Id(elementId));
+        Browser.True(
+            () => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == elementId,
+            TimeSpan.FromSeconds(5),
+            $"Expected element with id '{elementId}' to be focused, but found '{Browser.SwitchTo().ActiveElement().GetDomAttribute("id")}' instead."
+        );
     }
 
     [Fact]

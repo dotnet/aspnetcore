@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "10.0.100-preview.2.25102.3"
+    "version": "10.0.100-preview.2.25109.3"
   },
   "tools": {
-    "dotnet": "10.0.100-preview.2.25102.3",
+    "dotnet": "10.0.100-preview.2.25109.3",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
@@ -21,15 +21,15 @@
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
       ]
     },
-    "xcopy-msbuild": "17.8.5"
+    "xcopy-msbuild": "17.13.0"
   },
   "native-tools": {
-    "jdk": "11.0.24"
+    "jdk": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25080.7",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25080.7",
-    "Microsoft.DotNet.SharedFramework.Sdk": "10.0.0-beta.25080.7",
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25106.4",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25106.4",
+    "Microsoft.DotNet.SharedFramework.Sdk": "10.0.0-beta.25106.4",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.Build.Traversal": "3.4.0"
   }
