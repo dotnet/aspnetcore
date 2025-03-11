@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
-    <PackageDownload Include="Microsoft.NETCore.App.Host.win-$(HostArch)" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
+    <ProjectReference Include="Microsoft.NETCore.App.Host.win-$(HostArch)" Version="$(MicrosoftNETCoreAppRefVersion)" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
 
 </Project>
