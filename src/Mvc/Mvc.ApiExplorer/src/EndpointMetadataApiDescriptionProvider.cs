@@ -375,7 +375,6 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
                     apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                 }
 
-                // We set the Description to the LAST non-null value we find that matches the status code.
                 apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
 
                 if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
