@@ -35,7 +35,8 @@ internal static class ITypeSymbolExtensions
 
     public static ITypeSymbol UnwrapType(this ITypeSymbol type, INamedTypeSymbol enumerable)
     {
-        if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+            type is INamedTypeSymbol { TypeArguments.Length: 1 })
         {
             // Extract the T from a Nullable<T>
             type = ((INamedTypeSymbol)type).TypeArguments[0];

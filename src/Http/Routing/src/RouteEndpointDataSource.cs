@@ -63,8 +63,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc,
         MethodInfo methodInfo)
     {
-        // Initialize all route handlers with validation convention if validation options
-        // are registered.
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
@@ -238,6 +236,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
+        // Initialize this route endpoint builder with validation convention if validation options
+        // are registered and validation is not disabled on the endpoint.
         var hasValidationOptions = builder.ApplicationServices.GetService(typeof(IOptions<ValidationOptions>)) is not null;
         var hasDisableValidationMetadata = builder.Metadata.OfType<IDisableValidationMetadata>().FirstOrDefault() is not null;
         if (hasValidationOptions && !hasDisableValidationMetadata)

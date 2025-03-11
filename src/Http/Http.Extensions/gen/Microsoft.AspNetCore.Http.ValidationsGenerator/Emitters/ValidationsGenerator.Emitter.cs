@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 }
                 else if (type == typeof(global::System.ComponentModel.DataAnnotations.StringLengthAttribute))
                 {
-                    if (args[0] is int maxLength)
+                    if (args.Length > 0 && args[0] is int maxLength)
                     {
                         attribute = new global::System.ComponentModel.DataAnnotations.StringLengthAttribute(maxLength);
                     }
@@ -327,9 +327,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         foreach (var arg in attr.Arguments)
         {
             // Handle different types of arguments
-            if (arg.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && arg.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (arg.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && arg.EndsWith("\"", StringComparison.OrdinalIgnoreCase) && arg.Length >= 2)
             {
-                // String literal - remove quotes and pass as object
                 var stringValue = arg.Substring(1, arg.Length - 2).Replace("\\\"", "\"");
                 processedArgs.Add($"\"{stringValue}\"");
             }

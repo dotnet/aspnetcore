@@ -88,7 +88,7 @@ internal static class TypeExtensions
     /// Gets all types that the specified type implements or inherits from, including itself.
     /// </summary>
     /// <param name="type">The type to analyze.</param>
-    /// <returns>A collection containing the type itself, all implemented interfaces, and all base types.</returns>
+    /// <returns>A collection containing all implemented interfaces and all base types of the given type.</returns>
     public static IEnumerable<Type> GetAllImplementedTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
