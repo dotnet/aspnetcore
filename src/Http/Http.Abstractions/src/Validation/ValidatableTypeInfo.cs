@@ -54,7 +54,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'. " +
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{Type.Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
@@ -101,14 +101,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 var validationResults = validatable.Validate(context.ValidationContext);
                 foreach (var validationResult in validationResults)
                 {
-                    if (validationResult != ValidationResult.Success)
+                    if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
                     {
                         var memberName = validationResult.MemberNames.First();
                         var key = string.IsNullOrEmpty(originalPrefix) ?
                             memberName :
                             $"{originalPrefix}.{memberName}";
 
-                        context.AddOrExtendValidationError(key, validationResult.ErrorMessage!);
+                        context.AddOrExtendValidationError(key, validationResult.ErrorMessage);
                     }
                 }
 

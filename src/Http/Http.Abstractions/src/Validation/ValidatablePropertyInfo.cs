@@ -86,9 +86,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
-                context.AddValidationError(context.CurrentValidationPath, [result!.ErrorMessage!]);
+                context.AddValidationError(context.CurrentValidationPath, [result.ErrorMessage]);
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
@@ -101,7 +101,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'. " +
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'  in '{DeclaringType.Name}.{PropertyType.Name} {Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
@@ -161,9 +161,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success)
+                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
-                        context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [result.ErrorMessage!]);
+                        context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [result.ErrorMessage]);
                     }
                 }
                 catch (Exception ex)

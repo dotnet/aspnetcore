@@ -333,7 +333,7 @@ public class ValidatableTypeInfoTests
         async () => await nodeType.ValidateAsync(rootNode, context, default));
 
         Assert.NotNull(exception);
-        Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
+        Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]' in 'TreeNode'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
     }
 
     [Fact]

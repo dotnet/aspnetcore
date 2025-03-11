@@ -85,7 +85,7 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Gets all types that the specified type implements or inherits from, including itself.
+    /// Gets all types that the specified type implements or inherits from.
     /// </summary>
     /// <param name="type">The type to analyze.</param>
     /// <returns>A collection containing all implemented interfaces and all base types of the given type.</returns>

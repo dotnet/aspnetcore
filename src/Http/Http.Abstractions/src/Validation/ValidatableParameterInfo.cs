@@ -75,10 +75,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(key, [result.ErrorMessage!]);
+                context.AddValidationError(key, [result.ErrorMessage]);
                 return;
             }
         }
@@ -90,10 +90,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddOrExtendValidationErrors(key, [result!.ErrorMessage!]);
+                    context.AddOrExtendValidationErrors(key, [result.ErrorMessage]);
                 }
             }
             catch (Exception ex)
