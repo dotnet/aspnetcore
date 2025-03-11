@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core (native AOT)",
-  "description": "Una plantilla de proyecto para crear una API web RESTful utilizando las API mínimas de ASP.NET Core publicadas como native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Indica si se va a excluir launchSettings.json de la plantilla generada.",
   "symbols/kestrelHttpPort/description": "Número de puerto que se va a usar para el punto de conexión HTTP en launchSettings.json.",
   "symbols/iisHttpPort/description": "Número de puerto que se va a usar para el punto de conexión HTTP de IIS Express en launchSettings.json.",

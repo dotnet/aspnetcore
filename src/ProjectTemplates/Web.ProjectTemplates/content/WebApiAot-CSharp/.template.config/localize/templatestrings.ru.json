@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Веб-API ASP.NET Core (native AOT)",
-  "description": "Шаблон проекта для создания веб-API на основе REST с использованием минимальных API ASP.NET Core, опубликованных как «native AOT».",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
   "symbols/kestrelHttpPort/description": "Номер порта, используемый для конечной точки HTTP в launchSettings.json.",
   "symbols/iisHttpPort/description": "Номер порта, используемый для конечной точки HTTP IIS Express в launchSettings.json.",

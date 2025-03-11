@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API (native AOT)",
-  "description": "Šablona projektu pro vytvoření webového rozhraní RESTful API s využitím minimálních rozhraní API ASP.NET Core publikovaných jako native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",
   "symbols/kestrelHttpPort/description": "Číslo portu, který se má použít pro koncový bod HTTP v souboru launchSettings.json.",
   "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",

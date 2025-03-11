@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Internetowy interfejs API platformy ASP.NET Core (native AOT)",
-  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API platformy ASP.NET Core publikowanego jako native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
   "symbols/kestrelHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP w pliku launchSettings.json.",
   "symbols/iisHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP usług IIS Express w pliku launchSettings.json.",

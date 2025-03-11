@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API (native AOT)",
-  "description": "用于使用发布为 native AOT 的 ASP.NET Core 最小 API 的 RESTful Web API 的项目模板。",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
   "symbols/kestrelHttpPort/description": "要用于 launchSettings.json 中 HTTP 终结点的端口号。",
   "symbols/iisHttpPort/description": "要用于 launchSettings.json 中 IIS Express HTTP 终结点的端口号。",
