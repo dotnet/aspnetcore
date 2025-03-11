@@ -1326,7 +1326,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.Empty(response.Content.Headers.ContentEncoding);
         Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
         // Check that compressed size is within a reasonable range
-        Assert.InRange(response.Content.Headers.ContentLength, expectedBodyLength - 5, expectedBodyLength + 5);
+        Assert.InRange(response.Content.Headers.ContentLength, (int)(expectedBodyLength - 5), (int)(expectedBodyLength + 5));
     }
 
     private static void AssertLog(WriteContext log, LogLevel level, string message)
