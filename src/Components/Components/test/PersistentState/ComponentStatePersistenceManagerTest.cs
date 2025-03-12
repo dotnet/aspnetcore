@@ -430,5 +430,15 @@ public class ComponentStatePersistenceManagerTest
 
         public IComponentRenderMode GetRenderModeOrDefault() => null;
     }
+}
 
+static file class ComponentStatePersistenceManagerExtensions
+{
+    public static IServiceCollection AddPersistentService<TPersistentService>(this IServiceCollection services, IComponentRenderMode renderMode)
+    {
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TPersistentService>(
+            services,
+            renderMode);
+        return services;
+    }
 }

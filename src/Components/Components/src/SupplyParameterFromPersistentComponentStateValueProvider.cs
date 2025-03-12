@@ -221,7 +221,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
 
     private static object? GetSerializableKey(ComponentState componentState)
     {
-        if (componentState.LogicalParentComponentState is not { } parentComponentState)
+        if (componentState.ParentComponentState is not { } parentComponentState)
         {
             return null;
         }
@@ -248,7 +248,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     private static string GetComponentType(ComponentState componentState) => componentState.Component.GetType().FullName!;
 
     private static string GetParentComponentType(ComponentState componentState) =>
-        componentState.LogicalParentComponentState == null ? "" : GetComponentType(componentState.LogicalParentComponentState);
+        componentState.ParentComponentState == null ? "" : GetComponentType(componentState.ParentComponentState);
 
     private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
         SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName)));

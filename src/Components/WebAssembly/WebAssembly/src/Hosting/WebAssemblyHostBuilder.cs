@@ -313,7 +313,7 @@ public sealed class WebAssemblyHostBuilder
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
-        Services.AddPersistentService<AntiforgeryStateProvider>(RenderMode.InteractiveWebAssembly);
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
     }
 }
