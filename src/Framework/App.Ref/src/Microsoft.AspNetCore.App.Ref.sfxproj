@@ -168,7 +168,7 @@
           Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
 
       <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
-      <_AspNetCoreAppPackageOverrides Include="Microsoft.AspNetCore.App|$(ReferencePackSharedFxVersion)" />
+      <_AspNetCoreAppPackageOverrides Include="$(SharedFrameworkName)|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile
