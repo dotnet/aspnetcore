@@ -352,7 +352,7 @@ public class CascadingParameterStateTest
             {
                 Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.ParameterInfo.PropertyName);
                 Assert.Same(states[1].Component, match.ValueSupplier);
-                Assert.Null(match.ValueSupplier.GetCurrentValue(match.ParameterInfo));
+                Assert.Null(match.ValueSupplier.GetCurrentValue(null, match.ParameterInfo));
             });
     }
 
@@ -486,7 +486,7 @@ public class CascadingParameterStateTest
         public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
             => parameterInfo.Attribute is SupplyParameterWithSingleDeliveryAttribute;
 
-        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        public object GetCurrentValue(object key, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
         public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)

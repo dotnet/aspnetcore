@@ -37,17 +37,6 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         "Trimming",
         "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
         Justification = "JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo) =>
-        throw new InvalidOperationException("Using this provider requires a key.");
-
-    [UnconditionalSuppressMessage(
-        "ReflectionAnalysis",
-        "IL2026:RequiresUnreferencedCode message",
-        Justification = "JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
-        Justification = "JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         var componentState = (ComponentState)key!;
