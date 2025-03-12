@@ -25,6 +25,7 @@
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
         MicrosoftPlaywrightCLIVersion=$(MicrosoftPlaywrightCLIVersion);
+        LibNetHostAppPackVersion=$(BundledNETCoreAppPackageVersion);
         SupportedRuntimeIdentifiers=$([MSBuild]::Escape($(SupportedRuntimeIdentifiers)));
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir)
       </_TemplateProperties>
