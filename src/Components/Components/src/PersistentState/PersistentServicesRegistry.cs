@@ -17,24 +17,23 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 internal sealed class PersistentServicesRegistry
 {
     private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
+    private static readonly RootTypeCache _persistentServiceTypeCache = new RootTypeCache();
 
     private readonly IServiceProvider _serviceProvider;
-    private readonly PersistentServiceTypeCache _persistentServiceTypeCache;
-    private IPersistentComponentRegistration[] _registrations;
+    private IPersistentServiceRegistration[] _registrations;
     private List<PersistingComponentStateSubscription> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
-        var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentComponentRegistration>>();
+        var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentServiceRegistration>>();
         _serviceProvider = serviceProvider;
-        _persistentServiceTypeCache = new PersistentServiceTypeCache();
         _registrations = ResolveRegistrations(registrations);
     }
 
     internal IComponentRenderMode? RenderMode { get; set; }
 
-    internal IReadOnlyList<IPersistentComponentRegistration> Registrations => _registrations;
+    internal IReadOnlyList<IPersistentServiceRegistration> Registrations => _registrations;
 
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -97,10 +96,10 @@ internal sealed class PersistentServicesRegistry
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
-    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentComponentRegistration))]
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentServiceRegistration))]
     internal void Restore(PersistentComponentState state)
     {
-        if (state.TryTakeFromJson<PersistentComponentRegistration[]>(_registryKey, out var registry) && registry != null)
+        if (state.TryTakeFromJson<PersistentServiceRegistration[]>(_registryKey, out var registry) && registry != null)
         {
             _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
@@ -141,9 +140,10 @@ internal sealed class PersistentServicesRegistry
         }
     }
 
-    private static IPersistentComponentRegistration[] ResolveRegistrations(IEnumerable<IPersistentComponentRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
+    private static IPersistentServiceRegistration[] ResolveRegistrations(IEnumerable<IPersistentServiceRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
 
-    private Type? ResolveType(string assembly, string fullTypeName) => _persistentServiceTypeCache.GetPersistentService(assembly, fullTypeName);
+    private static Type? ResolveType(string assembly, string fullTypeName) =>
+        _persistentServiceTypeCache.GetRootType(assembly, fullTypeName);
 
     private sealed class PropertiesAccessor
     {
@@ -217,7 +217,7 @@ internal sealed class PersistentServicesRegistry
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-    private class PersistentComponentRegistration : IPersistentComponentRegistration
+    private class PersistentServiceRegistration : IPersistentServiceRegistration
     {
         public string Assembly { get; set; } = "";
 

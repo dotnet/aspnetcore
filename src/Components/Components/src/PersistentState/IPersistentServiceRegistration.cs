@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components;
 
 // Represents a component that is registered for state persistence.
-internal interface IPersistentComponentRegistration
+internal interface IPersistentServiceRegistration
 {
     public string Assembly { get; }
     public string FullTypeName { get; }

@@ -46,7 +46,7 @@ public static class SupplyParameterFromPersistentComponentStateProviderServiceCo
         // We look for the type inside the assembly.
         // We resolve the service from the DI container.
         // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentComponentRegistration>(new PersistentComponentRegistration<TService>(componentRenderMode)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentServiceRegistration>(new PersistentServiceRegistration<TService>(componentRenderMode)));
 
         return services;
     }

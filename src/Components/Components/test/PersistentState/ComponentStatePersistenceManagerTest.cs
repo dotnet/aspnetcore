@@ -422,7 +422,7 @@ public class ComponentStatePersistenceManagerTest
     {
     }
 
-    private class PersistentService : IPersistentComponentRegistration
+    private class PersistentService : IPersistentServiceRegistration
     {
         public string Assembly { get; set; }
 

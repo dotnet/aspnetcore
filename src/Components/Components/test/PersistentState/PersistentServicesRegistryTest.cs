@@ -230,7 +230,7 @@ public class PersistentServicesRegistryTest
         // Arrange
         var componentRenderMode = new TestRenderMode();
         var serviceProviderOne = new ServiceCollection()
-            .AddSingleton<IPersistentComponentRegistration>(new TestPersistentRegistration { Assembly = "FakeAssembly", FullTypeName = "FakeType" })
+            .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "FakeAssembly", FullTypeName = "FakeType" })
             .BuildServiceProvider();
 
         var serviceProviderTwo = new ServiceCollection()
@@ -260,9 +260,9 @@ public class PersistentServicesRegistryTest
     {
         // Arrange
         var serviceProvider = new ServiceCollection()
-            .AddSingleton<IPersistentComponentRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" })
-            .AddSingleton<IPersistentComponentRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" }) // Duplicate
-            .AddSingleton<IPersistentComponentRegistration>(new TestPersistentRegistration { Assembly = "Assembly2", FullTypeName = "Type2" })
+            .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" })
+            .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" }) // Duplicate
+            .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly2", FullTypeName = "Type2" })
             .BuildServiceProvider();
 
         var registry = new PersistentServicesRegistry(serviceProvider);
@@ -490,7 +490,7 @@ public class PersistentServicesRegistryTest
     {
     }
 
-    private class TestPersistentRegistration : IPersistentComponentRegistration
+    private class TestPersistentRegistration : IPersistentServiceRegistration
     {
         public string Assembly { get; set; }
         public string FullTypeName { get; set; }

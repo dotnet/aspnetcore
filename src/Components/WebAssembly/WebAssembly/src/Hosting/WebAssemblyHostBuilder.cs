@@ -28,7 +28,7 @@ public sealed class WebAssemblyHostBuilder
 {
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
-    private RootComponentTypeCache? _rootComponentCache;
+    private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
 
     /// <summary>
@@ -136,11 +136,11 @@ public sealed class WebAssemblyHostBuilder
             registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
-        _rootComponentCache = new RootComponentTypeCache();
+        _rootComponentCache = new RootTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
                 throw new InvalidOperationException(

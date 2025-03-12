@@ -5,14 +5,18 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+#if COMPONENTS
+namespace Microsoft.AspNetCore.Components.Infrastructure;
+#else
 namespace Microsoft.AspNetCore.Components;
+#endif
 
-// A cache for registered persistent services. This is similar to the RootComponentTypeCache.
-internal sealed class PersistentServiceTypeCache
+// A cache for root component types
+internal sealed class RootTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
-    public Type? GetPersistentService(string assembly, string type)
+    public Type? GetRootType(string assembly, string type)
     {
         var key = new Key(assembly, type);
         if (_typeToKeyLookUp.TryGetValue(key, out var resolvedType))
@@ -25,7 +29,7 @@ internal sealed class PersistentServiceTypeCache
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Types in this cache are added by calling `AddPersistentService` and are expected to be preserved.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private static Type? ResolveType(Key key, Assembly[] assemblies)
     {
         Assembly? assembly = null;
