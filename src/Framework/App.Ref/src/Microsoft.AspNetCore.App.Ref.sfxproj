@@ -166,6 +166,9 @@
       <!-- Use shared framework version for project references. -->
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
           Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
+
+      <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
+      <_AspNetCoreAppPackageOverrides Include="Microsoft.AspNetCore.App|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile
