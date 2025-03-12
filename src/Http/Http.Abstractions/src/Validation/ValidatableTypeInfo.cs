@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
-    private readonly Type[] _subTypes;
+    private readonly List<Type> _subTypes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.

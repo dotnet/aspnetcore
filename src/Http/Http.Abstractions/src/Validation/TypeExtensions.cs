@@ -89,7 +89,7 @@ internal static class TypeExtensions
     /// </summary>
     /// <param name="type">The type to analyze.</param>
     /// <returns>A collection containing all implemented interfaces and all base types of the given type.</returns>
-    public static Type[] GetAllImplementedTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
+    public static List<Type> GetAllImplementedTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -109,7 +109,7 @@ internal static class TypeExtensions
             baseType = baseType.BaseType;
         }
 
-        return [.. implementedTypes];
+        return implementedTypes;
     }
 
     /// <summary>
