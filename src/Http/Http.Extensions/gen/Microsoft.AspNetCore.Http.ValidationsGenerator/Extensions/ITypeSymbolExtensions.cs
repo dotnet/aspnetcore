@@ -87,10 +87,18 @@ internal static class ITypeSymbolExtensions
         return derivedTypes.Count == 0 ? null : derivedTypes.ToImmutable();
     }
 
+    // Types exempted here have special binding rules in RDF and RDG and are not validatable
+    // types themselves so we short-circuit on them.
     internal static bool IsExemptType(this ITypeSymbol type, RequiredSymbols requiredSymbols)
     {
         return SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpContext)
                || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpRequest)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpResponse);
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpResponse)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.CancellationToken)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormCollection)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormFileCollection)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormFile)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.Stream)
+               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.PipeReader);
     }
 }

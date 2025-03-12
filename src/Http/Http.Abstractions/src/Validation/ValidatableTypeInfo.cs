@@ -59,8 +59,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
-        // Increment depth counter since we're coming from
-        // a parameter or property reference
         var originalPrefix = context.CurrentValidationPath;
 
         try

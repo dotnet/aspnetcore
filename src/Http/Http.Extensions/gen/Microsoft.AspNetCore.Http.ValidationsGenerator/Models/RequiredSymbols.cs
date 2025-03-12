@@ -15,5 +15,11 @@ internal sealed record class RequiredSymbols(
     INamedTypeSymbol CustomValidationAttribute,
     INamedTypeSymbol HttpContext,
     INamedTypeSymbol HttpRequest,
-    INamedTypeSymbol HttpResponse
+    INamedTypeSymbol HttpResponse,
+    INamedTypeSymbol CancellationToken,
+    INamedTypeSymbol IFormCollection,
+    INamedTypeSymbol IFormFileCollection,
+    INamedTypeSymbol IFormFile,
+    INamedTypeSymbol Stream,
+    INamedTypeSymbol PipeReader
 );

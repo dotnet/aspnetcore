@@ -20,7 +20,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.CustomValidationAttribute")!,
             compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpContext")!,
             compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpRequest")!,
-            compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpResponse")!
+            compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpResponse")!,
+            compilation.GetTypeByMetadataName("System.Threading.CancellationToken")!,
+            compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IFormCollection")!,
+            compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IFormFileCollection")!,
+            compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IFormFile")!,
+            compilation.GetTypeByMetadataName("System.IO.Stream")!,
+            compilation.GetTypeByMetadataName("System.IO.Pipelines.PipeReader")!
         );
     }
 }
