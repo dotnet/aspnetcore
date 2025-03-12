@@ -17,7 +17,7 @@ internal static class ValidationEndpointFilterFactory
     {
         var parameters = context.MethodInfo.GetParameters();
         var options = context.ApplicationServices.GetService<IOptions<ValidationOptions>>()?.Value;
-        if (options is null)
+        if (options is null || options.Resolvers.Count == 0)
         {
             return next;
         }
@@ -42,10 +42,9 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
-        var validatableContext = new ValidateContext { ValidationOptions = options };
         return async (context) =>
         {
-            validatableContext.ValidationErrors?.Clear();
+            var validatableContext = new ValidateContext { ValidationOptions = options };
 
             for (var i = 0; i < context.Arguments.Count; i++)
             {

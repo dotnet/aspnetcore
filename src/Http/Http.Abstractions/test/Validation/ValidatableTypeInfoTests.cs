@@ -333,7 +333,8 @@ public class ValidatableTypeInfoTests
         async () => await nodeType.ValidateAsync(rootNode, context, default));
 
         Assert.NotNull(exception);
-        Assert.Contains("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]' in 'TreeNode'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
+        Assert.Equal("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]' in 'TreeNode'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
+        Assert.Equal(0, context.CurrentDepth);
     }
 
     [Fact]
@@ -461,6 +462,39 @@ public class ValidatableTypeInfoTests
             });
     }
 
+    [Fact]
+    public async Task Validate_RequiredOnPropertyShortCircuitsOtherValidations()
+    {
+        // Arrange
+        var userType = new TestValidatableTypeInfo(
+            typeof(User),
+            [
+                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password",
+                    [new RequiredAttribute(), new PasswordComplexityAttribute()])
+            ]);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(User), userType }
+            })
+        };
+
+        var user = new User { Password = null };  // Invalid: required
+        context.ValidationContext = new ValidationContext(user);
+
+        // Act
+        await userType.ValidateAsync(user, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Single(context.ValidationErrors.Keys);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Password", error.Key);
+        Assert.Equal("The Password field is required.", error.Value.Single());
+    }
+
     private ValidatablePropertyInfo CreatePropertyInfo(
         Type containingType,
         Type propertyType,
@@ -542,7 +576,7 @@ public class ValidatableTypeInfoTests
 
     private class User
     {
-        public string Password { get; set; } = string.Empty;
+        public string? Password { get; set; } = string.Empty;
     }
 
     private class BaseEntity

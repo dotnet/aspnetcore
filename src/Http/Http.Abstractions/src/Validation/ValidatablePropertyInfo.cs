@@ -58,12 +58,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <inheritdoc />
-    /// <returns>A task representing the asynchronous operation.</returns>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         Debug.Assert(context.ValidationContext is not null);
 
-        var property = DeclaringType.GetProperty(Name)!;
+        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
@@ -101,7 +100,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}'  in '{DeclaringType.Name}.{PropertyType.Name} {Name}'. " +
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }

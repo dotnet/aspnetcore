@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public interface IValidatableInfo
 {
     /// <summary>
-    /// Validates the specified value.
+    /// Validates the specified <paramref name="value"/>.
     /// </summary>
     /// <param name="value">The value to validate.</param>
     /// <param name="context">The validation context.</param>

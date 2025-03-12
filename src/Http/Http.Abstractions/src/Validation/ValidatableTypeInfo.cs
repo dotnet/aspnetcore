@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
-    private readonly IEnumerable<Type> _subTypes;
+    private readonly Type[] _subTypes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -59,10 +59,13 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
+        // Increment depth counter since we're coming from
+        // a parameter or property reference
+        var originalPrefix = context.CurrentValidationPath;
+
         try
         {
             var actualType = value.GetType();
-            var originalPrefix = context.CurrentValidationPath;
 
             // First validate members
             for (var i = 0; i < _membersCount; i++)
@@ -116,14 +119,10 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 context.ValidationContext.DisplayName = originalDisplayName;
                 context.ValidationContext.MemberName = originalMemberName;
             }
-
-            // Always restore original prefix
-            context.CurrentValidationPath = originalPrefix;
         }
         finally
         {
-            // Decrement depth when validation completes
-            context.CurrentDepth--;
+            context.CurrentValidationPath = originalPrefix;
         }
     }
 }

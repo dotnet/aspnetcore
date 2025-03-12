@@ -65,13 +65,12 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
-            .AutoVerify()
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
     }
 
-    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<IValidatableInfo> verifyFunc)
+    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidationOptions, Type> verifyFunc)
     {
         if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
         {
@@ -87,11 +86,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         // Then access the Value property
         var valueProperty = optionsType.GetProperty("Value");
         var service = (ValidationOptions)valueProperty.GetValue(optionsInstance) ?? throw new InvalidOperationException("Could not resolve ValidationOptions.");
-        if (service.TryGetValidatableTypeInfo(type, out var validatableTypeInfo) is false)
-        {
-            throw new InvalidOperationException("Could not resolve ValidatableTypeInfo.");
-        }
-        verifyFunc(validatableTypeInfo);
+        verifyFunc(service, type);
     }
 
     internal static async Task VerifyEndpoint(Compilation compilation, string routePattern, Func<Endpoint, IServiceProvider, Task> verifyFunc)
@@ -573,7 +568,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         return httpContext;
     }
 
-    internal async Task<HttpValidationProblemDetails> AssertBadRequest(HttpContext context)
+    internal static async Task<HttpValidationProblemDetails> AssertBadRequest(HttpContext context)
     {
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
         context.Response.Body.Position = 0;

@@ -31,7 +31,7 @@ public sealed class ValidateContext
     /// <summary>
     /// Gets or sets the dictionary of validation errors collected during validation.
     /// Keys are property names or paths, and values are arrays of error messages.
-    /// This dictionary is lazily initialized when the first validation error is added.
+    /// In the default implementation, this dictionary is initialized when the first error is added.
     /// </summary>
     public Dictionary<string, string[]>? ValidationErrors { get; set; }
 
@@ -54,9 +54,10 @@ public sealed class ValidateContext
 
         if (ValidationErrors.TryGetValue(key, out var existingErrors))
         {
-            ValidationErrors[key] = new string[existingErrors.Length + errors.Length];
-            existingErrors.CopyTo(ValidationErrors[key], 0);
-            errors.CopyTo(ValidationErrors[key], existingErrors.Length);
+            var newErrors = new string[existingErrors.Length + errors.Length];
+            existingErrors.CopyTo(newErrors, 0);
+            errors.CopyTo(newErrors, existingErrors.Length);
+            ValidationErrors[key] = newErrors;
         }
         else
         {

@@ -2,15 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
-internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
+internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
+    // TODO: the implementation currently relies on static discovery of types.
     public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
         validatableInfo = null;
@@ -19,7 +19,11 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
 
     public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
-        Debug.Assert(parameterInfo.Name != null, "Parameter must have name");
+        if (parameterInfo.Name == null)
+        {
+            throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
+        }
+
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();
@@ -43,7 +47,7 @@ internal class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolve
         return parameterInfo.Name!;
     }
 
-    private class RuntimeValidatableParameterInfo(
+    private sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
         string displayName,

@@ -30,7 +30,32 @@ public class ValidatableParameterInfoTests
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.First());
+        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
+    }
+
+    [Fact]
+    public async Task Validate_RequiredParameter_ShortCircuitsOtherValidations()
+    {
+        // Arrange
+        var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(string),
+            name: "testParam",
+            displayName: "Test Parameter",
+            // Most ValidationAttributes skip validation if the value is null
+            // so we use a custom one that always fails to assert on the behavior here
+            validationAttributes: [new RequiredAttribute(), new CustomTestValidationAttribute()]);
+
+        var context = CreateValidatableContext();
+
+        // Act
+        await paramInfo.ValidateAsync(null, context, default);
+
+        // Assert
+        var errors = context.ValidationErrors;
+        Assert.NotNull(errors);
+        var error = Assert.Single(errors);
+        Assert.Equal("testParam", error.Key);
+        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
     }
 
     [Fact]
@@ -180,7 +205,7 @@ public class ValidatableParameterInfoTests
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
-        Assert.Equal("Name", error.Key);
+        Assert.Equal("people[1].Name", error.Key);
         Assert.Equal("The Name field is required.", error.Value[0]);
     }
 

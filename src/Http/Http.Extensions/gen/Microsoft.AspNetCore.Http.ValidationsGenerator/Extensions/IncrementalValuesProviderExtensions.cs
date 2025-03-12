@@ -41,7 +41,7 @@ internal static class IncrementalValuesProviderExtensions
         this IncrementalValuesProvider<ImmutableArray<T>> first,
         IncrementalValuesProvider<ImmutableArray<T>> second)
     {
-        return first
+        return first.Collect()
             .Combine(second.Collect())
             .SelectMany((tuple, _) =>
             {
@@ -51,7 +51,10 @@ internal static class IncrementalValuesProviderExtensions
                 }
 
                 var results = ImmutableArray.CreateBuilder<T>(tuple.Left.Length + tuple.Right.Length);
-                results.AddRange(tuple.Left);
+                for (var i = 0; i < tuple.Left.Length; i++)
+                {
+                    results.AddRange(tuple.Left[i]);
+                }
                 for (var i = 0; i < tuple.Right.Length; i++)
                 {
                     results.AddRange(tuple.Right[i]);

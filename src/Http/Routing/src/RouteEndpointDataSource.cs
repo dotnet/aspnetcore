@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -238,9 +239,9 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         // Initialize this route endpoint builder with validation convention if validation options
         // are registered and validation is not disabled on the endpoint.
-        var hasValidationOptions = builder.ApplicationServices.GetService(typeof(IOptions<ValidationOptions>)) is not null;
+        var hasValidationResolvers = builder.ApplicationServices.GetService<IOptions<ValidationOptions>>() is { Value: { } options } && options.Resolvers.Count > 0;
         var hasDisableValidationMetadata = builder.Metadata.OfType<IDisableValidationMetadata>().FirstOrDefault() is not null;
-        if (hasValidationOptions && !hasDisableValidationMetadata)
+        if (hasValidationResolvers && !hasDisableValidationMetadata)
         {
             builder.FilterFactories.Insert(0, ValidationEndpointFilterFactory.Create);
         }

@@ -71,7 +71,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
         var validationAttributes = GetValidationAttributes();
 
-        if (_requiredAttribute is not null && validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
@@ -107,13 +107,15 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
         {
             var index = 0;
+            var currentPrefix = context.CurrentValidationPath;
+
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
-                    var itemPrefix = string.IsNullOrEmpty(context.CurrentValidationPath)
+                    context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                         ? $"{Name}[{index}]"
-                        : $"{context.CurrentValidationPath}.{Name}[{index}]";
+                        : $"{currentPrefix}.{Name}[{index}]";
 
                     if (context.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
@@ -122,6 +124,8 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 }
                 index++;
             }
+
+            context.CurrentValidationPath = currentPrefix;
         }
         // If not enumerable, validate the single value
         else if (value != null)

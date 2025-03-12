@@ -36,9 +36,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var validatableTypesFromEndpoints = endpoints
             .Combine(requiredSymbols)
             .Select(ExtractValidatableEndpoint);
-        // Extract all validatable types encountered in the type graph.
-        var validatableTypes = validatableTypesFromEndpoints
-            .Concat(validatableTypesWithAttribute)
+        // Join all validatable types encountered in the type graph.
+        var validatableTypes = validatableTypesWithAttribute
+            .Concat(validatableTypesFromEndpoints)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
 
