@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
@@ -25,8 +26,11 @@ using static Microsoft.AspNetCore.Http.Generators.Tests.RequestDelegateCreationT
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 
 [UsesVerify]
-public class ValidationsGeneratorTestBase : LoggedTestBase
+public partial class ValidationsGeneratorTestBase : LoggedTestBase
 {
+    [GeneratedRegex(@"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\([^)]*\)\]")]
+    private static partial Regex InterceptsLocationRegex();
+
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validation.Generated")]);
 
@@ -65,6 +69,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
+            .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
