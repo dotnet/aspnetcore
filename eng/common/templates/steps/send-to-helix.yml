@@ -8,6 +8,7 @@ parameters:
   HelixConfiguration: ''                 # optional -- additional property attached to a job
   HelixPreCommands: ''                   # optional -- commands to run before Helix work item execution
   HelixPostCommands: ''                  # optional -- commands to run after Helix work item execution
+  HelixProjectArguments: ''              # optional -- arguments passed to the build command for helixpublish.proj
   WorkItemDirectory: ''                  # optional -- a payload directory to zip up and send to Helix; requires WorkItemCommand; incompatible with XUnitProjects
   WorkItemCommand: ''                    # optional -- a command to execute on the payload; requires WorkItemDirectory; incompatible with XUnitProjects
   WorkItemTimeout: ''                    # optional -- a timeout in TimeSpan.Parse-ready value (e.g. 00:02:00) for the work item command; requires WorkItemDirectory; incompatible with XUnitProjects
@@ -24,12 +25,12 @@ parameters:
   IsExternal: false                      # [DEPRECATED] -- doesn't do anything, jobs are external if HelixAccessToken is empty and Creator is set
   HelixBaseUri: 'https://helix.dot.net/' # optional -- sets the Helix API base URI (allows targeting https://helix.int-dot.net )
   Creator: ''                            # optional -- if the build is external, use this to specify who is sending the job
-  DisplayNamePrefix: 'Run Tests'         # optional -- rename the beginning of the displayName of the steps in AzDO 
+  DisplayNamePrefix: 'Run Tests'         # optional -- rename the beginning of the displayName of the steps in AzDO
   condition: succeeded()                 # optional -- condition for step to execute; defaults to succeeded()
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
 steps:
-  - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY\eng\common\helixpublish.proj /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
+  - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY\eng\common\helixpublish.proj ${{ parameters.HelixProjectArguments }} /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
     displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
     env:
       BuildConfig: $(_BuildConfig)
@@ -59,7 +60,7 @@ steps:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
     continueOnError: ${{ parameters.continueOnError }}
-  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/eng/common/helixpublish.proj /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
+  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/eng/common/helixpublish.proj ${{ parameters.HelixProjectArguments }} /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
     displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
     env:
       BuildConfig: $(_BuildConfig)
