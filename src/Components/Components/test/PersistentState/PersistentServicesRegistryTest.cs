@@ -499,7 +499,6 @@ public class PersistentServicesRegistryTest
     }
 }
 
-
 static file class ComponentStatePersistenceManagerExtensions
 {
     public static IServiceCollection AddPersistentService<TPersistentService>(this IServiceCollection services, IComponentRenderMode renderMode)
