@@ -41,6 +41,9 @@ public static class WaitAssert
     public static void False(this IWebDriver driver, Func<bool> actual)
         => WaitAssertCore(driver, () => Assert.False(actual()));
 
+    public static void False(this IWebDriver driver, Func<bool> actual, TimeSpan timeout)
+        => WaitAssertCore(driver, () => Assert.False(actual()), timeout);
+
     public static void Contains(this IWebDriver driver, string expectedSubstring, Func<string> actualString)
         => WaitAssertCore(driver, () => Assert.Contains(expectedSubstring, actualString()));
 
