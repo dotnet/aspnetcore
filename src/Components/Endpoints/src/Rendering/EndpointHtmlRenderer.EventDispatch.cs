@@ -74,6 +74,11 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
+    private void SetNotFoundResponse(object? sender, EventArgs args)
+    {
+        _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+    }
+
     private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
     {
         if (renderBatch.NamedEventChanges is { } changes)
