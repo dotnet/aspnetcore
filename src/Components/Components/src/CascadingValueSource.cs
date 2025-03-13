@@ -149,7 +149,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
             || string.Equals(requestedName, _name, StringComparison.OrdinalIgnoreCase); // Also match on name
     }
 
-    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    object? ICascadingValueSupplier.GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         if (_initialValueFactory is not null)
         {

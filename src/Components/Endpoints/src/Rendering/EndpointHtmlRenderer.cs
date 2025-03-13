@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
@@ -113,6 +114,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
 
         if (componentType != null)
