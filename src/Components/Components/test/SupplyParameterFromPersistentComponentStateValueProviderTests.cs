@@ -228,6 +228,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         { Math.PI, -Math.PI },
         { 123456.789m, -123456.789m },
         { new DateTime(2023, 1, 1), new DateTime(2023, 12, 31) },
+        { new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.FromSeconds(0)), new DateTimeOffset(2023, 12, 31, 0, 0, 0, TimeSpan.FromSeconds(0)) },
         { "key1", "key2" },
         // Include a very long key to validate logic around growing buffers
         { new string('a', 10000), new string('b', 10000) },

@@ -262,6 +262,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         var keyType = key.GetType();
         var result = Type.GetTypeCode(keyType) != TypeCode.Object
             || keyType == typeof(Guid)
+            || keyType == typeof(DateTimeOffset)
             || keyType == typeof(DateOnly)
             || keyType == typeof(TimeOnly);
 
