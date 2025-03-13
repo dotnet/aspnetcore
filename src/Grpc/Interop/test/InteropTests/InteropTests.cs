@@ -75,6 +75,7 @@ public class InteropTests
     public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60903")]
     public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
 
     private async Task InteropTestCase(string name)
