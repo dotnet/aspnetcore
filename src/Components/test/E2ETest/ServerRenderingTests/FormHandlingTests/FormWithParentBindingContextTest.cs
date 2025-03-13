@@ -1362,6 +1362,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60873")]
     public void RadioButtonGetsResetAfterSubmittingEnhancedForm()
     {
         GoTo("forms/form-with-checkbox-and-radio-button");

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
@@ -63,6 +63,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private _circuitInactivityTimeoutId: any;
 
+  private _webAssemblyOptions: WebAssemblyServerOptions | undefined;
+
   // Implements RootComponentManager.
   // An empty array becuase all root components managed
   // by WebRootComponentManager are added and removed dynamically.
@@ -92,6 +94,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // Root components may now be ready for activation if they had been previously
     // skipped for activation due to an enhanced navigation being underway.
     this.rootComponentsMayRequireRefresh();
+  }
+
+  public setWebAssemblyOptions(webAssemblyOptions: WebAssemblyServerOptions | undefined): void {
+    this._webAssemblyOptions = webAssemblyOptions;
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
@@ -132,7 +138,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {
@@ -182,7 +188,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.startLoadingWebAssemblyIfNotStarted();
 
     if (!hasStartedWebAssembly()) {
-      await startWebAssembly(this);
+      await startWebAssembly(this, this._webAssemblyOptions);
     }
   }
 

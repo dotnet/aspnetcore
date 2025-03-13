@@ -10,6 +10,7 @@
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
+  "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
 }
