@@ -1,0 +1,114 @@
+### Valid customer ID request
+GET http://localhost:5021/customers/42
+Accept: application/json
+
+### Invalid customer ID request (ID must be >= 1)
+GET http://localhost:5021/customers/0
+Accept: application/json
+
+### Valid customer POST request
+POST http://localhost:5021/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "age": 30,
+  "homeAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "zipCode": "12345"
+  }
+}
+
+### Invalid customer POST request (missing required fields)
+POST http://localhost:5021/customers
+Content-Type: application/json
+
+{
+  "age": 15
+}
+
+### Invalid customer POST request (invalid email format)
+POST http://localhost:5021/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "not-an-email",
+  "age": 30
+}
+
+### Invalid customer POST request (age out of range)
+POST http://localhost:5021/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "age": 15
+}
+
+### Invalid customer POST request (invalid zipCode length)
+POST http://localhost:5021/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "age": 30,
+  "homeAddress": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "zipCode": "1234567"
+  }
+}
+
+### Valid order POST request
+POST http://localhost:5021/orders
+Content-Type: application/json
+
+{
+  "orderId": 12345,
+  "productName": "Sample Product",
+  "quantity": 5
+}
+
+### Invalid order POST request (missing required field)
+POST http://localhost:5021/orders
+Content-Type: application/json
+
+{
+  "orderId": 12345,
+  "quantity": 5
+}
+
+### Invalid order POST request (IValidatableObject validation failure)
+POST http://localhost:5021/orders
+Content-Type: application/json
+
+{
+  "orderId": 12345,
+  "productName": "Sample Product",
+  "quantity": 0
+}
+
+### Invalid order POST request (negative orderId)
+POST http://localhost:5021/orders
+Content-Type: application/json
+
+{
+  "orderId": -1,
+  "productName": "Sample Product",
+  "quantity": 5
+}
+
+### Valid product POST request (validation disabled)
+# This endpoint has DisableValidation() applied, so even invalid data should be accepted
+POST http://localhost:5021/products?productId=2&name=TestProduct
+Content-Type: application/json
+
+### Invalid product POST request (validation disabled)
+# This has an odd productId and is missing name, but should still work because validation is disabled
+POST http://localhost:5021/products?productId=3
+Content-Type: application/json

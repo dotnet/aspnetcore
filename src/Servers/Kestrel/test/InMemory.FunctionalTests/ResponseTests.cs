@@ -1426,12 +1426,15 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     $"Date: {server.Context.DateHeaderValue}",
                     "",
                     "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
             }
         }
     }
 
     [Fact]
-    public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
+    public async Task HeadResponseHeadersWrittenWithAsyncWriteBeforeAppCompletes()
     {
         var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1462,7 +1465,67 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
+    {
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.ContentLength = 12;
+            await httpContext.Response.WriteAsync("hello, world");
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 12",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
     public async Task HeadResponseBodyNotWrittenWithSyncWrite()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(httpContext =>
+        {
+            httpContext.Response.ContentLength = 12;
+            httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
+            return Task.CompletedTask;
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 12",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseHeadersWrittenWithSyncWriteBeforeAppCompletes()
     {
         var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1471,7 +1534,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             httpContext.Response.ContentLength = 12;
-            await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("hello, world"), 0, 12));
+            httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
             await flushed.Task;
         }, serviceContext))
         {
@@ -1490,6 +1553,131 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "");
 
                 flushed.SetResult();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeFlush()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            var span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    // Rough attempt at checking that a non-body response doesn't affect future body responses
+    [Fact]
+    public async Task GetRequestAfterHeadRequestWorks()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            await httpContext.Response.BodyWriter.WriteAsync(new byte[] { 35, 35, 35 });
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                await connection.Send(
+                    "GET /a HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "3",
+                    "###",
+                    "0",
+                    "",
+                    "");
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeAndAfterFlush()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            // Make response chunked
+            var span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+
+            // Send after headers flushed
+            span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
             }
         }
     }
