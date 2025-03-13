@@ -12,7 +12,7 @@ For info on modifying/adding new docker images, see [this doc](https://github.co
 
 ## Building on a new Operating System
 
-On Mac and Linux, dotnet/aspnetcore does not build any native code - therefore we cross-compile all of our Linux bits on one docker image in CI. If you need to update the image that we use, simply follow the pattern from [this PR](https://github.com/dotnet/aspnetcore/pull/60260) to update the image we use in [ci.yml](https://github.com/dotnet/aspnetcore/blob/main/.azure/pipelines/ci.yml) and [ci-public.yml](https://github.com/dotnet/aspnetcore/blob/main/.azure/pipelines/ci.yml). Make sure to use one of the docker tags from the link above.
+On Mac and Linux, dotnet/aspnetcore does not build any native code - therefore we cross-compile all of our Linux bits on one docker image in CI. If you need to update the image that we use, simply follow the pattern from [this PR](https://github.com/dotnet/aspnetcore/pull/60260) to update the image we use in [ci.yml](https://github.com/dotnet/aspnetcore/blob/main/.azure/pipelines/ci.yml) and [ci-public.yml](https://github.com/dotnet/aspnetcore/blob/main/.azure/pipelines/ci-public.yml). Make sure to use one of the docker tags from the link above.
 
 ## Testing on a new Operating System
 
