@@ -16,6 +16,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="Build" DependsOnTargets="SetBuildDefaultEnvironmentVariables">
     <MakeDir Directories="$(ObjDir);$(BinDir)" />
-    <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir)" />
+    <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir) $(Configuration)" />
   </Target>
 </Project>
