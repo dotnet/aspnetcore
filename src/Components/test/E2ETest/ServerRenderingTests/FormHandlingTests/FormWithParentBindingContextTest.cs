@@ -1377,9 +1377,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Exists(By.Id("submit-button")).Click();
 
-        var timeout = TimeSpan.FromSeconds(1);
-        WaitAssert.False(Browser, () => Browser.Exists(By.Id("checkbox")).Selected, timeout);
-        WaitAssert.False(Browser, () => Browser.Exists(By.Id("radio-button")).Selected, timeout);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("checkbox")).Selected);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("radio-button")).Selected);
     }
 
     [Fact]
