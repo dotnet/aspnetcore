@@ -571,16 +571,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         BrowserScrollY = maxScrollPosition;
 
         app.FindElement(By.Id("do-self-navigate")).Click();
-        var scrollPosition = BrowserScrollY;
-        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+        WaitAssert.True(Browser, () => maxScrollPosition == BrowserScrollY, default, $"Expected to stay scrolled down in {maxScrollPosition} but the scroll is in position {BrowserScrollY}.");
 
         app.FindElement(By.Id("do-self-navigate-with-query")).Click();
-        scrollPosition = BrowserScrollY;
-        Assert.True(scrollPosition == maxScrollPosition, "Expected to stay scrolled down.");
+        WaitAssert.True(Browser, () => maxScrollPosition == BrowserScrollY, default, $"Expected to stay scrolled down in {maxScrollPosition} but the scroll is in position {BrowserScrollY}.");
 
         app.FindElement(By.Id("do-self-navigate-to-fragment")).Click();
-        scrollPosition = BrowserScrollY;
-        Assert.True(scrollPosition == fragmentScrollPosition, "Expected to scroll to the fragment.");
+        WaitAssert.True(Browser, () => fragmentScrollPosition == BrowserScrollY, default, $"Expected to scroll to the fragment in position {fragmentScrollPosition} but the scroll is in position {BrowserScrollY}.");
     }
 
     [Fact]
@@ -1696,11 +1693,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("anchor-test1")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1712,11 +1709,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("anchor-test1-with-query")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash?color=green&number=123#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash?color=green&number=123#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1728,11 +1725,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("anchor-test1-with-param")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash/11#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash/11#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1744,11 +1741,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("anchor-test1-with-param-and-query")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash/11?color=green&number=123#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash/11?color=green&number=123#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1760,11 +1757,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("anchor-test2")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test2VerticalLocation = app.FindElement(By.Id("test2")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash2#test2", currentRelativeUrl);
-        Assert.Equal(test2VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash2#test2";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test2VerticalLocation, default, $"Expected {test2VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1776,11 +1773,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("navigate-test2")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test2VerticalLocation = app.FindElement(By.Id("test2")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash2#test2", currentRelativeUrl);
-        Assert.Equal(test2VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash2#test2";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test2VerticalLocation, default, $"Expected {test2VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1792,11 +1789,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("navigate-test1")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1808,11 +1805,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("navigate-test1-with-query")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash?color=green&number=123#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash?color=green&number=123#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1824,11 +1821,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("navigate-test1-with-param")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash/22#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash/22#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     [Fact]
@@ -1840,11 +1837,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         app.FindElement(By.Id("navigate-test1-with-param-and-query")).Click();
 
-        var currentWindowScrollY = BrowserScrollY;
         var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash/22?color=green&number=123#test1", currentRelativeUrl);
-        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+        string expectedUrl = "subdir/LongPageWithHash/22?color=green&number=123#test1";
+        WaitAssert.True(Browser, () => expectedUrl == currentRelativeUrl, default, $"Expected {expectedUrl} but got {currentRelativeUrl}");
+        WaitAssert.True(Browser, () => BrowserScrollY == test1VerticalLocation, default, $"Expected {test1VerticalLocation} but got {BrowserScrollY}");
     }
 
     private long BrowserScrollY
