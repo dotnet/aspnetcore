@@ -577,7 +577,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         WaitAssert.True(Browser, () => maxScrollPosition == BrowserScrollY, default, $"Expected to stay scrolled down in {maxScrollPosition} but the scroll is in position {BrowserScrollY}.");
 
         app.FindElement(By.Id("do-self-navigate-to-fragment")).Click();
-        WaitAssert.True(Browser, () => fragmentScrollPosition != BrowserScrollY, default, $"Expected to scroll to the fragment in position {fragmentScrollPosition} but the scroll is in position {BrowserScrollY}.");
+        WaitAssert.True(Browser, () => fragmentScrollPosition == BrowserScrollY, default, $"Expected to scroll to the fragment in position {fragmentScrollPosition} but the scroll is in position {BrowserScrollY}.");
     }
 
     [Fact]
