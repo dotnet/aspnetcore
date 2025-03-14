@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.SignalR;
 
 namespace SignalRSamples.Hubs;
@@ -19,7 +20,7 @@ public class Chat : Hub
         return Clients.All.SendAsync("Send", $"{name} left the chat");
     }
 
-    public Task Send(string name, string message)
+    public Task Send([StringLength(10)] string name, [Required] string message)
     {
         return Clients.All.SendAsync("Send", $"{name}: {message}");
     }

@@ -21,6 +21,8 @@ public class Startup
         services.AddSignalR()
         .AddMessagePackProtocol();
         //.AddStackExchangeRedis();
+
+        services.AddValidation();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

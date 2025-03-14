@@ -1,19 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -32,6 +36,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly Func<HubLifetimeContext, Task>? _onConnectedMiddleware;
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
+    private readonly ValidationOptions? _validationOptions;
 
     [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
     [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
@@ -40,13 +45,15 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported", out bool customAwaitableSupport) ? customAwaitableSupport : true;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-        bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
+        bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager,
+        ValidationOptions? validationOptions)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _hubContext = hubContext;
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
         _hubLifetimeManager = lifetimeManager;
+        _validationOptions = validationOptions;
         DiscoverHubMethods(disableImplicitFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
@@ -339,6 +346,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             }
 
             if (!await ValidateInvocationMode(descriptor, isStreamResponse, hubMethodInvocationMessage, connection))
+            {
+                return true;
+            }
+
+            if (!await ValidateArguments(descriptor, hubMethodInvocationMessage, connection))
             {
                 return true;
             }
@@ -685,6 +697,41 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
         // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
         return authorizationResult.Succeeded;
+    }
+
+    private async Task<bool> ValidateArguments(HubMethodDescriptor hubMethodDescriptor, HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
+    {
+        if (_validationOptions == null || _validationOptions.Resolvers.Count == 0)
+        {
+            return true;
+        }
+
+        var validateContext = new ValidateContext()
+        {
+            ValidationOptions = _validationOptions,
+            CurrentValidationPath = $"{_fullHubName}.{hubMethodInvocationMessage.Target}",
+        };
+
+        for (var i = 0; i < hubMethodDescriptor.ParameterInfos.Count; i++)
+        {
+            validateContext.ValidationContext = new ValidationContext(hubMethodInvocationMessage.Arguments[i], serviceProvider: null, items: null)
+            {
+                DisplayName = hubMethodDescriptor.ParameterInfos[i].Name,
+            };
+            if (_validationOptions.TryGetValidatableParameterInfo(hubMethodDescriptor.ParameterInfos[i], out var parameterValidator))
+            {
+                await parameterValidator.ValidateAsync(hubMethodInvocationMessage.Arguments[i], validateContext, default);
+            }
+        }
+
+        if (validateContext.ValidationErrors is { Count: > 0 })
+        {
+            await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                    $"Failed to invoke '{hubMethodInvocationMessage.Target}' because of validation errors: {JsonSerializer.Serialize(validateContext.ValidationErrors)}");
+            return false;
+        }
+
+        return true;
     }
 
     private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamResponse,

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +53,8 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                                 IOptions<HubOptions<THub>> hubOptions,
                                 ILoggerFactory loggerFactory,
                                 IUserIdProvider userIdProvider,
-                                IServiceScopeFactory serviceScopeFactory
+                                IServiceScopeFactory serviceScopeFactory,
+                                IOptions<ValidationOptions>? validationOptions
     )
     {
         _protocolResolver = protocolResolver;
@@ -101,7 +103,8 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
             disableImplicitFromServiceParameters,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
             hubFilters,
-            lifetimeManager);
+            lifetimeManager,
+            validationOptions?.Value);
     }
 
     /// <inheritdoc />
