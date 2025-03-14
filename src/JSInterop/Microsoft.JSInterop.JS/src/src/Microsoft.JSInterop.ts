@@ -444,7 +444,7 @@ export module DotNet {
           return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
       }
 
-      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
+      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
           if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
               const argsJson = stringifyArgs(this, args);
               const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
