@@ -10,10 +10,9 @@ dependencies {
     implementation 'org.junit.jupiter:junit-jupiter-params:5.11.2'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation project(':core')
-    implementation project(':messagepack')
     implementation project(':messagepack')
     antJUnit 'org.apache.ant:ant-junit:1.10.15'
 }

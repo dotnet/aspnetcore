@@ -1307,6 +1307,10 @@ public partial class HubConnection : IAsyncDisposable
                     await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
                 }
                 break;
+            case StreamBindingFailureMessage bindingFailure:
+                // The server can't receive a response, so we just drop the message and log
+                Log.StreamBindingFailure(_logger, bindingFailure.Id, bindingFailure.BindingFailure.SourceException);
+                break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
                 await invocationMessageWriter.WriteAsync(invocation).ConfigureAwait(false);
