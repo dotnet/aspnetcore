@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -197,6 +198,32 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private IWebHost CreateKestrelServer(IWebHostBuilder builder)
     {
+        ConfigureBuilderToUseKestrel(builder);
+
+        var host = builder.Build();
+
+        TryConfigureServerPort(() => GetServerAddressFeature(host));
+
+        host.Start();
+        return host;
+    }
+
+    private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
+    {
+        if (_kestrelPort.HasValue)
+        {
+            var saf = serverAddressFeatureAccessor();
+            if (saf is not null)
+            {
+                saf.Addresses.Clear();
+                saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
+                saf.PreferHostingUrls = true;
+            }
+        }
+    }
+
+    private void ConfigureBuilderToUseKestrel(IWebHostBuilder builder)
+    {
         if (_configureKestrelOptions is not null)
         {
             builder.UseKestrel(_configureKestrelOptions);
@@ -205,19 +232,6 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             builder.UseKestrel();
         }
-
-        var host = builder.Build();
-
-        if (_kestrelPort.HasValue)
-        {
-            var saf = host.Services.GetRequiredService<IServerAddressesFeature>();
-            saf.Addresses.Clear();
-            saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
-            saf.PreferHostingUrls = true;
-        }
-
-        host.Start();
-        return host;
     }
 
     /// <summary>
@@ -226,7 +240,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
     public void StartServer()
     {
-        if (_server != null || _webHost != null)
+        if (_webHost != null || _host != null)
         {
             return;
         }
@@ -288,18 +302,23 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             {
                 _webHost = CreateKestrelServer(builder);
 
-                var serverAddressFeature = _webHost.ServerFeatures.Get<IServerAddressesFeature>();
-                if (serverAddressFeature?.Addresses.Count > 0)
-                {
-                    // Store the web host address as it's going to be used every time a client is created to communicate to the server
-                    _webHostAddress = new Uri(serverAddressFeature.Addresses.Last());
-                    ClientOptions.BaseAddress = _webHostAddress;
-                }
+                TryExtractHostAddress(() => GetServerAddressFeature(_webHost));
             }
             else
             {
                 _server = CreateServer(builder);
             }
+        }
+    }
+
+    private void TryExtractHostAddress(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
+    {
+        var serverAddressFeature = serverAddressFeatureAccessor();
+        if (serverAddressFeature?.Addresses.Count > 0)
+        {
+            // Store the web host address as it's going to be used every time a client is created to communicate to the server
+            _webHostAddress = new Uri(serverAddressFeature.Addresses.Last());
+            ClientOptions.BaseAddress = _webHostAddress;
         }
     }
 
@@ -309,17 +328,21 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             SetContentRoot(webHostBuilder);
             _configuration(webHostBuilder);
-            if (!_useKestrel)
+            if (_useKestrel)
             {
-                webHostBuilder.UseTestServer();
+                ConfigureBuilderToUseKestrel(webHostBuilder);
             }
             else
             {
-                webHostBuilder.UseKestrel();
+                webHostBuilder.UseTestServer();
             }
         });
         _host = CreateHost(hostBuilder);
-        if (!_useKestrel)
+        if (_useKestrel)
+        {
+            TryExtractHostAddress(() => GetServerAddressFeature(_host));
+        }
+        else
         {
             _server = (TestServer)_host.Services.GetRequiredService<IServer>();
         }
@@ -549,9 +572,14 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     protected virtual IHost CreateHost(IHostBuilder builder)
     {
         var host = builder.Build();
+        TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
     }
+
+    private static IServerAddressesFeature? GetServerAddressFeature(IHost host) => host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+
+    private static IServerAddressesFeature? GetServerAddressFeature(IWebHost webHost) => webHost.ServerFeatures.Get<IServerAddressesFeature>();
 
     /// <summary>
     /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -662,7 +690,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         if (_useKestrel)
         {
-            if (_webHost is null)
+            if (_webHost is null && _host is null)
             {
                 throw new InvalidOperationException(Resources.ServerNotInitialized);
             }
