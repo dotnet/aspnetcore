@@ -27,23 +27,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
-    public async Task CansSetNotFoundStatus()
-    {
-        var url = $"{ServerPathBase}/render-not-found-ssr";
-        Navigate(url);
-        var statusCode = await GetStatusCodeAsync(url);
-        Assert.Equal(404, statusCode);
-    }
-
-    private async Task<int> GetStatusCodeAsync(string relativeUrl)
-    {
-        using var client = new HttpClient();
-        string absoluteUrl = $"{_serverFixture.RootUri}/{relativeUrl}";
-        var response = await client.GetAsync(absoluteUrl);
-        return (int)response.StatusCode;
-    }
-
-    [Fact]
     public void NavigationManagerCanRefreshSSRPageWhenInteractivityNotPresent()
     {
         Navigate($"{ServerPathBase}/forms/form-that-calls-navigation-manager-refresh");

@@ -173,6 +173,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
+    private void StopRenderer()
+    {
+        _nonStreamingPendingTasks.Clear();
+        Dispose();
+    }
+
     // For tests only
     internal Task? NonStreamingPendingTasksCompletion;
 

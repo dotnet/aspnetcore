@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
+using System.Net.Http;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -17,6 +20,42 @@ public class GlobalInteractivityTest(
     ITestOutputHelper output)
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
+
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("webassembly", true)]
+    [InlineData("ssr", false)]
+    public void CanRenderNotFoundInteractive(string renderingMode, bool isInteractive)
+    {
+        Navigate($"/subdir/render-not-found-{renderingMode}");
+
+        if (isInteractive)
+        {
+            var buttonId = "trigger-not-found";
+            Browser.WaitForElementToBeVisible(By.Id(buttonId));
+            Browser.Exists(By.Id(buttonId)).Click();
+        }
+
+        var bodyText = Browser.FindElement(By.TagName("body")).Text;
+        Assert.Contains("There's nothing here", bodyText);
+    }
+
+    [Fact]
+    public async Task CanSetNotFoundStatus()
+    {
+        var statusCode = await GetStatusCodeAsync($"/subdir/render-not-found-ssr");
+        // problem: subscription to OnNotFound queued the render event at the time when the renderer was not disposed and wants to render when it already is (we dispose of it in SetNotFoundResponse)
+        // fragment rendering does not make sense in this case but how to prevent it?
+        Assert.Equal(HttpStatusCode.NotFound, statusCode);
+    }
+
+    private async Task<HttpStatusCode> GetStatusCodeAsync(string relativeUrl)
+    {
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.GetAsync(relativeUrl, HttpCompletionOption.ResponseHeadersRead);
+        return response.StatusCode;
+    }
+
     [Fact]
     public void CanFindStaticallyRenderedPageAfterClickingBrowserBackButtonOnDynamicallyRenderedPage()
     {

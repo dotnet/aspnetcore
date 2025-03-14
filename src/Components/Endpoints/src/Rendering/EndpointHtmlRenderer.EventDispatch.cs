@@ -76,7 +76,12 @@ internal partial class EndpointHtmlRenderer
 
     private void SetNotFoundResponse(object? sender, EventArgs args)
     {
+        if (_httpContext.Response.HasStarted)
+        {
+            throw new InvalidOperationException("Cannot set a NotFound response after the response has already started.");
+        }
         _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        StopRenderer();
     }
 
     private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
