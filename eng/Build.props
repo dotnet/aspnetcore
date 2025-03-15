@@ -56,6 +56,13 @@
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
+    <!-- In the VMR, we don't build the native ANCM bits in pass 1 -->
+    <ProjectToExclude Include="
+                      $(RepoRoot)src\Installers\**\*.vcxproj;
+                      "
+                      Condition=" '$(BuildNative)' == 'true' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
+
+
     <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the VMR, we build it in pass 2 -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj;
