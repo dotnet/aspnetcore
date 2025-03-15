@@ -20,4 +20,10 @@ public interface IJSInProcessRuntime : IJSRuntime
     /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     TResult Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(string identifier, params object?[]? args);
+
+    IJSObjectReference InvokeNew(string identifier, object?[]? args);
+
+    TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
+
+    void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value);
 }

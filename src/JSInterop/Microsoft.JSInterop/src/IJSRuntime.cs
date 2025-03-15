@@ -37,9 +37,9 @@ public interface IJSRuntime
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
 
-    ValueTask<IJSObjectReference> NewAsync(string identifier, object?[]? args);
+    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args);
 
-    ValueTask<IJSObjectReference> NewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);
+    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);
 
     ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
 

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop;
@@ -44,6 +45,18 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
         => Invoke<TValue>(identifier, 0, args);
+
+    /// <inheritdoc />
+    public IJSObjectReference InvokeNew(string identifier, object?[]? args)
+        => Invoke<IJSObjectReference>($"new:{identifier}", args);
+
+    /// <inheritdoc />
+    public TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+        => Invoke<TValue>($"get:{identifier}", null);
+
+    /// <inheritdoc />
+    public void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => Invoke<IJSVoidResult>($"set:{identifier}", [value]);
 
     /// <summary>
     /// Performs a synchronous function invocation.

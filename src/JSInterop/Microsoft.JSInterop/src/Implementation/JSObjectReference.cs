@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation;
@@ -47,6 +48,38 @@ public class JSObjectReference : IJSObjectReference
 
         return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
     }
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+        => InvokeAsync<IJSObjectReference>($"new:{identifier}", args);
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<IJSObjectReference>($"new:{identifier}", cancellationToken, args);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>()
+        => InvokeAsync<TValue>("get:", null);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(CancellationToken cancellationToken)
+        => InvokeAsync<TValue>("get:", cancellationToken, null);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+        => InvokeAsync<TValue>($"get:{identifier}", null);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
+        => InvokeAsync<TValue>($"get:{identifier}", cancellationToken, null);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => await InvokeAsync<IJSVoidResult>($"set:{identifier}", [value]);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        => await InvokeAsync<IJSVoidResult>($"set:{identifier}", cancellationToken, [value]);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

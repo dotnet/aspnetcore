@@ -30,13 +30,15 @@ Welcome to your new app.
 <div style="margin-top: 2em">
     <span>@TestObjectDisplay</span> <br />
     <button class="btn btn-primary" @onclick="GetTestObjectState">Get object state directly</button>
+    <button class="btn btn-primary" @onclick="GetTestObjectStateViaReference">Get object state via reference</button>
     <button class="btn btn-primary" @onclick="GetTestObjectStateViaReferenceFromFunction">Get object state via reference from function</button>
     <button class="btn btn-primary" @onclick="GetTestObjectStateViaReferenceFromProperty">Get object state via reference from property</button>
 </div>
 
 <div style="margin-top: 2em">
-    <button class="btn btn-primary" @onclick="MakeWoof">Make woof</button>
-    <span>@DogMessage</span>
+    <button class="btn btn-primary" @onclick="CreateDog">Create a dog</button>
+    <button class="btn btn-primary" @onclick="CreateCat">Create a cat</button>
+    <span>@AnimalMessage</span>
 </div>
 
 @code {
@@ -44,7 +46,7 @@ Welcome to your new app.
     private string? CurrentTitle { get; set; }
     private string? NewTitle { get; set; }
     private string? TestObjectDisplay { get; set; }
-    private string? DogMessage { get; set; }
+    private string? AnimalMessage { get; set; }
 
     private async Task LogDefault()
     {
@@ -75,34 +77,50 @@ Welcome to your new app.
     private async Task GetTestObjectState()
     {
         var model = await JSRuntime.InvokeAsync<TestObjectModel>("getTestObject");
-        TestObjectDisplay = $"Serialized state: {model.Num} | {model.Text}";
+        TestObjectDisplay = $"Serialized state: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
+    }
+
+    private async Task GetTestObjectStateViaReference()
+    {
+        var objectRef = await JSRuntime.GetValueAsync<IJSObjectReference>("testObject");
+        var model = await objectRef.GetValueAsync<TestObjectModel>();
+        TestObjectDisplay = $"Serialized state via reference: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
     }
 
     private async Task GetTestObjectStateViaReferenceFromFunction()
     {
         var objectRef = await JSRuntime.InvokeAsync<IJSObjectReference>("getTestObject");
-        var numValue = await objectRef.InvokeAsync<int>("num");
-        var textValue = await objectRef.InvokeAsync<string>("text");
-        TestObjectDisplay = $"State via reference from function: {numValue} | {textValue}";
+        var numValue = await objectRef.GetValueAsync<int>("num");
+        var textValue = await objectRef.GetValueAsync<string>("text");
+        var getOnlyProperty = await objectRef.GetValueAsync<int>("getOnlyProperty");
+        TestObjectDisplay = $"State via reference from function: {numValue} | {textValue} | {getOnlyProperty}";
     }
 
     private async Task GetTestObjectStateViaReferenceFromProperty()
     {
-        var objectRef = await JSRuntime.InvokeAsync<IJSObjectReference>("testObject");
-        var numValue = await objectRef.InvokeAsync<int>("num");
-        var textValue = await objectRef.InvokeAsync<string>("text");
-        TestObjectDisplay = $"State via reference from property: {numValue} | {textValue}";
+        var objectRef = await JSRuntime.GetValueAsync<IJSObjectReference>("testObject");
+        var numValue = await objectRef.GetValueAsync<int>("num");
+        var textValue = await objectRef.GetValueAsync<string>("text");
+        var getOnlyProperty = await objectRef.GetValueAsync<int>("getOnlyProperty");
+        TestObjectDisplay = $"State via reference from property: {numValue} | {textValue} | {getOnlyProperty}";
     }
 
-    private async Task MakeWoof()
+    private async Task CreateDog()
     {
-        var dogRef = await JSRuntime.NewAsync("Dog", ["Igor"]);
-        DogMessage = await dogRef.InvokeAsync<string>("bark");
+        var dogRef = await JSRuntime.InvokeNewAsync("Dog", ["Igor"]);
+        AnimalMessage = await dogRef.InvokeAsync<string>("bark");
+    }
+
+    private async Task CreateCat()
+    {
+        var catRef = await JSRuntime.InvokeNewAsync("Cat", ["Mikeš"]);
+        AnimalMessage = await catRef.InvokeAsync<string>("meow");
     }
 
     class TestObjectModel
     {
         public int Num { get; set; }
         public string? Text { get; set; }
+        public int GetOnlyProperty { get; set; }
     }
 }

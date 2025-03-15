@@ -13,10 +13,10 @@ internal abstract class TestJSRuntimeBase : IJSRuntime
 
     public abstract ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
 
-    public ValueTask<IJSObjectReference> NewAsync(string identifier, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
         => InvokeAsync<IJSObjectReference>($"new:{identifier}", args);
 
-    public ValueTask<IJSObjectReference> NewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<IJSObjectReference>($"new:{identifier}", cancellationToken, args);
 
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)

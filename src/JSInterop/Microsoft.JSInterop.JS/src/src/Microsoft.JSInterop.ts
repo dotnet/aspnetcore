@@ -281,6 +281,18 @@ export module DotNet {
         SetValue = 4
     }
 
+    interface JSInvocationInfo {
+        targetInstanceId: number,
+        identifier: string,
+        argsJson: string,
+        callType: JSCallType,
+        resultType: JSCallResultType,
+    }
+
+    interface JSAsyncInvocationInfo extends JSInvocationInfo {
+        asyncHandle: number,
+    }
+
     /**
      * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
      */
@@ -412,19 +424,6 @@ export module DotNet {
             return this._dotNetCallDispatcher;
         }
 
-        invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null {
-            console.log("invokeJSFromDotNet", identifier, argsJson, resultType, targetInstanceId);
-
-            const args = parseJsonWithRevivers(this, argsJson);
-            const jsFunction = findJSFunction(identifier, targetInstanceId);
-            const returnValue = jsFunction(...(args || []));
-            const result = createJSCallResult(returnValue, resultType);
-
-            return result === null || result === undefined
-                ? null
-                : stringifyArgs(this, result);
-        }
-
         parseJSCallType(identifier: string): { actualIdentifier: string, callType: JSCallType } {
             const prefix = identifier.substring(0, 4);
 
@@ -440,7 +439,7 @@ export module DotNet {
             const func = member.parent[member.name];
 
             if (typeof func === "function") {
-                return func(...(args || []));
+                return func.call(member.parent, ...(args || []));
             } else {
                 throw new Error(`The value '${identifier}' is not a function.`);
             }
@@ -466,8 +465,7 @@ export module DotNet {
         }
 
         handleJSPropertyGet(identifier: string, instance: ObjectMemberDescriptor): any {
-            const value = instance.parent[instance.name];
-            return value;
+            return identifier.length > 0 ? instance.parent[instance.name] : instance.parent;
         }
 
         handleJSPropertySet(identifier: string, instance: ObjectMemberDescriptor, args: any) {
@@ -475,29 +473,85 @@ export module DotNet {
             instance.parent[instance.name] = value;
         }
 
-        beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void {
-            console.log("beginInvokeJSFromDotNet", identifier, argsJson, resultType, targetInstanceId);
+        handleJSCall(identifier: string, argsJson: string | null, targetInstanceId: number, callType: JSCallType) {
+            const args = parseJsonWithRevivers(this, argsJson);
+            const member = findObjectMember(identifier, targetInstanceId);
+            let returnValue = null;
 
-            const { actualIdentifier, callType } = this.parseJSCallType(identifier);
+            if (callType === JSCallType.FunctionCall) {
+                returnValue = this.handleJSFunctionCall(identifier, member, args);
+            } else if (callType === JSCallType.NewCall) {
+                returnValue = this.handleJSNewCall(identifier, member, args);
+            } else if (callType === JSCallType.GetValue) {
+                returnValue = this.handleJSPropertyGet(identifier, member);
+            } else if (callType === JSCallType.SetValue) {
+                this.handleJSPropertySet(identifier, member, args);
+            }
+
+            return returnValue;
+        }
+
+        invokeJSFromDotNetX(invocationInfo: JSInvocationInfo): string | null {
+            const { targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+
+            const returnValue = this.handleJSCall(identifier, argsJson, targetInstanceId, callType);
+            const result = createJSCallResult(returnValue, resultType);
+
+            return result === null || result === undefined
+                ? null
+                : stringifyArgs(this, result);
+        }
+
+        invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null {
+            const args = parseJsonWithRevivers(this, argsJson);
+            const jsFunction = findJSFunction(identifier, targetInstanceId);
+            const returnValue = jsFunction(...(args || []));
+            const result = createJSCallResult(returnValue, resultType);
+
+            return result === null || result === undefined
+                ? null
+                : stringifyArgs(this, result);
+        }
+
+        beginInvokeJSFromDotNetX(invocationInfo: JSAsyncInvocationInfo): void {
+            const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
 
             // Coerce synchronous functions into async ones, plus treat
             // synchronous exceptions the same as async ones
             const promise = new Promise<any>(resolve => {
-                const args = parseJsonWithRevivers(this, argsJson);
-                const member = findObjectMember(actualIdentifier, targetInstanceId);
-                let valueOrPromise = null;
-
-                if (callType === JSCallType.FunctionCall) {
-                    valueOrPromise = this.handleJSFunctionCall(actualIdentifier, member, args);
-                } else if (callType === JSCallType.NewCall) {
-                    valueOrPromise = this.handleJSNewCall(actualIdentifier, member, args);
-                } else if (callType === JSCallType.GetValue) {
-                    valueOrPromise = this.handleJSPropertyGet(actualIdentifier, member);
-                } else if (callType === JSCallType.SetValue) {
-                    this.handleJSPropertySet(actualIdentifier, member, args);
-                }
-
+                const valueOrPromise = this.handleJSCall(identifier, argsJson, targetInstanceId, callType);
                 resolve(valueOrPromise);
+            });
+
+            // We only listen for a result if the caller wants to be notified about it
+            if (asyncHandle) {
+                // On completion, dispatch result back to .NET
+                // Not using "await" because it codegens a lot of boilerplate
+                promise.
+                    then(result => stringifyArgs(this, [
+                        asyncHandle,
+                        true,
+                        createJSCallResult(result, resultType)
+                    ])).
+                    then(
+                        result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
+                        error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
+                            asyncHandle,
+                            false,
+                            formatError(error)
+                        ]))
+                    );
+            }
+        }
+
+        beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void {
+            // Coerce synchronous functions into async ones, plus treat
+            // synchronous exceptions the same as async ones
+            const promise = new Promise<any>(resolve => {
+                const args = parseJsonWithRevivers(this, argsJson);
+                const jsFunction = findJSFunction(identifier, targetInstanceId);
+                const synchronousResultOrPromise = jsFunction(...(args || []));
+                resolve(synchronousResultOrPromise);
             });
 
             // We only listen for a result if the caller wants to be notified about it
@@ -647,6 +701,10 @@ export module DotNet {
 
         if (!targetInstance) {
             throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
+        }
+
+        if (identifier === "") {
+            return { parent: targetInstance.getWrappedObject(), name: "" };
         }
 
         return targetInstance.findMember(identifier);
