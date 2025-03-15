@@ -103,10 +103,10 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   };
 
   Blazor._internal.applyHotReloadDeltas = (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {
-    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel);
+    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
   };
 
-  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
+  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
 
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
