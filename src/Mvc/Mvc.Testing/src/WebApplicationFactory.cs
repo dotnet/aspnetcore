@@ -111,6 +111,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
+    /// Helps determine if the `StartServer` method has been called already.
+    /// </summary>
+    private bool ServerStarted => _webHost != null || _host != null || _server != null;
+
+    /// <summary>
     /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
     /// by further customizing the <see cref="IWebHostBuilder"/> when calling
     /// <see cref="WebApplicationFactory{TEntryPoint}.WithWebHostBuilder(Action{IWebHostBuilder})"/>.
@@ -239,7 +244,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
     public void StartServer()
     {
-        if (_webHost != null || _host != null)
+        if (ServerStarted)
         {
             return;
         }
