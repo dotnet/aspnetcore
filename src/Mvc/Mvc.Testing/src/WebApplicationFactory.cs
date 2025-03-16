@@ -85,7 +85,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             if (_useKestrel)
             {
-                throw new NotSupportedException();
+                throw new NotSupportedException(Resources.TestServerNotSupportedWhenUsingKestrel);
             }
 
             StartServer();
