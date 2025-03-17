@@ -4,14 +4,15 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RealServerWithDynamicPortIntegrationTests : IClassFixture<KestrelBasedWapFactory>
+public class RealServerWithDynamicPortIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactory>
 {
-    public KestrelBasedWapFactory Factory { get; }
+    public KestrelBasedWebApplicationFactory Factory { get; }
 
-    public RealServerWithDynamicPortIntegrationTests(KestrelBasedWapFactory factory)
+    public RealServerWithDynamicPortIntegrationTests(KestrelBasedWebApplicationFactory factory)
     {
         Factory = factory;
 

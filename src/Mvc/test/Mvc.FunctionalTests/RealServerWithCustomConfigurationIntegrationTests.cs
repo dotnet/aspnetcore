@@ -7,13 +7,13 @@ using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RealServerWithCustomConfigurationIntegrationTests : IClassFixture<KestrelBasedWapFactory>
+public class RealServerWithCustomConfigurationIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactory>
 {
     private int _optionsConfiguredCounter = 0;
 
-    public KestrelBasedWapFactory Factory { get; }
+    public KestrelBasedWebApplicationFactory Factory { get; }
 
-    public RealServerWithCustomConfigurationIntegrationTests(KestrelBasedWapFactory factory)
+    public RealServerWithCustomConfigurationIntegrationTests(KestrelBasedWebApplicationFactory factory)
     {
         Factory = factory;
         Factory.UseKestrel(options => { _optionsConfiguredCounter++; });

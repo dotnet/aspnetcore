@@ -7,13 +7,13 @@ using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RealServerWithSpecifiedPortBackedIntegrationTests : IClassFixture<KestrelBasedWapFactory>
+public class RealServerWithSpecifiedPortBackedIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactory>
 {
     private const int ServerPort = 7777;
 
-    public KestrelBasedWapFactory Factory { get; }
+    public KestrelBasedWebApplicationFactory Factory { get; }
 
-    public RealServerWithSpecifiedPortBackedIntegrationTests(KestrelBasedWapFactory factory)
+    public RealServerWithSpecifiedPortBackedIntegrationTests(KestrelBasedWebApplicationFactory factory)
     {
         Factory = factory;
         Factory.UseKestrel(ServerPort);

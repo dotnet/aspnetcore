@@ -7,11 +7,11 @@ using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWapFactory>
+public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactory>
 {
-    public KestrelBasedWapFactory Factory { get; }
+    public KestrelBasedWebApplicationFactory Factory { get; }
 
-    public RealServerBackedIntegrationTests(KestrelBasedWapFactory factory)
+    public RealServerBackedIntegrationTests(KestrelBasedWebApplicationFactory factory)
     {
         Factory = factory;
     }

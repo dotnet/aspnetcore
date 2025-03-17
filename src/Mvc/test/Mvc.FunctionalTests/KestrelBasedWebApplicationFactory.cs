@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class KestrelBasedWapFactory : WebApplicationFactory<SimpleWebSite.Startup>
+public class KestrelBasedWebApplicationFactory : WebApplicationFactory<SimpleWebSite.Startup>
 {
-    public KestrelBasedWapFactory() : base()
+    public KestrelBasedWebApplicationFactory() : base()
     {
         // Use dynamically assigned port to avoid test conflicts in CI.
         this.UseKestrel(0);
