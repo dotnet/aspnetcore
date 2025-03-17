@@ -5,8 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -758,8 +758,8 @@ internal partial class CircuitHost : IAsyncDisposable
                         // We only do this if we have no root components. Otherwise, the state would have been
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
                         await appLifetime.RestoreStateAsync(store);
-                        RestoreAntiforgeryToken(_scope);
                     }
 
                     // Retrieve the circuit handlers at this point.
@@ -802,15 +802,6 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
             }
         });
-    }
-
-    private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
-    {
-        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
-        // state and is available on the circuit whether or not is used by a component on the first
-        // render.
-        var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
-        _ = antiforgery?.GetAntiforgeryToken();
     }
 
     private async ValueTask PerformRootComponentOperations(

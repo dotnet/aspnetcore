@@ -19,4 +19,8 @@
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <PropertyGroup>
+    <WasmBootConfigFileName>dotnet.boot.js</WasmBootConfigFileName>
+  </PropertyGroup>
 </Project>
