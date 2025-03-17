@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions
+static Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions.DisableValidation<TBuilder>(this TBuilder builder) -> TBuilder

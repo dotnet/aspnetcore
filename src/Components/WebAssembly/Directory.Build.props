@@ -4,4 +4,8 @@
     <!-- Avoid source build issues with WebAssembly -->
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <WasmBootConfigFileName>dotnet.boot.js</WasmBootConfigFileName>
+  </PropertyGroup>
 </Project>

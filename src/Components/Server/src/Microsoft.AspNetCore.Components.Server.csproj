@@ -48,7 +48,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
 
