@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 public class HostingApplicationDiagnosticsTests : LoggedTest
 {
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57259")]
     public async Task EventCountersAndMetricsValues()
     {
         // Arrange

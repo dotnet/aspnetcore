@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -64,6 +65,7 @@ public class CachedResponseBodyTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60904")]
     public async Task Copy_MultipleSegments()
     {
         var segments = new List<byte[]>

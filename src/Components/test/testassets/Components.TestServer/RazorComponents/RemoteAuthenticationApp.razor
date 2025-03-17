@@ -10,6 +10,7 @@
 
 <body>
     <Components.WasmRemoteAuthentication.Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+    <script>window["__DOTNET_INTERNAL_BOOT_CONFIG_SRC"] = "dotnet.boot.js";</script>
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script>

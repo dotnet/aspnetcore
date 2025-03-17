@@ -375,12 +375,12 @@
           "dateTimeType": {
             "type": "string",
             "format": "date-time",
-            "example": "[datetime]"
+            "example": "2022-01-01T00:00:00Z"
           },
           "dateOnlyType": {
             "type": "string",
             "format": "date",
-            "example": "[datetime]"
+            "example": "2022-01-01"
           }
         }
       }

@@ -87,7 +87,7 @@ public class JSComponentInterop
             throw new ArgumentOutOfRangeException($"{nameof(parameterCount)} must be between 0 and {MaxParameters}.");
         }
 
-        var componentType = Renderer.GetRootComponentType(componentId);
+        var componentType = Renderer.GetRootTypeType(componentId);
         var parameterViewBuilder = new ParameterViewBuilder(parameterCount);
 
         var parametersJsonEnumerator = parametersJson.EnumerateObject();

@@ -50,7 +50,6 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
     <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />

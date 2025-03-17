@@ -13,4 +13,10 @@
 @*#if (UseWebAssembly) -->
 @using BlazorWeb_CSharp.Client
 ##endif*@
+@*#if (UseServer && UseWebAssembly && InteractiveAtRoot) -->
+@using BlazorWeb_CSharp.Client.Layout
+##endif*@
 @using BlazorWeb_CSharp.Components
+@*#if (UseServer && (!UseWebAssembly || !InteractiveAtRoot)) -->
+@using BlazorWeb_CSharp.Components.Layout
+##endif*@

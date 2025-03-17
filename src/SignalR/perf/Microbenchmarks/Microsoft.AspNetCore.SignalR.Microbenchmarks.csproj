@@ -33,8 +33,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Moq" />
     <Reference Include="System.Reactive.Linq" />
-    <Reference Include="System.Threading.Channels" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
 
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
