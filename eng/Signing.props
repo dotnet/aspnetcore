@@ -20,11 +20,11 @@
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" Exclude="$(ArtifactsPackagesDir)**\*.wixpack.zip" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
     <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" Exclude="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" />
+    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
   </ItemGroup>
 
