@@ -43,6 +43,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
+    private bool _rendererIsStopped;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -177,8 +178,16 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private void StopRenderer()
     {
-        _nonStreamingPendingTasks.Clear();
-        Dispose();
+        _rendererIsStopped = true;
+    }
+
+    protected override void ProcessPendingRender()
+    {
+        if (_rendererIsStopped)
+        {
+            return;
+        }
+        base.ProcessPendingRender();
     }
 
     // For tests only
@@ -188,7 +197,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         UpdateNamedSubmitEvents(in renderBatch);
 
-        if (_streamingUpdatesWriter is { } writer)
+        if (_streamingUpdatesWriter is { } writer && !_rendererIsStopped)
         {
             // Important: SendBatchAsStreamingUpdate *must* be invoked synchronously
             // before any 'await' in this method. That's enforced by the compiler

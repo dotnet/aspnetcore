@@ -44,8 +44,6 @@ public class GlobalInteractivityTest(
     public async Task CanSetNotFoundStatus()
     {
         var statusCode = await GetStatusCodeAsync($"/subdir/render-not-found-ssr");
-        // problem: subscription to OnNotFound queued the render event at the time when the renderer was not disposed and wants to render when it already is (we dispose of it in SetNotFoundResponse)
-        // fragment rendering does not make sense in this case but how to prevent it?
         Assert.Equal(HttpStatusCode.NotFound, statusCode);
     }
 
