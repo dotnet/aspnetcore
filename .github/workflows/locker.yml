@@ -1,7 +1,7 @@
 name: Locker - Lock stale issues
 on:
   schedule:
-    - cron: '34 10 * * 1-5' # Once per weekday, overnight PT, uncommon minute of hour
+    - cron: '34 12 * * 1-5' # Once per weekday, overnight PT, uncommon minute of hour
 
   workflow_dispatch:
     # Manual triggering through the GitHub UI, API, or CLI
