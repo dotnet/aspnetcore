@@ -31,8 +31,6 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWapFac
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-        Assert.Equal(5000, client.BaseAddress.Port);
-
         Assert.Contains("first", responseContent);
         Assert.Contains("second", responseContent);
         Assert.Contains("wall", responseContent);

@@ -9,6 +9,7 @@ public class KestrelBasedWapFactory : WebApplicationFactory<SimpleWebSite.Startu
 {
     public KestrelBasedWapFactory() : base()
     {
-        this.UseKestrel();
+        // Use dynamically assigned port to avoid test conflicts in CI.
+        this.UseKestrel(0);
     }
 }
