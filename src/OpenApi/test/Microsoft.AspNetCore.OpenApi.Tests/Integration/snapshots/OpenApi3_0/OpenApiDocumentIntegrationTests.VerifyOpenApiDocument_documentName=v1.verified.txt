@@ -141,6 +141,7 @@
           },
           "title": {
             "type": "string",
+            "nullable": true,
             "description": "The title of the to-do item."
           },
           "completed": {
@@ -177,6 +178,7 @@
           },
           "title": {
             "type": "string",
+            "nullable": true,
             "description": "The title of the to-do item."
           },
           "completed": {

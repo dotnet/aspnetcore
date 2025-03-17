@@ -123,7 +123,8 @@
             "format": "double"
           },
           "color": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "sides": {
             "type": "integer",
@@ -144,7 +145,8 @@
             "format": "double"
           },
           "color": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "sides": {
             "type": "integer",
@@ -168,6 +170,7 @@
           },
           "title": {
             "type": "string",
+            "nullable": true,
             "description": "The title of the to-do item."
           },
           "completed": {
@@ -190,7 +193,8 @@
             "format": "double"
           },
           "color": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "sides": {
             "type": "integer",

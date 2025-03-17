@@ -241,7 +241,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "description": "An item on the board."
@@ -254,10 +257,16 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "description": "The project that contains Todo items."
@@ -270,11 +279,17 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The name of the project."
           },
           "description": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The description of the project."
           }
         },
@@ -293,7 +308,10 @@
             "format": "int32"
           },
           "title": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "completed": {
             "type": "boolean"
@@ -313,11 +331,17 @@
             "format": "int32"
           },
           "name": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The name of the todo."
           },
           "description": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "A description of the todo."
           }
         },
@@ -336,11 +360,17 @@
             "format": "int32"
           },
           "name": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The name of the todo, overridden."
           },
           "description": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "Another description of the todo."
           }
         }

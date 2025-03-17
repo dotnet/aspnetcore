@@ -91,7 +91,11 @@ public sealed partial class XmlCommentGenerator
         var comments = new List<(MemberKey, XmlComment?)>();
         foreach (var (name, value) in input.RawComments)
         {
-            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol)
+            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
+                symbol.IsAccessibleType() &&
+                // Skip static classes that are just containers for members with annotations
+                // since they cannot be instantiated.
+                symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
             {
                 var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
                 if (parsedComment is not null)

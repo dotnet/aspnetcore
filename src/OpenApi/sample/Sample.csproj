@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
+    <!-- Disable to match nullability annotations in test environment. -->
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Required to generated trimmable Map-invocations. -->
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
@@ -22,11 +23,6 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.cs" />
-    <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.Polymorphism.cs" />
   </ItemGroup>
 
   <!-- Required to generated trimmable Map-invocations. -->

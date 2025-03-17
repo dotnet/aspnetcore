@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
+using Microsoft.AspNetCore.OpenApi.SourceGenerators.Xml;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators;
@@ -44,7 +45,7 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
     {
         _cancellationToken.ThrowIfCancellationRequested();
 
-        if (!IsDeclaredInAssembly(type) || !_exportedTypes.Add(type))
+        if (!IsDeclaredInAssembly(type) || !type.IsAccessibleType() || !_exportedTypes.Add(type))
         {
             return;
         }
@@ -61,7 +62,7 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
         foreach (var property in properties)
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            if (IsDeclaredInAssembly(property) && _exportedProperties.Add(property))
+            if (IsDeclaredInAssembly(property) && property.IsAccessibleType() && _exportedProperties.Add(property))
             {
                 property.Type.Accept(this);
             }
@@ -70,7 +71,7 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
         foreach (var method in methods)
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            if (IsDeclaredInAssembly(method) && _exportedMethods.Add(method))
+            if (IsDeclaredInAssembly(method) && method.IsAccessibleType() && _exportedMethods.Add(method))
             {
                 method.Accept(this);
             }

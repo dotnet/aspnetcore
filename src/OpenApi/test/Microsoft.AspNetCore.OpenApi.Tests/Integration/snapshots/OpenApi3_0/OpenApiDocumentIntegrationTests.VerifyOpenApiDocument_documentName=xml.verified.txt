@@ -241,7 +241,8 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "description": "An item on the board."
@@ -254,10 +255,12 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "description": "The project that contains Todo items."
@@ -271,10 +274,12 @@
         "properties": {
           "name": {
             "type": "string",
+            "nullable": true,
             "description": "The name of the project."
           },
           "description": {
             "type": "string",
+            "nullable": true,
             "description": "The description of the project."
           }
         },
@@ -293,7 +298,8 @@
             "format": "int32"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "completed": {
             "type": "boolean"
@@ -314,10 +320,12 @@
           },
           "name": {
             "type": "string",
+            "nullable": true,
             "description": "The name of the todo."
           },
           "description": {
             "type": "string",
+            "nullable": true,
             "description": "A description of the todo."
           }
         },
@@ -337,10 +345,12 @@
           },
           "name": {
             "type": "string",
+            "nullable": true,
             "description": "The name of the todo, overridden."
           },
           "description": {
             "type": "string",
+            "nullable": true,
             "description": "Another description of the todo."
           }
         }

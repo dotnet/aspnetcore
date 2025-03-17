@@ -140,7 +140,10 @@
             "format": "int32"
           },
           "title": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The title of the to-do item."
           },
           "completed": {
@@ -176,7 +179,10 @@
             "format": "int32"
           },
           "title": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "The title of the to-do item."
           },
           "completed": {
