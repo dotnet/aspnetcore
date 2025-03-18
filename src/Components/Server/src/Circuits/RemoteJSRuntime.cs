@@ -125,7 +125,7 @@ internal partial class RemoteJSRuntime : JSRuntime
 
         var invocationInfoJson = invocationInfo.ToJson();
 
-        Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle ?? -1, invocationInfo.Identifier);
+        Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle, invocationInfo.Identifier);
 
         _clientProxy.SendAsync("JS.BeginInvokeJS", invocationInfoJson);
     }

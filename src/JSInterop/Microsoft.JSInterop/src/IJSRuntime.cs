@@ -37,15 +37,56 @@ public interface IJSRuntime
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
     ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
     ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="identifier"></param>
+    /// <returns></returns>
     ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="identifier"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="identifier"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value);
 
+    /// <summary>
+    /// TODO(OR): Add documentation
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="identifier"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken);
 }

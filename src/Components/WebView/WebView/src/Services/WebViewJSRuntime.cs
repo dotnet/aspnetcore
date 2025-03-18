@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -29,19 +28,15 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
-    protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
         if (_ipcSender is null)
         {
             throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
         }
 
-        _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
-    }
-
-    protected override void BeginInvokeJSX(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallType callType, JSCallResultType resultType, long targetInstanceId)
-    {
-        throw new NotImplementedException();
+        // TODO(OR): Add CallType support
+        _ipcSender.BeginInvokeJS(invocationInfo);
     }
 
     protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

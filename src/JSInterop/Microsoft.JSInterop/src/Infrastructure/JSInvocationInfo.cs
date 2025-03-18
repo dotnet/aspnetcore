@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,7 +15,7 @@ public sealed class JSInvocationInfo
     /// <summary>
     /// The identifier for the interop call, or zero if no async callback is required.
     /// </summary>
-    public long? AsyncHandle { get; init; }
+    public long AsyncHandle { get; init; }
 
     /// <summary>
     /// The instance ID of the target JS object.
@@ -39,6 +40,7 @@ public sealed class JSInvocationInfo
     /// <summary>
     /// A JSON representation of the arguments.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public string? ArgsJson { get; init; }
 
     /// <summary>

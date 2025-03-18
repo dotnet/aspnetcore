@@ -27,6 +27,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     {
         try
         {
+            // TODO(OR): Add support for CallType
             return InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
         }
         catch (Exception ex)
@@ -36,14 +37,15 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
-        InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
-    }
-
-    protected override void BeginInvokeJSX(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallType callType, JSCallResultType resultType, long targetInstanceId)
-    {
-        throw new NotImplementedException();
+        // TODO(OR): Add support for CallType
+        InternalCalls.InvokeJSJson(
+            invocationInfo.Identifier ?? "",
+            invocationInfo.TargetInstanceId,
+            (int)invocationInfo.ResultType,
+            invocationInfo.ArgsJson ?? "[]",
+            invocationInfo.AsyncHandle);
     }
 
     /// <inheritdoc />

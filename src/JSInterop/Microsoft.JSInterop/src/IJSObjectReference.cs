@@ -37,10 +37,6 @@ public interface IJSObjectReference : IAsyncDisposable
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
 
-    ValueTask<TValue> InvokeAsyncX<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args);
-
-    ValueTask<TValue> InvokeAsyncX<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
-
     ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args);
 
     ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);

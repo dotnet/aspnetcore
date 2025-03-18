@@ -290,7 +290,7 @@ export module DotNet {
   }
 
   export interface JSInvocationInfo {
-      asyncHandle?: number,
+      asyncHandle: number,
       targetInstanceId: number,
       identifier: string | null,
       callType: JSCallType,
@@ -355,6 +355,7 @@ export module DotNet {
      * @returns JSON representation of the invocation result.
      */
     invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null;
+    // TODO(OR): Add support for CallType, refactor to use JSInvocationInfo
 
     /**
      * Invokes the specified synchronous or asynchronous JavaScript function.
@@ -430,6 +431,7 @@ export module DotNet {
           return this._dotNetCallDispatcher;
       }
 
+      // TODO(OR): Add support for CallType, refactor to use JSInvocationInfo
       invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null {
           const args = parseJsonWithRevivers(this, argsJson);
           const jsFunction = findJSFunction(identifier, targetInstanceId);

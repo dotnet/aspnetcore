@@ -69,7 +69,7 @@ public class JSObjectReferenceTest
     {
         public int BeginInvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
         {
             BeginInvokeJSInvocationCount++;
         }
@@ -83,7 +83,7 @@ public class JSObjectReferenceTest
     {
         public int InvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
         {
         }
 

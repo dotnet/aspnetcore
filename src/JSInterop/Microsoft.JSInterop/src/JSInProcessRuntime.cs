@@ -45,6 +45,8 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
         => Invoke<TValue>(identifier, 0, args);
 
+    // TODO(OR): Add sync variants of new IJSRuntime methods
+
     /// <summary>
     /// Performs a synchronous function invocation.
     /// </summary>

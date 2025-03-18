@@ -107,7 +107,7 @@ public class JSInProcessRuntimeBaseTest
             public string? ArgsJson { get; set; }
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
             => throw new NotImplementedException("This test only covers sync calls");
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

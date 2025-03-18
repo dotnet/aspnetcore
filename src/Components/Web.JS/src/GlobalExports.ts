@@ -17,6 +17,7 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 
@@ -52,7 +53,7 @@ export interface IBlazor {
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
     NavigationLock: typeof NavigationLock;
-    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number) => string | null;
+    invokeJSJson?: (invocationInfoString: string) => string | null;
     endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
