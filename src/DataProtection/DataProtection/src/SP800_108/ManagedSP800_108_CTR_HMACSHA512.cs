@@ -136,11 +136,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         }
         finally
         {
-            if (prf is IDisposable disposablePrf)
-            {
-                disposablePrf.Dispose();
-            }
-
             prfInput.Clear();
         }
     }

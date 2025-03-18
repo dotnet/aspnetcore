@@ -151,9 +151,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         return retVal;
     }
 
-    private KeyedHashAlgorithm CreateValidationAlgorithm()
-        => CreateValidationAlgorithm(key: null);
-
     private KeyedHashAlgorithm CreateValidationAlgorithm(byte[]? key = null)
     {
         var retVal = _validationAlgorithmFactory();
