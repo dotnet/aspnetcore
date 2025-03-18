@@ -35,8 +35,6 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
     // 256 00-01-00-00-00-20-00-00-00-0C-00-00-00-10-00-00-00-10-E7-DC-CE-66-DF-85-5A-32-3A-6B-B7-BD-7A-59-BE-45
     private static readonly byte[] AES_256_GCM_Header = new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0xE7, 0xDC, 0xCE, 0x66, 0xDF, 0x85, 0x5A, 0x32, 0x3A, 0x6B, 0xB7, 0xBD, 0x7A, 0x59, 0xBE, 0x45 };
 
-    private static readonly Func<byte[], HashAlgorithm> _kdkPrfFactory = key => new HMACSHA512(key); // currently hardcoded to SHA512
-
     private readonly byte[] _contextHeader;
 
     private readonly Secret _keyDerivationKey;
@@ -112,13 +110,13 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                 try
                 {
                     _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
                         label: additionalAuthenticatedData,
                         contextHeader: _contextHeader,
-                        context: keyModifier,
-                        prfFactory: _kdkPrfFactory,
-                        output: new ArraySegment<byte>(derivedKey));
+                        contextData: keyModifier,
+                        operationSubkey: derivedKey,
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
 
                     // Perform the decryption operation
                     var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
@@ -185,13 +183,13 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                 try
                 {
                     _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
                         label: additionalAuthenticatedData,
                         contextHeader: _contextHeader,
-                        context: keyModifier,
-                        prfFactory: _kdkPrfFactory,
-                        output: new ArraySegment<byte>(derivedKey));
+                        contextData: keyModifier,
+                        operationSubkey: derivedKey,
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
 
                     // do gcm
                     var nonce = new Span<byte>(retVal, nonceOffset, NONCE_SIZE_IN_BYTES);
