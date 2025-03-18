@@ -23,7 +23,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         Span<byte> validationSubkey)
     {
         // netFX and netStandard dont have API to NOT use HashAlgorithm
-        HashAlgorithm prf = new HMACSHA512(kdk);
+        using HashAlgorithm prf = new HMACSHA512(kdk);
 
         // kdk is passed just to have a shared implementation for different framework versions
         DeriveKeys(kdk, label, contextHeader, contextData, operationSubkey, validationSubkey, prf);
@@ -122,6 +122,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                     prfOutput.Slice(0, bytesToWrite).CopyTo(destination);
                     operationSubKeyIndex += bytesToWrite;
                 }
+
                 if (operationSubKeyIndex == operationSubkey.Length && leftOverBytes != 0) // we have filled the operationSubKey. It's time for the validationSubKey
                 {
                     var destination = validationSubkey.Slice(validationSubKeyIndex, leftOverBytes);
@@ -130,10 +131,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 }
 
                 outputCount -= numBytesToCopyThisIteration;
-
-#if !NET10_0_OR_GREATER
-                prfOutput.Clear();
-#endif
+                prfOutput.Clear(); // contains key material, so delete it
             }
         }
         finally
@@ -144,9 +142,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
             }
 
             prfInput.Clear();
-#if NET10_0_OR_GREATER
-            prfOutput.Clear();
-#endif
         }
     }
 }

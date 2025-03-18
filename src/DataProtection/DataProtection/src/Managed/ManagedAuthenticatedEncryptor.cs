@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -255,7 +256,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
                     var iv = protectedPayload.Array.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
-                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv); // symmetricAlgorithm is created with CBC mode
+                    // symmetricAlgorithm is created with CBC mode (see CreateSymmetricAlgorithm())
+                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
 #else
                     var iv = protectedPayload.Array!.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes).ToArray();
 
@@ -299,7 +301,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     {
         plaintext.Validate();
         additionalAuthenticatedData.Validate();
-        var plaintTextSpan = plaintext.AsSpan();
+        var plainTextSpan = plaintext.AsSpan();
 
         try
         {
@@ -373,7 +375,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     // Later framework has an API to pre-calculate optimal length of the ciphertext.
                     // That means we can avoid allocating more data than we need.
 
-                    var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintTextSpan.Length); // CBC because symmetricAlgorithm is created with CBC mode
+                    var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainTextSpan.Length); // CBC because symmetricAlgorithm is created with CBC mode
                     var macLength = _validationAlgorithmDigestLengthInBytes;
 
                     // allocating an array of a specific required length
@@ -384,12 +386,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #endif
 
 #if NET10_0_OR_GREATER
-                    // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
+                    // Step 2: Copy the key modifier to the output stream (part of a header)
                     keyModifier.CopyTo(outputSpan.Slice(start: 0, length: keyModifierLength));
 
-                    // Step 3: Generate IV for this operation right into the result array (no allocation)
-                    _genRandom.GenRandom(outputSpan.Slice(start: keyModifierLength, length: ivLength));
+                    // Step 3: Generate IV for this operation right into the output stream (no allocation)
+                    // key modifier and IV together act as a header.
                     var iv = outputSpan.Slice(start: keyModifierLength, length: ivLength);
+                    _genRandom.GenRandom(iv);
 #else
                     // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
                     outputStream.Write(keyModifier, 0, keyModifier.Length);
@@ -402,7 +405,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #if NET10_0_OR_GREATER
                     // Step 4: Perform the encryption operation.
                     // encrypting plaintext into the target array directly
-                    symmetricAlgorithm.EncryptCbc(plaintTextSpan, iv, outputSpan.Slice(start: keyModifierLength + ivLength, length: cipherTextLength));
+                    symmetricAlgorithm.EncryptCbc(plainTextSpan, iv, outputSpan.Slice(start: keyModifierLength + ivLength, length: cipherTextLength));
 
                     // At this point, outputStream := { keyModifier || IV || ciphertext }
 
@@ -489,30 +492,32 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
         byte[]? correctHashArray = null;
         Span<byte> correctHash = hashSize <= 128
-            ? stackalloc byte[hashSize]
+            ? stackalloc byte[128].Slice(0, hashSize)
             : (correctHashArray = new byte[hashSize]);
-
-        var payloadMacSpan = payloadArray!.AsSpan(macOffset, eofOffset - macOffset);
 
         try
         {
 #if NET10_0_OR_GREATER
             var hashSource = payloadArray!.AsSpan(ivOffset, macOffset - ivOffset);
 
+            int bytesWritten;
             if (validationAlgorithm is HMACSHA256)
             {
-                HMACSHA256.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
+                bytesWritten = HMACSHA256.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
             }
             else if (validationAlgorithm is HMACSHA512)
             {
-                HMACSHA512.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
+                bytesWritten = HMACSHA512.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
             }
             else
             {
                 // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
                 validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
-                validationAlgorithm.TryComputeHash(hashSource, correctHash, out _);
+                var success = validationAlgorithm.TryComputeHash(hashSource, correctHash, out bytesWritten);
+                Debug.Assert(success);
             }
+
+            Debug.Assert(bytesWritten == hashSize);
 #else
             // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
             validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
@@ -520,7 +525,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #endif
 
             // Step 4: Validate the MAC provided as part of the payload.
-            // var payloadMacSpan = protectedPayload.Array!.AsSpan(macOffset, eofOffset - macOffset);
+            var payloadMacSpan = payloadArray!.AsSpan(macOffset, eofOffset - macOffset);
             if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, payloadMacSpan))
             {
                 throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
@@ -528,10 +533,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
         finally
         {
-            if (correctHashArray is not null)
-            {
-                Array.Clear(correctHashArray, 0, correctHashArray.Length);
-            }
+            correctHash.Clear();
         }
     }
 
