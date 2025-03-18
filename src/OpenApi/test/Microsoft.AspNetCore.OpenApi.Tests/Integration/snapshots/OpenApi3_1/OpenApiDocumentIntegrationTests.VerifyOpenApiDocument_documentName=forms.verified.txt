@@ -145,6 +145,9 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "file"
+                ],
                 "type": "object",
                 "allOf": [
                   {
@@ -199,10 +202,7 @@
             "format": "int32"
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "The title of the to-do item."
           },
           "completed": {

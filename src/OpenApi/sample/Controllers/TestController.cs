@@ -40,7 +40,7 @@ public class TestController : ControllerBase
         [FromRoute]
         [MinLength(5)]
         [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "MinLengthAttribute works without reflection on string properties.")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     public record MvcTodo(string Title, string Description, bool IsCompleted);

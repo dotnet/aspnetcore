@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 /// <param name="Title">The title of the to-do item.</param>
 /// <param name="Completed">Indicates whether the to-do item is completed.</param>
 /// <param name="CreatedAt">The date and time when the to-do item was created.</param>
-public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
+internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
 /// <summary>
 /// Represents a to-do item with a due date.
@@ -27,14 +27,14 @@ public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 /// <param name="Completed">Indicates whether the to-do item is completed.</param>
 /// <param name="CreatedAt">The date and time when the to-do item was created.</param>
 /// <param name="DueDate">The due date of the to-do item.</param>
-public record TodoWithDueDate(int Id, string Title, bool Completed, DateTime CreatedAt, DateTime DueDate) : Todo(Id, Title, Completed, CreatedAt);
+internal record TodoWithDueDate(int Id, string Title, bool Completed, DateTime CreatedAt, DateTime DueDate) : Todo(Id, Title, Completed, CreatedAt);
 
 /// <summary>
 /// Represents an error.
 /// </summary>
 /// <param name="Code">The error code.</param>
 /// <param name="Message">The error message.</param>
-public record Error(int Code, string Message);
+internal record Error(int Code, string Message);
 
 /// <summary>
 /// Represents a resume upload.
@@ -42,7 +42,7 @@ public record Error(int Code, string Message);
 /// <param name="Name">The name of the resume.</param>
 /// <param name="Description">The description of the resume.</param>
 /// <param name="Resume">The resume file.</param>
-public record ResumeUpload(string Name, string Description, IFormFile Resume);
+internal record ResumeUpload(string Name, string Description, IFormFile Resume);
 
 /// <summary>
 /// Represents a result of an operation.
@@ -51,12 +51,12 @@ public record ResumeUpload(string Name, string Description, IFormFile Resume);
 /// <param name="IsSuccessful">Indicates whether the operation was successful.</param>
 /// <param name="Value">The value of the result.</param>
 /// <param name="Error">The error associated with the result, if any.</param>
-public record Result<T>(bool IsSuccessful, T Value, Error Error);
+internal record Result<T>(bool IsSuccessful, T Value, Error Error);
 
 /// <summary>
 /// Represents a vehicle.
 /// </summary>
-public class Vehicle
+internal class Vehicle
 {
     /// <summary>
     /// Gets or sets the number of wheels.
@@ -72,7 +72,7 @@ public class Vehicle
 /// <summary>
 /// Represents a car.
 /// </summary>
-public class Car : Vehicle
+internal class Car : Vehicle
 {
     /// <summary>
     /// Gets or sets the number of doors.
@@ -83,7 +83,7 @@ public class Car : Vehicle
 /// <summary>
 /// Represents a boat.
 /// </summary>
-public class Boat : Vehicle
+internal class Boat : Vehicle
 {
     /// <summary>
     /// Gets or sets the length of the boat.
@@ -95,7 +95,7 @@ public class Boat : Vehicle
 /// Represents the status of an operation.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<Status>))]
-public enum Status
+internal enum Status
 {
     /// <summary>
     /// The operation is pending.
@@ -116,7 +116,7 @@ public enum Status
 /// <summary>
 /// Represents a proposal.
 /// </summary>
-public class Proposal
+internal class Proposal
 {
     /// <summary>
     /// Gets or sets the proposal element.
@@ -138,7 +138,7 @@ public class Proposal
 /// <param name="totalItems">The total number of items in the collection.</param>
 /// <param name="totalPages">The total number of pages available.</param>
 /// <param name="items">The collection of items for the current page.</param>
-public class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, int totalPages, IEnumerable<T> items) where T : class
+internal class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, int totalPages, IEnumerable<T> items) where T : class
 {
     /// <summary>
     /// Gets or sets the current page index (zero-based).
@@ -166,7 +166,7 @@ public class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, int
     public IEnumerable<T> Items { get; set; } = items;
 }
 
-public class RequiredTodo
+internal class RequiredTodo
 {
     [Required]
     public string Title { get; set; } = string.Empty;
@@ -176,7 +176,7 @@ public class RequiredTodo
 }
 
 #nullable enable
-public class ProjectBoard
+internal class ProjectBoard
 {
     [Range(1, 100)]
     [DefaultValue(null)]
@@ -204,17 +204,17 @@ public class ProjectBoard
     public IEnumerable<string>? Tags { get; set; }
 }
 
-public sealed record ProjectBoardItem(string Name);
+internal sealed record ProjectBoardItem(string Name);
 
 #nullable restore
 
-public class Account
+internal class Account
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
 
-public class Product
+internal class Product
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

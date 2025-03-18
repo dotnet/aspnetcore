@@ -6,17 +6,17 @@ using System.Text.Json.Serialization;
 // Type hierarchy for validating abstract base type with string discriminators.
 [JsonDerivedType(typeof(Triangle), typeDiscriminator: "triangle")]
 [JsonDerivedType(typeof(Square), typeDiscriminator: "square")]
-public abstract class Shape
+internal abstract class Shape
 {
     public string Color { get; set; } = string.Empty;
     public int Sides { get; set; }
 }
 
-public class Triangle : Shape
+internal class Triangle : Shape
 {
     public double Hypotenuse { get; set; }
 }
-public class Square : Shape
+internal class Square : Shape
 {
     public double Area { get; set; }
 }
@@ -25,21 +25,21 @@ public class Square : Shape
 [JsonDerivedType(typeof(WeatherForecastWithCity), 0)]
 [JsonDerivedType(typeof(WeatherForecastWithTimeSeries), 1)]
 [JsonDerivedType(typeof(WeatherForecastWithLocalNews), 2)]
-public abstract class WeatherForecastBase { }
+internal abstract class WeatherForecastBase { }
 
-public class WeatherForecastWithCity : WeatherForecastBase
+internal class WeatherForecastWithCity : WeatherForecastBase
 {
     public required string City { get; set; }
 }
 
-public class WeatherForecastWithTimeSeries : WeatherForecastBase
+internal class WeatherForecastWithTimeSeries : WeatherForecastBase
 {
     public DateTimeOffset Date { get; set; }
     public int TemperatureC { get; set; }
     public required string Summary { get; set; }
 }
 
-public class WeatherForecastWithLocalNews : WeatherForecastBase
+internal class WeatherForecastWithLocalNews : WeatherForecastBase
 {
     public required string News { get; set; }
 }
@@ -48,14 +48,14 @@ public class WeatherForecastWithLocalNews : WeatherForecastBase
 [JsonDerivedType(typeof(Student), typeDiscriminator: "student")]
 [JsonDerivedType(typeof(Teacher), typeDiscriminator: "teacher")]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "discriminator")]
-public abstract class Person { }
+internal abstract class Person { }
 
-public class Student : Person
+internal class Student : Person
 {
     public decimal GPA { get; set; }
 }
 
-public class Teacher : Person
+internal class Teacher : Person
 {
     public required string Subject { get; set; }
 }
@@ -65,16 +65,16 @@ public class Teacher : Person
 // `anyOf` set and no `discriminator` property.
 [JsonDerivedType(typeof(PaintColor), typeDiscriminator: "paint")]
 [JsonDerivedType(typeof(FabricColor), typeDiscriminator: "fabric")]
-public class Color
+internal class Color
 {
     public required string HexCode { get; set; }
 }
 
-public class PaintColor : Color
+internal class PaintColor : Color
 {
     public bool IsMatte { get; set; }
 }
-public class FabricColor : Color
+internal class FabricColor : Color
 {
     public required string Dye { get; set; }
 }
@@ -85,16 +85,16 @@ public class FabricColor : Color
 [JsonDerivedType(typeof(Cat), typeDiscriminator: "cat")]
 [JsonDerivedType(typeof(Dog), typeDiscriminator: "dog")]
 [JsonDerivedType(typeof(Pet), typeDiscriminator: "pet")]
-public class Pet
+internal class Pet
 {
     public required string Name { get; set; }
 }
 
-public class Cat : Pet
+internal class Cat : Pet
 {
     public bool IsKitten { get; set; }
 }
-public class Dog : Pet
+internal class Dog : Pet
 {
     public required string Breed { get; set; }
 }
@@ -104,17 +104,17 @@ public class Dog : Pet
 // `discriminator` mapping.
 [JsonDerivedType(typeof(Animal))]
 [JsonDerivedType(typeof(Plant))]
-public class Organism
+internal class Organism
 {
     public required string Name { get; set; }
 }
 
-public class Animal : Organism
+internal class Animal : Organism
 {
     public int Legs { get; set; }
 }
 
-public class Plant : Organism
+internal class Plant : Organism
 {
     public bool IsEdible { get; set; }
 }
@@ -122,13 +122,13 @@ public class Plant : Organism
 // Type hierarchy for validating polymorphic types with self-references.
 [JsonDerivedType(typeof(Manager), typeDiscriminator: "manager")]
 [JsonDerivedType(typeof(Employee), typeDiscriminator: "employee")]
-public class Employee
+internal class Employee
 {
     public required string Name { get; set; }
     public required Employee Manager { get; set; }
 }
 
-public class Manager : Employee
+internal class Manager : Employee
 {
     public required string Department { get; set; }
 }

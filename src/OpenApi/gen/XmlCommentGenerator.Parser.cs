@@ -92,7 +92,9 @@ public sealed partial class XmlCommentGenerator
         foreach (var (name, value) in input.RawComments)
         {
             if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
-                symbol.IsAccessibleType() &&
+                // Only include symbols that are declared in the application assembly or are
+                // accessible from the application assembly.
+                (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, input.Compilation.Assembly) || symbol.IsAccessibleType()) &&
                 // Skip static classes that are just containers for members with annotations
                 // since they cannot be instantiated.
                 symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })

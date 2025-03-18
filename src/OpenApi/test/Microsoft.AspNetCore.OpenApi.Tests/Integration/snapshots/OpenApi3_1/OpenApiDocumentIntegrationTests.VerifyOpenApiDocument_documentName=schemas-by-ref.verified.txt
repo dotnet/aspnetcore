@@ -519,10 +519,7 @@
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -530,10 +527,7 @@
         "required": [
           "relatedLocation"
         ],
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": "object",
         "properties": {
           "relatedLocation": {
             "$ref": "#/components/schemas/LocationDto"
@@ -548,10 +542,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "parent": {
             "$ref": "#/components/schemas/Category"
@@ -578,10 +569,7 @@
         "type": "object",
         "properties": {
           "seq1": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "array",
               "items": {
@@ -590,19 +578,13 @@
             }
           },
           "seq2": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": { }
           }
         }
       },
       "Item": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": "object",
         "properties": {
           "name": { },
           "value": {
@@ -626,10 +608,7 @@
         "required": [
           "address"
         ],
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": "object",
         "properties": {
           "address": {
             "$ref": "#/components/schemas/AddressDto"
@@ -637,20 +616,14 @@
         }
       },
       "ParentObject": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "format": "int32"
           },
           "children": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChildObject"
             }
@@ -704,10 +677,7 @@
             "type": "string"
           },
           "subject": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -719,10 +689,7 @@
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -771,10 +738,7 @@
             "format": "double"
           },
           "color": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -795,10 +759,7 @@
             "format": "double"
           },
           "color": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -813,10 +774,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -828,10 +786,7 @@
             "format": "double"
           },
           "color": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -876,10 +831,7 @@
             "type": "integer"
           },
           "city": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -895,10 +847,7 @@
             "type": "integer"
           },
           "news": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -922,10 +871,7 @@
             "format": "int32"
           },
           "summary": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       }

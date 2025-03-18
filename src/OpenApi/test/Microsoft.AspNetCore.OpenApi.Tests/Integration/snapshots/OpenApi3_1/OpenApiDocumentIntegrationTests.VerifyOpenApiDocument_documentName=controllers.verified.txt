@@ -118,16 +118,10 @@
         "type": "object",
         "properties": {
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "isCompleted": {
             "type": "boolean"

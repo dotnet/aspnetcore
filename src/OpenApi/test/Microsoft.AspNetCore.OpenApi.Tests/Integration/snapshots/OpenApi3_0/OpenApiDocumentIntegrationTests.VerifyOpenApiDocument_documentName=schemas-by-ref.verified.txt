@@ -519,8 +519,7 @@
             "format": "int32"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -529,7 +528,6 @@
           "relatedLocation"
         ],
         "type": "object",
-        "nullable": true,
         "properties": {
           "relatedLocation": {
             "$ref": "#/components/schemas/LocationDto"
@@ -544,8 +542,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "parent": {
             "$ref": "#/components/schemas/Category"
@@ -573,7 +570,6 @@
         "properties": {
           "seq1": {
             "type": "array",
-            "nullable": true,
             "items": {
               "type": "array",
               "items": {
@@ -583,14 +579,12 @@
           },
           "seq2": {
             "type": "array",
-            "nullable": true,
             "items": { }
           }
         }
       },
       "Item": {
         "type": "object",
-        "nullable": true,
         "properties": {
           "name": { },
           "value": {
@@ -615,7 +609,6 @@
           "address"
         ],
         "type": "object",
-        "nullable": true,
         "properties": {
           "address": {
             "$ref": "#/components/schemas/AddressDto"
@@ -624,7 +617,6 @@
       },
       "ParentObject": {
         "type": "object",
-        "nullable": true,
         "properties": {
           "id": {
             "type": "integer",
@@ -632,7 +624,6 @@
           },
           "children": {
             "type": "array",
-            "nullable": true,
             "items": {
               "$ref": "#/components/schemas/ChildObject"
             }
@@ -686,8 +677,7 @@
             "type": "string"
           },
           "subject": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -699,8 +689,7 @@
             "format": "int32"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -749,8 +738,7 @@
             "format": "double"
           },
           "color": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -771,8 +759,7 @@
             "format": "double"
           },
           "color": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -787,8 +774,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -800,8 +786,7 @@
             "format": "double"
           },
           "color": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "sides": {
             "type": "integer",
@@ -846,8 +831,7 @@
             "type": "integer"
           },
           "city": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -863,8 +847,7 @@
             "type": "integer"
           },
           "news": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -888,8 +871,7 @@
             "format": "int32"
           },
           "summary": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       }

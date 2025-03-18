@@ -145,6 +145,9 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "file"
+                ],
                 "type": "object",
                 "allOf": [
                   {
@@ -200,7 +203,6 @@
           },
           "title": {
             "type": "string",
-            "nullable": true,
             "description": "The title of the to-do item."
           },
           "completed": {
