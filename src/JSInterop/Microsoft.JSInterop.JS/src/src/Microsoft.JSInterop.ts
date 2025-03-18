@@ -118,7 +118,7 @@ export module DotNet {
    * @param args Arguments to pass to the method, each of which must be JSON-serializable.
    * @returns The result of the operation.
    */
-  export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
+  export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
       const dispatcher = getDefaultCallDispatcher();
       return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
   }
@@ -342,7 +342,7 @@ export module DotNet {
      * @param args Arguments to pass to the method, each of which must be JSON-serializable.
      * @returns The result of the operation.
      */
-    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T;
+    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): | null;
 
     /**
      * Invokes the specified .NET public static method asynchronously.
@@ -436,7 +436,7 @@ export module DotNet {
           this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
       }
 
-      invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
+      invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
           return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
       }
 
@@ -444,7 +444,7 @@ export module DotNet {
           return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
       }
 
-      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
+      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
           if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
               const argsJson = stringifyArgs(this, args);
               const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
@@ -564,7 +564,7 @@ export module DotNet {
       constructor(private readonly _id: number, private readonly _callDispatcher: CallDispatcher) {
       }
 
-      public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T {
+      public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T | null {
           return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
       }
 
