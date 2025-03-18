@@ -3,8 +3,10 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -70,8 +72,8 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private static bool IsClass(Type type)
     {
-        // Skip primitives, enums, and common built-in types that don't need validation
-        // if they don't have attributes
+        // Skip primitives, enums, common built-in types, and types that are specially
+        // handled by RDF/RDG that don't need validation if they don't have attributes
         if (type.IsPrimitive ||
             type.IsEnum ||
             type == typeof(string) ||
@@ -81,7 +83,17 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             type == typeof(TimeOnly) ||
             type == typeof(DateOnly) ||
             type == typeof(TimeSpan) ||
-            type == typeof(Guid))
+            type == typeof(Guid) ||
+            type == typeof(IFormFile) ||
+            type == typeof(IFormFileCollection) ||
+            type == typeof(IFormCollection) ||
+            type == typeof(HttpContext) ||
+            type == typeof(HttpRequest) ||
+            type == typeof(HttpResponse) ||
+            type == typeof(ClaimsPrincipal) ||
+            type == typeof(CancellationToken) ||
+            type == typeof(Stream) ||
+            type == typeof(PipeReader))
         {
             return false;
         }

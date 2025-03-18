@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.IO.Pipelines;
 using System.Reflection;
+using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
@@ -38,6 +40,20 @@ public class RuntimeValidatableParameterInfoResolverTests
     [InlineData(typeof(Guid))]
     [InlineData(typeof(decimal))]
     [InlineData(typeof(DayOfWeek))] // Enum
+    [InlineData(typeof(ClaimsPrincipal))]
+    [InlineData(typeof(PipeReader))]
+    [InlineData(typeof(DateTimeOffset))]
+    [InlineData(typeof(TimeOnly))]
+    [InlineData(typeof(DateOnly))]
+    [InlineData(typeof(TimeSpan))]
+    [InlineData(typeof(IFormFile))]
+    [InlineData(typeof(IFormFileCollection))]
+    [InlineData(typeof(IFormCollection))]
+    [InlineData(typeof(HttpContext))]
+    [InlineData(typeof(HttpRequest))]
+    [InlineData(typeof(HttpResponse))]
+    [InlineData(typeof(CancellationToken))]
+
     public void TryGetValidatableParameterInfo_WithSimpleTypesAndNoAttributes_ReturnsFalse(Type parameterType)
     {
         var parameterInfo = GetParameter(parameterType);

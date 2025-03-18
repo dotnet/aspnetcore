@@ -53,10 +53,7 @@ internal static class ValidationEndpointFilterFactory
                 {
                     continue;
                 }
-                // ValidationContext is not trim-friendly in codepaths that don't
-                // initialize an explicit DisplayName. We can suppress the warning here.
-                // Eventually, this can be removed when the code is updated to
-                // use https://github.com/dotnet/runtime/issues/113134.
+
                 var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, null);
                 validatableContext.ValidationContext = validationContext;
                 await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
