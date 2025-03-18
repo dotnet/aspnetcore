@@ -81,7 +81,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        if (navigationManager != null && navigationManager.IsInitialized)
+        if (navigationManager != null)
         {
             navigationManager.NotFoundEvent += SetNotFoundResponse;
         }
