@@ -53,7 +53,6 @@ public class RuntimeValidatableParameterInfoResolverTests
     [InlineData(typeof(HttpRequest))]
     [InlineData(typeof(HttpResponse))]
     [InlineData(typeof(CancellationToken))]
-
     public void TryGetValidatableParameterInfo_WithSimpleTypesAndNoAttributes_ReturnsFalse(Type parameterType)
     {
         var parameterInfo = GetParameter(parameterType);

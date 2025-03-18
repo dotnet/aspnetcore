@@ -54,7 +54,7 @@ internal static class ValidationEndpointFilterFactory
                     continue;
                 }
 
-                var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, null);
+                var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, items: null);
                 validatableContext.ValidationContext = validationContext;
                 await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
             }
