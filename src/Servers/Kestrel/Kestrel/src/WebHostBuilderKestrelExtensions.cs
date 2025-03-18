@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -79,10 +78,11 @@ public static class WebHostBuilderKestrelExtensions
     /// </returns>
     public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder)
     {
+        hostBuilder.UseSockets();
         hostBuilder.ConfigureServices(services =>
         {
             // Don't override an already-configured transport
-            services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+            //services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
             services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
             services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
