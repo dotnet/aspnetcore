@@ -1,0 +1,11 @@
+﻿@page "/render-not-found-ssr"
+@inject NavigationManager NavigationManager
+
+<p id="test-info">Any content</p>
+
+@code{
+    protected override void OnInitialized()
+    {
+        NavigationManager.NotFound();
+    }
+}
