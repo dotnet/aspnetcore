@@ -31,4 +31,10 @@
   <PropertyGroup>
     <BuildNative Condition=" '$(BuildNative)' == '' ">false</BuildNative>
   </PropertyGroup>
+
+  <!-- Don't restore w/ nuget.targets in VMR pass 2 -->
+  <!-- This allows us to hook targets before Restore in the SiteExtensions build -->
+  <PropertyGroup Condition=" '$(DotNetBuildPass)' == '2' " >
+    <RestoreUsingNuGetTargets>false</RestoreUsingNuGetTargets>
+  </PropertyGroup>
 </Project>
