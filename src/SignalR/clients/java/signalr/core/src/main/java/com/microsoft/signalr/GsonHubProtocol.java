@@ -92,11 +92,24 @@ public final class GsonHubProtocol implements HubProtocol {
                             error = reader.nextString();
                             break;
                         case "result":
-                        case "item":
                             if (invocationId == null || binder.getReturnType(invocationId) == null) {
                                 resultToken = JsonParser.parseReader(reader);
                             } else {
                                 result = gson.fromJson(reader, binder.getReturnType(invocationId));
+                            }
+                            break;
+                        case "item":
+                            if (invocationId == null || binder.getReturnType(invocationId) == null) {
+                                resultToken = JsonParser.parseReader(reader);
+                            } else {
+                                try {
+                                    result = gson.fromJson(reader, binder.getReturnType(invocationId));
+                                } catch (Exception ex) {
+                                    argumentBindingException = ex;
+                                    // Since we failed to parse the value, tell the reader to skip the failed item
+                                    // so it can successfully continue reading
+                                    reader.skipValue();
+                                }
                             }
                             break;
                         case "arguments":
@@ -167,9 +180,17 @@ public final class GsonHubProtocol implements HubProtocol {
                     case STREAM_ITEM:
                         if (resultToken != null) {
                             Type returnType = binder.getReturnType(invocationId);
-                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
+                            try {
+                                result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
+                            } catch (Exception ex) {
+                                argumentBindingException = ex;
+                            }
                         }
-                        hubMessages.add(new StreamItem(null, invocationId, result));
+                        if (argumentBindingException != null) {
+                            hubMessages.add(new StreamBindingFailureMessage(invocationId, argumentBindingException));
+                        } else {
+                            hubMessages.add(new StreamItem(null, invocationId, result));
+                        }
                         break;
                     case STREAM_INVOCATION:
                     case CANCEL_INVOCATION:
