@@ -63,6 +63,15 @@ public abstract class NavigationManager
     private bool _isInitialized;
 
     /// <summary>
+    /// Gets a value indicating whether the <see cref="NavigationManager"/> has been initialized.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="NavigationManager"/> must be initialized before it can be used to navigate or handle navigation events.
+    /// Initialization typically involves setting the base URI and the current URI.
+    /// </remarks>
+    public bool IsInitialized => _isInitialized;
+
+    /// <summary>
     /// Gets or sets the current base URI. The <see cref="BaseUri" /> is always represented as an absolute URI in string form with trailing slash.
     /// Typically this corresponds to the 'href' attribute on the document's &lt;base&gt; element.
     /// </summary>
