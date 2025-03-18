@@ -363,7 +363,7 @@ export class HubConnection {
         }
     }
 
-    public async *streamAsync<T = any>(methodName: string, ...args: any[]): AsyncGenerator<T, void> {
+    public async *streamAsync<T = any>(methodName: string, ...args: any[]): AsyncGenerator<T, void, void> {
         const res = this.stream(methodName, ...args);
 
         var resolve: (value: void | PromiseLike<void>) => void;
