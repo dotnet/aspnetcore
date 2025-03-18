@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
@@ -541,6 +542,36 @@ public class RemoteAuthenticationServiceTests
         {
             PastInvocations.Add((identifier, args));
             return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         private object GetInvocationResult(string identifier)

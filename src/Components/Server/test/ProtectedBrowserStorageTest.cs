@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -352,19 +353,54 @@ public class ProtectedBrowserStorageTest
 
     class TestJSRuntime : IJSRuntime
     {
-        public List<(string Identifier, object[] Args)> Invocations { get; }
-            = new List<(string Identifier, object[] Args)>();
+        public List<(string Identifier, object[] Args, JSCallType CallType)> Invocations { get; } = [];
 
         public object NextInvocationResult { get; set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
-            Invocations.Add((identifier, args));
+            Invocations.Add((identifier, args, JSCallType.FunctionCall));
             return (ValueTask<TValue>)NextInvocationResult;
         }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, args: args);
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        {
+            Invocations.Add((identifier, args, JSCallType.NewCall));
+            return (ValueTask<IJSObjectReference>)NextInvocationResult;
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            Invocations.Add((identifier, args, JSCallType.NewCall));
+            return (ValueTask<IJSObjectReference>)NextInvocationResult;
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+        {
+            Invocations.Add((identifier, [], JSCallType.GetValue));
+            return (ValueTask<TValue>)NextInvocationResult;
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            Invocations.Add((identifier, [], JSCallType.GetValue));
+            return (ValueTask<TValue>)NextInvocationResult;
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+        {
+            Invocations.Add((identifier, [value], JSCallType.SetValue));
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            Invocations.Add((identifier, [value], JSCallType.SetValue));
+            return ValueTask.CompletedTask;
+        }
     }
 
     class TestProtectedBrowserStorage : ProtectedBrowserStorage

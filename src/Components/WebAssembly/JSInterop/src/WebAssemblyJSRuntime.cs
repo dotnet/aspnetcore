@@ -41,6 +41,11 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
         InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
     }
 
+    protected override void BeginInvokeJSX(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallType callType, JSCallResultType resultType, long targetInstanceId)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc />
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
     protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)

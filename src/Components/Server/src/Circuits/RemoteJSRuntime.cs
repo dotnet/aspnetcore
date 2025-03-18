@@ -104,7 +104,7 @@ internal partial class RemoteJSRuntime : JSRuntime
         _clientProxy.SendAsync("JS.ReceiveByteArray", id, data);
     }
 
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
         if (_clientProxy is null)
         {
@@ -123,9 +123,11 @@ internal partial class RemoteJSRuntime : JSRuntime
             }
         }
 
-        Log.BeginInvokeJS(_logger, asyncHandle, identifier);
+        var invocationInfoJson = invocationInfo.ToJson();
 
-        _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+        Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle ?? -1, invocationInfo.Identifier);
+
+        _clientProxy.SendAsync("JS.BeginInvokeJS", invocationInfoJson);
     }
 
     protected override void ReceiveByteArray(int id, byte[] data)

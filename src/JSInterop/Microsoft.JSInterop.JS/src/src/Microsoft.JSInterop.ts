@@ -21,6 +21,11 @@ export module DotNet {
   // Provides access to the "current" call dispatcher without having to flow it through nested function calls.
   let currentCallDispatcher : CallDispatcher | undefined;
 
+  export interface ObjectMemberDescriptor {
+      parent: any;
+      name: string;
+  }
+
   class JSObject {
       _cachedFunctions: Map<string, Function>;
 
@@ -56,6 +61,24 @@ export module DotNet {
 
           throw new Error(`The value '${identifier}' is not a function.`);
       }
+
+      public findMember(identifier: string): ObjectMemberDescriptor {
+        let current: any = this._jsObject;
+        let parent: any = null;
+
+        const keys = identifier.split(".");
+
+        for (const key of keys) {
+            if (current && typeof current === 'object' && key in current) {
+                parent = current;
+                current = current[key];
+            } else {
+                return { parent, name: key };
+            }
+        }
+
+        return { parent, name: keys[keys.length - 1] };
+    }
 
       public getWrappedObject() {
           return this._jsObject;
@@ -257,6 +280,25 @@ export module DotNet {
   }
 
   /**
+   * Represents the type of operation that should be performed in JS.
+   */
+  export enum JSCallType {
+      FunctionCall = 1,
+      NewCall = 2,
+      GetValue = 3,
+      SetValue = 4
+  }
+
+  export interface JSInvocationInfo {
+      asyncHandle?: number,
+      targetInstanceId: number,
+      identifier: string | null,
+      callType: JSCallType,
+      resultType: JSCallResultType,
+      argsJson: string | null,
+  }
+
+  /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
@@ -320,10 +362,11 @@ export module DotNet {
      * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param callType The type of operation that should be performed in JS.
      * @param resultType The type of result expected from the JS interop call.
      * @param targetInstanceId The ID of the target JS object instance.
      */
-    beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void;
+    beginInvokeJSFromDotNet(invocationInfoString: string): void;
 
     /**
      * Receives notification that an async call from JS to .NET has completed.
@@ -398,14 +441,77 @@ export module DotNet {
               : stringifyArgs(this, result);
       }
 
-      beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void {
+      handleJSFunctionCall(identifier: string, member: ObjectMemberDescriptor, args: any): any {
+          const func = member.parent[member.name];
+
+          if (typeof func === "function") {
+              return func.call(member.parent, ...(args || []));
+          } else {
+              throw new Error(`The value '${identifier}' is not a function.`);
+          }
+      }
+
+      handleJSNewCall(identifier: string, member: ObjectMemberDescriptor, args: any): any {
+          const func = member.parent[member.name];
+
+          if (typeof func === "function") {
+              try {
+                  // The new call throws if the function is not constructible (e.g. an arrow function)
+                  return new func(...(args || []));
+              } catch (err) {
+                  if (err instanceof TypeError) {
+                      throw new Error(`The value '${identifier}' is not a constructor function.`);
+                  } else {
+                      throw err;
+                  }
+              }
+          } else {
+              throw new Error(`The value '${identifier}' is not a function.`);
+          }
+      }
+
+      handleJSPropertyGet(identifier: string, instance: ObjectMemberDescriptor): any {
+          return identifier.length > 0 ? instance.parent[instance.name] : instance.parent;
+      }
+
+      handleJSPropertySet(identifier: string, instance: ObjectMemberDescriptor, args: any) {
+          const value = args[0];
+          instance.parent[instance.name] = value;
+      }
+
+      handleJSCall(identifier: string | null, argsJson: string | null, targetInstanceId: number, callType: JSCallType) {
+          identifier ??= "";
+          const args = parseJsonWithRevivers(this, argsJson);
+          const member = findObjectMember(identifier, targetInstanceId);
+          let returnValue = null;
+
+          if (callType === JSCallType.FunctionCall) {
+              returnValue = this.handleJSFunctionCall(identifier, member, args);
+          } else if (callType === JSCallType.NewCall) {
+              returnValue = this.handleJSNewCall(identifier, member, args);
+          } else if (callType === JSCallType.GetValue) {
+              returnValue = this.handleJSPropertyGet(identifier, member);
+          } else if (callType === JSCallType.SetValue) {
+              this.handleJSPropertySet(identifier, member, args);
+          }
+
+          return returnValue;
+      }
+
+      beginInvokeJSFromDotNet(invocationInfoString: string): void {
+          // TODO(OR): Remove log
+          console.log(invocationInfoString);
+          const invocationInfo: JSInvocationInfo = JSON.parse(invocationInfoString);
+
+          // TODO(OR): Remove log
+          console.log(invocationInfo);
+          const { asyncHandle, identifier, argsJson, callType, resultType, targetInstanceId } = invocationInfo;
+
           // Coerce synchronous functions into async ones, plus treat
           // synchronous exceptions the same as async ones
           const promise = new Promise<any>(resolve => {
-              const args = parseJsonWithRevivers(this, argsJson);
-              const jsFunction = findJSFunction(identifier, targetInstanceId);
-              const synchronousResultOrPromise = jsFunction(...(args || []));
-              resolve(synchronousResultOrPromise);
+              const valueOrPromise = this.handleJSCall(identifier, argsJson, targetInstanceId, callType);
+              resolve(valueOrPromise);
           });
 
           // We only listen for a result if the caller wants to be notified about it
@@ -414,14 +520,14 @@ export module DotNet {
               // Not using "await" because it codegens a lot of boilerplate
               promise.
                   then(result => stringifyArgs(this, [
-                      asyncHandle,
+                    asyncHandle,
                       true,
                       createJSCallResult(result, resultType)
                   ])).
                   then(
                       result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
                       error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
-                          asyncHandle,
+                        asyncHandle,
                           false,
                           formatError(error)
                       ]))
@@ -553,6 +659,22 @@ export module DotNet {
       }
 
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
+  }
+
+  export function findObjectMember(identifier: string, targetInstanceId: number): ObjectMemberDescriptor {
+      // TODO(OR): Remove log
+      console.log("findObjectMember", identifier, targetInstanceId)
+      const targetInstance = cachedJSObjectsById[targetInstanceId];
+
+      if (!targetInstance) {
+          throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
+      }
+
+      if (identifier === "") {
+          return { parent: targetInstance.getWrappedObject(), name: "" };
+      }
+
+      return targetInstance.findMember(identifier);
   }
 
   export function disposeJSObjectReferenceById(id: number) {
