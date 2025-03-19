@@ -87,13 +87,15 @@
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tar.gz" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" Exclude="$(ArtifactsPackagesDir)**\*.wixpack.zip" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.wixpack.zip" UploadPathSegment="Runtime/" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" Exclude="$(ArtifactsPackagesDir)**\*.wixpack.zip" UploadPathSegment="Runtime/" >
+       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512"</ChecksumPath>
+    </_InstallersToPublish>
 
     <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" Exclude="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" UploadPathSegment="Runtime/" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" Exclude="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" UploadPathSegment="Runtime/" >
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512"</ChecksumPath>
+    </_InstallersToPublish>
 
     <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
       <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
