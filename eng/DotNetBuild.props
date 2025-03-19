@@ -46,14 +46,14 @@
          attempts as the install script walks through potential locations for a runtime.
          The overall build script will return a proper exit code, but we don't want to pick up the printed error messages. -->
     <Exec
-      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs) $(InnerBuildArgs)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)"
       Condition="'$(OS)' != 'Windows_NT'" />
 
     <Exec
-      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs) $(InnerBuildArgs)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)"
