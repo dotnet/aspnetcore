@@ -265,6 +265,52 @@
             </Component>
           </Directory>
         </Directory>
+
+        <!-- WOW64 Support -->
+        <?if $(var.Platform) != "x86" ?>
+        <Directory Id="$(var.ProgramFilesFolder32)">
+          <Directory Id="INSTALLDIR32" Name="IIS Express" >
+            <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="$(var.ProductName)">
+              <Directory Id="VersionDir32" Name="$(var.ProductVersionString)">
+                <!-- Originally created with same component GUID as IIS installer. Must remain the same so upgrade doesn't remove this file -->
+                <Component Id="AspNetCoreModule.wow" Guid="45ba5011-a619-4d06-8a8d-155b1f9732b3" Win64="no">
+                  <File Id="AspNetCoreModuleDll.wow"
+                        Name="aspnetcorev2.dll"
+                        Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll"
+                        DiskId="1"
+                        Vital="yes">
+                  </File>
+                  <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll.wow]"/>
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+                  </RegistryKey>
+                </Component>
+                <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" >
+                  <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
+                    <File Id="AspNetCoreModuleHandlerDll.wow"
+                          Name="aspnetcorev2_outofprocess.dll"
+                          Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll"
+                          DiskId="1"
+                          Vital="yes">
+                    </File>
+                  </Component>
+                </Directory>
+              </Directory>
+            </Directory>
+            <Directory Id="IISConfigDir.wow" Name="config">
+              <Directory Id="IISSchemaDir.wow" Name="schema">
+                <Component Id="AspNetCoreSchema.wow" Guid="$(var.SchemaGuid32)" Win64="no" >
+                  <File Id="AspNetCoreSchemaFile.wow"
+                        Name="aspnetcore_schema_v2.xml"
+                        Source="$(var.AspNetCoreSchemaPath)"
+                        DiskId="1"
+                        Vital="yes"/>
+                </Component>
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+        <?endif?>
       </DirectoryRef>
 
         <!-- Feature Definition -->
@@ -278,6 +324,11 @@
             <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
             <?endif ?>
             <ComponentRef Id="AspNetCoreSchema"/>
+            <?if $(var.Platform) != "x86" ?>
+                <ComponentRef Id="AspNetCoreModule.wow"/>
+                <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
+                <ComponentRef Id="AspNetCoreSchema.wow"/>
+            <?endif ?>
         </Feature>
 
         <!-- User Interface -->
