@@ -65,32 +65,21 @@ internal sealed class SocketAddress
 
     internal static unsafe SocketAddress? CopyOutAddress(IntPtr address)
     {
-        var addressFamily = *((ushort*)address);
-        if (addressFamily == (ushort)AddressFamily.InterNetwork)
+        AddressFamily family = (AddressFamily)(*((ushort*)address));
+        int? addressSize = family switch
         {
-            var v4address = new SocketAddress(AddressFamily.InterNetwork, IPv4AddressSize);
-            fixed (byte* pBuffer = v4address._buffer)
-            {
-                for (var index = 2; index < IPv4AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v4address;
-        }
-        if (addressFamily == (ushort)AddressFamily.InterNetworkV6)
+            AddressFamily.InterNetwork => IPv4AddressSize,
+            AddressFamily.InterNetworkV6 => IPv6AddressSize,
+            _ => null
+        };
+
+        if (!addressSize.HasValue)
         {
-            var v6address = new SocketAddress(AddressFamily.InterNetworkV6, IPv6AddressSize);
-            fixed (byte* pBuffer = v6address._buffer)
-            {
-                for (var index = 2; index < IPv6AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v6address;
+            return null;
         }
 
-        return null;
+        var sockAddress = new SocketAddress(family, addressSize.Value);
+        new ReadOnlySpan<byte>((byte*)address, addressSize.Value).Slice(sizeof(ushort)).CopyTo(sockAddress._buffer.AsSpan(sizeof(ushort)));
+        return sockAddress;
     }
 }
