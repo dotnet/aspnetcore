@@ -276,22 +276,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 // We did not find a Component that matches the route.
                 // Only show the NotFound content if the application developer programatically got us here i.e we did not
                 // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
-                _renderHandle.Render(builder =>
-                {
-                    if (NotFoundPage != null)
-                    {
-                        builder.OpenComponent(0, NotFoundPage);
-                        builder.CloseComponent();
-                    }
-                    else if (NotFound != null)
-                    {
-                        NotFound(builder);
-                    }
-                    else
-                    {
-                        DefaultNotFoundContent(builder);
-                    }
-                });
+                _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
             }
             else
             {
@@ -367,7 +352,22 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (_renderHandle.IsInitialized)
         {
             Log.DisplayingNotFound(_logger);
-            _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+            _renderHandle.Render(builder =>
+            {
+                if (NotFoundPage != null)
+                {
+                    builder.OpenComponent(0, NotFoundPage);
+                    builder.CloseComponent();
+                }
+                else if (NotFound != null)
+                {
+                    NotFound(builder);
+                }
+                else
+                {
+                    DefaultNotFoundContent(builder);
+                }
+            });
         }
     }
 
