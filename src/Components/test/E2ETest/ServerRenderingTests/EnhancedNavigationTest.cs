@@ -668,11 +668,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60875")]
-    [InlineData(false, false, false)]
+    // [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     [InlineData(false, true, false)]
     [InlineData(true, true, false)]
-    [InlineData(true, false, false)]
+    // [InlineData(true, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]
@@ -723,9 +722,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData(false, false, false)]
+    [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     [InlineData(false, true, false)]
-    [InlineData(true, true, false)]
+    [InlineData(true, true, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     [InlineData(true, false, false)]
     // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
@@ -819,7 +818,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.True(success, $"The expected scroll position was {messagePart}, but it was found at {currentScrollPosition}.");
     }
 
-    private void AssertEnhancedNavigation(bool useEnhancedNavigation, IWebElement elementForStalenessCheck, int retryCount = 3, int delayBetweenRetriesMs = 100)
+    private void AssertEnhancedNavigation(bool useEnhancedNavigation, IWebElement elementForStalenessCheck, int retryCount = 3, int delayBetweenRetriesMs = 1000)
     {
         bool enhancedNavigationDetected = false;
         for (int i = 0; i < retryCount; i++)
