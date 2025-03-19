@@ -280,7 +280,7 @@
         In a vertical build, only build the MSIs for the current vertical that aren't used in the hosting bundle in the first pass
         and build the hosting bundle and its dependencies in the second pass.
       -->
-      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true' and '$(TargetArchitecture)' != 'arm64'" >
+      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true' and '$(TargetArchitecture)' == 'x86'" >
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
       </ItemGroup>
 
