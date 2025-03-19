@@ -88,7 +88,7 @@
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
     <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" UploadPathSegment="Runtime/" >
-       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512"</ChecksumPath>
+       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </_InstallersToPublish>
 
     <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
