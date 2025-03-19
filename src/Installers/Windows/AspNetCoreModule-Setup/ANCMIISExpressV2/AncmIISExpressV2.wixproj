@@ -95,7 +95,7 @@
                       '$(PackageLicenseExpression)' " />
   </Target>
 
-  <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64'">
+  <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64' AND '$(DotNetBuild)' != 'true'">
     <MSBuild Projects="..\Forwarders\build.proj" />
   </Target>
 </Project>
