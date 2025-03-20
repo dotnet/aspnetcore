@@ -4,7 +4,7 @@
 using System.Buffers;
 using Microsoft.AspNetCore.Connections;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+namespace Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory
 {

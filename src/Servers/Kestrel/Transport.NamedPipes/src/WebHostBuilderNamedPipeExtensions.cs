@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,15 @@ public static class WebHostBuilderNamedPipeExtensions
         {
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddSingleton<IConnectionListenerFactory, NamedPipeTransportFactory>();
+
+            services.TryAddSingleton<IMemoryPoolFactory, DefaultMemoryPoolFactory>();
+            services.AddOptions<NamedPipeTransportOptions>().Configure((NamedPipeTransportOptions options, IMemoryPoolFactory factory) =>
+            {
+                // Set the IMemoryPoolFactory from DI on NamedPipeTransportOptions. Usually this should be the PinnedBlockMemoryPoolFactory from UseKestrelCore.
+                options.MemoryPoolFactory = factory;
+            });
         });
+
         return hostBuilder;
     }
 

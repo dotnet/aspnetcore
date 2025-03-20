@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 

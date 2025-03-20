@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
