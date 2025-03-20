@@ -249,6 +249,8 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+commandline_args=()
+
 if [ ${#msbuild_args[@]} -ne 0 ]; then
     commandline_args=("${msbuild_args[@]}")
 fi
