@@ -393,7 +393,6 @@ InitializeToolset
 restore=$_tmp_restore=
 
 if [ ${#commandline_args[@]} -gt 0 ]; then
-  # Append array1 to array2
   toolset_build_args+=("${commandline_args[@]}")
 fi
 
