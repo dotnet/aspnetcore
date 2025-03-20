@@ -37,7 +37,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // sin_port is network byte order
-            return IPAddress.NetworkToHostOrder(_sockaddr.sin_port);
+            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
         }
 
         internal override IPAddress? GetIPAddress()
@@ -59,7 +59,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // sin6_port is network byte order
-            return IPAddress.NetworkToHostOrder(_sockaddr.sin6_port);
+            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
         }
 
         internal override IPAddress? GetIPAddress()
