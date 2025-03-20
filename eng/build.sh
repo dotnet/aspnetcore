@@ -392,6 +392,11 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+if [ ${#commandline_args[@]} -gt 0 ]; then
+  # Append array1 to array2
+  toolset_build_args+=("${commandline_args[@]}")
+fi
+
 if [ "$build_repo_tasks" = true ]; then
     MSBuild $_InitializeToolset \
         -p:RepoRoot="$repo_root" \
@@ -400,8 +405,7 @@ if [ "$build_repo_tasks" = true ]; then
         -p:Restore=$run_restore \
         -p:Build=true \
         -clp:NoSummary \
-        ${toolset_build_args[@]+"${toolset_build_args[@]}"} \
-        ${commandline_args[@]+"${commandline_args[@]}"}
+        ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
 
 if [ "$only_build_repo_tasks" != true ]; then
