@@ -253,7 +253,6 @@ if [ ${#msbuild_args[@]} -ne 0 ]; then
     commandline_args=("${msbuild_args[@]}")
 fi
 
-
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 fi
