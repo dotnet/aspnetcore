@@ -249,7 +249,8 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-commandline_args=$msbuild_args
+commandline_args=("${msbuild_args[@]}")
+
 
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
