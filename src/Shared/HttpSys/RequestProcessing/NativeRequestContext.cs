@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
+using Windows.Win32.Networking.WinSock;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -650,14 +651,15 @@ internal unsafe class NativeRequestContext : IDisposable
 
     private SocketAddress? GetEndPointHelper(bool localEndpoint, HTTP_REQUEST_V1* request, byte* pMemoryBlob)
     {
-        var source = localEndpoint ? request->Address.pLocalAddress : request->Address.pRemoteAddress;
+        var source = localEndpoint ? (byte*)request->Address.pLocalAddress : (byte*)request->Address.pRemoteAddress;
 
         if (source == null)
         {
             return null;
         }
 
-        return SocketAddress.CopyOutAddress(source);
+        var address = (SOCKADDR*)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
+        return SocketAddress.CopyOutAddress(address);
     }
 
     internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
