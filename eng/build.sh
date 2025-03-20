@@ -251,7 +251,7 @@ done
 
 commandline_args=()
 
-if [ ${#msbuild_args[@]} -ne 0 ]; then
+if [ ${#msbuild_args[@]} -gt 0 ]; then
     commandline_args=("${msbuild_args[@]}")
 fi
 
