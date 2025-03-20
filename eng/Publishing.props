@@ -30,31 +30,6 @@
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
-
-    <!-- Prepare for _PublishInstallersAndChecksums target. -->
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.jar" UploadPathSegment="jar/" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.pom" UploadPathSegment="jar/" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <!-- All builds produce npm assets - only publish them once -->
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tgz" UploadPathSegment="npm/"  Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.version" UploadPathSegment="Runtime/" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
-
-    <!-- The following installers create checksums -->
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.deb" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.rpm" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tar.gz" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" Exclude="$(ArtifactsPackagesDir)**\*.wixpack.zip" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" Exclude="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
-
-    <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
-      <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) == 'True'">false</IsShipping>
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) != 'True'">true</IsShipping>
-    </Artifact>
   </ItemGroup>
 
   <Target Name="GetNonStableProductVersion">
