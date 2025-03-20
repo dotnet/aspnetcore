@@ -30,6 +30,14 @@
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
+  <!-- Enforce build order in the VMR -->
+  <ItemGroup Condition="'$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' == '2' ">
+    <ProjectReference Include="$(RepoRoot)\src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(UseIisNativeAssets)' == 'true' and '$(SkipTestBuild)' != 'true'">
     <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
           Condition="!Exists('$(AspNetCoreModuleV2ShimDll)') OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
