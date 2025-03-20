@@ -650,14 +650,14 @@ internal unsafe class NativeRequestContext : IDisposable
 
     private SocketAddress? GetEndPointHelper(bool localEndpoint, HTTP_REQUEST_V1* request, byte* pMemoryBlob)
     {
-        var source = localEndpoint ? (byte*)request->Address.pLocalAddress : (byte*)request->Address.pRemoteAddress;
+        var source = localEndpoint ? request->Address.pLocalAddress : request->Address.pRemoteAddress;
 
         if (source == null)
         {
             return null;
         }
-        var address = (IntPtr)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
-        return SocketAddress.CopyOutAddress(address);
+
+        return SocketAddress.CopyOutAddress(source);
     }
 
     internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
