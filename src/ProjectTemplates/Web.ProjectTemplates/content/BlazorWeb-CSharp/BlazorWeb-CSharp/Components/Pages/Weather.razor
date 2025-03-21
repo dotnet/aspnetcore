@@ -1,8 +1,9 @@
 ﻿@page "/weather"
 @*#if (!InteractiveAtRoot) -->
 @attribute [StreamRendering]
-##endif*@
+##else
 @inject NavigationManager NavigationManager
+##endif*@
 
 <PageTitle>Weather</PageTitle>
 
