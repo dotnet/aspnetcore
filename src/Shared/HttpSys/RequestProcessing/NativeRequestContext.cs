@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
+using Windows.Win32.Networking.WinSock;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -656,7 +657,8 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             return null;
         }
-        var address = (IntPtr)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
+
+        var address = (SOCKADDR*)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
         return SocketAddress.CopyOutAddress(address);
     }
 
