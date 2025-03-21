@@ -3,9 +3,11 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
+using Windows.Win32.Security;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -16,21 +18,24 @@ internal sealed partial class RequestQueue
     private bool _disposed;
 
     internal RequestQueue(string requestQueueName, ILogger logger)
-        : this(requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
+        : this(requestQueueName, RequestQueueMode.Attach, securityDescriptor: null, logger, receiver: true)
     {
     }
 
-    internal RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger)
-        : this(requestQueueName, mode, logger, false)
+    internal RequestQueue(string? requestQueueName, RequestQueueMode mode, GenericSecurityDescriptor? securityDescriptor, ILogger logger)
+        : this(requestQueueName, mode, securityDescriptor, logger, false)
     { }
 
-    private RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
+    private RequestQueue(string? requestQueueName, RequestQueueMode mode, GenericSecurityDescriptor? securityDescriptor, ILogger logger, bool receiver)
     {
         _mode = mode;
         _logger = logger;
 
         var flags = 0u;
         Created = true;
+
+        SECURITY_ATTRIBUTES? securityAttributes = null;
+        nint? pSecurityDescriptor = null;
 
         if (_mode == RequestQueueMode.Attach)
         {
@@ -41,11 +46,31 @@ internal sealed partial class RequestQueue
                 flags |= PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_DELEGATION;
             }
         }
+        else if (securityDescriptor is not null) // Create or CreateOrAttach
+        {
+            // Convert the security descriptor to a byte array
+            byte[] securityDescriptorBytes = new byte[securityDescriptor.BinaryLength];
+            securityDescriptor.GetBinaryForm(securityDescriptorBytes, 0);
+
+            // Allocate native memory for the security descriptor
+            pSecurityDescriptor = Marshal.AllocHGlobal(securityDescriptorBytes.Length);
+            Marshal.Copy(securityDescriptorBytes, 0, pSecurityDescriptor.Value, securityDescriptorBytes.Length);
+
+            unsafe
+            {
+                securityAttributes = new SECURITY_ATTRIBUTES
+                {
+                    nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(),
+                    lpSecurityDescriptor = pSecurityDescriptor.Value.ToPointer(),
+                    bInheritHandle = false
+                };
+            }
+        }
 
         var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 requestQueueName,
-                default,
+                securityAttributes,
                 flags,
                 out var requestQueueHandle);
 
@@ -57,9 +82,15 @@ internal sealed partial class RequestQueue
             statusCode = PInvoke.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
-                    default,
+                    SecurityAttributes: default, // Attaching should not pass any security attributes
                     flags,
                     out requestQueueHandle);
+        }
+
+        if (pSecurityDescriptor is not null)
+        {
+            // Free the allocated memory for the security descriptor
+            Marshal.FreeHGlobal(pSecurityDescriptor.Value);
         }
 
         if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == ErrorCodes.ERROR_FILE_NOT_FOUND)
@@ -143,6 +174,9 @@ internal sealed partial class RequestQueue
         }
 
         _disposed = true;
+
+        PInvoke.HttpCloseRequestQueue(Handle);
+
         BoundHandle.Dispose();
         Handle.Dispose();
     }
