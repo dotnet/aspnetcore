@@ -259,7 +259,8 @@ type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
+            _cache.Add(new MemberKey(typeof(global::DisposableType), MemberType.Type, null, null, []), new XmlComment(@"A class that implements the IDisposable interface.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a `string`
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
@@ -289,6 +290,10 @@ using the xpath expression.", @"A boolean", null, false, null, null, null));
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::DisposableType), MemberType.Method, "Finalize", typeof(void), []), new XmlComment(@"Finalizes an instance of the DisposableType class.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::DisposableType), MemberType.Method, "Dispose", typeof(void), []), new XmlComment(null, null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::DisposableType), MemberType.Method, "Dispose", typeof(void), [typeof(global::System.Boolean)]), new XmlComment(@"Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.", null, null, null, null, false, null, [new XmlParameterComment(@"disposing", @"`true` to release both managed and unmanaged resources;
+`false` to release only unmanaged resources.", null, false)], null));
 
             return _cache;
         }
