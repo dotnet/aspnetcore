@@ -80,7 +80,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                     {
                         if (context.MemoryPoolFactory != null)
                         {
-                            services.AddSingleton<IMemoryPoolFactory>(context.MemoryPoolFactory);
+                            services.AddSingleton<IMemoryPoolFactory<byte>>(context.MemoryPoolFactory);
                         }
                         services.AddSingleton<IStartup>(this);
                         services.AddSingleton(context.LoggerFactory);

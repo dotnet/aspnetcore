@@ -74,11 +74,11 @@ internal class TestServiceContext : ServiceContext
 
     public FakeTimeProvider FakeTimeProvider { get; set; }
 
-    public IMemoryPoolFactory MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => System.Buffers.PinnedBlockMemoryPoolFactory.Create());
+    public IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => System.Buffers.PinnedBlockMemoryPoolFactory.Create());
 
     public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
 
-    internal sealed class WrappingMemoryPoolFactory : IMemoryPoolFactory
+    internal sealed class WrappingMemoryPoolFactory : IMemoryPoolFactory<byte>
     {
         private readonly Func<MemoryPool<byte>> _memoryPoolFactory;
 
@@ -87,6 +87,6 @@ internal class TestServiceContext : ServiceContext
             _memoryPoolFactory = memoryPoolFactory;
         }
 
-        public MemoryPool<byte> CreatePool() => _memoryPoolFactory();
+        public MemoryPool<byte> Create() => _memoryPoolFactory();
     }
 }

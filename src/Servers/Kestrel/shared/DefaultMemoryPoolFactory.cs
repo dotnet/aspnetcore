@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal;
 
-internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory
+internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>
 {
     public static DefaultMemoryPoolFactory Instance { get; } = new DefaultMemoryPoolFactory();
 
-    public MemoryPool<byte> CreatePool()
+    public MemoryPool<byte> Create()
     {
         return MemoryPool<byte>.Shared;
     }

@@ -300,7 +300,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
         bool useConnectionAdapter,
         TaskCompletionSource startReadingRequestBody,
         TaskCompletionSource clientFinishedSendingRequestBody,
-        IMemoryPoolFactory memoryPoolFactory = null)
+        IMemoryPoolFactory<byte> memoryPoolFactory = null)
     {
         var host = TransportSelector.GetHostBuilder(maxRequestBufferSize)
             .ConfigureWebHost(webHostBuilder =>
@@ -339,7 +339,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
                     {
                         if (memoryPoolFactory != null)
                         {
-                            services.AddSingleton<IMemoryPoolFactory>(memoryPoolFactory);
+                            services.AddSingleton<IMemoryPoolFactory<byte>>(memoryPoolFactory);
                         }
                     })
                     .Configure(app => app.Run(async context =>

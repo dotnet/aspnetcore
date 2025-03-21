@@ -29,8 +29,8 @@ public static class WebHostBuilderSocketExtensions
         {
             services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
-            services.TryAddSingleton<IMemoryPoolFactory, DefaultMemoryPoolFactory>();
-            services.AddOptions<SocketTransportOptions>().Configure((SocketTransportOptions options, IMemoryPoolFactory factory) =>
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
+            services.AddOptions<SocketTransportOptions>().Configure((SocketTransportOptions options, IMemoryPoolFactory<byte> factory) =>
             {
                 // Set the IMemoryPoolFactory from DI on SocketTransportOptions. Usually this should be the PinnedBlockMemoryPoolFactory from UseKestrelCore.
                 options.MemoryPoolFactory = factory;

@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Connections;
 /// <summary>
 /// 
 /// </summary>
-public interface IMemoryPoolFactory
+public interface IMemoryPoolFactory<T>
 {
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    MemoryPool<byte> CreatePool();
+    MemoryPool<T> Create();
 }

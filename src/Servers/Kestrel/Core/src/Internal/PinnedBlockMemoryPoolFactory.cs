@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory, IHeartbeatHandler
+internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, IHeartbeatHandler
 {
     private readonly IMeterFactory _meterFactory;
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool> _pools = new();
@@ -19,7 +19,7 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory, IHeartb
         _meterFactory = meterFactory;
     }
 
-    public MemoryPool<byte> CreatePool()
+    public MemoryPool<byte> Create()
     {
         // TODO: wire up PinnedBlockMemoryPool's dispose to remove from _pools
         var pool = new PinnedBlockMemoryPool(_meterFactory);
