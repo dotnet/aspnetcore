@@ -127,7 +127,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const connection = connectionBuilder.build();
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
-    connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
+    connection.on('JS.BeginInvokeJS', (invocationInfoJson: string) => this.beginInvokeJSJson(invocationInfoJson));
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
@@ -230,6 +230,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
+  }
+
+  private beginInvokeJSJson(invocationInfoJson: string) {    
+    const invocationInfo: DotNet.JSInvocationInfo = JSON.parse(invocationInfoJson);
+    console.log("CIRCUIT", invocationInfoJson, invocationInfo);
+    this._dispatcher.beginInvokeJSFromDotNet(invocationInfo);
   }
 
   // Implements DotNet.DotNetCallDispatcher

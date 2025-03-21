@@ -1072,7 +1072,7 @@ public class DotNetDispatcherTest
     {
         private TaskCompletionSource _nextInvocationTcs = new TaskCompletionSource();
         public Task NextInvocationTask => _nextInvocationTcs.Task;
-        public long? LastInvocationAsyncHandle { get; private set; }
+        public long LastInvocationAsyncHandle { get; private set; }
         public string LastInvocationIdentifier { get; private set; }
         public string LastInvocationArgsJson { get; private set; }
 

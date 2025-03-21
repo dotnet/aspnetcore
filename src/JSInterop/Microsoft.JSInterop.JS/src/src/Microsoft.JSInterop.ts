@@ -4,810 +4,852 @@
 // This is a single-file self-contained module to avoid the need for a Webpack build
 
 export module DotNet {
-  export type JsonReviver = ((key: any, value: any) => any);
-  const jsonRevivers: JsonReviver[] = [];
+    export type JsonReviver = ((key: any, value: any) => any);
+    const jsonRevivers: JsonReviver[] = [];
 
-  const jsObjectIdKey = "__jsObjectId";
-  const dotNetObjectRefKey = "__dotNetObject";
-  const byteArrayRefKey = "__byte[]";
-  const dotNetStreamRefKey = "__dotNetStream";
-  const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
+    const jsObjectIdKey = "__jsObjectId";
+    const dotNetObjectRefKey = "__dotNetObject";
+    const byteArrayRefKey = "__byte[]";
+    const dotNetStreamRefKey = "__dotNetStream";
+    const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
 
-  // If undefined, no dispatcher has been attached yet.
-  // If null, this means more than one dispatcher was attached, so no default can be determined.
-  // Otherwise, there was only one dispatcher registered. We keep track of this instance to keep legacy APIs working.
-  let defaultCallDispatcher: CallDispatcher | null | undefined;
+    // If undefined, no dispatcher has been attached yet.
+    // If null, this means more than one dispatcher was attached, so no default can be determined.
+    // Otherwise, there was only one dispatcher registered. We keep track of this instance to keep legacy APIs working.
+    let defaultCallDispatcher: CallDispatcher | null | undefined;
 
-  // Provides access to the "current" call dispatcher without having to flow it through nested function calls.
-  let currentCallDispatcher : CallDispatcher | undefined;
+    // Provides access to the "current" call dispatcher without having to flow it through nested function calls.
+    let currentCallDispatcher: CallDispatcher | undefined;
 
-  export interface ObjectMemberDescriptor {
-      parent: any;
-      name: string;
-  }
-
-  class JSObject {
-      _cachedFunctions: Map<string, Function>;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      constructor(private _jsObject: any) {
-          this._cachedFunctions = new Map<string, Function>();
-      }
-
-      public findFunction(identifier: string) {
-          const cachedFunction = this._cachedFunctions.get(identifier);
-
-          if (cachedFunction) {
-              return cachedFunction;
-          }
-
-          let result: any = this._jsObject;
-          let lastSegmentValue: any;
-
-          identifier.split(".").forEach(segment => {
-              if (segment in result) {
-                  lastSegmentValue = result;
-                  result = result[segment];
-              } else {
-                  throw new Error(`Could not find '${identifier}' ('${segment}' was undefined).`);
-              }
-          });
-
-          if (result instanceof Function) {
-              result = result.bind(lastSegmentValue);
-              this._cachedFunctions.set(identifier, result);
-              return result;
-          }
-
-          throw new Error(`The value '${identifier}' is not a function.`);
-      }
-
-      public findMember(identifier: string): ObjectMemberDescriptor {
-        let current: any = this._jsObject;
-        let parent: any = null;
-
-        const keys = identifier.split(".");
-
-        for (const key of keys) {
-            if (current && typeof current === 'object' && key in current) {
-                parent = current;
-                current = current[key];
-            } else {
-                return { parent, name: key };
-            }
-        }
-
-        return { parent, name: keys[keys.length - 1] };
+    /**
+     * Represents a resolved property of a JS object.
+     * 
+     * @param parent The immediate parent object that contains the property.
+     * @param name The name of the property.
+     * @param func Reference to a function if the member is a function. Otherwise, undefined.
+     */
+    interface ObjectMemberDescriptor {
+        parent: any;
+        name: string;
+        func?: Function;
     }
 
-      public getWrappedObject() {
-          return this._jsObject;
-      }
-  }
+    class JSObject {
+        // TODO(oroztocil): Is it correct to cache functions/properties when they can change?
+        _cachedMembers: Map<string, ObjectMemberDescriptor>;
 
-  const windowJSObjectId = 0;
-  const cachedJSObjectsById: { [id: number]: JSObject } = {
-      [windowJSObjectId]: new JSObject(window)
-  };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(private _jsObject: any) {
+            this._cachedMembers = new Map<string, ObjectMemberDescriptor>();
+        }
 
-  cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set("import", (url: any) => {
-      // In most cases developers will want to resolve dynamic imports relative to the base HREF.
-      // However since we're the one calling the import keyword, they would be resolved relative to
-      // this framework bundle URL. Fix this by providing an absolute URL.
-      if (typeof url === "string" && url.startsWith("./")) {
-          url = new URL(url.substring(2), document.baseURI).toString();
-      }
+        public findMember(identifier: string): ObjectMemberDescriptor {
+            if (identifier === "") {
+                return { parent: this.getWrappedObject(), name: "" };
+            }
 
-      return import(/* webpackIgnore: true */ url);
-  });
+            const cachedMember = this._cachedMembers.get(identifier);
 
-  let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
+            if (cachedMember) {
+                return cachedMember;
+            }
 
-  /**
-   * Creates a .NET call dispatcher to use for handling invocations between JavaScript and a .NET runtime.
-   *
-   * @param dotNetCallDispatcher An object that can dispatch calls from JavaScript to a .NET runtime.
-   */
-  export function attachDispatcher(dotNetCallDispatcher: DotNetCallDispatcher): ICallDispatcher {
-      const result = new CallDispatcher(dotNetCallDispatcher);
-      if (defaultCallDispatcher === undefined) {
-          // This was the first dispatcher registered, so it becomes the default. This exists purely for
-          // backwards compatibility.
-          defaultCallDispatcher = result;
-      } else if (defaultCallDispatcher) {
-          // There is already a default dispatcher. Now that there are multiple to choose from, there can
-          // be no acceptable default, so we nullify the default dispatcher.
-          defaultCallDispatcher = null;
-      }
+            let current: any = this._jsObject;
+            let parent: any = null;
 
-      return result;
-  }
+            const keys = identifier.split(".");
 
-  /**
-   * Adds a JSON reviver callback that will be used when parsing arguments received from .NET.
-   * @param reviver The reviver to add.
-   */
-  export function attachReviver(reviver: JsonReviver) {
-      jsonRevivers.push(reviver);
-  }
+            // First, we iterate over all but the last key. We throw error for missing intermediate keys.
+            for (let i = 0; i < keys.length - 1; i++) {
+                const key = keys[i];
 
-  /**
-   * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
-   * synchronous invocation, so if possible use invokeMethodAsync instead.
-   *
-   * @deprecated Use DotNetObject to invoke instance methods instead.
-   * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-   * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-   * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-   * @returns The result of the operation.
-   */
-  export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
-      const dispatcher = getDefaultCallDispatcher();
-      return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
-  }
+                if (current && typeof current === 'object' && key in current) {
+                    parent = current;
+                    current = current[key];
+                } else {
+                    throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
+                }
+            }
 
-  /**
-   * Invokes the specified .NET public method asynchronously.
-   *
-   * @deprecated Use DotNetObject to invoke instance methods instead.
-   * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-   * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-   * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-   * @returns A promise representing the result of the operation.
-   */
-  export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
-      const dispatcher = getDefaultCallDispatcher();
-      return dispatcher.invokeDotNetStaticMethodAsync<T>(assemblyName, methodIdentifier, ...args);
-  }
+            // We don't check the last key because error handling depends on the type of operation.
+            const lastKey = keys[keys.length - 1];
+            parent = current;
+            current = current[lastKey];
 
-  /**
-   * Creates a JavaScript object reference that can be passed to .NET via interop calls.
-   *
-   * @param jsObject The JavaScript Object used to create the JavaScript object reference.
-   * @returns The JavaScript object reference (this will be the same instance as the given object).
-   * @throws Error if the given value is not an Object.
-   */
-  export function createJSObjectReference(jsObject: any): any {
-      if (jsObject && typeof jsObject === "object") {
-          cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
+            const result =  { parent, name: lastKey } as ObjectMemberDescriptor;
 
-          const result = {
-              [jsObjectIdKey]: nextJsObjectId
-          };
+            if (typeof current === "function") {
+                result.func = current.bind(parent);
+            }
 
-          nextJsObjectId++;
+            this._cachedMembers.set(identifier, result);
+            return result;
+        }
 
-          return result;
-      }
+        public getWrappedObject() {
+            return this._jsObject;
+        }
+    }
 
-      throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
-  }
+    const windowJSObjectId = 0;
+    const cachedJSObjectsById: { [id: number]: JSObject } = {
+        [windowJSObjectId]: new JSObject(window)
+    };
 
-  /**
-   * Creates a JavaScript data reference that can be passed to .NET via interop calls.
-   *
-   * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
-   * @returns The JavaScript data reference (this will be the same instance as the given object).
-   * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
-   */
-  export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
-      let length = -1;
+    const windowObject = cachedJSObjectsById[windowJSObjectId];
+    windowObject._cachedMembers.set("import", { parent: windowObject, name: "import", func: (url: any) => {
+        // In most cases developers will want to resolve dynamic imports relative to the base HREF.
+        // However since we're the one calling the import keyword, they would be resolved relative to
+        // this framework bundle URL. Fix this by providing an absolute URL.
+        if (typeof url === "string" && url.startsWith("./")) {
+            url = new URL(url.substring(2), document.baseURI).toString();
+        }
 
-      // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
-      // ArrayBuffers' aren't directly readable.
-      if (streamReference instanceof ArrayBuffer) {
-          streamReference = new Uint8Array(streamReference);
-      }
+        return import(/* webpackIgnore: true */ url);
+    }});
 
-      if (streamReference instanceof Blob) {
-          length = streamReference.size;
-      } else if (streamReference.buffer instanceof ArrayBuffer) {
-          if (streamReference.byteLength === undefined) {
-              throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
-          }
+    let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
-          length = streamReference.byteLength;
-      } else {
-          throw new Error("Supplied value is not a typed array or blob.");
-      }
-
-      const result: any = {
-          [jsStreamReferenceLengthKey]: length
-      };
-
-      try {
-          const jsObjectReference = createJSObjectReference(streamReference);
-          result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
-      } catch (error) {
-          throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
-      }
-
-      return result;
-  }
-
-  /**
-   * Disposes the given JavaScript object reference.
-   *
-   * @param jsObjectReference The JavaScript Object reference.
-   */
-  export function disposeJSObjectReference(jsObjectReference: any): void {
-      const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
-
-      if (typeof id === "number") {
-          disposeJSObjectReferenceById(id);
-      }
-  }
-
-  function parseJsonWithRevivers(callDispatcher: CallDispatcher, json: string | null): any {
-      currentCallDispatcher = callDispatcher;
-      const result = json ? JSON.parse(json, (key, initialValue) => {
-          // Invoke each reviver in order, passing the output from the previous reviver,
-          // so that each one gets a chance to transform the value
-
-          return jsonRevivers.reduce(
-              (latestValue, reviver) => reviver(key, latestValue),
-              initialValue
-          );
-      }) : null;
-      currentCallDispatcher = undefined;
-      return result;
-  }
-
-  function getDefaultCallDispatcher(): CallDispatcher {
-      if (defaultCallDispatcher === undefined) {
-          throw new Error("No call dispatcher has been set.");
-      } else if (defaultCallDispatcher === null) {
-          throw new Error("There are multiple .NET runtimes present, so a default dispatcher could not be resolved. Use DotNetObject to invoke .NET instance methods.");
-      } else {
-          return defaultCallDispatcher;
-      }
-  }
-
-  interface PendingAsyncCall<T> {
-    resolve: (value?: T | PromiseLike<T>) => void;
-    reject: (reason?: any) => void;
-  }
-
-  /**
-   * Represents the type of result expected from a JS interop call.
-   */
-  // eslint-disable-next-line no-shadow
-  export enum JSCallResultType {
-    Default = 0,
-    JSObjectReference = 1,
-    JSStreamReference = 2,
-    JSVoidResult = 3,
-  }
-
-  /**
-   * Represents the type of operation that should be performed in JS.
-   */
-  export enum JSCallType {
-      FunctionCall = 1,
-      NewCall = 2,
-      GetValue = 3,
-      SetValue = 4
-  }
-
-  export interface JSInvocationInfo {
-      asyncHandle: number,
-      targetInstanceId: number,
-      identifier: string | null,
-      callType: JSCallType,
-      resultType: JSCallResultType,
-      argsJson: string | null,
-  }
-
-  /**
-   * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
-   */
-  export interface DotNetCallDispatcher {
     /**
-     * Optional. If implemented, invoked by the runtime to perform a synchronous call to a .NET method.
+     * Creates a .NET call dispatcher to use for handling invocations between JavaScript and a .NET runtime.
      *
-     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
-     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-     * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
-     * @param argsJson JSON representation of arguments to pass to the method.
-     * @returns JSON representation of the result of the invocation.
+     * @param dotNetCallDispatcher An object that can dispatch calls from JavaScript to a .NET runtime.
      */
-    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): string | null;
+    export function attachDispatcher(dotNetCallDispatcher: DotNetCallDispatcher): ICallDispatcher {
+        const result = new CallDispatcher(dotNetCallDispatcher);
+        if (defaultCallDispatcher === undefined) {
+            // This was the first dispatcher registered, so it becomes the default. This exists purely for
+            // backwards compatibility.
+            defaultCallDispatcher = result;
+        } else if (defaultCallDispatcher) {
+            // There is already a default dispatcher. Now that there are multiple to choose from, there can
+            // be no acceptable default, so we nullify the default dispatcher.
+            defaultCallDispatcher = null;
+        }
+
+        return result;
+    }
 
     /**
-     * Invoked by the runtime to begin an asynchronous call to a .NET method.
-     *
-     * @param callId A value identifying the asynchronous operation. This value should be passed back in a later call from .NET to JS.
-     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
-     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-     * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null to call static methods.
-     * @param argsJson JSON representation of arguments to pass to the method.
+     * Adds a JSON reviver callback that will be used when parsing arguments received from .NET.
+     * @param reviver The reviver to add.
      */
-    beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
+    export function attachReviver(reviver: JsonReviver) {
+        jsonRevivers.push(reviver);
+    }
 
     /**
-     * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
-     *
-     * @param callId A value identifying the asynchronous operation.
-     * @param succeded Whether the operation succeeded or not.
-     * @param resultOrError The serialized result or the serialized error from the async operation.
-     */
-    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
-
-    /**
-     * Invoked by the runtime to transfer a byte array from JS to .NET.
-     * @param id The identifier for the byte array used during revival.
-     * @param data The byte array being transferred for eventual revival.
-     */
-    sendByteArray(id: number, data: Uint8Array): void;
-  }
-
-  /**
-   * Represents the ability to facilitate function call dispatching between JavaScript and a .NET runtime.
-   */
-  export interface ICallDispatcher {
-    /**
-     * Invokes the specified synchronous JavaScript function.
-     *
-     * @param identifier Identifies the globally-reachable function to invoke.
-     * @param argsJson JSON representation of arguments to be passed to the function.
-     * @param resultType The type of result expected from the JS interop call.
-     * @param targetInstanceId The instance ID of the target JS object.
-     * @returns JSON representation of the invocation result.
-     */
-    invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null;
-    // TODO(OR): Add support for CallType, refactor to use JSInvocationInfo
-
-    /**
-     * Invokes the specified synchronous or asynchronous JavaScript function.
-     *
-     * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
-     * @param identifier Identifies the globally-reachable function to invoke.
-     * @param argsJson JSON representation of arguments to be passed to the function.
-     * @param callType The type of operation that should be performed in JS.
-     * @param resultType The type of result expected from the JS interop call.
-     * @param targetInstanceId The ID of the target JS object instance.
-     */
-    beginInvokeJSFromDotNet(invocationInfoString: string): void;
-
-    /**
-     * Receives notification that an async call from JS to .NET has completed.
-     * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
-     * @param success A flag to indicate whether the operation completed successfully.
-     * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
-     */
-    endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void;
-
-    /**
-     * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
+     * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
      * synchronous invocation, so if possible use invokeMethodAsync instead.
      *
+     * @deprecated Use DotNetObject to invoke instance methods instead.
      * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
      * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
      * @param args Arguments to pass to the method, each of which must be JSON-serializable.
      * @returns The result of the operation.
      */
-    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T;
+    export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
+        const dispatcher = getDefaultCallDispatcher();
+        return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
+    }
 
     /**
-     * Invokes the specified .NET public static method asynchronously.
+     * Invokes the specified .NET public method asynchronously.
      *
+     * @deprecated Use DotNetObject to invoke instance methods instead.
      * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
      * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
      * @param args Arguments to pass to the method, each of which must be JSON-serializable.
      * @returns A promise representing the result of the operation.
      */
-    invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
+    export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
+        const dispatcher = getDefaultCallDispatcher();
+        return dispatcher.invokeDotNetStaticMethodAsync<T>(assemblyName, methodIdentifier, ...args);
+    }
 
     /**
-     * Receives notification that a byte array is being transferred from .NET to JS.
-     * @param id The identifier for the byte array used during revival.
-     * @param data The byte array being transferred for eventual revival.
-     */
-    receiveByteArray(id: number, data: Uint8Array): void
-
-    /**
-     * Supplies a stream of data being sent from .NET.
+     * Creates a JavaScript object reference that can be passed to .NET via interop calls.
      *
-     * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code.
-     * @param stream The stream data.
+     * @param jsObject The JavaScript Object used to create the JavaScript object reference.
+     * @returns The JavaScript object reference (this will be the same instance as the given object).
+     * @throws Error if the given value is not an Object.
      */
-    supplyDotNetStream(streamId: number, stream: ReadableStream): void;
-  }
+    export function createJSObjectReference(jsObject: any): any {
+        if (jsObject && typeof jsObject === "object") {
+            cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
-  class CallDispatcher implements ICallDispatcher {
-      private readonly _byteArraysToBeRevived = new Map<number, Uint8Array>();
+            const result = {
+                [jsObjectIdKey]: nextJsObjectId
+            };
 
-      private readonly _pendingDotNetToJSStreams = new Map<number, PendingStream>();
+            nextJsObjectId++;
 
-      private readonly _pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
+            return result;
+        }
 
-      private _nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
+        throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
+    }
 
-      // eslint-disable-next-line no-empty-function
-      constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
-      }
+    /**
+     * Creates a JavaScript data reference that can be passed to .NET via interop calls.
+     *
+     * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
+     * @returns The JavaScript data reference (this will be the same instance as the given object).
+     * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
+     */
+    export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
+        let length = -1;
 
-      getDotNetCallDispatcher(): DotNetCallDispatcher {
-          return this._dotNetCallDispatcher;
-      }
+        // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+        // ArrayBuffers' aren't directly readable.
+        if (streamReference instanceof ArrayBuffer) {
+            streamReference = new Uint8Array(streamReference);
+        }
 
-      // TODO(OR): Add support for CallType, refactor to use JSInvocationInfo
-      invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): string | null {
-          const args = parseJsonWithRevivers(this, argsJson);
-          const jsFunction = findJSFunction(identifier, targetInstanceId);
-          const returnValue = jsFunction(...(args || []));
-          const result = createJSCallResult(returnValue, resultType);
+        if (streamReference instanceof Blob) {
+            length = streamReference.size;
+        } else if (streamReference.buffer instanceof ArrayBuffer) {
+            if (streamReference.byteLength === undefined) {
+                throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+            }
 
-          return result === null || result === undefined
-              ? null
-              : stringifyArgs(this, result);
-      }
+            length = streamReference.byteLength;
+        } else {
+            throw new Error("Supplied value is not a typed array or blob.");
+        }
 
-      handleJSFunctionCall(identifier: string, member: ObjectMemberDescriptor, args: any): any {
-          const func = member.parent[member.name];
+        const result: any = {
+            [jsStreamReferenceLengthKey]: length
+        };
 
-          if (typeof func === "function") {
-              return func.call(member.parent, ...(args || []));
-          } else {
-              throw new Error(`The value '${identifier}' is not a function.`);
-          }
-      }
+        try {
+            const jsObjectReference = createJSObjectReference(streamReference);
+            result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
+        } catch (error) {
+            throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
+        }
 
-      handleJSNewCall(identifier: string, member: ObjectMemberDescriptor, args: any): any {
-          const func = member.parent[member.name];
+        return result;
+    }
 
-          if (typeof func === "function") {
-              try {
-                  // The new call throws if the function is not constructible (e.g. an arrow function)
-                  return new func(...(args || []));
-              } catch (err) {
-                  if (err instanceof TypeError) {
-                      throw new Error(`The value '${identifier}' is not a constructor function.`);
-                  } else {
-                      throw err;
-                  }
-              }
-          } else {
-              throw new Error(`The value '${identifier}' is not a function.`);
-          }
-      }
+    /**
+     * Disposes the given JavaScript object reference.
+     *
+     * @param jsObjectReference The JavaScript Object reference.
+     */
+    export function disposeJSObjectReference(jsObjectReference: any): void {
+        const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
 
-      handleJSPropertyGet(identifier: string, instance: ObjectMemberDescriptor): any {
-          return identifier.length > 0 ? instance.parent[instance.name] : instance.parent;
-      }
+        if (typeof id === "number") {
+            disposeJSObjectReferenceById(id);
+        }
+    }
 
-      handleJSPropertySet(identifier: string, instance: ObjectMemberDescriptor, args: any) {
-          const value = args[0];
-          instance.parent[instance.name] = value;
-      }
+    function parseJsonWithRevivers(callDispatcher: CallDispatcher, json: string | null): any {
+        currentCallDispatcher = callDispatcher;
+        const result = json ? JSON.parse(json, (key, initialValue) => {
+            // Invoke each reviver in order, passing the output from the previous reviver,
+            // so that each one gets a chance to transform the value
 
-      handleJSCall(identifier: string | null, argsJson: string | null, targetInstanceId: number, callType: JSCallType) {
-          identifier ??= "";
-          const args = parseJsonWithRevivers(this, argsJson);
-          const member = findObjectMember(identifier, targetInstanceId);
-          let returnValue = null;
+            return jsonRevivers.reduce(
+                (latestValue, reviver) => reviver(key, latestValue),
+                initialValue
+            );
+        }) : null;
+        currentCallDispatcher = undefined;
+        return result;
+    }
 
-          if (callType === JSCallType.FunctionCall) {
-              returnValue = this.handleJSFunctionCall(identifier, member, args);
-          } else if (callType === JSCallType.NewCall) {
-              returnValue = this.handleJSNewCall(identifier, member, args);
-          } else if (callType === JSCallType.GetValue) {
-              returnValue = this.handleJSPropertyGet(identifier, member);
-          } else if (callType === JSCallType.SetValue) {
-              this.handleJSPropertySet(identifier, member, args);
-          }
+    function getDefaultCallDispatcher(): CallDispatcher {
+        if (defaultCallDispatcher === undefined) {
+            throw new Error("No call dispatcher has been set.");
+        } else if (defaultCallDispatcher === null) {
+            throw new Error("There are multiple .NET runtimes present, so a default dispatcher could not be resolved. Use DotNetObject to invoke .NET instance methods.");
+        } else {
+            return defaultCallDispatcher;
+        }
+    }
 
-          return returnValue;
-      }
+    interface PendingAsyncCall<T> {
+        resolve: (value?: T | PromiseLike<T>) => void;
+        reject: (reason?: any) => void;
+    }
 
-      beginInvokeJSFromDotNet(invocationInfoString: string): void {
-          // TODO(OR): Remove log
-          console.log(invocationInfoString);
-          const invocationInfo: JSInvocationInfo = JSON.parse(invocationInfoString);
+    /**
+     * Represents the type of result expected from a JS interop call.
+     */
+    // eslint-disable-next-line no-shadow
+    export enum JSCallResultType {
+        Default = 0,
+        JSObjectReference = 1,
+        JSStreamReference = 2,
+        JSVoidResult = 3,
+    }
 
-          // TODO(OR): Remove log
-          console.log(invocationInfo);
-          const { asyncHandle, identifier, argsJson, callType, resultType, targetInstanceId } = invocationInfo;
+    /**
+     * Represents the type of operation that should be performed in JS.
+     */
+    export enum JSCallType {
+        FunctionCall = 1,
+        NewCall = 2,
+        GetValue = 3,
+        SetValue = 4
+    }
 
-          // Coerce synchronous functions into async ones, plus treat
-          // synchronous exceptions the same as async ones
-          const promise = new Promise<any>(resolve => {
-              const valueOrPromise = this.handleJSCall(identifier, argsJson, targetInstanceId, callType);
-              resolve(valueOrPromise);
-          });
+    /**
+     * @param asyncHandle A value identifying an asynchronous operation that is passed back in a later call to endInvokeJSFromDotNet. If the call is synchronous, this value is zero.
+     * @param targetInstanceId The ID of the target JS object instance.
+     * @param identifier The identifier of the function to invoke or property to access.
+     * @param callType The type of operation that should be performed in JS.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param argsJson JSON array of arguments to be passed to the operation. First element is used when setting a property value.
+     */
+    export interface JSInvocationInfo {
+        asyncHandle: number,
+        targetInstanceId: number,
+        identifier: string,
+        callType: JSCallType,
+        resultType: JSCallResultType,
+        argsJson: string | null,
+    }
 
-          // We only listen for a result if the caller wants to be notified about it
-          if (asyncHandle) {
-              // On completion, dispatch result back to .NET
-              // Not using "await" because it codegens a lot of boilerplate
-              promise.
-                  then(result => stringifyArgs(this, [
-                    asyncHandle,
-                      true,
-                      createJSCallResult(result, resultType)
-                  ])).
-                  then(
-                      result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
-                      error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
+    /**
+     * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
+     */
+    export interface DotNetCallDispatcher {
+        /**
+         * Optional. If implemented, invoked by the runtime to perform a synchronous call to a .NET method.
+         *
+         * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
+         * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+         * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
+         * @param argsJson JSON representation of arguments to pass to the method.
+         * @returns JSON representation of the result of the invocation.
+         */
+        invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): string | null;
+
+        /**
+         * Invoked by the runtime to begin an asynchronous call to a .NET method.
+         *
+         * @param callId A value identifying the asynchronous operation. This value should be passed back in a later call from .NET to JS.
+         * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
+         * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+         * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null to call static methods.
+         * @param argsJson JSON representation of arguments to pass to the method.
+         */
+        beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
+
+        /**
+         * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
+         *
+         * @param callId A value identifying the asynchronous operation.
+         * @param succeded Whether the operation succeeded or not.
+         * @param resultOrError The serialized result or the serialized error from the async operation.
+         */
+        endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
+
+        /**
+         * Invoked by the runtime to transfer a byte array from JS to .NET.
+         * @param id The identifier for the byte array used during revival.
+         * @param data The byte array being transferred for eventual revival.
+         */
+        sendByteArray(id: number, data: Uint8Array): void;
+    }
+
+    /**
+     * Represents the ability to facilitate function call dispatching between JavaScript and a .NET runtime.
+     */
+    export interface ICallDispatcher {
+        /**
+         * Invokes the specified synchronous JavaScript function.
+         *
+         * @param invocationInfo Configuration of the interop call.
+         */
+        invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null;
+
+        /**
+         * Invokes the specified synchronous or asynchronous JavaScript function.
+         *
+         * @param invocationInfo Configuration of the interop call.
+         */
+        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): void;
+
+        /**
+         * Receives notification that an async call from JS to .NET has completed.
+         * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
+         * @param success A flag to indicate whether the operation completed successfully.
+         * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
+         */
+        endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void;
+
+        /**
+         * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
+         * synchronous invocation, so if possible use invokeMethodAsync instead.
+         *
+         * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+         * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+         * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+         * @returns The result of the operation.
+         */
+        invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T;
+
+        /**
+         * Invokes the specified .NET public static method asynchronously.
+         *
+         * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+         * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+         * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+         * @returns A promise representing the result of the operation.
+         */
+        invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
+
+        /**
+         * Receives notification that a byte array is being transferred from .NET to JS.
+         * @param id The identifier for the byte array used during revival.
+         * @param data The byte array being transferred for eventual revival.
+         */
+        receiveByteArray(id: number, data: Uint8Array): void
+
+        /**
+         * Supplies a stream of data being sent from .NET.
+         *
+         * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code.
+         * @param stream The stream data.
+         */
+        supplyDotNetStream(streamId: number, stream: ReadableStream): void;
+    }
+
+    class CallDispatcher implements ICallDispatcher {
+        private readonly _byteArraysToBeRevived = new Map<number, Uint8Array>();
+
+        private readonly _pendingDotNetToJSStreams = new Map<number, PendingStream>();
+
+        private readonly _pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
+
+        private _nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
+
+        // eslint-disable-next-line no-empty-function
+        constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
+        }
+
+        getDotNetCallDispatcher(): DotNetCallDispatcher {
+            return this._dotNetCallDispatcher;
+        }
+
+        invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null {
+            const { targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+            const returnValue = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
+            const result = createJSCallResult(returnValue, resultType);
+
+            return result === null || result === undefined
+                ? null
+                : stringifyArgs(this, result);
+        }
+
+        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): void {
+            const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+
+            // Coerce synchronous functions into async ones, plus treat
+            // synchronous exceptions the same as async ones
+            const promise = new Promise<any>(resolve => {
+                const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
+                resolve(valueOrPromise);
+            });
+
+            // We only listen for a result if the caller wants to be notified about it
+            if (asyncHandle) {
+                // On completion, dispatch result back to .NET
+                // Not using "await" because it codegens a lot of boilerplate
+                promise.
+                    then(result => stringifyArgs(this, [
                         asyncHandle,
-                          false,
-                          formatError(error)
-                      ]))
-                  );
+                        true,
+                        createJSCallResult(result, resultType)
+                    ])).
+                    then(
+                        result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
+                        error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
+                            asyncHandle,
+                            false,
+                            formatError(error)
+                        ]))
+                    );
+            }
+        }
+
+        handleJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
+            const args = parseJsonWithRevivers(this, argsJson) ?? [];
+            const member = findObjectMember(identifier, targetInstanceId);
+            let returnValue = null;
+
+            if (callType === JSCallType.FunctionCall) {
+                returnValue = this.handleJSFunctionCall(identifier, member.func, args);
+            } else if (callType === JSCallType.NewCall) {
+                returnValue = this.handleJSNewCall(identifier, member.func, args);
+            } else if (callType === JSCallType.GetValue) {
+                returnValue = this.handleJSPropertyGet(identifier, member);
+            } else if (callType === JSCallType.SetValue) {
+                this.handleJSPropertySet(identifier, member, args);
+            } else {
+                throw new Error(`Unsupported call type '${callType}'.`);
+            }
+
+            return returnValue;
+        }
+
+        handleJSFunctionCall(identifier: string, func: any, args: unknown[]): any {
+            if (typeof func === "function") {
+                return func(...args);
+            } else {
+                throw new Error(`The value '${identifier}' is not a function.`);
+            }
+        }
+
+        handleJSNewCall(identifier: string, func: any, args: unknown[]): any {
+            if (typeof func === "function") {
+                try {
+                    // The new call throws if the function is not constructible (e.g. an arrow function)
+                    return new func(...args);
+                } catch (err) {
+                    if (err instanceof TypeError) {
+                        throw new Error(`The value '${identifier}' is not a constructor function.`);
+                    } else {
+                        throw err;
+                    }
+                }
+            } else {
+                throw new Error(`The value '${identifier}' is not a function.`);
+            }
+        }
+
+        handleJSPropertyGet(identifier: string, property: ObjectMemberDescriptor): any {
+            if (property.name === "") {
+                return property.parent;
+            }
+
+            // TODO(oroztocil): Do we want to throw on undefined property or return null?
+            if (!this.isReadableProperty(property.parent, property.name)) {
+                throw new Error(`The property '${identifier}' is not defined or is not readable.`);
+            }
+
+            // For empty identifier, we return the object itself to support "dereferencing" JS object references
+            return property.parent[property.name];
+        }
+
+        handleJSPropertySet(identifier: string, property: ObjectMemberDescriptor, args: unknown[]) {
+            // TODO(OR): Test with get only properties
+            if (!this.isWritableProperty(property.parent, property.name)) {
+                throw new Error(`The property '${identifier}' does is not writable.`);
+            }
+
+            const value = args[0];
+            property.parent[property.name] = value;
+        }
+
+        isReadableProperty(obj: any, propName: string) {
+            const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+
+            if (!descriptor) {
+                return false;
+            }
+
+            // Return true for data property
+            if (descriptor.hasOwnProperty('value')) {
+                return true
+            }
+          
+            // Return true for accessor property with defined getter
+            return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
           }
-      }
+          
+        isWritableProperty(obj: any, propName: string) {
+            const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
 
-      endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
-          const resultOrError = success
-              ? parseJsonWithRevivers(this, resultJsonOrExceptionMessage)
-              : new Error(resultJsonOrExceptionMessage);
-          this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
-      }
+            // Return true for undefined property if the property can be added
+            if (!descriptor) {
+                return Object.isExtensible(obj);
+            }
 
-      invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
-          return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
-      }
-
-      invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
-          return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
-      }
-
-      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
-          if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
-              const argsJson = stringifyArgs(this, args);
-              const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-              return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
+            // Return true for writable data property
+            if (descriptor.hasOwnProperty('value') && descriptor.writable) {
+                return true;
+            }
+            
+            // Return true for accessor property with defined setter
+            return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
           }
 
-          throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
-      }
+        endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
+            const resultOrError = success
+                ? parseJsonWithRevivers(this, resultJsonOrExceptionMessage)
+                : new Error(resultJsonOrExceptionMessage);
+            this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
+        }
 
-      invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
-          if (assemblyName && dotNetObjectId) {
-              throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`);
-          }
+        invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
+            return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
+        }
 
-          const asyncCallId = this._nextAsyncCallId++;
-          const resultPromise = new Promise<T>((resolve, reject) => {
-              this._pendingAsyncCalls[asyncCallId] = { resolve, reject };
-          });
+        invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
+            return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
+        }
 
-          try {
-              const argsJson = stringifyArgs(this, args);
-              this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-          } catch (ex) {
-              // Synchronous failure
-              this.completePendingCall(asyncCallId, false, ex);
-          }
+        invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
+            if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
+                const argsJson = stringifyArgs(this, args);
+                const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+                return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
+            }
 
-          return resultPromise;
-      }
+            throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
+        }
 
-      receiveByteArray(id: number, data: Uint8Array): void {
-          this._byteArraysToBeRevived.set(id, data);
-      }
+        invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
+            if (assemblyName && dotNetObjectId) {
+                throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`);
+            }
 
-      processByteArray(id: number): Uint8Array | null {
-          const result = this._byteArraysToBeRevived.get(id);
-          if (!result) {
-              return null;
-          }
+            const asyncCallId = this._nextAsyncCallId++;
+            const resultPromise = new Promise<T>((resolve, reject) => {
+                this._pendingAsyncCalls[asyncCallId] = { resolve, reject };
+            });
 
-          this._byteArraysToBeRevived.delete(id);
-          return result;
-      }
+            try {
+                const argsJson = stringifyArgs(this, args);
+                this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            } catch (ex) {
+                // Synchronous failure
+                this.completePendingCall(asyncCallId, false, ex);
+            }
 
-      supplyDotNetStream(streamId: number, stream: ReadableStream) {
-          if (this._pendingDotNetToJSStreams.has(streamId)) {
-              // The receiver is already waiting, so we can resolve the promise now and stop tracking this
-              const pendingStream = this._pendingDotNetToJSStreams.get(streamId)!;
-              this._pendingDotNetToJSStreams.delete(streamId);
-              pendingStream.resolve!(stream);
-          } else {
-              // The receiver hasn't started waiting yet, so track a pre-completed entry it can attach to later
-              const pendingStream = new PendingStream();
-              pendingStream.resolve!(stream);
-              this._pendingDotNetToJSStreams.set(streamId, pendingStream);
-          }
-      }
+            return resultPromise;
+        }
 
-      getDotNetStreamPromise(streamId: number): Promise<ReadableStream> {
-          // We might already have started receiving the stream, or maybe it will come later.
-          // We have to handle both possible orderings, but we can count on it coming eventually because
-          // it's not something the developer gets to control, and it would be an error if it doesn't.
-          let result: Promise<ReadableStream>;
-          if (this._pendingDotNetToJSStreams.has(streamId)) {
-              // We've already started receiving the stream, so no longer need to track it as pending
-              result = this._pendingDotNetToJSStreams.get(streamId)!.streamPromise!;
-              this._pendingDotNetToJSStreams.delete(streamId);
-          } else {
-              // We haven't started receiving it yet, so add an entry to track it as pending
-              const pendingStream = new PendingStream();
-              this._pendingDotNetToJSStreams.set(streamId, pendingStream);
-              result = pendingStream.streamPromise;
-          }
+        receiveByteArray(id: number, data: Uint8Array): void {
+            this._byteArraysToBeRevived.set(id, data);
+        }
 
-          return result;
-      }
+        processByteArray(id: number): Uint8Array | null {
+            const result = this._byteArraysToBeRevived.get(id);
+            if (!result) {
+                return null;
+            }
 
-      private completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
-          if (!this._pendingAsyncCalls.hasOwnProperty(asyncCallId)) {
-              throw new Error(`There is no pending async call with ID ${asyncCallId}.`);
-          }
+            this._byteArraysToBeRevived.delete(id);
+            return result;
+        }
 
-          const asyncCall = this._pendingAsyncCalls[asyncCallId];
-          delete this._pendingAsyncCalls[asyncCallId];
-          if (success) {
-              asyncCall.resolve(resultOrError);
-          } else {
-              asyncCall.reject(resultOrError);
-          }
-      }
-  }
+        supplyDotNetStream(streamId: number, stream: ReadableStream) {
+            if (this._pendingDotNetToJSStreams.has(streamId)) {
+                // The receiver is already waiting, so we can resolve the promise now and stop tracking this
+                const pendingStream = this._pendingDotNetToJSStreams.get(streamId)!;
+                this._pendingDotNetToJSStreams.delete(streamId);
+                pendingStream.resolve!(stream);
+            } else {
+                // The receiver hasn't started waiting yet, so track a pre-completed entry it can attach to later
+                const pendingStream = new PendingStream();
+                pendingStream.resolve!(stream);
+                this._pendingDotNetToJSStreams.set(streamId, pendingStream);
+            }
+        }
 
-  function formatError(error: Error | string): string {
-      if (error instanceof Error) {
-          return `${error.message}\n${error.stack}`;
-      }
+        getDotNetStreamPromise(streamId: number): Promise<ReadableStream> {
+            // We might already have started receiving the stream, or maybe it will come later.
+            // We have to handle both possible orderings, but we can count on it coming eventually because
+            // it's not something the developer gets to control, and it would be an error if it doesn't.
+            let result: Promise<ReadableStream>;
+            if (this._pendingDotNetToJSStreams.has(streamId)) {
+                // We've already started receiving the stream, so no longer need to track it as pending
+                result = this._pendingDotNetToJSStreams.get(streamId)!.streamPromise!;
+                this._pendingDotNetToJSStreams.delete(streamId);
+            } else {
+                // We haven't started receiving it yet, so add an entry to track it as pending
+                const pendingStream = new PendingStream();
+                this._pendingDotNetToJSStreams.set(streamId, pendingStream);
+                result = pendingStream.streamPromise;
+            }
 
-      return error ? error.toString() : "null";
-  }
+            return result;
+        }
 
-  export function findJSFunction(identifier: string, targetInstanceId: number): Function {
-      const targetInstance = cachedJSObjectsById[targetInstanceId];
+        private completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
+            if (!this._pendingAsyncCalls.hasOwnProperty(asyncCallId)) {
+                throw new Error(`There is no pending async call with ID ${asyncCallId}.`);
+            }
 
-      if (targetInstance) {
-          return targetInstance.findFunction(identifier);
-      }
+            const asyncCall = this._pendingAsyncCalls[asyncCallId];
+            delete this._pendingAsyncCalls[asyncCallId];
+            if (success) {
+                asyncCall.resolve(resultOrError);
+            } else {
+                asyncCall.reject(resultOrError);
+            }
+        }
+    }
 
-      throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
-  }
+    function formatError(error: Error | string): string {
+        if (error instanceof Error) {
+            return `${error.message}\n${error.stack}`;
+        }
 
-  export function findObjectMember(identifier: string, targetInstanceId: number): ObjectMemberDescriptor {
-      // TODO(OR): Remove log
-      console.log("findObjectMember", identifier, targetInstanceId)
-      const targetInstance = cachedJSObjectsById[targetInstanceId];
+        return error ? error.toString() : "null";
+    }
 
-      if (!targetInstance) {
-          throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
-      }
+    export function findJSFunction(identifier: string, targetInstanceId: number): Function {
+        const targetInstance = cachedJSObjectsById[targetInstanceId];
+  
+        if (targetInstance) {
+            const member = targetInstance.findMember(identifier);
 
-      if (identifier === "") {
-          return { parent: targetInstance.getWrappedObject(), name: "" };
-      }
+            if (!member.func) {
+                throw new Error(`The value '${identifier}' is not a function.`);
+            }
 
-      return targetInstance.findMember(identifier);
-  }
+            return member.func;
+        }
+  
+        throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
+    }
 
-  export function disposeJSObjectReferenceById(id: number) {
-      delete cachedJSObjectsById[id];
-  }
+    export function findObjectMember(identifier: string, targetInstanceId: number): ObjectMemberDescriptor {
+        const targetInstance = cachedJSObjectsById[targetInstanceId];
 
-  export class DotNetObject {
-      // eslint-disable-next-line no-empty-function
-      constructor(private readonly _id: number, private readonly _callDispatcher: CallDispatcher) {
-      }
+        if (!targetInstance) {
+            throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
+        }
 
-      public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T {
-          return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
-      }
+        return targetInstance.findMember(identifier);
+    }
 
-      public invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T> {
-          return this._callDispatcher.invokeDotNetMethodAsync<T>(null, methodIdentifier, this._id, args);
-      }
+    export function disposeJSObjectReferenceById(id: number) {
+        delete cachedJSObjectsById[id];
+    }
 
-      public dispose() {
-          const promise = this._callDispatcher.invokeDotNetMethodAsync<any>(null, "__Dispose", this._id, null);
-          promise.catch(error => console.error(error));
-      }
+    export class DotNetObject {
+        // eslint-disable-next-line no-empty-function
+        constructor(private readonly _id: number, private readonly _callDispatcher: CallDispatcher) {
+        }
 
-      public serializeAsArg() {
-          return { [dotNetObjectRefKey]: this._id };
-      }
-  }
+        public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T {
+            return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
+        }
 
-  attachReviver(function reviveReference(key: any, value: any) {
-      if (value && typeof value === "object") {
-          if (value.hasOwnProperty(dotNetObjectRefKey)) {
-              return new DotNetObject(value[dotNetObjectRefKey], currentCallDispatcher!);
-          } else if (value.hasOwnProperty(jsObjectIdKey)) {
-              const id = value[jsObjectIdKey];
-              const jsObject = cachedJSObjectsById[id];
+        public invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T> {
+            return this._callDispatcher.invokeDotNetMethodAsync<T>(null, methodIdentifier, this._id, args);
+        }
 
-              if (jsObject) {
-                  return jsObject.getWrappedObject();
-              }
+        public dispose() {
+            const promise = this._callDispatcher.invokeDotNetMethodAsync<any>(null, "__Dispose", this._id, null);
+            promise.catch(error => console.error(error));
+        }
 
-              throw new Error(`JS object instance with Id '${id}' does not exist. It may have been disposed.`);
-          } else if (value.hasOwnProperty(byteArrayRefKey)) {
-              const index = value[byteArrayRefKey];
-              const byteArray = currentCallDispatcher!.processByteArray(index);
-              if (byteArray === undefined) {
-                  throw new Error(`Byte array index '${index}' does not exist.`);
-              }
-              return byteArray;
-          } else if (value.hasOwnProperty(dotNetStreamRefKey)) {
-              const streamId = value[dotNetStreamRefKey];
-              const streamPromise = currentCallDispatcher!.getDotNetStreamPromise(streamId);
-              return new DotNetStream(streamPromise);
-          }
-      }
+        public serializeAsArg() {
+            return { [dotNetObjectRefKey]: this._id };
+        }
+    }
 
-      // Unrecognized - let another reviver handle it
-      return value;
-  });
+    attachReviver(function reviveReference(key: any, value: any) {
+        if (value && typeof value === "object") {
+            if (value.hasOwnProperty(dotNetObjectRefKey)) {
+                return new DotNetObject(value[dotNetObjectRefKey], currentCallDispatcher!);
+            } else if (value.hasOwnProperty(jsObjectIdKey)) {
+                const id = value[jsObjectIdKey];
+                const jsObject = cachedJSObjectsById[id];
 
-  class DotNetStream {
-      // eslint-disable-next-line no-empty-function
-      constructor(private readonly _streamPromise: Promise<ReadableStream>) {
-      }
+                if (jsObject) {
+                    return jsObject.getWrappedObject();
+                }
 
-      /**
-       * Supplies a readable stream of data being sent from .NET.
-       */
-      stream(): Promise<ReadableStream> {
-          return this._streamPromise;
-      }
+                throw new Error(`JS object instance with Id '${id}' does not exist. It may have been disposed.`);
+            } else if (value.hasOwnProperty(byteArrayRefKey)) {
+                const index = value[byteArrayRefKey];
+                const byteArray = currentCallDispatcher!.processByteArray(index);
+                if (byteArray === undefined) {
+                    throw new Error(`Byte array index '${index}' does not exist.`);
+                }
+                return byteArray;
+            } else if (value.hasOwnProperty(dotNetStreamRefKey)) {
+                const streamId = value[dotNetStreamRefKey];
+                const streamPromise = currentCallDispatcher!.getDotNetStreamPromise(streamId);
+                return new DotNetStream(streamPromise);
+            }
+        }
 
-      /**
-       * Supplies a array buffer of data being sent from .NET.
-       * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
-       */
-      async arrayBuffer(): Promise<ArrayBuffer> {
-          return new Response(await this.stream()).arrayBuffer();
-      }
-  }
+        // Unrecognized - let another reviver handle it
+        return value;
+    });
 
-  class PendingStream {
-      streamPromise: Promise<ReadableStream>;
+    class DotNetStream {
+        // eslint-disable-next-line no-empty-function
+        constructor(private readonly _streamPromise: Promise<ReadableStream>) {
+        }
 
-      resolve?: (value: ReadableStream) => void;
+        /**
+         * Supplies a readable stream of data being sent from .NET.
+         */
+        stream(): Promise<ReadableStream> {
+            return this._streamPromise;
+        }
 
-      reject?: (reason: any) => void;
+        /**
+         * Supplies a array buffer of data being sent from .NET.
+         * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
+         */
+        async arrayBuffer(): Promise<ArrayBuffer> {
+            return new Response(await this.stream()).arrayBuffer();
+        }
+    }
 
-      constructor() {
-          this.streamPromise = new Promise((resolve, reject) => {
-              this.resolve = resolve;
-              this.reject = reject;
-          });
-      }
-  }
+    class PendingStream {
+        streamPromise: Promise<ReadableStream>;
 
-  function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
-      switch (resultType) {
-      case JSCallResultType.Default:
-          return returnValue;
-      case JSCallResultType.JSObjectReference:
-          return createJSObjectReference(returnValue);
-      case JSCallResultType.JSStreamReference:
-          return createJSStreamReference(returnValue);
-      case JSCallResultType.JSVoidResult:
-          return null;
-      default:
-          throw new Error(`Invalid JS call result type '${resultType}'.`);
-      }
-  }
+        resolve?: (value: ReadableStream) => void;
 
-  let nextByteArrayIndex = 0;
-  function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
-      nextByteArrayIndex = 0;
-      currentCallDispatcher = callDispatcher;
-      const result = JSON.stringify(args, argReplacer);
-      currentCallDispatcher = undefined;
-      return result;
-  }
+        reject?: (reason: any) => void;
 
-  function argReplacer(key: string, value: any) {
-      if (value instanceof DotNetObject) {
-          return value.serializeAsArg();
-      } else if (value instanceof Uint8Array) {
-          const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
-          dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
-          const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
-          nextByteArrayIndex++;
-          return jsonValue;
-      }
+        constructor() {
+            this.streamPromise = new Promise((resolve, reject) => {
+                this.resolve = resolve;
+                this.reject = reject;
+            });
+        }
+    }
 
-      return value;
-  }
+    function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
+        switch (resultType) {
+            case JSCallResultType.Default:
+                return returnValue;
+            case JSCallResultType.JSObjectReference:
+                return createJSObjectReference(returnValue);
+            case JSCallResultType.JSStreamReference:
+                return createJSStreamReference(returnValue);
+            case JSCallResultType.JSVoidResult:
+                return null;
+            default:
+                throw new Error(`Invalid JS call result type '${resultType}'.`);
+        }
+    }
+
+    let nextByteArrayIndex = 0;
+    function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
+        nextByteArrayIndex = 0;
+        currentCallDispatcher = callDispatcher;
+        const result = JSON.stringify(args, argReplacer);
+        currentCallDispatcher = undefined;
+        return result;
+    }
+
+    function argReplacer(key: string, value: any) {
+        if (value instanceof DotNetObject) {
+            return value.serializeAsArg();
+        } else if (value instanceof Uint8Array) {
+            const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
+            dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
+            const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
+            nextByteArrayIndex++;
+            return jsonValue;
+        }
+
+        return value;
+    }
 }

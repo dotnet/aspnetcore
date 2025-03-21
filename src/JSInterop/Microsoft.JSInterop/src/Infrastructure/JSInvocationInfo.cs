@@ -23,12 +23,12 @@ public sealed class JSInvocationInfo
     public long TargetInstanceId { get; init; }
 
     /// <summary>
-    /// The identifier for the function to invoke or property to access.
+    /// The identifier of the function to invoke or property to access.
     /// </summary>
-    public string? Identifier { get; init; }
+    public required string Identifier { get; init; }
 
     /// <summary>
-    /// TODO(OR)
+    /// The type of operation that should be performed in JS.
     /// </summary>
     public JSCallType CallType { get; init; }
 

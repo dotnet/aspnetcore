@@ -264,13 +264,13 @@ async function scheduleAfterStarted(operations: string): Promise<void> {
   Blazor._internal.updateRootComponents(operations);
 }
 
-function invokeJSJson(invocationInfoString: string): string | null {
-  const invocationInfo: DotNet.JSInvocationInfo = JSON.parse(invocationInfoString);
+function invokeJSJson(invocationInfoJson: string): string | null {
+  const invocationInfo: DotNet.JSInvocationInfo = JSON.parse(invocationInfoJson);
   if (invocationInfo.asyncHandle !== 0) {
-    dispatcher.beginInvokeJSFromDotNet(invocationInfoString);
+    dispatcher.beginInvokeJSFromDotNet(invocationInfo);
     return null;
   } else {
-    return dispatcher.invokeJSFromDotNet(invocationInfo.identifier ?? "", invocationInfo.argsJson ?? "[]", invocationInfo.resultType, invocationInfo.targetInstanceId);
+    return dispatcher.invokeJSFromDotNet(invocationInfo);
   }
 }
 
