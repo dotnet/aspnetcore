@@ -94,7 +94,7 @@ public sealed partial class XmlCommentGenerator
             if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
                 // Only include symbols that are declared in the application assembly or are
                 // accessible from the application assembly.
-                (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, input.Compilation.Assembly) || symbol.IsAccessibleType()) &&
+                (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, compilation.Assembly) || symbol.IsAccessibleType()) &&
                 // Skip static classes that are just containers for members with annotations
                 // since they cannot be instantiated.
                 symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
@@ -104,7 +104,7 @@ public sealed partial class XmlCommentGenerator
                 {
                     var memberKey = symbol switch
                     {
-                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol, input.Compilation),
+                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol),
                         IPropertySymbol propertySymbol => MemberKey.FromPropertySymbol(propertySymbol),
                         INamedTypeSymbol typeSymbol => MemberKey.FromTypeSymbol(typeSymbol),
                         _ => null

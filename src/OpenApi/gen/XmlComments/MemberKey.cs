@@ -21,7 +21,7 @@ internal sealed record MemberKey(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
 
-    public static MemberKey FromMethodSymbol(IMethodSymbol method, Compilation compilation)
+    public static MemberKey FromMethodSymbol(IMethodSymbol method)
     {
         string returnType;
         if (method.ReturnsVoid)
@@ -32,16 +32,10 @@ internal sealed record MemberKey(
         {
             // Handle Task/ValueTask for async methods
             var actualReturnType = method.ReturnType;
-            if (method.IsAsync && actualReturnType is INamedTypeSymbol namedType)
+            if (method.IsAsync
+                && actualReturnType is INamedTypeSymbol { TypeArguments.Length: 1 } namedType)
             {
-                if (namedType.TypeArguments.Length > 0)
-                {
-                    actualReturnType = namedType.TypeArguments[0];
-                }
-                else
-                {
-                    actualReturnType = compilation.GetSpecialType(SpecialType.System_Void);
-                }
+                actualReturnType = namedType.ConstructedFrom;
             }
 
             returnType = actualReturnType.TypeKind == TypeKind.TypeParameter
