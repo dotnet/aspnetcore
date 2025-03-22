@@ -3,11 +3,13 @@
 
 #nullable disable warnings
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -71,6 +73,13 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     public RenderFragment NotFound { get; set; }
 
     /// <summary>
+    /// Gets or sets the page content to display when no match is found for the requested route.
+    /// </summary>
+    [Parameter]
+    [DynamicallyAccessedMembers(LinkerFlags.Component)]
+    public Type NotFoundPage { get; set; } = default!;
+
+    /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
     /// </summary>
     [Parameter]
@@ -130,6 +139,22 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (Found == null)
         {
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(Found)}.");
+        }
+
+        if (NotFoundPage != null)
+        {
+            if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
+            {
+                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
+                    $"does not implement {typeof(IComponent).FullName}.");
+            }
+
+            var routeAttributes = NotFoundPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+            if (routeAttributes.Length == 0)
+            {
+                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
+                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+            }
         }
 
         if (!_onNavigateCalled)
@@ -327,7 +352,22 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (_renderHandle.IsInitialized)
         {
             Log.DisplayingNotFound(_logger);
-            _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+            _renderHandle.Render(builder =>
+            {
+                if (NotFoundPage != null)
+                {
+                    builder.OpenComponent(0, NotFoundPage);
+                    builder.CloseComponent();
+                }
+                else if (NotFound != null)
+                {
+                    NotFound(builder);
+                }
+                else
+                {
+                    DefaultNotFoundContent(builder);
+                }
+            });
         }
     }
 
