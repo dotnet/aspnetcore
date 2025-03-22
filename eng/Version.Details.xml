@@ -307,6 +307,14 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4ff64a03e5c31fa824c4bc9377ef1ae8134d3f7a</Sha>
     </Dependency>
+    <Dependency Name="System.Memory.Data" Version="10.0.0-preview.3.25167.9">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>4ff64a03e5c31fa824c4bc9377ef1ae8134d3f7a</Sha>
+    </Dependency>
+    <Dependency Name="System.Numerics.Tensors" Version="10.0.0-preview.3.25167.9">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>4ff64a03e5c31fa824c4bc9377ef1ae8134d3f7a</Sha>
+    </Dependency>
     <Dependency Name="System.Runtime.Caching" Version="10.0.0-preview.3.25167.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4ff64a03e5c31fa824c4bc9377ef1ae8134d3f7a</Sha>
