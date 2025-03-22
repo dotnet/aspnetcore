@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.StartServer() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.UseKestrel() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.UseKestrel(int port) -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.UseKestrel(System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! configureKestrelOptions) -> void
