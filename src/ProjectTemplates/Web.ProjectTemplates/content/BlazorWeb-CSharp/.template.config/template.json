@@ -76,6 +76,12 @@
           ]
         },
         {
+          "condition": "!(UseWebAssembly && InteractiveAtRoot)",
+          "exclude": [
+            "BlazorWeb-CSharp.Client/Pages/WeatherDetails.razor"
+          ]
+        },
+        {
           "condition": "(!UseProgramMain)",
           "exclude": [
             "BlazorWeb-CSharp/Program.Main.cs",
