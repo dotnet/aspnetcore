@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting
+using Microsoft.AspNetCore.InternalTesting;
 using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
