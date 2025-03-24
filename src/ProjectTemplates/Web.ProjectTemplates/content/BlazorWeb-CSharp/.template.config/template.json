@@ -70,7 +70,10 @@
             "BlazorWeb-CSharp/Components/Pages/NotFound.razor": "./BlazorWeb-CSharp.Client/Pages/NotFound.razor",
             "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
             "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
-          }
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/WeatherDetails.razor"
+          ]
         },
         {
           "condition": "(!UseProgramMain)",
@@ -92,8 +95,7 @@
         {
           "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Counter.razor",
-            "BlazorWeb-CSharp/Components/Pages/WeatherDetails.razor"
+            "BlazorWeb-CSharp/Components/Pages/Counter.razor"
           ]
         },
         {
@@ -116,9 +118,12 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
+            "BlazorWeb-CSharp/Components/Models/WeatherForecast.*",
             "BlazorWeb-CSharp/Components/Pages/Auth.*",
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
+            "BlazorWeb-CSharp/Components/Pages/NotFound.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
+            "BlazorWeb-CSharp/Components/Pages/WeatherDetails.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
             "BlazorWeb-CSharp/wwwroot/lib/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
