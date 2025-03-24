@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting
 using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
@@ -519,7 +520,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
-    [QuarantineTest("https://github.com/dotnet/aspnetcore/issues/61143")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61143")]
     public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
     {
         Navigate($"{ServerPathBase}/nav");
