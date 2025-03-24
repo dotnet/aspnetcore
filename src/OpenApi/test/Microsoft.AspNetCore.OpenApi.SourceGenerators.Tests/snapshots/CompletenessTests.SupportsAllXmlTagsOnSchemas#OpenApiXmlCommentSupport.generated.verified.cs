@@ -258,6 +258,9 @@ represented by an xpath expression.", null, null, false, null, null, null));
 type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Type, null, null, []), new XmlComment(@"This class validates the behavior for mapping
+generic types to open generics for use in
+typeof expressions.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
     that you use for a label.
@@ -266,12 +269,16 @@ each accessor, only to the property itself.", null, @"The `Label` property repre
 for this instance.", false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "FirstName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "LastName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "Id", null, []), new XmlComment(@"This property is a nullable value type.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "Name", null, []), new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "TaskOfTupleProp", null, []), new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "TupleWithGenericProp", null, []), new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "Add", typeof(global::System.Int32), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<global::System.Int32>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
@@ -285,6 +292,11 @@ implementing class uses ""inheritdoc""", @"The value of arg", null, false, null,
             _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Method, "GetTaskOfTuple", typeof(global::System.Threading.Tasks.Task<global::System.ValueTuple<global::System.Int32, global::System.String>>), []), new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Method, "GetTupleOfTask", typeof(global::System.ValueTuple<global::System.Int32, global::System.Collections.Generic.Dictionary<global::System.Int32, global::System.String>>), []), new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Method, "GetTupleOfTask2", typeof(global::System.ValueTuple<object, global::System.Collections.Generic.Dictionary<global::System.Int32, global::System.String>>), []), new XmlComment(@"This method return a tuple with a generic type containing a
+type parameter inside.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Method, "GetNestedGeneric", typeof(global::System.Collections.Generic.Dictionary<global::System.Int32, global::System.Collections.Generic.Dictionary<global::System.Int32, global::System.String>>), []), new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Xml;
@@ -14,14 +14,19 @@ internal sealed record MemberKey(
     MemberType MemberKind,
     string? Name,
     string? ReturnType,
-    string[]? Parameters) : IEquatable<MemberKey>
+    List<string>? Parameters) : IEquatable<MemberKey>
 {
-    private static readonly SymbolDisplayFormat _typeKeyFormat = new(
+    private static readonly SymbolDisplayFormat _withTypeParametersFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
 
-    public static MemberKey FromMethodSymbol(IMethodSymbol method, Compilation compilation)
+    private static readonly SymbolDisplayFormat _sansTypeParametersFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.None);
+
+    public static MemberKey? FromMethodSymbol(IMethodSymbol method, Compilation compilation)
     {
         string returnType;
         if (method.ReturnsVoid)
@@ -44,94 +49,193 @@ internal sealed record MemberKey(
                 }
             }
 
-            returnType = actualReturnType.TypeKind == TypeKind.TypeParameter
-                ? "typeof(object)"
-                : $"typeof({ReplaceGenericArguments(actualReturnType.ToDisplayString(_typeKeyFormat))})";
+            if (actualReturnType.TypeKind == TypeKind.TypeParameter)
+            {
+                returnType = "typeof(object)";
+            }
+            else if (TryGetFormattedTypeName(actualReturnType, out var formattedReturnType))
+            {
+                returnType = $"typeof({formattedReturnType})";
+            }
+            else
+            {
+                return null;
+            }
         }
 
         // Handle extension methods by skipping the 'this' parameter
-        var parameters = method.Parameters
-            .Where(p => !p.IsThis)
-            .Select(p =>
-            {
-                if (p.Type.TypeKind == TypeKind.TypeParameter)
-                {
-                    return "typeof(object)";
-                }
-
-                // For params arrays, use the array type
-                if (p.IsParams && p.Type is IArrayTypeSymbol arrayType)
-                {
-                    return $"typeof({ReplaceGenericArguments(arrayType.ToDisplayString(_typeKeyFormat))})";
-                }
-
-                return $"typeof({ReplaceGenericArguments(p.Type.ToDisplayString(_typeKeyFormat))})";
-            })
-            .ToArray();
-
-        // For generic methods, use the containing type with generic parameters
-        var declaringType = method.ContainingType;
-        var typeDisplay = declaringType.ToDisplayString(_typeKeyFormat);
-
-        // If the method is in a generic type, we need to handle the type parameters
-        if (declaringType.IsGenericType)
+        List<string> parameters = [];
+        foreach (var parameter in method.Parameters)
         {
-            typeDisplay = ReplaceGenericArguments(typeDisplay);
+            if (parameter.IsThis)
+            {
+                continue;
+            }
+
+            if (parameter.Type.TypeKind == TypeKind.TypeParameter)
+            {
+                parameters.Add("typeof(object)");
+            }
+            else if (parameter.IsParams && parameter.Type is IArrayTypeSymbol arrayType)
+            {
+                if (TryGetFormattedTypeName(arrayType.ElementType, out var formattedArrayType))
+                {
+                    parameters.Add($"typeof({formattedArrayType}[])");
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else if (TryGetFormattedTypeName(parameter.Type, out var formattedParameterType))
+            {
+                parameters.Add($"typeof({formattedParameterType})");
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        return new MemberKey(
-            $"typeof({typeDisplay})",
-            MemberType.Method,
-            method.MetadataName,  // Use MetadataName to match runtime MethodInfo.Name
-            returnType,
-            parameters);
+        if (TryGetFormattedTypeName(method.ContainingType, out var formattedDeclaringType))
+        {
+            return new MemberKey(
+                $"typeof({formattedDeclaringType})",
+                MemberType.Method,
+                method.MetadataName,  // Use MetadataName to match runtime MethodInfo.Name
+                returnType,
+                parameters);
+        }
+        return null;
     }
 
-    public static MemberKey FromPropertySymbol(IPropertySymbol property)
+    public static MemberKey? FromPropertySymbol(IPropertySymbol property)
     {
-        return new MemberKey(
-            $"typeof({ReplaceGenericArguments(property.ContainingType.ToDisplayString(_typeKeyFormat))})",
-            MemberType.Property,
-            property.Name,
-            null,
-            null);
+        if (TryGetFormattedTypeName(property.ContainingType, out var typeName))
+        {
+            return new MemberKey(
+                $"typeof({typeName})",
+                MemberType.Property,
+                property.Name,
+                null,
+                null);
+        }
+        return null;
     }
 
-    public static MemberKey FromTypeSymbol(INamedTypeSymbol type)
+    public static MemberKey? FromTypeSymbol(INamedTypeSymbol type)
     {
-        return new MemberKey(
-            $"typeof({ReplaceGenericArguments(type.ToDisplayString(_typeKeyFormat))})",
-            MemberType.Type,
-            null,
-            null,
-            null);
+        if (TryGetFormattedTypeName(type, out var typeName))
+        {
+            return new MemberKey(
+                $"typeof({typeName})",
+                MemberType.Type,
+                null,
+                null,
+                null);
+        }
+        return null;
     }
 
     /// Supports replacing generic type arguments to support use of open
     /// generics in `typeof` expressions for the declaring type.
-    private static string ReplaceGenericArguments(string typeName)
+    private static bool TryGetFormattedTypeName(ITypeSymbol typeSymbol, [NotNullWhen(true)] out string? typeName, bool isNestedCall = false)
     {
-        var stack = new Stack<int>();
-        var result = new StringBuilder(typeName);
-        for (var i = 0; i < result.Length; i++)
+        if (typeSymbol is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
         {
-            if (result[i] == '<')
+            typeName = typeSymbol.ToDisplayString(_withTypeParametersFormat);
+            return true;
+        }
+
+        // Handle tuples specially since they are represented as generic
+        // ValueTuple types and trigger the logic for handling generics in
+        // nested values.
+        if (typeSymbol is INamedTypeSymbol { IsTupleType: true } namedType)
+        {
+            return TryHandleTupleType(namedType, out typeName);
+        }
+
+        if (typeSymbol is INamedTypeSymbol { IsGenericType: true } genericType)
+        {
+            // If any of the type arguments are type parameters, then they have not
+            // been substituted for a concrete type and we need to model them as open
+            // generics if possible to avoid emitting a type with type parameters that
+            // cannot be used in a typeof expression.
+            var hasTypeParameters = genericType.TypeArguments.Any(t => t.TypeKind == TypeKind.TypeParameter);
+            var baseTypeName = genericType.ToDisplayString(_sansTypeParametersFormat);
+
+            if (!hasTypeParameters)
             {
-                stack.Push(i);
+                var typeArgStrings = new List<string>();
+                var allArgumentsResolved = true;
+
+                // Loop through each type argument to handle nested generics.
+                foreach (var typeArg in genericType.TypeArguments)
+                {
+                    if (TryGetFormattedTypeName(typeArg, out var argTypeName, isNestedCall: true))
+                    {
+                        typeArgStrings.Add(argTypeName);
+                    }
+                    else
+                    {
+                        typeName = null;
+                        return false;
+                    }
+                }
+
+                if (allArgumentsResolved)
+                {
+                    typeName = $"{baseTypeName}<{string.Join(", ", typeArgStrings)}>";
+                    return true;
+                }
             }
-            else if (result[i] == '>' && stack.Count > 0)
+            else
             {
-                var start = stack.Pop();
-                // Replace everything between < and > with empty strings separated by commas
-                var segment = result.ToString(start + 1, i - start - 1);
-                var commaCount = segment.Count(c => c == ',');
-                var replacement = new string(',', commaCount);
-                result.Remove(start + 1, i - start - 1);
-                result.Insert(start + 1, replacement);
-                i = start + replacement.Length + 1;
+                if (isNestedCall)
+                {
+                    // If this is a nested call, we can't use open generics so there's no way
+                    // for us to emit a member key. Return false and skip over this type in the code
+                    // generation.
+                    typeName = null;
+                    return false;
+                }
+
+                // If we got here, we can successfully emit a member key for the open generic type.
+                var genericArgumentsCount = genericType.TypeArguments.Length;
+                var openGenericsPlaceholder = "<" + new string(',', genericArgumentsCount - 1) + ">";
+
+                typeName = baseTypeName + openGenericsPlaceholder;
+                return true;
             }
         }
-        return result.ToString();
+
+        typeName = typeSymbol.ToDisplayString(_withTypeParametersFormat);
+        return true;
+    }
+
+    private static bool TryHandleTupleType(INamedTypeSymbol tupleType, [NotNullWhen(true)] out string? typeName)
+    {
+        List<string> elementTypes = [];
+        foreach (var element in tupleType.TupleElements)
+        {
+            if (element.Type.TypeKind == TypeKind.TypeParameter)
+            {
+                elementTypes.Add("object");
+            }
+            else
+            {
+                // Process each tuple element and handle nested generics
+                if (!TryGetFormattedTypeName(element.Type, out var elementTypeName, isNestedCall: true))
+                {
+                    typeName = null;
+                    return false;
+                }
+                elementTypes.Add(elementTypeName);
+            }
+        }
+
+        typeName = $"global::System.ValueTuple<{string.Join(", ", elementTypes)}>";
+        return true;
     }
 }
 
