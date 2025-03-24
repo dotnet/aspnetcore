@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {
@@ -268,7 +271,7 @@ if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<global::System.Int32>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
+            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));

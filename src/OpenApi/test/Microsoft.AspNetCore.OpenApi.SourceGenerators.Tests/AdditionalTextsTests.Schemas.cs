@@ -30,6 +30,7 @@ app.MapPost("/board", (ProjectBoard.BoardItem boardItem) => { });
 app.MapPost("/project-record", (ProjectRecord project) => { });
 app.MapPost("/todo-with-description", (TodoWithDescription todo) => { });
 app.MapPost("/type-with-examples", (TypeWithExamples typeWithExamples) => { });
+app.MapPost("/external-method", ClassLibrary.Endpoints.ExternalMethod);
 
 app.Run();
 """;
@@ -61,6 +62,9 @@ public class ProjectBoard
     /// </summary>
     public class BoardItem
     {
+        /// <summary>
+        /// The identifier of the board item. Defaults to "name".
+        /// </summary>
         public string Name { get; set; }
     }
 }
@@ -119,6 +123,37 @@ public class TypeWithExamples
     public decimal DecimalType { get; set; }
     /// <example>https://example.com</example>
     public Uri UriType { get; set; }
+}
+
+public class Holder<T>
+{
+    /// <summary>
+    /// The value to hold.
+    /// </summary>
+    public T Value { get; set; }
+
+    public Holder(T value)
+    {
+        Value = value;
+    }
+}
+
+public static class Endpoints
+{
+    /// <summary>
+    /// An external method.
+    /// </summary>
+    /// <param name="name">The name of the tester. Defaults to "Tester".</param>
+    public static void ExternalMethod(string name = "Tester") { }
+
+    /// <summary>
+    /// Creates a holder for the specified value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to hold.</param>
+    /// <returns>A holder for the specified value.</returns>
+    /// <example>{ value: 42 }</example>
+    public static Holder<T> CreateHolder<T>(T value) => new(value);
 }
 """;
         var references = new Dictionary<string, List<string>>

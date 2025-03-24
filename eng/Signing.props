@@ -2,60 +2,14 @@
   <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
   <Import Project="Common.props" />
 
-  <ItemGroup>
-    <!-- Reset Arcade's defaults. -->
-    <ItemsToSign Remove="@(ItemsToSign)" />
-    <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
-    <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
-  </ItemGroup>
-
   <PropertyGroup>
     <!-- Use the dotnet certificate for any remaining defaults (e.g. StrongNameSignInfo) -->
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
-  <!-- Files that should be always be signed -->
-  <ItemGroup Label="Common Files to Sign">
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
-    <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
-    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" />
-    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
-    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
-  </ItemGroup>
-
   <ItemGroup Label="File signing information">
-    <!--
-      Map file extensions to a code-sign cert.
-      "None" means don't sign the file itself, but still scan the contents for signable files.
-    -->
-    <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJARSHA2" />
-    <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="MicrosoftDotNet500" />
-    <FileExtensionSignInfo Include=".dll;.exe" CertificateName="MicrosoftDotNet500" />
-    <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
-    <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
-    <FileExtensionSignInfo Include=".zip" CertificateName="None" />
-    <FileExtensionSignInfo Include=".cab" CertificateName="None" />
+    <!-- Arcade does not set a default for .msi's -->
     <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
-
-    <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
-    <FileSignInfo Include="aspnetcore.dll" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="aspnetcorev2_inprocess.dll" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="aspnetcorev2_outofprocess.dll" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="aspnetcorev2.dll" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="blazor-devserver.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-dev-certs.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-sql-cache.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-user-secrets.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-watch.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-openapi.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="dotnet-user-jwts.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="sni.dll" CertificateName="MicrosoftDotNet500" />
 
     <!-- Third-party components which should be signed.  -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
@@ -72,11 +26,9 @@
   </PropertyGroup>
 
   <ItemGroup Label="Code sign exclusions">
-    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
-    <FileExtensionSignInfo Include=".js" CertificateName="None" />
     <!-- We don't produce font files. We rebundle some for using the web browser, so they do not need to be signed. -->
-    <FileExtensionSignInfo Include=".otf" CertificateName="None" />
-    <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
+    <FileExtensionSignInfo Update=".otf" CertificateName="None" />
+    <FileExtensionSignInfo Update=".ttf" CertificateName="None" />
     <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
     <FileSignInfo Include="ancm.mof" CertificateName="None" />
     <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
@@ -119,6 +71,38 @@
     -->
     <FileSignInfo Include="Microsoft.Data.SqlClient.dll" CertificateName="None" />
     <FileSignInfo Include="Microsoft.Identity.Client.dll" CertificateName="None" />
+  </ItemGroup>
+
+  <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
+  <ItemGroup>
+    <!-- Prepare for _PublishInstallersAndChecksums target. -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.jar" UploadPathSegment="jar/" ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.pom" UploadPathSegment="jar/" ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <!-- All builds produce npm assets - only publish them once -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tgz" UploadPathSegment="npm/"  ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.version" UploadPathSegment="Runtime/" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
+
+    <!-- The following installers create checksums -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.deb" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.rpm" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tar.gz" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" UploadPathSegment="Runtime/" >
+       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </_InstallersToPublish>
+
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" UploadPathSegment="Runtime/" >
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </_InstallersToPublish>
+
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
+      <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
+      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) == 'True'">false</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) != 'True'">true</IsShipping>
+    </Artifact>
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,8 +10,6 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class ValidationEndpointFilterFactory
 {
-    private const string ValidationContextJustification = "The DisplayName property is always statically initialized in the ValidationContext through this codepath.";
-
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
         var parameters = context.MethodInfo.GetParameters();
@@ -56,11 +53,8 @@ internal static class ValidationEndpointFilterFactory
                 {
                     continue;
                 }
-                // ValidationContext is not trim-friendly in codepaths that don't
-                // initialize an explicit DisplayName. We can suppress the warning here.
-                // Eventually, this can be removed when the code is updated to
-                // use https://github.com/dotnet/runtime/issues/113134.
-                var validationContext = CreateValidationContext(argument, displayName, context.HttpContext.RequestServices);
+
+                var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, items: null);
                 validatableContext.ValidationContext = validationContext;
                 await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
             }
@@ -75,16 +69,6 @@ internal static class ValidationEndpointFilterFactory
             return await next(context);
         };
     }
-
-    /// <remarks>
-    /// ValidationContext is not trim-friendly in codepaths that don't
-    /// initialize an explicit DisplayName. We can suppress the warning here.
-    /// Eventually, this can be removed when the code is updated to
-    /// use https://github.com/dotnet/runtime/issues/113134.
-    /// </remarks>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = ValidationContextJustification)]
-    private static ValidationContext CreateValidationContext(object argument, string displayName, IServiceProvider serviceProvider)
-        => new(argument, serviceProvider, items: null) { DisplayName = displayName };
 
     private static string GetDisplayName(ParameterInfo parameterInfo)
     {
