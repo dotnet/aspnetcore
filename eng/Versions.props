@@ -141,6 +141,8 @@
     <SystemCollectionsImmutableVersion>10.0.0-preview.3.25167.9</SystemCollectionsImmutableVersion>
     <SystemDiagnosticsPerformanceCounterVersion>10.0.0-preview.3.25167.9</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>10.0.0-preview.3.25167.9</SystemIOHashingVersion>
+    <SystemMemoryDataVersion>10.0.0-preview.3.25167.9</SystemMemoryDataVersion>
+    <SystemNumericsTensorsVersion>10.0.0-preview.3.25167.9</SystemNumericsTensorsVersion>
     <SystemRuntimeCachingVersion>10.0.0-preview.3.25167.9</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
     <MicrosoftExtensionsDiagnosticsTestingVersion>9.4.0-preview.1.25164.5</MicrosoftExtensionsDiagnosticsTestingVersion>
