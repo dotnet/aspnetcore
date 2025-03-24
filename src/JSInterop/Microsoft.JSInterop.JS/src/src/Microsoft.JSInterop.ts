@@ -372,7 +372,7 @@ export module DotNet {
          *
          * @param invocationInfo Configuration of the interop call.
          */
-        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): void;
+        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null;
 
         /**
          * Receives notification that an async call from JS to .NET has completed.
@@ -446,7 +446,7 @@ export module DotNet {
                 : stringifyArgs(this, result);
         }
 
-        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): void {
+        beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null {
             const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
 
             // Coerce synchronous functions into async ones, plus treat
@@ -460,7 +460,7 @@ export module DotNet {
             if (asyncHandle) {
                 // On completion, dispatch result back to .NET
                 // Not using "await" because it codegens a lot of boilerplate
-                promise.
+                return promise.
                     then(result => stringifyArgs(this, [
                         asyncHandle,
                         true,
@@ -474,6 +474,8 @@ export module DotNet {
                             formatError(error)
                         ]))
                     );
+            } else {
+                return null;
             }
         }
 
@@ -537,9 +539,8 @@ export module DotNet {
         }
 
         handleJSPropertySet(identifier: string, property: ObjectMemberDescriptor, args: unknown[]) {
-            // TODO(OR): Test with get only properties
             if (!this.isWritableProperty(property.parent, property.name)) {
-                throw new Error(`The property '${identifier}' does is not writable.`);
+                throw new Error(`The property '${identifier}' is not writable.`);
             }
 
             const value = args[0];

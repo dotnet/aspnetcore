@@ -234,7 +234,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private beginInvokeJSJson(invocationInfoJson: string) {    
     const invocationInfo: DotNet.JSInvocationInfo = JSON.parse(invocationInfoJson);
-    console.log("CIRCUIT", invocationInfoJson, invocationInfo);
     this._dispatcher.beginInvokeJSFromDotNet(invocationInfo);
   }
 
