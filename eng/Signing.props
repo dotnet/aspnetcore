@@ -8,9 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup Label="File signing information">
-    <!-- Arcade does not set a default for .msi's -->
-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
-
     <!-- Third-party components which should be signed.  -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="AngleSharp.dll" CertificateName="3PartySHA2" />
