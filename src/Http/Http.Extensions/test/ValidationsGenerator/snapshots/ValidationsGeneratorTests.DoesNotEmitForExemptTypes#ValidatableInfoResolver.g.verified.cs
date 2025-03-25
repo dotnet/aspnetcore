@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatablePropertyInfo
     {
         public GeneratedValidatablePropertyInfo(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
@@ -48,6 +49,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.AspNetCore.Http.Validation.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members) : base(type, members) { }
     }

@@ -138,20 +138,20 @@ export module DotNet {
         jsonRevivers.push(reviver);
     }
 
-    /**
-     * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
-     * synchronous invocation, so if possible use invokeMethodAsync instead.
-     *
-     * @deprecated Use DotNetObject to invoke instance methods instead.
-     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-     * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-     * @returns The result of the operation.
-     */
-    export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
-        const dispatcher = getDefaultCallDispatcher();
-        return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
-    }
+  /**
+   * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
+   * synchronous invocation, so if possible use invokeMethodAsync instead.
+   *
+   * @deprecated Use DotNetObject to invoke instance methods instead.
+   * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+   * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+   * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+   * @returns The result of the operation.
+   */
+  export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
+      const dispatcher = getDefaultCallDispatcher();
+      return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
+  }
 
     /**
      * Invokes the specified .NET public method asynchronously.
@@ -382,16 +382,16 @@ export module DotNet {
          */
         endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void;
 
-        /**
-         * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
-         * synchronous invocation, so if possible use invokeMethodAsync instead.
-         *
-         * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-         * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-         * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-         * @returns The result of the operation.
-         */
-        invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T;
+    /**
+     * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
+     * synchronous invocation, so if possible use invokeMethodAsync instead.
+     *
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+     * @returns The result of the operation.
+     */
+    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): | null;
 
         /**
          * Invokes the specified .NET public static method asynchronously.
@@ -606,20 +606,20 @@ export module DotNet {
             this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
         }
 
-        invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
-            return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
-        }
+      invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
+          return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
+      }
 
         invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
             return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
         }
 
-        invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
-            if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
-                const argsJson = stringifyArgs(this, args);
-                const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-                return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
-            }
+      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
+          if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
+              const argsJson = stringifyArgs(this, args);
+              const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+              return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
+          }
 
             throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
         }
@@ -750,9 +750,9 @@ export module DotNet {
         constructor(private readonly _id: number, private readonly _callDispatcher: CallDispatcher) {
         }
 
-        public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T {
-            return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
-        }
+      public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T | null {
+          return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
+      }
 
         public invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T> {
             return this._callDispatcher.invokeDotNetMethodAsync<T>(null, methodIdentifier, this._id, args);

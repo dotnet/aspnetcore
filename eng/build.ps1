@@ -250,6 +250,8 @@ if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
     }
 }
 
+$CommandLineArguments = $MSBuildArguments
+
 if ($NoBuildDeps) { $MSBuildArguments += "/p:BuildProjectReferences=false" }
 
 $RunBuild = if ($NoBuild) { $false } else { $true }
@@ -478,7 +480,8 @@ try {
             /p:Restore=$RunRestore `
             /p:Build=true `
             /clp:NoSummary `
-            @ToolsetBuildArguments
+            @ToolsetBuildArguments `
+            @CommandLineArguments
     }
 
     if (-not $OnlyBuildRepoTasks) {

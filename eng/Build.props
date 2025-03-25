@@ -83,13 +83,19 @@
         </ProjectToBuild>
       </ItemGroup>
     </When>
+    <!-- Projects to build in VMR build pass 2 -->
     <When Condition="'$(DotNetBuildPass)' == '2'">
       <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
+        <!-- Build Hosting Bundle -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
           <AdditionalProperties>Platform=x86</AdditionalProperties>
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
         <ProjectToBuild Include="$(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" >
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <!-- Build SiteExtensions -->
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
       </ItemGroup>
@@ -258,6 +264,7 @@
         <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64'">ARM64</_VcxTargetPlatform>
       </PropertyGroup>
 
+      <!-- In the VMR, we build the installers entirely via HostingBundle ProjectReferences in pass 2 -->
       <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
         <!-- Build the ANCM custom action -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
@@ -274,14 +281,6 @@
 
         <!-- Windows hosting bundle -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-      </ItemGroup>
-
-      <!--
-        In a vertical build, only build the MSIs for the current vertical that aren't used in the hosting bundle in the first pass
-        and build the hosting bundle and its dependencies in the second pass.
-      -->
-      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
       </ItemGroup>
 
       <ItemGroup>

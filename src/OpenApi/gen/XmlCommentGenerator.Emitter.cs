@@ -27,6 +27,9 @@ public sealed partial class XmlCommentGenerator : IIncrementalGenerator
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {
@@ -487,7 +490,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         else
         {
             codeWriter.Write("[");
-            for (int i = 0; i < comment.Examples.Count; i++)
+            for (var i = 0; i < comment.Examples.Count; i++)
             {
                 var example = comment.Examples[i];
                 codeWriter.Write(FormatStringForCode(example));
@@ -506,13 +509,18 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         else
         {
             codeWriter.Write("[");
-            for (int i = 0; i < comment.Parameters.Count; i++)
+            for (var i = 0; i < comment.Parameters.Count; i++)
             {
                 var parameter = comment.Parameters[i];
                 var exampleLiteral = string.IsNullOrEmpty(parameter.Example)
                     ? "null"
                     : FormatStringForCode(parameter.Example!);
-                codeWriter.Write($"new XmlParameterComment(@\"{parameter.Name}\", @\"{parameter.Description}\", {exampleLiteral}, {(parameter.Deprecated == true ? "true" : "false")})");
+                codeWriter.Write("new XmlParameterComment(");
+                codeWriter.Write(FormatStringForCode(parameter.Name) + ", ");
+                codeWriter.Write(FormatStringForCode(parameter.Description) + ", ");
+                codeWriter.Write(exampleLiteral + ", ");
+                codeWriter.Write(parameter.Deprecated == true ? "true" : "false");
+                codeWriter.Write(")");
                 if (i < comment.Parameters.Count - 1)
                 {
                     codeWriter.Write(", ");
@@ -528,10 +536,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         else
         {
             codeWriter.Write("[");
-            for (int i = 0; i < comment.Responses.Count; i++)
+            for (var i = 0; i < comment.Responses.Count; i++)
             {
                 var response = comment.Responses[i];
-                codeWriter.Write($"new XmlResponseComment(@\"{response.Code}\", @\"{response.Description}\", {(response.Example is null ? "null" : FormatStringForCode(response.Example))})");
+                codeWriter.Write("new XmlResponseComment(");
+                codeWriter.Write(FormatStringForCode(response.Code) + ", ");
+                codeWriter.Write(FormatStringForCode(response.Description) + ", ");
+                codeWriter.Write(response.Example is null ? "null)" : FormatStringForCode(response.Example) + ")");
                 if (i < comment.Responses.Count - 1)
                 {
                     codeWriter.Write(", ");

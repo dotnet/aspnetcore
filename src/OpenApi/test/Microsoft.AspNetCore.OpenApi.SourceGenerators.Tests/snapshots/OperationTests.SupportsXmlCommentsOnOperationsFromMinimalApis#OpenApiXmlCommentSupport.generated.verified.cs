@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {
@@ -186,8 +189,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get", typeof(global::System.String), []), new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get2", typeof(global::System.String), [typeof(global::System.String)]), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
             _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get3", typeof(global::System.String), [typeof(global::System.String)]), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get4", typeof(global::Microsoft.AspNetCore.Http.HttpResults.NotFound<global::System.String>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get5", typeof(global::Microsoft.AspNetCore.Http.HttpResults.Results<global::Microsoft.AspNetCore.Http.HttpResults.NotFound<global::System.String>, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::System.String>, global::Microsoft.AspNetCore.Http.HttpResults.Created>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get4", typeof(global::Microsoft.AspNetCore.Http.HttpResults.NotFound<>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get5", typeof(global::Microsoft.AspNetCore.Http.HttpResults.Results<,,>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
             _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Post6", typeof(global::Microsoft.AspNetCore.Http.IResult), [typeof(global::User)]), new XmlComment(@"Creates a new user.", null, @"Sample request:
     POST /6
     {

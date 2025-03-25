@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {
@@ -186,8 +189,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             _cache.Add(new MemberKey(typeof(global::Todo), MemberType.Type, null, null, []), new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::Project), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ProjectBoard.BoardItem), MemberType.Type, null, null, []), new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ProjectBoard.ProtectedInternalElement), MemberType.Type, null, null, []), new XmlComment(@"Can find this XML comment.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ProjectRecord), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
             _cache.Add(new MemberKey(typeof(global::User), MemberType.Type, null, null, []), new XmlComment(null, null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ProjectBoard.ProtectedInternalElement), MemberType.Property, "Name", null, []), new XmlComment(@"The unique identifier for the element.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ProjectRecord), MemberType.Property, "Name", null, []), new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ProjectRecord), MemberType.Property, "Description", null, []), new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::TodoWithDescription), MemberType.Property, "Id", null, []), new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
