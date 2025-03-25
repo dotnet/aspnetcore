@@ -54,6 +54,7 @@ public class W3CLoggerTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61052")]
     public async Task HandlesNullValuesAsync()
     {
         var path = Path.GetTempFileName() + "_";

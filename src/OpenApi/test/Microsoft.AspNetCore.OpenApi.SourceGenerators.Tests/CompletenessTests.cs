@@ -330,7 +330,7 @@ public class InheritAllButRemarks
 /// In generic classes and methods, you'll often want to reference the
 /// generic type, or the type parameter.
 /// </remarks>
-class GenericClass<T>
+public class GenericClass<T>
 {
     // Fields and members.
 }

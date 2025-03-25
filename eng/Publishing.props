@@ -14,6 +14,7 @@
 
     <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
+
     <!--
       Some assets are produced in all jobs, but only one job can publish them. We follow the following rules in that case:
       - If we're building outside of the VMR, publish these assets from the Windows job.
@@ -29,41 +30,6 @@
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
-
-    <!-- Prepare for _PublishInstallersAndChecksums target. -->
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.jar" UploadPathSegment="jar" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.pom" UploadPathSegment="jar" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <!-- All builds produce npm assets - only publish them once -->
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm"  Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
-
-    <!-- The following installers create checksums -->
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.deb" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.rpm" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tar.gz" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.zip" UploadPathSegment="Runtime">
-      <!-- Exclude wixpack.zip files from checksum generation -->
-      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
-    </_InstallersToPublish>
-
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime">
-      <!-- Exclude wixpack.zip files from checksum generation -->
-      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
-    </_InstallersToPublish>
-
-    <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
-    <_InstallersToPublish Remove="$(ArtifactsDir)packages\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
-    <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
-
-    <Artifact Include="@(_InstallersToPublish)">
-      <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) == 'True'">false</IsShipping>
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) != 'True'">true</IsShipping>
-    </Artifact>
   </ItemGroup>
 
   <Target Name="GetNonStableProductVersion">
@@ -83,10 +49,10 @@
     </PropertyGroup>
   </Target>
 
+  <!-- Generate productVersion.txt files containing the product version. -->
   <Target Name="GenerateProductVersionFiles"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
-          DependsOnTargets="GetNonStableProductVersion"
-          Condition="'$(PublishInstallerBaseVersion)' == 'true'">
+          Condition="'$(PublishInstallerBaseVersion)' == 'true' and '$(DotNetBuildPass)' != '2'">
     <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
         Properties="ExcludeFromBuild=false;IsShipping=true"
         Targets="_GetPackageVersionInfo">
@@ -102,26 +68,23 @@
       <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)aspnetcore-productVersion.txt" />
     </ItemGroup>
 
-    <!-- Generate productVersion.txt file containing the product version. -->
-    <WriteLinesToFile Condition="'$(DotNetBuildPass)' != '2'"
-                      File="%(ProductVersionFile.Identity)"
+    <WriteLinesToFile File="%(ProductVersionFile.Identity)"
                       Lines="$(ProductVersion)"
                       Overwrite="true"
                       Encoding="ASCII" />
 
-    <ItemGroup Condition="'$(DotNetBuildPass)' != '2'">
-      <Artifact Include="@(ProductVersionFile)"
-                RelativeBlobPath="aspnetcore/Runtime/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+    <ItemGroup>
+      <Artifact Include="@(ProductVersionFile)" Kind="Blob" />
     </ItemGroup>
   </Target>
 
-  <Target Name="AddRelativeBlobPathToInstallerArtifacts"
+  <Target Name="AddRelativeBlobPathToBlobArtifacts"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
-          AfterTargets="GenerateChecksumsFromArtifacts"
+          AfterTargets="GenerateProductVersionFiles;GenerateChecksumsFromArtifacts"
           DependsOnTargets="GetNonStableProductVersion">
     <ItemGroup>
-      <Artifact Condition="'%(Artifact.PublishFlatContainer)' == 'true' and '%(Artifact.UploadPathSegment)' != ''"
-                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+      <Artifact Condition="'%(Artifact.Kind)' == 'Blob' and '%(Artifact.RelativeBlobPath)' == ''"
+                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)$(NonStableProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 

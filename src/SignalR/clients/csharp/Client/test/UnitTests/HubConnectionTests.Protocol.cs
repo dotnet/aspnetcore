@@ -410,6 +410,38 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task StreamBindingErrorLogsError()
+        {
+            using (StartVerifiableLog(expectedErrorsFilter: w => w.EventId.Name == "StreamBindingFailure"))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var channel = await hubConnection.StreamAsChannelAsync<string>("Foo").DefaultTimeout();
+
+                    // Expects string, send int
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = 1 }).DefaultTimeout();
+                    // Check that connection is still active, i.e. we ignore stream failures and keep things working.
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "1" }).DefaultTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).DefaultTimeout();
+
+                    var notifications = await channel.ReadAndCollectAllAsync().DefaultTimeout();
+
+                    Assert.Contains(TestSink.Writes, w => w.EventId.Name == "StreamBindingFailure");
+                    Assert.Equal(["1"], notifications.ToArray());
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task HandlerRegisteredWithOnIsFiredWhenInvocationReceived()
         {
             var connection = new TestConnection();
