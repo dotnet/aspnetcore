@@ -164,7 +164,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     public void UseKestrel()
     {
-        if (_server != null || _webHost != null)
+        if (ServerStarted)
         {
             throw new InvalidOperationException(Resources.UseKestrelCanBeCalledBeforeInitialization);
         }
