@@ -1,6 +1,8 @@
 #nullable enable
-Microsoft.AspNetCore.Components.NavigationManager.NotFoundEvent -> System.EventHandler<System.EventArgs!>!
-virtual Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
+Microsoft.AspNetCore.Components.NavigationManager.OnNotFound -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs!>!
+Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs() -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetPlatformRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions
