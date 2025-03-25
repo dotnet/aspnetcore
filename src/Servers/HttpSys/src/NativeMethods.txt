@@ -57,3 +57,5 @@ HttpSetRequestQueueProperty
 HttpSetUrlGroupProperty
 HttpSetUrlGroupProperty
 SetFileCompletionNotificationModes
+SOCKADDR_IN
+SOCKADDR_IN6

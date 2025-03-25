@@ -34,10 +34,12 @@
       SkipGetTargetFrameworkProperties="true" />
 
     <!-- Make sure redist folder is built and ready -->
+    <!-- Not necessary if this is Pass 2 of a VMR build -->
     <ProjectReference Include="..\..\Framework\App.Runtime\src\aspnetcore-runtime.proj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      Condition="'$(DotNetBuildPass)' != '2'" />
 
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
@@ -56,5 +58,6 @@
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />
   <Target Name="CreateManifestResourceNames" />
+  <Target Name="_VmrBuild" DependsOnTargets="Restore;Build;Pack" Condition=" '$(DotNetBuildPass)' == '2' " />
 
 </Project>

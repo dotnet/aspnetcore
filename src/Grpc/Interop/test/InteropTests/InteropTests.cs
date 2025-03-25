@@ -25,6 +25,7 @@ public class InteropTests
     public Task EmptyUnary() => InteropTestCase("empty_unary");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61057")]
     public Task LargeUnary() => InteropTestCase("large_unary");
 
     [Fact]
@@ -37,6 +38,7 @@ public class InteropTests
     public Task PingPong() => InteropTestCase("ping_pong");
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61051")]
     public Task EmptyStream() => InteropTestCase("empty_stream");
 
     [Fact]

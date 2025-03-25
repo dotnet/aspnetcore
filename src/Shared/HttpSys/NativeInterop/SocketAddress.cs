@@ -1,96 +1,73 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.Contracts;
 using System.Net;
-using System.Net.Sockets;
+using Windows.Win32.Networking.WinSock;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal sealed class SocketAddress
+internal abstract class SocketAddress
 {
-    private const int NumberOfIPv6Labels = 8;
-    private const int IPv6AddressSize = 28;
-    private const int IPv4AddressSize = 16;
-    private const int WriteableOffset = 2;
+    internal abstract int GetPort();
 
-    private readonly byte[] _buffer;
-    private readonly int _size;
+    internal abstract IPAddress? GetIPAddress();
 
-    private SocketAddress(AddressFamily family, int size)
+    internal static unsafe SocketAddress? CopyOutAddress(SOCKADDR* pSockaddr)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(size, WriteableOffset);
-        Family = family;
-        _size = size;
-        // Sized to match the native structure
-        _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
+        // Per https://learn.microsoft.com/windows/win32/api/ws2def/ns-ws2def-sockaddr,
+        // use the SOCKADDR* pointer only to read the address family, then cast the pointer to
+        // the appropriate family type and continue processing.
+        return pSockaddr->sa_family switch
+        {
+            ADDRESS_FAMILY.AF_INET => new SocketAddressIPv4(*(SOCKADDR_IN*)pSockaddr),
+            ADDRESS_FAMILY.AF_INET6 => new SocketAddressIPv6(*(SOCKADDR_IN6*)pSockaddr),
+            _ => null
+        };
     }
 
-    internal AddressFamily Family { get; }
-
-    internal int GetPort()
+    private sealed class SocketAddressIPv4 : SocketAddress
     {
-        return (_buffer[2] << 8 & 0xFF00) | (_buffer[3]);
+        private readonly SOCKADDR_IN _sockaddr;
+
+        internal SocketAddressIPv4(in SOCKADDR_IN sockaddr)
+        {
+            _sockaddr = sockaddr;
+        }
+
+        internal override int GetPort()
+        {
+            // sin_port is network byte order
+            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
+        }
+
+        internal override IPAddress? GetIPAddress()
+        {
+            // address is network byte order
+            return new IPAddress(_sockaddr.sin_addr.S_un.S_addr);
+        }
     }
 
-    internal IPAddress? GetIPAddress()
+    private sealed class SocketAddressIPv6 : SocketAddress
     {
-        if (Family == AddressFamily.InterNetworkV6)
-        {
-            return GetIpv6Address();
-        }
-        else if (Family == AddressFamily.InterNetwork)
-        {
-            return GetIPv4Address();
-        }
-        else
-        {
-            return null;
-        }
-    }
+        private readonly SOCKADDR_IN6 _sockaddr;
 
-    private IPAddress GetIpv6Address()
-    {
-        Contract.Assert(_size >= IPv6AddressSize);
-        var bytes = new byte[NumberOfIPv6Labels * 2];
-        Array.Copy(_buffer, 8, bytes, 0, NumberOfIPv6Labels * 2);
-        return new IPAddress(bytes); // TODO: Does scope id matter?
-    }
-
-    private IPAddress GetIPv4Address()
-    {
-        Contract.Assert(_size >= IPv4AddressSize);
-        return new IPAddress(new byte[] { _buffer[4], _buffer[5], _buffer[6], _buffer[7] });
-    }
-
-    internal static unsafe SocketAddress? CopyOutAddress(IntPtr address)
-    {
-        var addressFamily = *((ushort*)address);
-        if (addressFamily == (ushort)AddressFamily.InterNetwork)
+        internal SocketAddressIPv6(in SOCKADDR_IN6 sockaddr)
         {
-            var v4address = new SocketAddress(AddressFamily.InterNetwork, IPv4AddressSize);
-            fixed (byte* pBuffer = v4address._buffer)
-            {
-                for (var index = 2; index < IPv4AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v4address;
-        }
-        if (addressFamily == (ushort)AddressFamily.InterNetworkV6)
-        {
-            var v6address = new SocketAddress(AddressFamily.InterNetworkV6, IPv6AddressSize);
-            fixed (byte* pBuffer = v6address._buffer)
-            {
-                for (var index = 2; index < IPv6AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v6address;
+            _sockaddr = sockaddr;
         }
 
-        return null;
+        internal override int GetPort()
+        {
+            // sin6_port is network byte order
+            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
+        }
+
+        internal override IPAddress? GetIPAddress()
+        {
+            // address is network byte order
+            // when CsWin32 gets support for inline arrays, remove 'AsReadOnlySpan' call below.
+            // https://github.com/microsoft/CsWin32/issues/1086
+            return new IPAddress(_sockaddr.sin6_addr.u.Byte.AsReadOnlySpan()); // TODO: Does scope id matter?
+        }
     }
 }
