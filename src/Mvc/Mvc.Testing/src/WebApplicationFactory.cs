@@ -306,7 +306,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             {
                 _webHost = CreateKestrelServer(builder);
 
-                TryExtractHostAddress(() => GetServerAddressFeature(_webHost));
+                TryExtractHostAddress(GetServerAddressFeature(_webHost));
             }
             else
             {
@@ -315,9 +315,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
-    private void TryExtractHostAddress(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
+    private void TryExtractHostAddress(IServerAddressesFeature? serverAddressFeature)
     {
-        var serverAddressFeature = serverAddressFeatureAccessor();
         if (serverAddressFeature?.Addresses.Count > 0)
         {
             // Store the web host address as it's going to be used every time a client is created to communicate to the server
@@ -344,7 +343,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         _host = CreateHost(hostBuilder);
         if (_useKestrel)
         {
-            TryExtractHostAddress(() => GetServerAddressFeature(_host));
+            TryExtractHostAddress(GetServerAddressFeature(_host));
         }
         else
         {
@@ -602,10 +601,12 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         var client = CreateClient(ClientOptions);
 
-        if (_useKestrel)
+        if (_useKestrel && object.ReferenceEquals(client.BaseAddress, WebApplicationFactoryClientOptions.DefaultBaseAddres))
         {
-            // Have to do this, as the ClientOptions.BaseAddress will be set to point to the kestrel server,
-            // and it may not match the original base address value.
+            // When using Kestrel, the server may start to listen on a pre-configured port,
+            // which can differ from the one configured via ClientOptions.
+            // Hence, if the ClientOptions haven't been set explicitly to a custom value, we will assume that
+            // the user wants the client to communicate on a port that the server listens too, and because that port may be different, we overwrite it here.
             client.BaseAddress = ClientOptions.BaseAddress;
         }
 
