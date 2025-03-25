@@ -8,19 +8,19 @@ using System.Text.Json.Serialization;
 namespace Microsoft.JSInterop.Infrastructure;
 
 /// <summary>
-/// TODO(OR)
+/// Configuration of an interop call from .NET to JavaScript.
 /// </summary>
 public sealed class JSInvocationInfo
 {
     /// <summary>
     /// The identifier for the interop call, or zero if no async callback is required.
     /// </summary>
-    public long AsyncHandle { get; init; }
+    public required long AsyncHandle { get; init; }
 
     /// <summary>
     /// The instance ID of the target JS object.
     /// </summary>
-    public long TargetInstanceId { get; init; }
+    public required long TargetInstanceId { get; init; }
 
     /// <summary>
     /// The identifier of the function to invoke or property to access.
@@ -30,23 +30,22 @@ public sealed class JSInvocationInfo
     /// <summary>
     /// The type of operation that should be performed in JS.
     /// </summary>
-    public JSCallType CallType { get; init; }
+    public required JSCallType CallType { get; init; }
 
     /// <summary>
     /// The type of result expected from the invocation.
     /// </summary>
-    public JSCallResultType ResultType { get; init; }
+    public required JSCallResultType ResultType { get; init; }
 
     /// <summary>
     /// A JSON representation of the arguments.
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]
-    public string? ArgsJson { get; init; }
+    public required string? ArgsJson { get; init; }
 
     /// <summary>
-    /// TODO(OR)
+    /// Converts the instance to a JSON string representation.
     /// </summary>
-    /// <returns>TODO(OR)</returns>
     public string ToJson() => JsonSerializer.Serialize(this, JSInvocationInfoSourceGenerationContext.Default.JSInvocationInfo);
 }
 

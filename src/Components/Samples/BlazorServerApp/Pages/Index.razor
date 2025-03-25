@@ -45,7 +45,8 @@ Welcome to your new app.
 
 <div style="margin-top: 2em">
     <button class="btn btn-primary" @onclick="GetInvalid">Try get a set-only property</button>
-    <button class="btn btn-primary" @onclick="SetValid">Try set a get-only property</button>
+    <button class="btn btn-primary" @onclick="SetInvalid">Try set a get-only property</button>
+    <button class="btn btn-primary" @onclick="SetInvalidViaFunction">Try set a get-only property via function</button>
     <span>@ErrorMessage</span>
 </div>
 
@@ -153,10 +154,15 @@ Welcome to your new app.
         var value = await objectRef.GetValueAsync<int>("setOnlyProperty");
     }
 
-    private async Task SetValid(MouseEventArgs args)
+    private async Task SetInvalid(MouseEventArgs args)
     {
         var objectRef = await JSRuntime.GetValueAsync<IJSObjectReference>("testObject");
         await objectRef.SetValueAsync<int>("getOnlyProperty", 123);
+    }
+
+    private async Task SetInvalidViaFunction(MouseEventArgs args)
+    {
+        await JSRuntime.InvokeVoidAsync("invalidAccess");
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -179,5 +185,4 @@ Welcome to your new app.
         public string? Text { get; set; }
         public int GetOnlyProperty { get; set; }
     }
-
 }

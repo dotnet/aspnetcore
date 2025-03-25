@@ -148,9 +148,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(tcs.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ?
-                JsonSerializer.Serialize(args, JsonSerializerOptions) :
-                null;
+            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
             var invocationInfo = new JSInvocationInfo
             {
@@ -181,6 +179,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             registration.Dispose();
         }
     }
+
+    // TODO(OR): Restore deleted BeginInvokeJS overload
 
     protected abstract void BeginInvokeJS(JSInvocationInfo invocationInfo);
 

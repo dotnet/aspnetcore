@@ -18,12 +18,7 @@ internal static partial class InternalCalls
     public static extern TRes InvokeJS<T0, T1, T2, TRes>(out string exception, ref JSCallInfo callInfo, [AllowNull] T0 arg0, [AllowNull] T1 arg1, [AllowNull] T2 arg2);
 
     [JSImport("Blazor._internal.invokeJSJson", "blazor-internal")]
-    public static partial string InvokeJSJson(
-        string identifier,
-        [JSMarshalAs<JSType.Number>] long targetInstanceId,
-        int resultType,
-        string argsJson,
-        [JSMarshalAs<JSType.Number>] long asyncHandle);
+    public static partial string InvokeJSJson(string invocationInfoString);
 
     [JSImport("Blazor._internal.endInvokeDotNetFromJS", "blazor-internal")]
     public static partial void EndInvokeDotNetFromJS(

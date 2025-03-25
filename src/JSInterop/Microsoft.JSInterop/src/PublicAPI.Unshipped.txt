@@ -1,1 +1,35 @@
 #nullable enable
+abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> void
+Microsoft.JSInterop.IJSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
+Microsoft.JSInterop.IJSInProcessRuntime.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSObjectReference!
+Microsoft.JSInterop.IJSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void
+Microsoft.JSInterop.IJSRuntime.GetValueAsync<TValue>(string! identifier) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSRuntime.GetValueAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ArgsJson.get -> string?
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ArgsJson.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.AsyncHandle.get -> long
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.AsyncHandle.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.CallType.get -> Microsoft.JSInterop.Infrastructure.JSCallType
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.CallType.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.Identifier.get -> string!
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.Identifier.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.JSInvocationInfo() -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ResultType.get -> Microsoft.JSInterop.JSCallResultType
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ResultType.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.get -> long
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ToJson() -> string!
+Microsoft.JSInterop.JSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
+Microsoft.JSInterop.JSInProcessRuntime.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSObjectReference!
+Microsoft.JSInterop.JSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void
+Microsoft.JSInterop.JSRuntime.GetValueAsync<TValue>(string! identifier) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.JSRuntime.GetValueAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask

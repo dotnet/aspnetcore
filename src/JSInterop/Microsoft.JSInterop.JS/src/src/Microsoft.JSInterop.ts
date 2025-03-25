@@ -510,7 +510,7 @@ export module DotNet {
         handleJSNewCall(identifier: string, func: any, args: unknown[]): any {
             if (typeof func === "function") {
                 try {
-                    // The new call throws if the function is not constructible (e.g. an arrow function)
+                    // The new expression throws if the function is not constructible (e.g. an arrow function).
                     return new func(...args);
                 } catch (err) {
                     if (err instanceof TypeError) {
@@ -534,7 +534,7 @@ export module DotNet {
                 throw new Error(`The property '${identifier}' is not defined or is not readable.`);
             }
 
-            // For empty identifier, we return the object itself to support "dereferencing" JS object references
+            // For empty identifier, we return the object itself to support "dereferencing" JS object references.
             return property.parent[property.name];
         }
 
@@ -548,37 +548,56 @@ export module DotNet {
         }
 
         isReadableProperty(obj: any, propName: string) {
-            const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-
-            if (!descriptor) {
+            // Return false for missing property.
+            if (!(propName in obj)) {
                 return false;
             }
 
-            // Return true for data property
-            if (descriptor.hasOwnProperty('value')) {
-                return true
+            // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
+            while (obj !== undefined) {
+                const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+
+                if (descriptor) {
+                    // Return true for data property
+                    if (descriptor.hasOwnProperty('value')) {
+                        return true
+                    }
+                
+                    // Return true for accessor property with defined getter.
+                    return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
+                }
+
+                obj = Object.getPrototypeOf(obj);
             }
-          
-            // Return true for accessor property with defined getter
-            return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
-          }
+
+            return false;
+        }
           
         isWritableProperty(obj: any, propName: string) {
-            const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-
-            // Return true for undefined property if the property can be added
-            if (!descriptor) {
+            // Return true for missing property if the property can be added.
+            if (!(propName in obj)) {
                 return Object.isExtensible(obj);
             }
 
-            // Return true for writable data property
-            if (descriptor.hasOwnProperty('value') && descriptor.writable) {
-                return true;
+            // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
+            while (obj !== undefined) {
+                const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+
+                if (descriptor) {
+                    // Return true for writable data property.
+                    if (descriptor.hasOwnProperty('value') && descriptor.writable) {
+                        return true;
+                    }
+                    
+                    // Return true for accessor property with defined setter.
+                    return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
+                }
+
+                obj = Object.getPrototypeOf(obj);
             }
-            
-            // Return true for accessor property with defined setter
-            return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
-          }
+
+            return false;
+        }
 
         endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
             const resultOrError = success

@@ -1,3 +1,5 @@
+"use strict";
+
 window.getDocumentTitle = function () {
     return document.title;
 }
@@ -25,7 +27,11 @@ window.testObject = {
     },
     set setOnlyProperty(value) {
         this.num = value;
-    },
+    }
+}
+
+window.invalidAccess = function () {
+    window.testObject.getOnlyProperty = 20;
 }
 
 window.getTestObject = function () {

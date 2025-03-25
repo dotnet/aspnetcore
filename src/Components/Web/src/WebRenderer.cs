@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
@@ -130,7 +131,16 @@ public abstract class WebRenderer : Renderer
             newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
             newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
             var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
-            inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
+            var invocationInfo = new JSInvocationInfo
+            {
+                AsyncHandle = 0,
+                TargetInstanceId = 0,
+                Identifier = JSMethodIdentifier,
+                CallType = JSCallType.FunctionCall,
+                ResultType = JSCallResultType.JSVoidResult,
+                ArgsJson = argsJson,
+            };
+            inProcessRuntime.InvokeJS(invocationInfo);
         }
         else
         {

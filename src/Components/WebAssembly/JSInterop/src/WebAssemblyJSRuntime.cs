@@ -23,12 +23,13 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     }
 
     /// <inheritdoc />
-    protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override string? InvokeJS(JSInvocationInfo invocationInfo)
     {
+        var invocationInfoJson = invocationInfo.ToJson();
+
         try
         {
-            // TODO(OR): Add support for CallType
-            return InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
+            return InternalCalls.InvokeJSJson(invocationInfoJson);
         }
         catch (Exception ex)
         {
@@ -39,13 +40,8 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
-        // TODO(OR): Add support for CallType
-        InternalCalls.InvokeJSJson(
-            invocationInfo.Identifier ?? "",
-            invocationInfo.TargetInstanceId,
-            (int)invocationInfo.ResultType,
-            invocationInfo.ArgsJson ?? "[]",
-            invocationInfo.AsyncHandle);
+        var invocationInfoJson = invocationInfo.ToJson();
+        InternalCalls.InvokeJSJson(invocationInfoJson);
     }
 
     /// <inheritdoc />
