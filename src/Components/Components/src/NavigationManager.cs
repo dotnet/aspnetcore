@@ -203,7 +203,15 @@ public abstract class NavigationManager
 
     private void NotFoundCore()
     {
-        _notFound?.Invoke(this, new EventArgs());
+        if (_notFound == null)
+        {
+            // global router doesn't exist, no events were registered
+            NavigateTo($"{BaseUri}not-found");
+        }
+        else
+        {
+            _notFound.Invoke(this, new EventArgs());
+        }
     }
 
     /// <summary>
