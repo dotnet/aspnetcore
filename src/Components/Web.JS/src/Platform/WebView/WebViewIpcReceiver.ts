@@ -33,7 +33,7 @@ export function startIpcReceiver(): void {
       showErrorNotification();
     },
 
-    'BeginInvokeJS': dispatcher.beginInvokeJSFromDotNet.bind(dispatcher),
+    'BeginInvokeJS': beginInvokeJSJson,
 
     'EndInvokeDotNet': dispatcher.endInvokeDotNetFromJS.bind(dispatcher),
 
@@ -79,4 +79,9 @@ function base64ToArrayBuffer(base64: string): Uint8Array {
     result[i] = binaryString.charCodeAt(i);
   }
   return result;
+}
+
+function beginInvokeJSJson(invocationInfoJson: string) {
+  const invocationInfo = JSON.parse(invocationInfoJson);
+  dispatcher.beginInvokeJSFromDotNet(invocationInfo);
 }

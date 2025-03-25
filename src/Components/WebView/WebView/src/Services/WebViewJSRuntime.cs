@@ -35,7 +35,6 @@ internal sealed class WebViewJSRuntime : JSRuntime
             throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
         }
 
-        // TODO(OR): Add CallType support
         _ipcSender.BeginInvokeJS(invocationInfo);
     }
 

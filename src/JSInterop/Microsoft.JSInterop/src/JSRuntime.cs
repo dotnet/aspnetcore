@@ -180,8 +180,29 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
     }
 
-    // TODO(OR): Restore deleted BeginInvokeJS overload
+    /// <summary>
+    /// Begins an asynchronous function invocation.
+    /// </summary>
+    /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
+    /// <param name="identifier">The identifier for the function to invoke.</param>
+    /// <param name="argsJson">A JSON representation of the arguments.</param>
+    protected virtual void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
+    {
+        BeginInvokeJS(new JSInvocationInfo
+        {
+            AsyncHandle = taskId,
+            TargetInstanceId = 0,
+            Identifier = identifier,
+            CallType = JSCallType.FunctionCall,
+            ResultType = JSCallResultType.Default,
+            ArgsJson = argsJson,
+        });
+    }
 
+    /// <summary>
+    /// Begins an asynchronous function invocation.
+    /// </summary>
+    /// <param name="invocationInfo"></param>
     protected abstract void BeginInvokeJS(JSInvocationInfo invocationInfo);
 
     /// <summary>
