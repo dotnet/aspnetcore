@@ -83,12 +83,12 @@ public sealed partial class XmlCommentGenerator
         return comments;
     }
 
-    internal static IEnumerable<(MemberKey, XmlComment?)> ParseComments(
+    internal static IEnumerable<(string, XmlComment?)> ParseComments(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
     {
         var compilation = input.Compilation;
-        var comments = new List<(MemberKey, XmlComment?)>();
+        var comments = new List<(string, XmlComment?)>();
         foreach (var (name, value) in input.RawComments)
         {
             if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
@@ -102,17 +102,7 @@ public sealed partial class XmlCommentGenerator
                 var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
                 if (parsedComment is not null)
                 {
-                    var memberKey = symbol switch
-                    {
-                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol),
-                        IPropertySymbol propertySymbol => MemberKey.FromPropertySymbol(propertySymbol),
-                        INamedTypeSymbol typeSymbol => MemberKey.FromTypeSymbol(typeSymbol),
-                        _ => null
-                    };
-                    if (memberKey is not null)
-                    {
-                        comments.Add((memberKey, parsedComment));
-                    }
+                    comments.Add((name, parsedComment));
                 }
             }
         }
