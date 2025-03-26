@@ -2,7 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
+    <SignOutput>false</SignOutput>
     <IsPackable>false</IsPackable>
 
     <!-- This maps the common MSBuild property name to equivalent C++ project properties.  -->
