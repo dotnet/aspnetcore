@@ -136,8 +136,6 @@ export class EventDelegator {
       return;
     }
 
-    console.log("onGlobalEvent", isRendererAttached(this.browserRendererId), evt);
-
     if (!isRendererAttached(this.browserRendererId)) {
       // when connection closed, it will detachWebRendererInterop, so we need to check if the renderer is still attached
       return;
