@@ -448,6 +448,7 @@ export module DotNet {
 
         beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null {
             const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+            console.log("beginInvokeJSFromDotNet", invocationInfo);
 
             // Coerce synchronous functions into async ones, plus treat
             // synchronous exceptions the same as async ones

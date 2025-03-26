@@ -16,6 +16,8 @@ export function sendBeginInvokeDotNetFromJS(callId: number, assemblyName: string
 }
 
 export function sendEndInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any): void {
+  console.log("webview sendEndInvokeJSFromDotNet", asyncHandle, succeeded, argsJson);
+
   send('EndInvokeJS', asyncHandle, succeeded, argsJson);
 }
 
