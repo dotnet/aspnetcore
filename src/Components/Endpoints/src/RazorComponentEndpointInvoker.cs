@@ -39,11 +39,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         if (isErrorHandler)
         {
             Log.InteractivityDisabledForErrorHandling(_logger);
         }
-        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
+        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler, hasStatusCodePage);
         EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");

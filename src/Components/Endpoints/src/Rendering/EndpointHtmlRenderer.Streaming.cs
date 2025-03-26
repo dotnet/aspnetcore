@@ -22,10 +22,12 @@ internal partial class EndpointHtmlRenderer
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
+    private bool _hasStatusCodePage;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool hasStatusCodePage)
     {
         _isHandlingErrors = isErrorHandler;
+        _hasStatusCodePage = hasStatusCodePage;
         if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
