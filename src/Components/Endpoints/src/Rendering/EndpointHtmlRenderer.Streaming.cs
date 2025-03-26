@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -275,6 +276,12 @@ internal partial class EndpointHtmlRenderer
             {
                 if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
                 {
+                    if (marker.Type is ComponentMarker.WebAssemblyMarkerType)
+                    {
+                        // Preload WebAssembly assets when using WebAssembly (not Auto) mode
+                        AppendWebAssemblyPreloadHeaders();
+                    }
+
                     var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
                     output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
                 }
@@ -308,6 +315,65 @@ internal partial class EndpointHtmlRenderer
             output.Write("<!--Blazor:");
             output.Write(serializedEndRecord);
             output.Write("-->");
+        }
+    }
+
+    private void AppendWebAssemblyPreloadHeaders()
+    {
+        var assets = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
+        if (assets != null)
+        {
+            var headers = new List<string>();
+            foreach (var asset in assets)
+            {
+                if (asset.Properties == null)
+                {
+                    continue;
+                }
+
+                // Use preloadrel to identify assets that should to be preloaded
+                string? header = null;
+                foreach (var property in asset.Properties)
+                {
+                    if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat($"<{asset.Url}>", "; rel=", property.Value);
+                        break;
+                    }
+                }
+
+                if (header == null)
+                {
+                    continue;
+                }
+
+                foreach (var property in asset.Properties)
+                {
+                    if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat(header, "; as=", property.Value);
+                    }
+                    else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat(header, "; fetchpriority=", property.Value);
+                    }
+                    else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat(header, "; crossorigin=", property.Value);
+                    }
+                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat(header, "; integrity=\"", property.Value, "\"");
+                    }
+                }
+
+                if (header != null)
+                {
+                    headers.Add(header);
+                }
+            }
+
+            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, headers.ToArray());
         }
     }
 

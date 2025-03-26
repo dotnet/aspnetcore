@@ -42,9 +42,17 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
 #if !MVC_VIEWFEATURES
             string? label = null;
             string? integrity = null;
+            string? preloadRel = null;
+            string? preloadAs = null;
+            string? preloadPriority = null;
+            string? preloadCrossorigin = null;
 #else
             string label = null;
             string integrity = null;
+            string preloadRel = null;
+            string preloadAs = null;
+            string preloadPriority = null;
+            string preloadCrossorigin = null;
 #endif
 
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
@@ -59,15 +67,34 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
                         label = property.Value;
                         foundProperties++;
                     }
-
                     else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
                     {
                         integrity = property.Value;
                         foundProperties++;
                     }
+                    else if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        preloadRel = property.Value;
+                        foundProperties++;
+                    }
+                    else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
+                    {
+                        preloadAs = property.Value;
+                        foundProperties++;
+                    }
+                    else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
+                    {
+                        preloadPriority = property.Value;
+                        foundProperties++;
+                    }
+                    else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        preloadCrossorigin = property.Value;
+                        foundProperties++;
+                    }
                 }
 
-                AddResource(resources, descriptor, label, integrity, foundProperties);
+                AddResource(resources, descriptor, label, integrity, preloadRel, preloadAs, preloadPriority, preloadCrossorigin, foundProperties);
             }
         }
 
@@ -97,11 +124,19 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
 #if !MVC_VIEWFEATURES
         string? label,
         string? integrity,
+        string? preloadRel,
+        string? preloadAs,
+        string? preloadPriority,
+        string? preloadCrossorigin,
 #else
         string label,
         string integrity,
+        string preloadRel,
+        string preloadAs,
+        string preloadPriority,
+        string preloadCrossorigin,
 #endif
-        int foundProperties)
+    int foundProperties)
     {
         if (label != null || integrity != null)
         {
@@ -114,6 +149,22 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
             if (integrity != null)
             {
                 properties[index++] = new ResourceAssetProperty("integrity", integrity);
+            }
+            if (preloadRel != null)
+            {
+                properties[index++] = new ResourceAssetProperty("preloadrel", preloadRel);
+            }
+            if (preloadAs != null)
+            {
+                properties[index++] = new ResourceAssetProperty("preloadas", preloadAs);
+            }
+            if (preloadPriority != null)
+            {
+                properties[index++] = new ResourceAssetProperty("preloadpriority", preloadPriority);
+            }
+            if (preloadCrossorigin != null)
+            {
+                properties[index++] = new ResourceAssetProperty("preloadcrossorigin", preloadCrossorigin);
             }
 
             resources.Add(new ResourceAsset(descriptor.Route, properties));
