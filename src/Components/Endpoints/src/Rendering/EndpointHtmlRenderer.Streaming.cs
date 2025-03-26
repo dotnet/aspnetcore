@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -323,7 +324,7 @@ internal partial class EndpointHtmlRenderer
         var assets = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
         if (assets != null)
         {
-            var headers = new List<string>();
+            var headers = new List<(string? Order, string Value)>();
             foreach (var asset in assets)
             {
                 if (asset.Properties == null)
@@ -347,6 +348,7 @@ internal partial class EndpointHtmlRenderer
                     continue;
                 }
 
+                string? order = null;
                 foreach (var property in asset.Properties)
                 {
                     if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
@@ -365,15 +367,20 @@ internal partial class EndpointHtmlRenderer
                     {
                         header = String.Concat(header, "; integrity=\"", property.Value, "\"");
                     }
+                    else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
+                    {
+                        order = property.Value;
+                    }
                 }
 
                 if (header != null)
                 {
-                    headers.Add(header);
+                    headers.Add((order, header));
                 }
             }
 
-            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, headers.ToArray());
+            headers.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
+            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, headers.Select(h => h.Value).ToArray());
         }
     }
 
