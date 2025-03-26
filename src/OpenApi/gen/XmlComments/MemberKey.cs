@@ -21,12 +21,12 @@ internal sealed record MemberKey(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
 
-    private static readonly SymbolDisplayFormat _sansTypeParametersFormat = new(
+    private static readonly SymbolDisplayFormat _withoutTypeParametersFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.None);
 
-    public static MemberKey? FromMethodSymbol(IMethodSymbol method, Compilation compilation)
+    public static MemberKey? FromMethodSymbol(IMethodSymbol method)
     {
         string returnType;
         if (method.ReturnsVoid)
@@ -35,20 +35,7 @@ internal sealed record MemberKey(
         }
         else
         {
-            // Handle Task/ValueTask for async methods
             var actualReturnType = method.ReturnType;
-            if (method.IsAsync && actualReturnType is INamedTypeSymbol namedType)
-            {
-                if (namedType.TypeArguments.Length > 0)
-                {
-                    actualReturnType = namedType.TypeArguments[0];
-                }
-                else
-                {
-                    actualReturnType = compilation.GetSpecialType(SpecialType.System_Void);
-                }
-            }
-
             if (actualReturnType.TypeKind == TypeKind.TypeParameter)
             {
                 returnType = "typeof(object)";
@@ -162,7 +149,7 @@ internal sealed record MemberKey(
             // generics if possible to avoid emitting a type with type parameters that
             // cannot be used in a typeof expression.
             var hasTypeParameters = genericType.TypeArguments.Any(t => t.TypeKind == TypeKind.TypeParameter);
-            var baseTypeName = genericType.ToDisplayString(_sansTypeParametersFormat);
+            var typeNameWithoutGenerics = genericType.ToDisplayString(_withoutTypeParametersFormat);
 
             if (!hasTypeParameters)
             {
@@ -185,7 +172,7 @@ internal sealed record MemberKey(
 
                 if (allArgumentsResolved)
                 {
-                    typeName = $"{baseTypeName}<{string.Join(", ", typeArgStrings)}>";
+                    typeName = $"{typeNameWithoutGenerics}<{string.Join(", ", typeArgStrings)}>";
                     return true;
                 }
             }
@@ -204,7 +191,7 @@ internal sealed record MemberKey(
                 var genericArgumentsCount = genericType.TypeArguments.Length;
                 var openGenericsPlaceholder = "<" + new string(',', genericArgumentsCount - 1) + ">";
 
-                typeName = baseTypeName + openGenericsPlaceholder;
+                typeName = typeNameWithoutGenerics + openGenericsPlaceholder;
                 return true;
             }
         }

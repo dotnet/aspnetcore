@@ -273,6 +273,7 @@ for this instance.", false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "Name", null, []), new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "TaskOfTupleProp", null, []), new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "TupleWithGenericProp", null, []), new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::GenericParent), MemberType.Property, "TupleWithNestedGenericProp", null, []), new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "Add", typeof(global::System.Int32), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
