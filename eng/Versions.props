@@ -206,6 +206,13 @@
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64Version)</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
+    <!-- Dependencies from maintenance-packages -->
+    <MicrosoftBCLHashCodeVersion>6.0.0</MicrosoftBCLHashCodeVersion>
+    <MicrosoftIoRedistVersion>6.1.2</MicrosoftIoRedistVersion>
+    <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
+    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
+    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
+    <SystemValueTupleVersion>4.6.1</SystemValueTupleVersion>
     <!-- DiagnosticAdapter package pinned temporarily (??) until migrated/deprecated -->
     <!-- This is the latest version found in dotnet-public. -->
     <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.3.20215.2</MicrosoftExtensionsDiagnosticAdapterVersion>
@@ -215,24 +222,19 @@
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <SystemBuffersVersion>4.5.0</SystemBuffersVersion>
     <SystemCodeDomVersion>4.4.0</SystemCodeDomVersion>
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
-    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
     <SystemNetSocketsVersion>4.3.0</SystemNetSocketsVersion>
     <SystemSecurityCryptographyX509CertificatesVersion>4.3.2</SystemSecurityCryptographyX509CertificatesVersion>
     <SystemRuntimeInteropServicesRuntimeInformationVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationVersion>
-    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
-    <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <MicrosoftAspNetWebApiClientVersion>5.2.6</MicrosoftAspNetWebApiClientVersion>
     <MicrosoftAspNetCoreRazorLanguageVersion>6.0.0</MicrosoftAspNetCoreRazorLanguageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion>6.0.0</MicrosoftAspNetCoreMvcRazorExtensionsVersion>
     <MicrosoftCodeAnalysisRazorVersion>6.0.0</MicrosoftCodeAnalysisRazorVersion>
     <!-- Partner teams -->
-    <MicrosoftBCLHashCodeVersion>1.1.1</MicrosoftBCLHashCodeVersion>
     <MicrosoftBuildVersion>17.4.0</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildFrameworkVersion>17.4.0</MicrosoftBuildFrameworkVersion>
@@ -308,7 +310,6 @@
     <MicrosoftIdentityWebGraphServiceClientVersion>3.0.0</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.0.0</MicrosoftIdentityWebUIVersion>
     <MicrosoftIdentityWebDownstreamApiVersion>3.0.0</MicrosoftIdentityWebDownstreamApiVersion>
-    <MicrosoftIoRedistVersion>6.0.1</MicrosoftIoRedistVersion>
     <MicrosoftWindowsCsWin32Version>0.3.46-beta</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
