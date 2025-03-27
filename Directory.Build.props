@@ -10,7 +10,6 @@
 
     <DefaultRepositoryUrl>https://github.com/dotnet/aspnetcore</DefaultRepositoryUrl>
     <RepositoryUrl>$(DefaultRepositoryUrl)</RepositoryUrl>
-    <!-- The VMR will override RepositoryUrl globally so this is why this is set 
     <PackageProjectUrl>$(DefaultRepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
