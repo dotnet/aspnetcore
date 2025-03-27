@@ -93,7 +93,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandler);
+            waitForQuiescence: result.IsPost || isErrorHandler || hasStatusCodePage);
 
         Task quiesceTask;
         if (!result.IsPost)
@@ -146,7 +146,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
 
         // Emit comment containing state.
-        if (!isErrorHandler)
+        if (!isErrorHandler && !hasStatusCodePage)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
@@ -161,10 +161,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
         var processPost = HttpMethods.IsPost(context.Request.Method) &&
-            // Disable POST functionality during exception handling.
+            // Disable POST functionality during exception handling and reexecution.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
-            context.Features.Get<IExceptionHandlerFeature>() == null;
+            (context.Features.Get<IExceptionHandlerFeature>() == null ||
+            context.Features.Get<IStatusCodePagesFeature>() == null);
 
         if (processPost)
         {
