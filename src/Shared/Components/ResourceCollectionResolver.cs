@@ -47,6 +47,7 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
             string? preloadPriority = null;
             string? preloadCrossorigin = null;
             string? preloadOrder = null;
+            string? preloadGroup = null;
 #else
             string label = null;
             string integrity = null;
@@ -55,6 +56,7 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
             string preloadPriority = null;
             string preloadCrossorigin = null;
             string preloadOrder = null;
+            string preloadGroup = null;
 #endif
 
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
@@ -99,9 +101,14 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
                         preloadOrder = property.Value;
                         foundProperties++;
                     }
+                    else if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase))
+                    {
+                        preloadGroup = property.Value;
+                        foundProperties++;
+                    }
                 }
 
-                AddResource(resources, descriptor, label, integrity, preloadRel, preloadAs, preloadPriority, preloadCrossorigin, preloadOrder, foundProperties);
+                AddResource(resources, descriptor, label, integrity, preloadRel, preloadAs, preloadPriority, preloadCrossorigin, preloadOrder, preloadGroup, foundProperties);
             }
         }
 
@@ -136,6 +143,7 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
         string? preloadPriority,
         string? preloadCrossorigin,
         string? preloadOrder,
+        string? preloadGroup,
 #else
         string label,
         string integrity,
@@ -144,6 +152,7 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
         string preloadPriority,
         string preloadCrossorigin,
         string preloadOrder,
+        string preloadGroup,
 #endif
     int foundProperties)
     {
@@ -178,6 +187,10 @@ internal class ResourceCollectionResolver(IEndpointRouteBuilder endpoints)
             if (preloadOrder != null)
             {
                 properties[index++] = new ResourceAssetProperty("preloadorder", preloadOrder);
+            }
+            if (preloadGroup != null)
+            {
+                properties[index++] = new ResourceAssetProperty("preloadgroup", preloadGroup);
             }
 
             resources.Add(new ResourceAsset(descriptor.Route, properties));

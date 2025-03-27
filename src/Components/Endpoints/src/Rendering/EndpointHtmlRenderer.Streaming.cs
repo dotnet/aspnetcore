@@ -332,13 +332,13 @@ internal partial class EndpointHtmlRenderer
                     continue;
                 }
 
-                // Use preloadrel to identify assets that should to be preloaded
+                // Use preloadgroup=webassembly to identify assets that should to be preloaded
                 string? header = null;
                 foreach (var property in asset.Properties)
                 {
-                    if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+                    if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase) && property.Value.Equals("webassembly", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat($"<{asset.Url}>", "; rel=", property.Value);
+                        header = $"<{asset.Url}>";
                         break;
                     }
                 }
@@ -351,7 +351,11 @@ internal partial class EndpointHtmlRenderer
                 string? order = null;
                 foreach (var property in asset.Properties)
                 {
-                    if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
+                    if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        header = String.Concat(header, "; rel=", property.Value);
+                    }
+                    else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
                     {
                         header = String.Concat(header, "; as=", property.Value);
                     }
