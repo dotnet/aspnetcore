@@ -16,7 +16,7 @@ public class PipelineExtensionTests : IDisposable
     private const int _ulongMaxValueLength = 20;
 
     private readonly Pipe _pipe;
-    private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+    private readonly MemoryPool<byte> _memoryPool = TestMemoryPoolFactory.Create();
 
     public PipelineExtensionTests()
     {

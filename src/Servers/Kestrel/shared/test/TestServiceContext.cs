@@ -74,7 +74,7 @@ internal class TestServiceContext : ServiceContext
 
     public FakeTimeProvider FakeTimeProvider { get; set; }
 
-    public IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => System.Buffers.PinnedBlockMemoryPoolFactory.Create());
+    public IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => TestMemoryPoolFactory.Create());
 
     public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
 

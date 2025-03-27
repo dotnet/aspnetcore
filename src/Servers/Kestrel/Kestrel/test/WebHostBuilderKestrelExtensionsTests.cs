@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -115,5 +115,34 @@ public class WebHostBuilderKestrelExtensionsTests
         Assert.IsType<KestrelMetrics>(server.ServiceContext.Metrics);
         Assert.Equal(PipeScheduler.ThreadPool, server.ServiceContext.Scheduler);
         Assert.Equal(TimeProvider.System, server.ServiceContext.TimeProvider);
+    }
+
+    [Fact]
+    public void MemoryPoolFactorySetCorrectly()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseSockets()
+            .UseKestrel()
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        var memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
+
+        // Swap order of UseKestrel and UseSockets
+        hostBuilder = new WebHostBuilder()
+            .UseKestrel()
+            .UseSockets()
+            .Configure(app => { });
+
+        host = hostBuilder.Build();
+
+        memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
     }
 }

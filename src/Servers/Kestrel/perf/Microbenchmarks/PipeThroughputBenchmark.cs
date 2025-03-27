@@ -19,7 +19,7 @@ public class PipeThroughputBenchmark
     [IterationSetup]
     public void Setup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         _pipe = new Pipe(new PipeOptions(_memoryPool));
     }
 

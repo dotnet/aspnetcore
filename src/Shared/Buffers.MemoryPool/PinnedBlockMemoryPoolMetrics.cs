@@ -41,7 +41,7 @@ internal sealed class PinnedBlockMemoryPoolMetrics
 
         _usageRate = _meter.CreateCounter<long>(
             "pinnedblockmemorypool.usage_rate",
-            unit: "bytes",
+            unit: "{bytes}",
             description: "Rate of bytes rented from the pool."
             );
     }

@@ -12,32 +12,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, IHeartbeatHandler
 {
     private readonly IMeterFactory _meterFactory;
+    private readonly TimeProvider _timeProvider;
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool> _pools = new();
 
-    public PinnedBlockMemoryPoolFactory(IMeterFactory meterFactory)
+    public PinnedBlockMemoryPoolFactory(IMeterFactory meterFactory, TimeProvider? timeProvider = null)
     {
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _meterFactory = meterFactory;
     }
 
     public MemoryPool<byte> Create()
     {
-        // TODO: wire up PinnedBlockMemoryPool's dispose to remove from _pools
         var pool = new PinnedBlockMemoryPool(_meterFactory);
+        pool.DisposeCallback = (self) =>
+        {
+            _pools.TryRemove(self, out _);
+        };
 
         _pools.TryAdd(pool, pool);
 
-#if DEBUG
-        return new DiagnosticMemoryPool(pool);
-#else
         return pool;
-#endif
     }
 
     public void OnHeartbeat()
     {
+        var now = _timeProvider.GetUtcNow();
         foreach (var pool in _pools)
         {
-            pool.Value.PerformEviction();
+            pool.Value.TryScheduleEviction(now);
         }
     }
 }

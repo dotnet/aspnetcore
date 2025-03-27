@@ -20,7 +20,7 @@ public class ChunkWriterBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         var pipe = new Pipe(new PipeOptions(_memoryPool));
         _reader = pipe.Reader;
         _writer = pipe.Writer;

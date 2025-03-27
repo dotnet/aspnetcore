@@ -515,7 +515,7 @@ public class StartLineTests : IDisposable
 
     public StartLineTests()
     {
-        MemoryPool = PinnedBlockMemoryPoolFactory.Create();
+        MemoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(MemoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
         Transport = pair.Transport;

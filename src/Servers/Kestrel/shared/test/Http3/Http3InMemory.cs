@@ -73,7 +73,7 @@ internal class Http3InMemory
     private FakeTimeProvider _fakeTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
-    internal readonly MemoryPool<byte> _memoryPool = System.Buffers.PinnedBlockMemoryPoolFactory.Create();
+    internal readonly MemoryPool<byte> _memoryPool = TestMemoryPoolFactory.Create();
     internal readonly ConcurrentQueue<TestStreamContext> _streamContextPool = new ConcurrentQueue<TestStreamContext>();
     protected Task _connectionTask;
     internal ILogger Logger { get; }

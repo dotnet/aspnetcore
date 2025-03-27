@@ -7,7 +7,7 @@ namespace System.Buffers;
 
 #nullable enable
 
-internal static class PinnedBlockMemoryPoolFactory
+internal static class TestMemoryPoolFactory
 {
     public static MemoryPool<byte> Create(IMeterFactory? meterFactory = null)
     {

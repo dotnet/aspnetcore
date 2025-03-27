@@ -12,7 +12,7 @@ namespace System.Buffers;
 /// <summary>
 /// Used to allocate and distribute re-usable blocks of memory.
 /// </summary>
-internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
+internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkItem
 {
     /// <summary>
     /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
@@ -31,6 +31,11 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     public static int BlockSize => _blockSize;
 
     /// <summary>
+    /// Optional callback to call when pool is being disposed.
+    /// </summary>
+    public Action<PinnedBlockMemoryPool>? DisposeCallback { get; set; }
+
+    /// <summary>
     /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
     /// and add them to this collection. When memory is requested it is taken from here first, and when it is returned it is re-added.
     /// </summary>
@@ -43,8 +48,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
     private readonly PinnedBlockMemoryPoolMetrics _metrics;
 
-    public long _currentMemory;
-    public long _evictedMemory;
+    private long _currentMemory;
+    private long _evictedMemory;
+    private DateTimeOffset _nextEviction = DateTime.UtcNow.AddSeconds(10);
 
     private uint _rentCount;
     private uint _returnCount;
@@ -96,6 +102,10 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         _metrics.Rent(BlockSize);
         //Interlocked.Increment(ref _rentCount);
         //++_rentCount;
+
+        // We already counted this Rent call above, but since we're now allocating (need more blocks)
+        // that means the pool is 'very' active and we probably shouldn't evict blocks, so we count again
+        // to reduce the chance of eviction occurring this cycle.
         ScalableCount(ref _rentCount);
 
         return new MemoryPoolBlock(this, BlockSize);
@@ -130,32 +140,56 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         }
     }
 
-    public void PerformEviction()
+    public bool TryScheduleEviction(DateTimeOffset now)
     {
-        long evictedMemoryThisPass = 0;
+        if (now >= _nextEviction)
+        {
+            _nextEviction = now.AddSeconds(10);
+            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+            return true;
+        }
+
+        return false;
+    }
+
+    void IThreadPoolWorkItem.Execute()
+    {
+        PerformEviction();
+    }
+
+    internal void PerformEviction()
+    {
         var currentCount = (uint)_blocks.Count;
         var burstAmount = 0u;
+
+        var rentCount = _rentCount;
+        var returnCount = _returnCount;
+        _rentCount = 0;
+        _returnCount = 0;
+
         // If any activity
-        if (_rentCount + _returnCount > 0)
+        if (rentCount + returnCount > 0)
         {
             // Trending less traffic
-            if (_returnCount > _rentCount)
+            if (returnCount > rentCount)
             {
-                burstAmount = Math.Min(currentCount / 100, (_returnCount - _rentCount) / 5);
+                // Remove the lower of 1% of the current blocks and 20% of the difference between rented and returned
+                burstAmount = Math.Min(currentCount / 100, (returnCount - rentCount) / 5);
             }
             // Traffic staying the same, try removing some blocks since we probably have excess
-            else if (_returnCount == _rentCount)
+            else if (returnCount == rentCount)
             {
+                // Remove 1% of the current blocks (or at least 1)
                 burstAmount = Math.Max(1, currentCount / 100);
             }
+            // else trending more traffic so we don't want to evict anything
         }
         // If no activity
         else
         {
+            // Remove 5% of the current blocks (or at least 10)
             burstAmount = Math.Max(10, currentCount / 20);
         }
-        _rentCount = 0;
-        _returnCount = 0;
 
         // Remove from queue and let GC clean the memory up
         while (burstAmount > 0 && _blocks.TryDequeue(out var block))
@@ -165,11 +199,8 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             Interlocked.Add(ref _currentMemory, -block.Memory.Length);
             Interlocked.Add(ref _evictedMemory, block.Memory.Length);
 
-            evictedMemoryThisPass += block.Memory.Length;
             burstAmount--;
         }
-
-        Debug.WriteLine($"Evicted {evictedMemoryThisPass} bytes.");
     }
 
     protected override void Dispose(bool disposing)
@@ -183,6 +214,8 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
         {
             _isDisposed = true;
 
+            DisposeCallback?.Invoke(this);
+
             if (disposing)
             {
                 // Discard blocks in pool
@@ -193,6 +226,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             }
         }
     }
+
+    // Used for testing
+    public int BlockCount() => _blocks.Count;
 
     private sealed class NoopMeterFactory : IMeterFactory
     {
