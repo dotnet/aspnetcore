@@ -62,12 +62,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation("example");
+SomeExtensions.AddValidation(builder.Services);
 
 var app = builder.Build();
 
@@ -84,6 +86,12 @@ public class ComplexType
 public static class SomeExtensions
 {
     public static IServiceCollection AddValidation(this IServiceCollection services, string someString)
+    {
+        // This is not the correct AddValidation method
+        return services;
+    }
+
+    public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
     {
         // This is not the correct AddValidation method
         return services;
