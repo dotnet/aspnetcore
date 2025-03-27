@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -137,7 +138,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (indexParams.Length > 0)
             {
                 sb.Append('(');
-                sb.Append(string.Join(",", indexParams.Select(p => GetTypeDocId(p.ParameterType, includeGenericArguments: true, omitGenericArity: false))));
+                for (int i = 0; i < indexParams.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    sb.Append(GetTypeDocId(indexParams[i].ParameterType, includeGenericArguments: true, omitGenericArity: false));
+                }
                 sb.Append(')');
             }
 
@@ -152,7 +161,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         /// </summary>
         public static string CreateDocumentationId(this MethodInfo method)
         {
-            System.Diagnostics.Debugger.Break();
             if (method == null)
             {
                 throw new ArgumentNullException(nameof(method));
@@ -180,7 +188,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 if (method.IsGenericMethod)
                 {
                     sb.Append("``");
-                    sb.Append(method.GetGenericArguments().Length);
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", method.GetGenericArguments().Length);
                 }
             }
 
@@ -189,7 +197,16 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (parameters.Length > 0)
             {
                 sb.Append('(');
-                sb.Append(string.Join(",", parameters.Select(p => GetTypeDocId(p.ParameterType, includeGenericArguments: true, omitGenericArity: true))));
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    // Omit the generic arity for the parameter type.
+                    sb.Append(GetTypeDocId(parameters[i].ParameterType, includeGenericArguments: true, omitGenericArity: true));
+                }
                 sb.Append(')');
             }
 
@@ -234,40 +251,70 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (type.IsArray && type.GetElementType() is { } elementType)
             {
                 int rank = type.GetArrayRank();
-                string elementTypeId = GetTypeDocId(elementType, includeGenericArguments, omitGenericArity);
-                return rank == 1 ? elementTypeId + "[]" : elementTypeId + "[" + new string(',', rank - 1) + "]";
+                var sb = new StringBuilder(GetTypeDocId(elementType, includeGenericArguments, omitGenericArity));
+                if (rank > 1)
+                {
+                    sb.Append('[');
+                    sb.Append(',', rank - 1);
+                    sb.Append(']');
+                }
+                else
+                {
+                    sb.Append("[]");
+                }
             }
 
             if (type.IsGenericType)
             {
-                // Get the generic type definition.
                 Type genericDef = type.GetGenericTypeDefinition();
-                string defName = genericDef.FullName != null
-                    ? genericDef.FullName.Replace('+', '.')
-                    : genericDef.Name;
-                // Remove any existing generic arity marker.
-                int backtickIndex = defName.IndexOf('`');
-                if (backtickIndex >= 0)
+                string fullName = genericDef.FullName ?? genericDef.Name;
+
+                var sb = new StringBuilder(fullName.Length);
+
+                // Replace '+' with '.' for nested types
+                for (var i = 0; i < fullName.Length; i++)
                 {
-                    defName = defName.Substring(0, backtickIndex);
+                    char c = fullName[i];
+                    if (c == '+')
+                    {
+                        sb.Append('.');
+                    }
+                    else if (c == '`')
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
                 }
-                // Append the generic arity unless omitted.
+
                 if (!omitGenericArity)
                 {
                     int arity = genericDef.GetGenericArguments().Length;
-                    defName += "`" + arity;
+                    sb.Append('`');
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", arity);
                 }
-                // If requested, append the constructed generic arguments.
+
                 if (includeGenericArguments && !type.IsGenericTypeDefinition)
                 {
-                    Type[] typeArgs = type.GetGenericArguments();
-                    string args = string.Join(",", typeArgs.Select(t => GetTypeDocId(t, includeGenericArguments, omitGenericArity)));
-                    return defName + "{" + args + "}";
+                    var typeArgs = type.GetGenericArguments();
+                    sb.Append('{');
+
+                    for (int i = 0; i < typeArgs.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sb.Append(',');
+                        }
+
+                        sb.Append(GetTypeDocId(typeArgs[i], includeGenericArguments, omitGenericArity));
+                    }
+
+                    sb.Append('}');
                 }
-                else
-                {
-                    return defName;
-                }
+
+                return sb.ToString();
             }
 
             // For non-generic types, use FullName (if available) and replace nested type separators.
