@@ -265,7 +265,7 @@ function attachInteropInvoker(): void {
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      console.log("mono endInvokeJSFromDotNet", asyncHandle, succeeded, serializedArgs);
+      // console.log("mono endInvokeJSFromDotNet", asyncHandle, succeeded, serializedArgs);
       Blazor._internal.dotNetExports!.EndInvokeJS(serializedArgs);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {

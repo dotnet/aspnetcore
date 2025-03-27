@@ -92,6 +92,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
             ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
             ["disposeJSObjectReferenceAsync"] = "Success",
+            // New JS interop methods
+            ["getValueFromDataPropertyAsync"] = "10",
+            ["getValueFromGetterAsync"] = "20",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -141,6 +144,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
+            // New JS interop methods
+            ["getValueFromDataProperty"] = "10",
+            ["getValueFromGetter"] = "20",
         };
 
         // Include the sync assertions only when running under WebAssembly

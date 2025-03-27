@@ -1,6 +1,9 @@
 #nullable enable
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> string?
 abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> void
+Microsoft.JSInterop.IJSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
+Microsoft.JSInterop.IJSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
+Microsoft.JSInterop.IJSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
 Microsoft.JSInterop.IJSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.IJSInProcessRuntime.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSObjectReference!
 Microsoft.JSInterop.IJSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void
@@ -18,6 +21,9 @@ Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, object?[]? arg
 Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
 Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSCallType.FunctionCall = 1 -> Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSCallType.GetValue = 3 -> Microsoft.JSInterop.Infrastructure.JSCallType

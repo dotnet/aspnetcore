@@ -438,3 +438,24 @@ async function receiveDotNetStreamReference(streamRef) {
 async function receiveDotNetStreamWrapperReference(wrapper) {
   return await validateDotNetStreamWrapperReference(wrapper);
 }
+
+class TestClass {
+    constructor(text, object) {
+        this.text = text;
+        this.object = object;
+    }
+
+    getTextLength() {
+        return this.text.length;
+    }
+}
+
+window.testObject = {
+    num: 10,
+    get getOnlyProperty() {
+        return 20;
+    },
+    set setOnlyProperty(value) {
+        this.num = value;
+    }
+}

@@ -437,6 +437,7 @@ export module DotNet {
         }
 
         invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null {
+            //console.log("invocationInfo", JSON.stringify(invocationInfo));
             const { targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
             const returnValue = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
             const result = createJSCallResult(returnValue, resultType);
@@ -447,8 +448,8 @@ export module DotNet {
         }
 
         beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null {
+            //console.log("beginInvokeJSFromDotNet", invocationInfo);
             const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
-            console.log("beginInvokeJSFromDotNet", invocationInfo);
 
             // Coerce synchronous functions into async ones, plus treat
             // synchronous exceptions the same as async ones

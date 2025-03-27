@@ -280,6 +280,13 @@
         var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
         ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
 
+        await GetValueAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            GetValueSyncTests();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -408,6 +415,30 @@
         {
             ReturnValues["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = $"Failure: {ex.Message}";
         }
+    }
+
+    private void InvokeNewTests()
+    {
+        
+    }
+
+    private async Task GetValueAsyncTests()
+    {
+        ReturnValues["getValueFromDataPropertyAsync"] = (await JSRuntime.GetValueAsync<int>("testObject.num")).ToString();
+        ReturnValues["getValueFromGetterAsync"] = (await JSRuntime.GetValueAsync<int>("testObject.getOnlyProperty")).ToString();
+    }
+
+    private void GetValueSyncTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        ReturnValues["getValueFromDataProperty"] = inProcRuntime.GetValue<int>("testObject.num").ToString();
+        ReturnValues["getValueFromGetter"] = inProcRuntime.GetValue<int>("testObject.getOnlyProperty").ToString();
+    }
+
+    private void SetValueTests()
+    {
+
     }
 
     public class PassDotNetObjectByRefArgs
