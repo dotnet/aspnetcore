@@ -197,6 +197,26 @@ describe("CallDispatcher", () => {
         expect(result).toBe("20");
     });
 
+    test("GetValue: Property defined on prototype is retrieved", () => {
+        const grandParentPrototype = { a: 30 };
+        const parentPrototype = Object.create(grandParentPrototype);
+        const testObject = Object.create(parentPrototype);
+        const objectId = getObjectReferenceId(testObject);
+
+        const invocationInfo: DotNet.JSInvocationInfo = {
+            asyncHandle: 0,
+            targetInstanceId: objectId,
+            identifier: "a",
+            callType: DotNet.JSCallType.GetValue,
+            resultType: DotNet.JSCallResultType.Default,
+            argsJson: null
+        };
+
+        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+
+        expect(result).toBe("30");
+    });
+
     test("GetValue: Reading undefined property throws", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
@@ -231,7 +251,7 @@ describe("CallDispatcher", () => {
         expect(result).toMatch("__jsObjectId");
     });
 
-    test("GetValue: Object value is retrieved from reference and empty identifier", () => {
+    test("GetValue: Object value is retrieved from reference with empty identifier", () => {
         const testObject = { a: { b: 20 } };
         const objectId = getObjectReferenceId(testObject);
 
