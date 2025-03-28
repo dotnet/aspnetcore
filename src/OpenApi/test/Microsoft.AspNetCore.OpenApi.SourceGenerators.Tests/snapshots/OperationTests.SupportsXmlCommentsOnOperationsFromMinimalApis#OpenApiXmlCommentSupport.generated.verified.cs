@@ -70,31 +70,32 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Creates a new user.", null, @"Sample request:
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Creates a new user.", null, @"Sample request:
     POST /6
     {
         ""username"": ""johndoe"",
         ""email"": ""john@example.com""
     }", null, null, false, null, [new XmlParameterComment(@"user", @"The user information.", @"{""username"": ""johndoe"", ""email"": ""john@example.com""}", false)], [new XmlResponseComment(@"201", @"Successfully created the user.", @""), new XmlResponseComment(@"400", @"If the user data is invalid.", @"")]));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Put7(System.Nullable{System.Int32},System.String)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get8~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get8.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get9~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get9.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get10~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get10.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get11~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get12~System.Threading.Tasks.Task{System.String}", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get13~System.Threading.Tasks.ValueTask{System.String}", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:RouteHandlerExtensionMethods.Post16(Example)", new XmlComment(@"A summary of Post16.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Put7(System.Nullable{System.Int32},System.String)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get8~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get8.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get9~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get9.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get10~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get10.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get11~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get12~System.Threading.Tasks.Task{System.String}", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get13~System.Threading.Tasks.ValueTask{System.String}", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Post16(Example)", new XmlComment(@"A summary of Post16.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get17(System.Int32[])~System.Int32[][]", new XmlComment(@"A summary of Get17.", null, null, null, null, false, null, null, null));
 
-            return _cache;
+            return cache;
         }
     }
 

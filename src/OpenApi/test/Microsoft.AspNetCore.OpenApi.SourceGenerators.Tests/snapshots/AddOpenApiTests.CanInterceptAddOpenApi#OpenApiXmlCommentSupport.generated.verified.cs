@@ -70,10 +70,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
 
-            return _cache;
+            return cache;
         }
     }
 

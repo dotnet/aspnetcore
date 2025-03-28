@@ -43,6 +43,7 @@ app.MapGet("/13", RouteHandlerExtensionMethods.Get13);
 app.MapGet("/14", RouteHandlerExtensionMethods.Get14);
 app.MapGet("/15", RouteHandlerExtensionMethods.Get15);
 app.MapPost("/16", RouteHandlerExtensionMethods.Post16);
+app.MapGet("/17", RouteHandlerExtensionMethods.Get17);
 
 app.Run();
 
@@ -193,6 +194,15 @@ public static class RouteHandlerExtensionMethods
     {
         return;
     }
+
+    /// <summary>
+    /// A summary of Get17.
+    /// </summary>
+    public static int[][] Get17(int[] args)
+    {
+        return [[1, 2, 3], [4, 5, 6], [7, 8, 9], args];
+
+    }
 }
 
 public class User
@@ -281,6 +291,9 @@ public class Example : Task<int>
 
             var path16 = document.Paths["/16"].Operations[OperationType.Post];
             Assert.Equal("A summary of Post16.", path16.Summary);
+
+            var path17 = document.Paths["/17"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get17.", path17.Summary);
         });
     }
 }

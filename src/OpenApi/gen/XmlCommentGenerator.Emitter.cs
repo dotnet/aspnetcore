@@ -88,10 +88,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 {{commentsFromXmlFile}}
 {{commentsFromCompilation}}
-            return _cache;
+            return cache;
         }
     }
 
@@ -245,22 +245,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 else
                 {
                     return type.Name;
-                }
-            }
-
-            if (type.IsArray && type.GetElementType() is { } elementType)
-            {
-                int rank = type.GetArrayRank();
-                var sb = new StringBuilder(GetTypeDocId(elementType, includeGenericArguments, omitGenericArity));
-                if (rank > 1)
-                {
-                    sb.Append('[');
-                    sb.Append(',', rank - 1);
-                    sb.Append(']');
-                }
-                else
-                {
-                    sb.Append("[]");
                 }
             }
 
@@ -539,7 +523,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (comment is not null)
             {
-                codeWriter.WriteLine($"_cache.Add({FormatStringForCode(memberKey)}, {EmitSourceGeneratedXmlComment(comment)});");
+                codeWriter.WriteLine($"cache.Add({FormatStringForCode(memberKey)}, {EmitSourceGeneratedXmlComment(comment)});");
             }
         }
         return writer.ToString();

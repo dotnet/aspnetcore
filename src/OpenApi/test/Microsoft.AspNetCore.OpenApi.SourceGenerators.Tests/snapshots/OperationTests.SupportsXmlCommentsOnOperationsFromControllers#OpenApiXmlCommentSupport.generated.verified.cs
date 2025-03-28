@@ -70,14 +70,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(@"M:TestController.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
-            _cache.Add(@"M:Test2Controller.Get(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
-            _cache.Add(@"M:Test2Controller.Get(System.Int32)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"id", @"The id associated with the request.", null, false)], null));
-            _cache.Add(@"M:Test2Controller.Post(Todo)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"todo", @"The todo to insert into the database.", null, false)], null));
+            cache.Add(@"M:TestController.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            cache.Add(@"M:Test2Controller.Get(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            cache.Add(@"M:Test2Controller.Get(System.Int32)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"id", @"The id associated with the request.", null, false)], null));
+            cache.Add(@"M:Test2Controller.Post(Todo)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"todo", @"The todo to insert into the database.", null, false)], null));
 
-            return _cache;
+            return cache;
         }
     }
 

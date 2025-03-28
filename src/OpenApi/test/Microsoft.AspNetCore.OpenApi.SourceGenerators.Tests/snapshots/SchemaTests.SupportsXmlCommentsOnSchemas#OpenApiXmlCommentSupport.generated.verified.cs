@@ -70,40 +70,40 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(@"T:Todo", new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:Project", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:ProjectBoard.BoardItem", new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:ProjectBoard.ProtectedInternalElement", new XmlComment(@"Can find this XML comment.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:ProjectRecord", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
-            _cache.Add(@"T:User", new XmlComment(null, null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:ProjectBoard.ProtectedInternalElement.Name", new XmlComment(@"The unique identifier for the element.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:ProjectRecord.Name", new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:ProjectRecord.Description", new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:TodoWithDescription.Id", new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:TodoWithDescription.Name", new XmlComment(null, null, null, null, @"The name of the todo.", false, null, null, null));
-            _cache.Add(@"P:TodoWithDescription.Description", new XmlComment(@"A description of the the todo.", null, null, null, @"Another description of the todo.", false, null, null, null));
-            _cache.Add(@"P:TypeWithExamples.BooleanType", new XmlComment(null, null, null, null, null, false, [@"true"], null, null));
-            _cache.Add(@"P:TypeWithExamples.IntegerType", new XmlComment(null, null, null, null, null, false, [@"42"], null, null));
-            _cache.Add(@"P:TypeWithExamples.LongType", new XmlComment(null, null, null, null, null, false, [@"1234567890123456789"], null, null));
-            _cache.Add(@"P:TypeWithExamples.DoubleType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
-            _cache.Add(@"P:TypeWithExamples.FloatType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
-            _cache.Add(@"P:TypeWithExamples.DateTimeType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
-            _cache.Add(@"P:TypeWithExamples.DateOnlyType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
-            _cache.Add(@"P:TypeWithExamples.StringType", new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
-            _cache.Add(@"P:TypeWithExamples.GuidType", new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
-            _cache.Add(@"P:TypeWithExamples.TimeOnlyType", new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
-            _cache.Add(@"P:TypeWithExamples.TimeSpanType", new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
-            _cache.Add(@"P:TypeWithExamples.ByteType", new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
-            _cache.Add(@"P:TypeWithExamples.DecimalType", new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
-            _cache.Add(@"P:TypeWithExamples.UriType", new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
-            _cache.Add(@"P:IUser.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:IUser.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:User.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:User.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:Todo", new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:Project", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ProjectBoard.BoardItem", new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ProjectBoard.ProtectedInternalElement", new XmlComment(@"Can find this XML comment.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ProjectRecord", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            cache.Add(@"T:User", new XmlComment(null, null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ProjectBoard.ProtectedInternalElement.Name", new XmlComment(@"The unique identifier for the element.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ProjectRecord.Name", new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ProjectRecord.Description", new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:TodoWithDescription.Id", new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:TodoWithDescription.Name", new XmlComment(null, null, null, null, @"The name of the todo.", false, null, null, null));
+            cache.Add(@"P:TodoWithDescription.Description", new XmlComment(@"A description of the the todo.", null, null, null, @"Another description of the todo.", false, null, null, null));
+            cache.Add(@"P:TypeWithExamples.BooleanType", new XmlComment(null, null, null, null, null, false, [@"true"], null, null));
+            cache.Add(@"P:TypeWithExamples.IntegerType", new XmlComment(null, null, null, null, null, false, [@"42"], null, null));
+            cache.Add(@"P:TypeWithExamples.LongType", new XmlComment(null, null, null, null, null, false, [@"1234567890123456789"], null, null));
+            cache.Add(@"P:TypeWithExamples.DoubleType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            cache.Add(@"P:TypeWithExamples.FloatType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            cache.Add(@"P:TypeWithExamples.DateTimeType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
+            cache.Add(@"P:TypeWithExamples.DateOnlyType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
+            cache.Add(@"P:TypeWithExamples.StringType", new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
+            cache.Add(@"P:TypeWithExamples.GuidType", new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
+            cache.Add(@"P:TypeWithExamples.TimeOnlyType", new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
+            cache.Add(@"P:TypeWithExamples.TimeSpanType", new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
+            cache.Add(@"P:TypeWithExamples.ByteType", new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
+            cache.Add(@"P:TypeWithExamples.DecimalType", new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
+            cache.Add(@"P:TypeWithExamples.UriType", new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
+            cache.Add(@"P:IUser.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:IUser.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:User.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:User.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
 
-            return _cache;
+            return cache;
         }
     }
 

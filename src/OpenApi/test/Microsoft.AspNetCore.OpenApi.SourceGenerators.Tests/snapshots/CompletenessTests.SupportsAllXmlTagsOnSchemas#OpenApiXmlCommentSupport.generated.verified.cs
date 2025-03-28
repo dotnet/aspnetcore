@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<string, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(@"T:ExampleClass", new XmlComment(@"Every class and member should have a one sentence
+            cache.Add(@"T:ExampleClass", new XmlComment(@"Every class and member should have a one sentence
 summary describing its purpose.", null, @"     You can expand on that one sentence summary to
      provide more information for readers. In this case,
      the `ExampleClass` provides different C#
@@ -116,83 +116,83 @@ would typically use the ""term"" element.
 
 Note: paragraphs are double spaced. Use the *br*
 tag for single spaced lines.", null, null, false, null, null, null));
-            _cache.Add(@"T:Person", new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
+            cache.Add(@"T:Person", new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
 created for positional records, yet. The language
 design team is still considering what tags should
 be supported, and where. Currently, you can use
 the ""param"" tag to describe the parameters to the
 primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
-            _cache.Add(@"T:MainClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            cache.Add(@"T:MainClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(@"T:DerivedClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            cache.Add(@"T:DerivedClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(@"T:ITestInterface", new XmlComment(@"This interface would describe all the methods in
+            cache.Add(@"T:ITestInterface", new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(@"T:ImplementingClass", new XmlComment(@"This interface would describe all the methods in
+            cache.Add(@"T:ImplementingClass", new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(@"T:InheritOnlyReturns", new XmlComment(@"This class shows hows you can ""inherit"" the doc
+            cache.Add(@"T:InheritOnlyReturns", new XmlComment(@"This class shows hows you can ""inherit"" the doc
 comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
 represented by an xpath expression.", null, null, false, null, null, null));
-            _cache.Add(@"T:InheritAllButRemarks", new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:GenericClass`1", new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
+            cache.Add(@"T:InheritAllButRemarks", new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:GenericClass`1", new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
 type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
-            _cache.Add(@"T:GenericParent", new XmlComment(@"This class validates the behavior for mapping
+            cache.Add(@"T:GenericParent", new XmlComment(@"This class validates the behavior for mapping
 generic types to open generics for use in
 typeof expressions.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
+            cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
 for this instance.", false, null, null, null));
-            _cache.Add(@"P:Person.FirstName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:Person.LastName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:GenericParent.Id", new XmlComment(@"This property is a nullable value type.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:GenericParent.Name", new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+            cache.Add(@"P:Person.FirstName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Person.LastName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.Id", new XmlComment(@"This property is a nullable value type.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.Name", new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
+            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
 an params array.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+            cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            _cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
-            _cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
+            cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
 
-            return _cache;
+            return cache;
         }
     }
 
