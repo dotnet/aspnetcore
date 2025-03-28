@@ -98,7 +98,7 @@
     <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
       <IsShipping>true</IsShipping>
       <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('wixpack.zip'))">false</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('wixpack.zip'))">false</IsShipping>
     </Artifact>
   </ItemGroup>
 
