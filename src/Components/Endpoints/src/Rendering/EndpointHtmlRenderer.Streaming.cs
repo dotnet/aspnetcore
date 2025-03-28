@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -321,70 +322,10 @@ internal partial class EndpointHtmlRenderer
 
     private void AppendWebAssemblyPreloadHeaders()
     {
-        var assets = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
-        if (assets != null)
+        var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
+        if (preloads != null && preloads.TryGetLinkHeaders("webassembly", out var linkHeaders))
         {
-            var headers = new List<(string? Order, string Value)>();
-            foreach (var asset in assets)
-            {
-                if (asset.Properties == null)
-                {
-                    continue;
-                }
-
-                // Use preloadgroup=webassembly to identify assets that should to be preloaded
-                string? header = null;
-                foreach (var property in asset.Properties)
-                {
-                    if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase) && property.Value.Equals("webassembly", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = $"<{asset.Url}>";
-                        break;
-                    }
-                }
-
-                if (header == null)
-                {
-                    continue;
-                }
-
-                string? order = null;
-                foreach (var property in asset.Properties)
-                {
-                    if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = String.Concat(header, "; rel=", property.Value);
-                    }
-                    else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = String.Concat(header, "; as=", property.Value);
-                    }
-                    else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = String.Concat(header, "; fetchpriority=", property.Value);
-                    }
-                    else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = String.Concat(header, "; crossorigin=", property.Value);
-                    }
-                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
-                    {
-                        header = String.Concat(header, "; integrity=\"", property.Value, "\"");
-                    }
-                    else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
-                    {
-                        order = property.Value;
-                    }
-                }
-
-                if (header != null)
-                {
-                    headers.Add((order, header));
-                }
-            }
-
-            headers.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
-            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, headers.Select(h => h.Value).ToArray());
+            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, linkHeaders);
         }
     }
 
