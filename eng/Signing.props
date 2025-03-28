@@ -97,8 +97,8 @@
 
     <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
       <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) == 'True'">false</IsShipping>
-      <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) != 'True'">true</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping')) != 'true'">false</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping')) == 'true'">true</IsShipping>
     </Artifact>
   </ItemGroup>
 
