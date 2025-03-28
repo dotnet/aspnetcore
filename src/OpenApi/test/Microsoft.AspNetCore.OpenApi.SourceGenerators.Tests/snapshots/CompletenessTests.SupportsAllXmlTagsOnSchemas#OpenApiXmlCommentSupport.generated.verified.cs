@@ -349,22 +349,6 @@ T", null, null, false, null, null, null));
                 }
             }
 
-            if (type.IsArray && type.GetElementType() is { } elementType)
-            {
-                int rank = type.GetArrayRank();
-                var sb = new StringBuilder(GetTypeDocId(elementType, includeGenericArguments, omitGenericArity));
-                if (rank > 1)
-                {
-                    sb.Append('[');
-                    sb.Append(',', rank - 1);
-                    sb.Append(']');
-                }
-                else
-                {
-                    sb.Append("[]");
-                }
-            }
-
             if (type.IsGenericType)
             {
                 Type genericDef = type.GetGenericTypeDefinition();
