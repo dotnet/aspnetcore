@@ -5,7 +5,7 @@ Microsoft.JSInterop.IJSInProcessObjectReference.GetValue<TValue>(string! identif
 Microsoft.JSInterop.IJSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.IJSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
 Microsoft.JSInterop.IJSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
-Microsoft.JSInterop.IJSInProcessRuntime.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSObjectReference!
+Microsoft.JSInterop.IJSInProcessRuntime.InvokeNew(string! identifier, params object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.IJSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void
 Microsoft.JSInterop.IJSObjectReference.GetValueAsync<TValue>() -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSObjectReference.GetValueAsync<TValue>(string! identifier) -> System.Threading.Tasks.ValueTask<TValue>
@@ -45,7 +45,7 @@ Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.get -> long
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.init -> void
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ToJson() -> string!
 Microsoft.JSInterop.JSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
-Microsoft.JSInterop.JSInProcessRuntime.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSObjectReference!
+Microsoft.JSInterop.JSInProcessRuntime.InvokeNew(string! identifier, params object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.JSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void
 Microsoft.JSInterop.JSRuntime.GetValueAsync<TValue>(string! identifier) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.JSRuntime.GetValueAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TValue>
@@ -53,3 +53,6 @@ Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, object?[]? args
 Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>

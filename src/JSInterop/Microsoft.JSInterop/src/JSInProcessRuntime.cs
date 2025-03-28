@@ -26,8 +26,8 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public IJSObjectReference InvokeNew(string identifier, object?[]? args)
-        => Invoke<IJSObjectReference>(identifier, 0, JSCallType.NewCall, args);
+    public IJSInProcessObjectReference InvokeNew(string identifier, params object?[]? args)
+        => Invoke<IJSInProcessObjectReference>(identifier, 0, JSCallType.NewCall, args);
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]

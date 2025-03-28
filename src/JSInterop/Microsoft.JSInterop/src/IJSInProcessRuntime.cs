@@ -28,7 +28,7 @@ public interface IJSInProcessRuntime : IJSRuntime
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    IJSObjectReference InvokeNew(string identifier, object?[]? args);
+    IJSInProcessObjectReference InvokeNew(string identifier, params object?[]? args);
 
     /// <summary>
     /// Reads the value of the specified JavaScript property synchronously.
