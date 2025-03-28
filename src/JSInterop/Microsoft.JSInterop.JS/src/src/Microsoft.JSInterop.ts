@@ -138,20 +138,20 @@ export module DotNet {
       jsonRevivers.push(reviver);
   }
 
-/**
- * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
- * synchronous invocation, so if possible use invokeMethodAsync instead.
- *
- * @deprecated Use DotNetObject to invoke instance methods instead.
- * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
- * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
- * @param args Arguments to pass to the method, each of which must be JSON-serializable.
- * @returns The result of the operation.
- */
-export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
-    const dispatcher = getDefaultCallDispatcher();
-    return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
-}
+  /**
+   * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
+   * synchronous invocation, so if possible use invokeMethodAsync instead.
+   *
+   * @deprecated Use DotNetObject to invoke instance methods instead.
+   * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+   * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+   * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+   * @returns The result of the operation.
+   */
+  export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
+      const dispatcher = getDefaultCallDispatcher();
+      return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
+  }
 
   /**
    * Invokes the specified .NET public method asynchronously.
@@ -271,8 +271,8 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
   }
 
   interface PendingAsyncCall<T> {
-      resolve: (value?: T | PromiseLike<T>) => void;
-      reject: (reason?: any) => void;
+    resolve: (value?: T | PromiseLike<T>) => void;
+    reject: (reason?: any) => void;
   }
 
   /**
@@ -280,20 +280,20 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
    */
   // eslint-disable-next-line no-shadow
   export enum JSCallResultType {
-      Default = 0,
-      JSObjectReference = 1,
-      JSStreamReference = 2,
-      JSVoidResult = 3,
+    Default = 0,
+    JSObjectReference = 1,
+    JSStreamReference = 2,
+    JSVoidResult = 3,
   }
 
   /**
    * Represents the type of operation that should be performed in JS.
    */
   export enum JSCallType {
-      FunctionCall = 1,
-      NewCall = 2,
-      GetValue = 3,
-      SetValue = 4
+    FunctionCall = 1,
+    NewCall = 2,
+    GetValue = 3,
+    SetValue = 4
   }
 
   /**
@@ -317,106 +317,106 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
-      /**
-       * Optional. If implemented, invoked by the runtime to perform a synchronous call to a .NET method.
-       *
-       * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
-       * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-       * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
-       * @param argsJson JSON representation of arguments to pass to the method.
-       * @returns JSON representation of the result of the invocation.
-       */
-      invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): string | null;
+    /**
+     * Optional. If implemented, invoked by the runtime to perform a synchronous call to a .NET method.
+     *
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
+     * @param argsJson JSON representation of arguments to pass to the method.
+     * @returns JSON representation of the result of the invocation.
+     */
+    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): string | null;
 
-      /**
-       * Invoked by the runtime to begin an asynchronous call to a .NET method.
-       *
-       * @param callId A value identifying the asynchronous operation. This value should be passed back in a later call from .NET to JS.
-       * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
-       * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-       * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null to call static methods.
-       * @param argsJson JSON representation of arguments to pass to the method.
-       */
-      beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
+    /**
+     * Invoked by the runtime to begin an asynchronous call to a .NET method.
+     *
+     * @param callId A value identifying the asynchronous operation. This value should be passed back in a later call from .NET to JS.
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null to call static methods.
+     * @param argsJson JSON representation of arguments to pass to the method.
+     */
+    beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
 
-      /**
-       * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
-       *
-       * @param callId A value identifying the asynchronous operation.
-       * @param succeded Whether the operation succeeded or not.
-       * @param resultOrError The serialized result or the serialized error from the async operation.
-       */
-      endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
+    /**
+     * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
+     *
+     * @param callId A value identifying the asynchronous operation.
+     * @param succeded Whether the operation succeeded or not.
+     * @param resultOrError The serialized result or the serialized error from the async operation.
+     */
+    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
 
-      /**
-       * Invoked by the runtime to transfer a byte array from JS to .NET.
-       * @param id The identifier for the byte array used during revival.
-       * @param data The byte array being transferred for eventual revival.
-       */
-      sendByteArray(id: number, data: Uint8Array): void;
+    /**
+     * Invoked by the runtime to transfer a byte array from JS to .NET.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+    sendByteArray(id: number, data: Uint8Array): void;
   }
 
   /**
    * Represents the ability to facilitate function call dispatching between JavaScript and a .NET runtime.
    */
   export interface ICallDispatcher {
-      /**
-       * Invokes the specified synchronous JavaScript function.
-       *
-       * @param invocationInfo Configuration of the interop call.
-       */
-      invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null;
+    /**
+     * Invokes the specified synchronous JavaScript function.
+     *
+     * @param invocationInfo Configuration of the interop call.
+     */
+    invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null;
 
-      /**
-       * Invokes the specified synchronous or asynchronous JavaScript function.
-       *
-       * @param invocationInfo Configuration of the interop call.
-       */
-      beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null;
+    /**
+     * Invokes the specified synchronous or asynchronous JavaScript function.
+     *
+     * @param invocationInfo Configuration of the interop call.
+     */
+    beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null;
 
-      /**
-       * Receives notification that an async call from JS to .NET has completed.
-       * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
-       * @param success A flag to indicate whether the operation completed successfully.
-       * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
-       */
-      endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void;
+    /**
+     * Receives notification that an async call from JS to .NET has completed.
+     * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
+     * @param success A flag to indicate whether the operation completed successfully.
+     * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
+     */
+    endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void;
 
-  /**
-   * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
-   * synchronous invocation, so if possible use invokeMethodAsync instead.
-   *
-   * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-   * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-   * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-   * @returns The result of the operation.
-   */
-  invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): | null;
+    /**
+     * Invokes the specified .NET public static method synchronously. Not all hosting scenarios support
+     * synchronous invocation, so if possible use invokeMethodAsync instead.
+     *
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+     * @returns The result of the operation.
+     */
+    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): | null;
 
-      /**
-       * Invokes the specified .NET public static method asynchronously.
-       *
-       * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
-       * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
-       * @param args Arguments to pass to the method, each of which must be JSON-serializable.
-       * @returns A promise representing the result of the operation.
-       */
-      invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
+    /**
+     * Invokes the specified .NET public static method asynchronously.
+     *
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly containing the method.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param args Arguments to pass to the method, each of which must be JSON-serializable.
+     * @returns A promise representing the result of the operation.
+     */
+    invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T>;
 
-      /**
-       * Receives notification that a byte array is being transferred from .NET to JS.
-       * @param id The identifier for the byte array used during revival.
-       * @param data The byte array being transferred for eventual revival.
-       */
-      receiveByteArray(id: number, data: Uint8Array): void
+    /**
+     * Receives notification that a byte array is being transferred from .NET to JS.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+    receiveByteArray(id: number, data: Uint8Array): void
 
-      /**
-       * Supplies a stream of data being sent from .NET.
-       *
-       * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code.
-       * @param stream The stream data.
-       */
-      supplyDotNetStream(streamId: number, stream: ReadableStream): void;
+    /**
+     * Supplies a stream of data being sent from .NET.
+     *
+     * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code.
+     * @param stream The stream data.
+     */
+    supplyDotNetStream(streamId: number, stream: ReadableStream): void;
   }
 
   class CallDispatcher implements ICallDispatcher {
@@ -606,23 +606,23 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
           this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
       }
 
-    invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
-        return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
-    }
+      invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
+          return this.invokeDotNetMethod<T>(assemblyName, methodIdentifier, null, args);
+      }
 
       invokeDotNetStaticMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
           return this.invokeDotNetMethodAsync<T>(assemblyName, methodIdentifier, null, args);
       }
 
-    invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
+      invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
         if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
             const argsJson = stringifyArgs(this, args);
             const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
             return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
         }
 
-          throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
-      }
+        throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
+    }
 
       invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
           if (assemblyName && dotNetObjectId) {
@@ -750,9 +750,9 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
       constructor(private readonly _id: number, private readonly _callDispatcher: CallDispatcher) {
       }
 
-    public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T | null {
-        return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
-    }
+      public invokeMethod<T>(methodIdentifier: string, ...args: any[]): T | null {
+          return this._callDispatcher.invokeDotNetMethod<T>(null, methodIdentifier, this._id, args);
+      }
 
       public invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T> {
           return this._callDispatcher.invokeDotNetMethodAsync<T>(null, methodIdentifier, this._id, args);
@@ -837,16 +837,16 @@ export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, 
 
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
       switch (resultType) {
-          case JSCallResultType.Default:
-              return returnValue;
-          case JSCallResultType.JSObjectReference:
-              return createJSObjectReference(returnValue);
-          case JSCallResultType.JSStreamReference:
-              return createJSStreamReference(returnValue);
-          case JSCallResultType.JSVoidResult:
-              return null;
-          default:
-              throw new Error(`Invalid JS call result type '${resultType}'.`);
+      case JSCallResultType.Default:
+          return returnValue;
+      case JSCallResultType.JSObjectReference:
+          return createJSObjectReference(returnValue);
+      case JSCallResultType.JSStreamReference:
+          return createJSStreamReference(returnValue);
+      case JSCallResultType.JSVoidResult:
+          return null;
+      default:
+          throw new Error(`Invalid JS call result type '${resultType}'.`);
       }
   }
 
