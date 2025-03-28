@@ -51,7 +51,6 @@ internal sealed class IpcSender
 
     public void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
-        // TODO(OR): Make sure the client side works with this
         var invocationInfoJson = invocationInfo.ToJson();
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.BeginInvokeJS, invocationInfoJson));
     }

@@ -17,7 +17,6 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
-import { DotNet } from '@microsoft/dotnet-js-interop';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 
