@@ -22,6 +22,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
     <!--#endif -->
+    <script type="importmap"></script>
 </head>
 
 <body>
@@ -44,7 +45,7 @@
 <!--#if (IndividualB2CAuth || OrganizationalAuth)  -->
     <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
 <!--#endif  -->
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
     <!--#if PWA -->
     <script>navigator.serviceWorker.register('service-worker.js');</script>
     <!--#endif -->
