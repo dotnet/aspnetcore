@@ -22,12 +22,16 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
-    [InlineData("server", true)]
-    [InlineData("webassembly", true)]
-    [InlineData("ssr", false)]
-    public void CanRenderNotFoundInteractive(string renderingMode, bool isInteractive)
+    [InlineData("server", true, false)]
+    [InlineData("webassembly", true, false)]
+    [InlineData("server", true, true)]
+    [InlineData("webassembly", true, true)]
+    [InlineData("ssr", false, true)]
+    [InlineData("ssr", false, false)]
+    public void CanRenderNotFoundPage(string renderingMode, bool isInteractive, bool useCustomNotFoundPage)
     {
-        Navigate($"/subdir/render-not-found-{renderingMode}");
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/render-not-found-{renderingMode}{query}");
 
         if (isInteractive)
         {
@@ -36,8 +40,16 @@ public class GlobalInteractivityTest(
             Browser.Exists(By.Id(buttonId)).Click();
         }
 
-        var bodyText = Browser.FindElement(By.TagName("body")).Text;
-        Assert.Contains("There's nothing here", bodyText);
+        if (useCustomNotFoundPage)
+        {
+            var infoText = Browser.FindElement(By.Id("test-info")).Text;
+            Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        }
+        else
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Contains("There's nothing here", bodyText);
+        }
     }
 
     [Fact]

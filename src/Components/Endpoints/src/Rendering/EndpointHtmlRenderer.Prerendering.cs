@@ -18,7 +18,7 @@ internal partial class EndpointHtmlRenderer
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
-        if (_isHandlingErrors)
+        if (_isHandlingErrors || _hasStatusCodePage)
         {
             // Ignore the render mode boundary in error scenarios.
             return componentActivator.CreateInstance(componentType);
