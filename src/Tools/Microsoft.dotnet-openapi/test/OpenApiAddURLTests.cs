@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit.Abstractions;
 
@@ -12,6 +13,7 @@ public class OpenApiAddURLTests : OpenApiTestBase
     public OpenApiAddURLTests(ITestOutputHelper output) : base(output) { }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61225")]
     public async Task OpenApi_Add_Url_WithContentDisposition()
     {
         var project = CreateBasicProject(withOpenApi: false);
