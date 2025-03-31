@@ -133,14 +133,14 @@
     private async Task GetObjectModelWithInvoke()
     {
         var model = await JSRuntime.InvokeAsync<TestObjectModel>("getTestObject");
-        TestObjectDisplay = $"Serialized state: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
+        TestObjectDisplay = $"State loaded from model with Invoke: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
     }
 
     private async Task GetObjectModelWithGetValue()
     {
         var objectRef = await JSRuntime.GetValueAsync<IJSObjectReference>("testObject");
         var model = await objectRef.GetValueAsync<TestObjectModel>();
-        TestObjectDisplay = $"Serialized state via reference: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
+        TestObjectDisplay = $"State loaded from reference with GetValue: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
     }
 
     private async Task GetObjectPropertiesWithGetValue()
@@ -149,7 +149,7 @@
         var numValue = await objectRef.GetValueAsync<int>("num");
         var textValue = await objectRef.GetValueAsync<string>("text");
         var getOnlyProperty = await objectRef.GetValueAsync<int>("getOnlyProperty");
-        TestObjectDisplay = $"State via reference from function: {numValue} | {textValue} | {getOnlyProperty}";
+        TestObjectDisplay = $"State loaded from properties with GetValue: {numValue} | {textValue} | {getOnlyProperty}";
     }
 
     private async Task CreateInstanceByConstructorFunction()

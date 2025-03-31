@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -22,15 +21,15 @@ internal sealed class UnsupportedJavaScriptRuntime : IJSRuntime
     public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier)
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken)
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value)
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
         => throw new InvalidOperationException(Message);
 }

@@ -188,7 +188,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     protected virtual void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
     {
-        BeginInvokeJS(new JSInvocationInfo
+        var invocationInfo = new JSInvocationInfo
         {
             AsyncHandle = taskId,
             TargetInstanceId = 0,
@@ -196,7 +196,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             CallType = JSCallType.FunctionCall,
             ResultType = JSCallResultType.Default,
             ArgsJson = argsJson,
-        });
+        };
+
+        BeginInvokeJS(invocationInfo);
     }
 
     /// <summary>
