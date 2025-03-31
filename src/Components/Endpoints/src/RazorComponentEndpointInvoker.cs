@@ -45,7 +45,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             Log.InteractivityDisabledForErrorHandling(_logger);
         }
         _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler, hasStatusCodePage);
-        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        bool avoidEditingHeaders = hasStatusCodePage && context.Response.StatusCode == StatusCodes.Status404NotFound;
+        if (!avoidEditingHeaders)
+        {
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        }
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
@@ -86,6 +90,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
 
+        int originalStatusCode = context.Response.StatusCode;
+
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
@@ -94,6 +100,16 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             rootComponent,
             ParameterView.Empty,
             waitForQuiescence: result.IsPost || isErrorHandler || hasStatusCodePage);
+
+        bool requresReexecution = originalStatusCode != context.Response.StatusCode && hasStatusCodePage;
+        if (requresReexecution)
+        {
+            // If the response is a 404, we don't want to write any content.
+            // This is because the 404 status code is used by the routing middleware
+            // to indicate that no endpoint was found for the request.
+            await bufferWriter.FlushAsync();
+            return;
+        }
 
         Task quiesceTask;
         if (!result.IsPost)

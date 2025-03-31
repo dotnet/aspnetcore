@@ -84,6 +84,7 @@ internal partial class EndpointHtmlRenderer
             return;
         }
         _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        _httpContext.Response.ContentType = null;
         SignalRendererToFinishRendering();
     }
 

@@ -28,7 +28,8 @@ internal partial class EndpointHtmlRenderer
     {
         _isHandlingErrors = isErrorHandler;
         _hasStatusCodePage = hasStatusCodePage;
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        bool avoidEditingHeaders = hasStatusCodePage && httpContext.Response.StatusCode == StatusCodes.Status404NotFound;
+        if (!avoidEditingHeaders && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
