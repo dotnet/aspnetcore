@@ -57,6 +57,7 @@
         DestinationFolder="$(DotNetUnpackFolder)"
         OverwriteReadOnlyFiles="true"
         Condition="'$(DotNetBuildPass)' == '2'" />
+    <Error Condition="!Exists('$(DotNetUnpackFolder)')" Text="AspNetCore Shared Framework layout should be available for AspNetCoreRuntime .nupkg, but isn't." />
     <ItemGroup>
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(ShimComponents.DllLocation)"
