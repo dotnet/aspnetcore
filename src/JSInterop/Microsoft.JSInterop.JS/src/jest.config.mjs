@@ -14,7 +14,7 @@ const ROOT_DIR = path.resolve(__dirname, "..", "..", "..", "..");
 
 const config = {
     roots: ["<rootDir>/src", "<rootDir>/test"],
-    testMatch: ["**/*.test.ts"],
+    testMatch: ["**/*.test.(ts|js)"],
     moduleFileExtensions: ["js", "ts"],
     transform: {
         "^.+\\.(js|ts)$": "babel-jest",
@@ -25,7 +25,7 @@ const config = {
         "default",
         [
             path.resolve(ROOT_DIR, "node_modules", "jest-junit", "index.js"),
-            { "outputDirectory": path.resolve(ROOT_DIR, "artifacts", "log"), "outputName": `${process.platform}` + ".components-webjs.junit.xml" }
+            { "outputDirectory": path.resolve(ROOT_DIR, "artifacts", "log"), "outputName": `${process.platform}` + ".jsinterop.junit.xml" }
         ]
     ],
 };

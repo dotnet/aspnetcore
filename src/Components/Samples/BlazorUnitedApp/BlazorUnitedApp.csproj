@@ -7,14 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\custom-module.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\custom-module.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
   </ItemGroup>
 

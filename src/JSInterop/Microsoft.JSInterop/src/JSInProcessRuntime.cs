@@ -72,13 +72,6 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// <summary>
     /// Performs a synchronous function invocation.
     /// </summary>
-    /// <param name="invocationInfo">Configuration of the interop call.</param>
-    /// <returns>A JSON representation of the result.</returns>
-    protected abstract string? InvokeJS(JSInvocationInfo invocationInfo);
-
-    /// <summary>
-    /// Performs a synchronous function invocation.
-    /// </summary>
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     /// <returns>A JSON representation of the result.</returns>
@@ -92,4 +85,21 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
             ResultType = JSCallResultType.Default,
             ArgsJson = argsJson,
         });
+
+    /// <summary>
+    /// Performs a synchronous function invocation.
+    /// </summary>
+    /// <param name="identifier">The identifier for the function to invoke.</param>
+    /// <param name="argsJson">A JSON representation of the arguments.</param>
+    /// <param name="resultType">The type of result expected from the invocation.</param>
+    /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
+    /// <returns>A JSON representation of the result.</returns>
+    protected abstract string? InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId);
+
+    /// <summary>
+    /// Performs a synchronous function invocation.
+    /// </summary>
+    /// <param name="invocationInfo">Configuration of the interop call.</param>
+    /// <returns>A JSON representation of the result.</returns>
+    protected abstract string? InvokeJS(JSInvocationInfo invocationInfo);
 }

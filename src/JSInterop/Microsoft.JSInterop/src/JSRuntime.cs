@@ -202,6 +202,16 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Begins an asynchronous function invocation.
     /// </summary>
+    /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
+    /// <param name="identifier">The identifier for the function to invoke.</param>
+    /// <param name="argsJson">A JSON representation of the arguments.</param>
+    /// <param name="resultType">The type of result expected from the invocation.</param>
+    /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
+    protected abstract void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId);
+
+    /// <summary>
+    /// Begins an asynchronous function invocation.
+    /// </summary>
     /// <param name="invocationInfo"></param>
     protected abstract void BeginInvokeJS(JSInvocationInfo invocationInfo);
 

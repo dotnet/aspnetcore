@@ -24,6 +24,14 @@ Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue 
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
+Microsoft.JSInterop.Implementation.JSObjectReference.GetValueAsync<TValue>() -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.GetValueAsync<TValue>(string! identifier) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.GetValueAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.GetValueAsync<TValue>(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeNewAsync(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.Implementation.JSObjectReference.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Implementation.JSObjectReference.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSCallType.FunctionCall = 1 -> Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSCallType.GetValue = 3 -> Microsoft.JSInterop.Infrastructure.JSCallType

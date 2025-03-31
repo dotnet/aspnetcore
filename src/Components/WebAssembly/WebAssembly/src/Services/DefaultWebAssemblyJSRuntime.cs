@@ -166,6 +166,21 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
 
+    string IInternalWebJSInProcessRuntime.InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    {
+        var invocationInfo = new JSInvocationInfo
+        {
+            AsyncHandle = 0,
+            TargetInstanceId = targetInstanceId,
+            Identifier = identifier,
+            CallType = JSCallType.FunctionCall,
+            ResultType = resultType,
+            ArgsJson = argsJson
+        };
+
+        return InvokeJS(invocationInfo);
+    }
+
     string IInternalWebJSInProcessRuntime.InvokeJS(JSInvocationInfo invocationInfo)
         => InvokeJS(invocationInfo);
 }

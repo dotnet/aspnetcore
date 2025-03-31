@@ -28,6 +28,21 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
+    protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+    {
+        var invocationInfo = new JSInvocationInfo
+        {
+            AsyncHandle = taskId,
+            Identifier = identifier,
+            ArgsJson = argsJson,
+            CallType = JSCallType.FunctionCall,
+            ResultType = resultType,
+            TargetInstanceId = targetInstanceId,
+        };
+
+        BeginInvokeJS(invocationInfo);
+    }
+
     protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
     {
         if (_ipcSender is null)
