@@ -68,6 +68,13 @@
                       $(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj;
                       "
                       Condition=" '$(TargetOsName)' == 'win' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
+
+    <!-- These projects requires inputs from x64, x86, and arm64 on Windows - therefore in the VMR, we build them in pass 2 -->
+    <ProjectToExclude Include="
+                      $(RepoRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj;
+                      $(RepoRoot)src\Tools\Microsoft.dotnet-openapi\src\Microsoft.dotnet-openapi.csproj;
+                      "
+                      Condition=" '$(TargetOsName)' == 'win' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
   </ItemGroup>
 
   <Choose>
@@ -96,6 +103,13 @@
         </ProjectToBuild>
         <!-- Build SiteExtensions -->
         <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <!-- Build tools projects that require multiple shims -->
+        <ProjectToBuild Include="$(RepoRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj" >
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <ProjectToBuild Include="$(RepoRoot)src\Tools\Microsoft.dotnet-openapi\**\*.csproj" >
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
       </ItemGroup>
