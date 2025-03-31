@@ -549,6 +549,24 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
+    [Fact]
+    public void JsonSerializerSettingsCopyConstructor_DoesNotOverrideDateFormatHandling()
+    {
+        // Arrange
+        var originalSettings = new JsonSerializerSettings
+        {
+            DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+            DateFormatString = null
+        };
+
+        // Act
+        var copiedSettings = new JsonSerializerSettings(originalSettings);
+
+        // Assert
+        Assert.Equal(DateFormatHandling.MicrosoftDateFormat, copiedSettings.DateFormatHandling);
+        Assert.Null(copiedSettings.DateFormatString);
+    }
+
     private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
     {
         public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
