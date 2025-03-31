@@ -167,16 +167,16 @@ public static class StatusCodePagesExtensions
     /// re-executing the request pipeline using an alternate path. This path may contain a '{0}' placeholder of the status code.
     /// </summary>
     /// <param name="app"></param>
+    /// <param name="createScopeForErrors">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
     /// <param name="pathFormat"></param>
     /// <param name="queryFormat"></param>
-    /// <param name="createScopeForErrors">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
     /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IApplicationBuilder UseStatusCodePagesWithReExecute(
         this IApplicationBuilder app,
+        bool createScopeForErrors,
         string pathFormat,
-        string? queryFormat = null,
-        bool createScopeForErrors = false)
+        string? queryFormat = null)
     {
         ArgumentNullException.ThrowIfNull(app);
 
