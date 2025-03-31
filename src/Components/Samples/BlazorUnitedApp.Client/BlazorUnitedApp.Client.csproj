@@ -11,4 +11,8 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>
