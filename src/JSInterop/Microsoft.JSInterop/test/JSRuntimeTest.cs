@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Implementation;
@@ -473,6 +474,11 @@ public class JSRuntimeTest
                 ResultJson = invocationResult.ResultJson,
                 ResultError = invocationResult.Success ? null : new JSError(invocationInfo, invocationResult.Exception),
             });
+        }
+
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)

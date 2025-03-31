@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop;
@@ -91,21 +92,23 @@ public class JSInProcessRuntimeBaseTest
 
     class TestJSInProcessRuntime : JSInProcessRuntime
     {
-        public List<InvokeArgs> InvokeCalls { get; set; } = new List<InvokeArgs>();
+        public List<JSInvocationInfo> InvokeCalls { get; set; } = [];
 
         public string? NextResultJson { get; set; }
 
         protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            InvokeCalls.Add(new InvokeArgs { Identifier = identifier, ArgsJson = argsJson });
+            throw new NotImplementedException();
+        }
+
+        protected override string? InvokeJS(JSInvocationInfo invocationInfo)
+        {
+            InvokeCalls.Add(invocationInfo);
             return NextResultJson;
         }
 
-        public class InvokeArgs
-        {
-            public string? Identifier { get; set; }
-            public string? ArgsJson { get; set; }
-        }
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            => throw new NotImplementedException("This test only covers sync calls");
 
         protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
             => throw new NotImplementedException("This test only covers sync calls");

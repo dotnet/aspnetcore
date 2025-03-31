@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -74,6 +75,11 @@ public class JSObjectReferenceTest
             BeginInvokeJSInvocationCount++;
         }
 
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
         }
@@ -87,11 +93,21 @@ public class JSObjectReferenceTest
         {
         }
 
-        protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string? InvokeJS(JSInvocationInfo invocationInfo)
         {
             InvokeJSInvocationCount++;
 
             return null;
+        }
+
+        protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
