@@ -147,9 +147,7 @@
       <!-- Temporarily skip the common files -->
       <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
       <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
-      <Content Include="$(MicrosoftWebXdtExtensionsPath)"
-            Condition="EXISTS('$(MicrosoftWebXdtExtensionsPath)')"
-            PackagePath="content" />
+      <Content Include="$(MicrosoftWebXdtExtensionsPath)" PackagePath="content" />
     </ItemGroup>
   </Target>
 </Project>

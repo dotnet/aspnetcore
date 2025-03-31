@@ -67,9 +67,7 @@
             Pack="true"
             Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"
             PackagePath="content\ancm\%(ShimComponents.TempSubfolder)" />
-      <Content Include="$(MicrosoftWebXdtExtensionsPath)"
-            Condition="EXISTS('$(MicrosoftWebXdtExtensionsPath)')"
-            PackagePath="content" />
+      <Content Include="$(MicrosoftWebXdtExtensionsPath)" PackagePath="content" />
     </ItemGroup>
   </Target>
 
