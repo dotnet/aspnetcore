@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />

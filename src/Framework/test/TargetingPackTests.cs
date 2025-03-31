@@ -144,7 +144,8 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
+        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App
+        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
         var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
@@ -177,7 +178,7 @@ public class TargetingPackTests
             {
                 Assert.Equal(netCoreAppPackageVersion, packageVersion);
             }
-            else if (aspnetcoreDependencies.Contains(packageName))
+            else if (packageName.Equals("Microsoft.AspNetCore.App", StringComparison.Ordinal) || aspnetcoreDependencies.Contains(packageName))
             {
                 Assert.Equal(aspNetCoreAppPackageVersion, packageVersion);
             }

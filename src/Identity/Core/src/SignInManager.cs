@@ -162,8 +162,21 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task RefreshSignInAsync(TUser user)
     {
         var auth = await Context.AuthenticateAsync(AuthenticationScheme);
-        IList<Claim> claims = Array.Empty<Claim>();
+        if (!auth.Succeeded || auth.Principal?.Identity?.IsAuthenticated != true)
+        {
+            Logger.LogError("RefreshSignInAsync prevented because the user is not currently authenticated. Use SignInAsync instead for initial sign in.");
+            return;
+        }
 
+        var authenticatedUserId = UserManager.GetUserId(auth.Principal);
+        var newUserId = await UserManager.GetUserIdAsync(user);
+        if (authenticatedUserId == null || authenticatedUserId != newUserId)
+        {
+            Logger.LogError("RefreshSignInAsync prevented because currently authenticated user has a different UserId. Use SignInAsync instead to change users.");
+            return;
+        }
+
+        IList<Claim> claims = Array.Empty<Claim>();
         var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
         var amr = auth?.Principal?.FindFirst("amr");
 

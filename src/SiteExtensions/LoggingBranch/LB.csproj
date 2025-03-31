@@ -24,10 +24,12 @@
   <ItemGroup>
     <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
+    <!-- Make sure App.Ref layout is available - not necessary if this is Pass 2 of a VMR build -->
     <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      Condition="'$(DotNetBuildPass)' != '2'" />
   </ItemGroup>
 
   <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
@@ -42,4 +44,6 @@
       <HostingStartupPackageReference Include="%(_ResolvedPackageVersionInfo.PackageId)" Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="_VmrBuild" DependsOnTargets="Restore;Build;Pack" Condition=" '$(DotNetBuildPass)' == '2' " />
 </Project>

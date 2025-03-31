@@ -44,7 +44,7 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
     {
         _cancellationToken.ThrowIfCancellationRequested();
 
-        if (!IsDeclaredInAssembly(type) || !_exportedTypes.Add(type))
+        if (!IsAccessibleType(type) || !_exportedTypes.Add(type))
         {
             return;
         }
@@ -61,7 +61,7 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
         foreach (var property in properties)
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            if (IsDeclaredInAssembly(property) && _exportedProperties.Add(property))
+            if (IsAccessibleType(property) && _exportedProperties.Add(property))
             {
                 property.Type.Accept(this);
             }
@@ -70,13 +70,16 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
         foreach (var method in methods)
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            if (IsDeclaredInAssembly(method) && _exportedMethods.Add(method))
+            if (IsAccessibleType(method) && _exportedMethods.Add(method))
             {
                 method.Accept(this);
             }
         }
     }
 
-    private bool IsDeclaredInAssembly(ISymbol symbol) =>
-        SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, assemblySymbol);
+    private bool IsAccessibleType(ISymbol symbol) =>
+        SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, assemblySymbol)
+            && (symbol.DeclaredAccessibility == Accessibility.Public ||
+                symbol.DeclaredAccessibility == Accessibility.Internal ||
+                symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal);
 }

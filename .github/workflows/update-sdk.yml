@@ -19,7 +19,7 @@ jobs:
     name: Update .NET SDK
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - uses: martincostello/update-dotnet-sdk@76e2c0df2303d4f6a404228105ebb7d60ace0556 # v3.4.0
       with:
         quality: 'daily'

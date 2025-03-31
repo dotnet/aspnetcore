@@ -819,11 +819,20 @@ FORWARDING_HANDLER::GetHeaders(
         (_wcsicmp(m_pW3Context->GetUser()->GetAuthenticationType(), L"negotiate") == 0 ||
             _wcsicmp(m_pW3Context->GetUser()->GetAuthenticationType(), L"ntlm") == 0))
     {
-        if (m_pW3Context->GetUser()->GetPrimaryToken() != nullptr &&
-            m_pW3Context->GetUser()->GetPrimaryToken() != INVALID_HANDLE_VALUE)
+        // prefer GetPrimaryToken over GetImpersonationToken as that's what we've been using since before .NET 10
+        // we'll fallback to GetImpersonationToken if GetPrimaryToken is not available
+        HANDLE authToken = m_pW3Context->GetUser()->GetPrimaryToken();
+        if (authToken == nullptr ||
+            authToken == INVALID_HANDLE_VALUE)
+        {
+            authToken = m_pW3Context->GetUser()->GetImpersonationToken();
+        }
+
+        if (authToken != nullptr &&
+            authToken != INVALID_HANDLE_VALUE)
         {
             HANDLE hTargetTokenHandle = nullptr;
-            RETURN_IF_FAILED(pServerProcess->SetWindowsAuthToken(m_pW3Context->GetUser()->GetPrimaryToken(),
+            RETURN_IF_FAILED(pServerProcess->SetWindowsAuthToken(authToken,
                 &hTargetTokenHandle));
 
             //

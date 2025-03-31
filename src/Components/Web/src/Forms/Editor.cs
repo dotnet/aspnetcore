@@ -56,7 +56,7 @@ public abstract class Editor<T> : ComponentBase, ICascadingValueSupplier
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo) =>
         parameterInfo.PropertyType == typeof(HtmlFieldPrefix);
 
-    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    object? ICascadingValueSupplier.GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         return ((ICascadingValueSupplier)this).CanSupplyValue(parameterInfo) ? _value : null;
     }

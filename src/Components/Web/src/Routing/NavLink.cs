@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class NavLink : ComponentBase, IDisposable
 {
-    private const string DisableMatchAllIgnoresLeftUriPartSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.DisableMatchAllIgnoresLeftUriPart";
-    private static readonly bool _disableMatchAllIgnoresLeftUriPart = AppContext.TryGetSwitch(DisableMatchAllIgnoresLeftUriPartSwitchKey, out var switchValue) && switchValue;
+    private const string EnableMatchAllForQueryStringAndFragmentSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.EnableMatchAllForQueryStringAndFragment";
+    private static readonly bool _enableMatchAllForQueryStringAndFragment = AppContext.TryGetSwitch(EnableMatchAllForQueryStringAndFragmentSwitchKey, out var switchValue) && switchValue;
 
     private const string DefaultActiveClass = "active";
 
@@ -111,34 +111,34 @@ public class NavLink : ComponentBase, IDisposable
     /// <summary>
     /// Determines whether the current URI should match the link.
     /// </summary>
-    /// <param name="currentUriAbsolute">The absolute URI of the current location.</param>
+    /// <param name="uriAbsolute">The absolute URI of the current location.</param>
     /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
-    protected virtual bool ShouldMatch(string currentUriAbsolute)
+    protected virtual bool ShouldMatch(string uriAbsolute)
     {
         if (_hrefAbsolute == null)
         {
             return false;
         }
 
-        var currentUriAbsoluteSpan = currentUriAbsolute.AsSpan();
+        var uriAbsoluteSpan = uriAbsolute.AsSpan();
         var hrefAbsoluteSpan = _hrefAbsolute.AsSpan();
-        if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsoluteSpan, hrefAbsoluteSpan))
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriAbsoluteSpan, hrefAbsoluteSpan))
         {
             return true;
         }
 
         if (Match == NavLinkMatch.Prefix
-            && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
+            && IsStrictlyPrefixWithSeparator(uriAbsolute, _hrefAbsolute))
         {
             return true;
         }
 
-        if (_disableMatchAllIgnoresLeftUriPart || Match != NavLinkMatch.All)
+        if (_enableMatchAllForQueryStringAndFragment || Match != NavLinkMatch.All)
         {
             return false;
         }
 
-        var uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(currentUriAbsoluteSpan);
+        var uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(uriAbsoluteSpan);
         if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment, hrefAbsoluteSpan))
         {
             return true;

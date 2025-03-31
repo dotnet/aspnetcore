@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web 应用",
+  "name": "ASP.NET Core Web 应用(Razor Pages)",
   "description": "用于创建包含示例 ASP.NET Core Razor Pages 内容的 ASP.NET Core 应用程序的项目模板",
   "symbols/auth/choices/None/description": "无身份验证",
   "symbols/auth/choices/Individual/description": "个人身份验证",
@@ -30,7 +30,7 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net10.0/description": "Target net10.0",
+  "symbols/Framework/choices/net10.0/description": "目标 net10.0",
   "symbols/CalledApiUrl/description": "要从 Web 应用调用的 API 的 URL。仅当指定了 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/CallsMicrosoftGraph/description": "指定 Web 应用是否调用 Microsoft Graph。仅当指定了 --auth SingleOrg 或 --auth MultiOrg 时，此选项才适用。",
   "symbols/CalledApiScopes/description": "请求从 Web 应用调用 API 的范围。仅当指定了 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 时，此选项才适用。",

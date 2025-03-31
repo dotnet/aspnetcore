@@ -46,8 +46,6 @@
 
   <ItemGroup>
     <Reference Include="FSharp.Core" />
-    <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />

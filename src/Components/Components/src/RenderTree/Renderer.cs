@@ -316,7 +316,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="componentId">The root component ID.</param>
     /// <returns>The type of the component.</returns>
-    internal Type GetRootComponentType(int componentId)
+    internal Type GetRootTypeType(int componentId)
         => GetRequiredRootComponentState(componentId).Component.GetType();
 
     /// <summary>
@@ -371,10 +371,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var parentComponentState = GetOptionalComponentState(parentComponentId);
         var componentState = CreateComponentState(componentId, component, parentComponentState);
         Log.InitializingComponent(_logger, componentState, parentComponentState);
-        _componentStateById.Add(componentId, componentState);
-        _componentStateByComponent.Add(component, componentState);
         component.Attach(new RenderHandle(this, componentId));
         return componentState;
+    }
+
+    internal void RegisterComponentState(IComponent component, int componentId, ComponentState componentState)
+    {
+        _componentStateById.Add(componentId, componentState);
+        _componentStateByComponent.Add(component, componentState);
     }
 
     /// <summary>
@@ -1126,9 +1130,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
-        // Unlike other Renderer APIs, we need Dispose to be thread-safe 
-        // (and not require being called only from the sync context) 
-        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync) 
+        // Unlike other Renderer APIs, we need Dispose to be thread-safe
+        // (and not require being called only from the sync context)
+        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync)
         // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
         lock (_lockObject)
         {

@@ -62,7 +62,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
         services.TryAddScoped<IScrollToLocationHash, UnsupportedScrollToLocationHash>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
-        services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
@@ -70,13 +70,17 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         services.AddSupplyValueFromQueryProvider();
+        services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.TryAddScoped<WebAssemblySettingsEmitter>();
 
         services.TryAddScoped<ResourceCollectionProvider>();
 
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped(sp => (EndpointAntiforgeryStateProvider)sp.GetRequiredService<AntiforgeryStateProvider>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(services, RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 

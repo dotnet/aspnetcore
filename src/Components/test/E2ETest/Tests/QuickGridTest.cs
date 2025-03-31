@@ -177,14 +177,14 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void CanCloseColumnOptionsByCloseColumnOptionsAsync()
+    public void CanCloseColumnOptionsByHideColumnOptionsAsync()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
         var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
 
         firstNameColumnOptionsButton.Click();
 
-        // Click the button inside the column options popup to close, which calls QuickGrid.CloseColumnOptionsAsync
+        // Click the button inside the column options popup to close, which calls QuickGrid.HideColumnOptionsAsync
         grid.FindElement(By.CssSelector("#close-column-options")).Click();
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";

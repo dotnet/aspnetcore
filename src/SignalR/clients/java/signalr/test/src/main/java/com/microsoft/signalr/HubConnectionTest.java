@@ -3,7 +3,11 @@
 
 package com.microsoft.signalr;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
@@ -17,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -1095,6 +1098,37 @@ class HubConnectionTest {
         assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
         Throwable exception = assertThrows(HubException.class, () -> result.timeout(30, TimeUnit.SECONDS).blockingLast());
         assertEquals("There was an error", exception.getMessage());
+    }
+
+    @Test
+    public void checkStreamItemBindingFailure() {
+        try (TestLogger logger = new TestLogger()) {
+            MockTransport mockTransport = new MockTransport();
+            HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+            AtomicBoolean onNextCalled = new AtomicBoolean();
+            Observable<Integer> result = hubConnection.stream(Integer.class, "echo", "message");
+            result.subscribe((item) -> onNextCalled.set(true),
+                    (error) -> {},
+                    () -> {});
+
+            assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
+                    TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
+            assertFalse(onNextCalled.get());
+
+            mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"str\"}" + RECORD_SEPARATOR);
+
+            assertFalse(onNextCalled.get());
+
+            mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":1}" + RECORD_SEPARATOR);
+
+            assertEquals(1, result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+
+            ILoggingEvent log = logger.assertLog("Failed to bind argument received in stream '1'.");
+            assertTrue(log.getThrowableProxy().getClassName().contains("gson.JsonSyntaxException"));
+        }
     }
 
     @Test

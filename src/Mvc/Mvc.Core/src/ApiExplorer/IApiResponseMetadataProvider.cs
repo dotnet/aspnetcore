@@ -20,7 +20,7 @@ public interface IApiResponseMetadataProvider : IFilterMetadata
     /// <summary>
     /// Gets the description of the response.
     /// </summary>
-    string? Description { get; }
+    string? Description => null;
 
     /// <summary>
     /// Gets the HTTP status code of the response.

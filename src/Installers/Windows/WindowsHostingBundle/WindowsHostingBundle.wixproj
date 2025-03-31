@@ -71,6 +71,27 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotNetBuild)' == 'true'" >
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
+      <SetPlatform>Platform=x86</SetPlatform>
+      <Name>AspNetCoreModuleV2IISExpress_x86</Name>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <Name>AspNetCoreModuleV2IISExpress_x64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
+      <SetPlatform>Platform=arm64</SetPlatform>
+      <Name>AspNetCoreModuleV2IISExpress_arm64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+
   <Import Project="Product.targets" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

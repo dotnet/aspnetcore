@@ -290,9 +290,9 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     }
 
     /// <summary>
-    /// Override this method to deal with 401 challenge concerns, if an authentication scheme in question
-    /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
-    /// changing the 401 result to 302 of a login page or external sign-in location.)
+    /// Override this method to deal with 401 challenge concerns if an authentication scheme in question
+    /// deals an authentication interaction as part of its request flow (like adding a response header, or
+    /// changing the 401 result to 302 of a login page or external sign-in location).
     /// </summary>
     /// <param name="properties"></param>
     /// <returns>A Task.</returns>

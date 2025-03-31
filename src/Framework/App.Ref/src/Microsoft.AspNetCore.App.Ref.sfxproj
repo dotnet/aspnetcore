@@ -76,6 +76,11 @@
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj"
+      Private="false"
+      OutputItemType="AspNetCoreAnalyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -166,6 +171,9 @@
       <!-- Use shared framework version for project references. -->
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
           Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
+
+      <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
+      <_AspNetCoreAppPackageOverrides Include="$(SharedFrameworkName)|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile

@@ -24,11 +24,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
+    <SignOutput>false</SignOutput>
     <DarkToolPath>$(WixExtDir)dark.exe</DarkToolPath>
   </PropertyGroup>
-
-  <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
-  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
-
 </Project>

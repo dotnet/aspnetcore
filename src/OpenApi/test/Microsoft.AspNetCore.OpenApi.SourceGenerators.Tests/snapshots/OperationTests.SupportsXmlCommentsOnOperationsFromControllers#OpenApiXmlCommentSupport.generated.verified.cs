@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {

@@ -59,7 +59,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 {
     private readonly IDataProtector _dataProtector;
     private readonly ILogger<ServerComponentDeserializer> _logger;
-    private readonly RootComponentTypeCache _rootComponentTypeCache;
+    private readonly RootTypeCache _RootTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
 
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
@@ -72,7 +72,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
-        RootComponentTypeCache rootComponentTypeCache,
+        RootTypeCache RootTypeCache,
         ComponentParameterDeserializer parametersDeserializer)
     {
         // When we protect the data we use a time-limited data protector with the
@@ -87,7 +87,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             .ToTimeLimitedDataProtector();
 
         _logger = logger;
-        _rootComponentTypeCache = rootComponentTypeCache;
+        _RootTypeCache = RootTypeCache;
         _parametersDeserializer = parametersDeserializer;
     }
 
@@ -206,8 +206,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
     {
         parameters = default;
-        componentType = _rootComponentTypeCache
-            .GetRootComponent(serverComponent.AssemblyName, serverComponent.TypeName);
+        componentType = _RootTypeCache
+            .GetRootType(serverComponent.AssemblyName, serverComponent.TypeName);
 
         if (componentType == null)
         {

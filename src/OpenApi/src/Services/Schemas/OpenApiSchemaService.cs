@@ -118,7 +118,7 @@ internal sealed class OpenApiSchemaService(
         }
     };
 
-    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -133,7 +133,13 @@ internal sealed class OpenApiSchemaService(
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        return schema;
+    }
+
+    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    {
+        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
         return ResolveReferenceForSchema(document, schema);
     }
 
@@ -229,7 +235,7 @@ internal sealed class OpenApiSchemaService(
         return schema;
     }
 
-    internal async Task ApplySchemaTransformersAsync(IOpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(OpenApiDocument? document, IOpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         if (schemaTransformers.Length == 0)
         {
@@ -242,7 +248,9 @@ internal sealed class OpenApiSchemaService(
             JsonTypeInfo = jsonTypeInfo,
             JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
-            ApplicationServices = scopedServiceProvider
+            ApplicationServices = scopedServiceProvider,
+            Document = document,
+            SchemaTransformers = schemaTransformers
         };
         for (var i = 0; i < schemaTransformers.Length; i++)
         {

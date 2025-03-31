@@ -18,6 +18,7 @@
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
+    <SiteExtensionsReferenceLayoutDir>$(ArtifactsObjDir)SiteExtensionsReferenceLayout/</SiteExtensionsReferenceLayoutDir>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
@@ -38,14 +39,43 @@
       UpdateLatestPackageReferences for the hard way.
     -->
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
-        Condition=" '$(IsShipping)' == 'false' "
+        Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' != 'true'"
         PrivateAssets="All"
         Version="$(PackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
-        Condition=" '$(IsShipping)' == 'false' "
+        Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' != 'true'"
         PrivateAssets="All"
         Version="$(PackageVersion)" />
+
+    <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64.$(PackageVersion).nupkg"
+        Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
+        Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' == 'true'" />
+    <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86.$(PackageVersion).nupkg"
+        Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
+        Condition=" '$(IsShipping)' == 'false' AND '$(DotNetBuild)' == 'true'" />
   </ItemGroup>
+
+  <Target Name="BuildSiteExtensionInputs"
+      BeforeTargets="Restore"
+      Condition=" '$(DotNetBuildPass)' == '2' ">
+
+    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="Platform=x64;DisableTransitiveFrameworkReferences=true"
+        Targets="_VmrBuild" />
+    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86;DisableTransitiveFrameworkReferences=true"
+        Targets="_VmrBuild" />
+    <MSBuild Projects="..\..\..\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="Platform=x64"
+        Targets="_VmrBuild" />
+    <MSBuild Projects="..\..\..\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86"
+        Targets="_VmrBuild" />
+  </Target>
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
@@ -68,14 +98,14 @@
   -->
   <Target Name="UpdateLatestPackageReferences"
       BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences"
-      Condition=" '$(IsShipping)' == 'true' ">
+      Condition=" '$(IsShipping)' == 'true'">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
     <MSBuild Projects="$(RepoRoot)src\SiteExtensions\LoggingBranch\LB.csproj"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
       <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
           PrivateAssets="All"
           Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
@@ -83,9 +113,22 @@
           PrivateAssets="All"
           Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
     </ItemGroup>
+
+    <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
+      <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64.%(_ResolvedPackageVersionInfo.PackageVersion).nupkg" 
+          Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64" />
+      <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86.%(_ResolvedPackageVersionInfo.PackageVersion).nupkg"
+          Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86" />
+    </ItemGroup>
   </Target>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
+    <Unzip
+        SourceFiles="@(_SiteExtensionsReference)"
+        DestinationFolder="$(SiteExtensionsReferenceLayoutDir)%(Name)"
+        OverwriteReadOnlyFiles="true"
+        Condition="'$(DotNetBuild)' == 'true'" />
+
     <ItemGroup>
       <!--
         The x64 & x86 SiteExtension packages have identical deps.json files. We include only the x64 files to
@@ -93,12 +136,16 @@
       -->
       <ContentFilesToPack
           Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*"
-          Exclude="$(NugetPackageRoot)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json"/>
+          Exclude="$(NugetPackageRoot)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json" />
+
+      <ContentFilesToPack
+          Include="$(SiteExtensionsReferenceLayoutDir)\%(_SiteExtensionsReference.Name)\content\**\*.*"
+          Exclude="$(SiteExtensionsReferenceLayoutDir)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json"
+          Condition="'$(DotNetBuild)' == 'true'" />
 
       <!-- Temporarily skip the common files -->
       <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
       <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
     </ItemGroup>
   </Target>
-
 </Project>

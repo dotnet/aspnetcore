@@ -25,6 +25,7 @@
   <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
        https://github.com/dotnet/source-build/issues/3807 -->
   <Target Name="BuildRepoTasks"
+          DependsOnTargets="GetSourceBuildCommandConfiguration"
           Condition="'$(DotNetBuildInnerRepo)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
           BeforeTargets="Execute">
     <!-- If the alternative runtime location and key are present, pass those through -->
@@ -38,7 +39,6 @@
     <ItemGroup>
       <!-- We need to flow FullAssemblySigningSupported even when building repo tasks because they use full signing -->
       <InnerBuildEnv Condition="'$(FullAssemblySigningSupported)' != ''" Include="FullAssemblySigningSupported=$(FullAssemblySigningSupported)" />
-      <InnerBuildEnv Include="DotNetBuildSourceOnly=$(DotNetBuildSourceOnly)" />
     </ItemGroup>
 
     <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
@@ -46,14 +46,14 @@
          attempts as the install script walks through potential locations for a runtime.
          The overall build script will return a proper exit code, but we don't want to pick up the printed error messages. -->
     <Exec
-      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs) $(InnerBuildArgs)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)"
       Condition="'$(OS)' != 'Windows_NT'" />
 
     <Exec
-      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs) $(InnerBuildArgs)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)"

@@ -105,6 +105,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+        NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
@@ -146,6 +147,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        NavigationManager.OnNotFound -= OnNotFound;
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
@@ -320,6 +322,15 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
+    private void OnNotFound(object sender, EventArgs args)
+    {
+        if (_renderHandle.IsInitialized)
+        {
+            Log.DisplayingNotFound(_logger);
+            _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+        }
+    }
+
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
@@ -345,5 +356,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
+
+        [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger);
     }
 }

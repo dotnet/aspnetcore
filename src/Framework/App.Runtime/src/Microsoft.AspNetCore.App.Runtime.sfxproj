@@ -68,10 +68,6 @@
   </ItemGroup>
 
   <!-- Add native dependencies to the package when required. -->
-  <PropertyGroup>
-    <NativePlatform>$(TargetArchitecture)</NativePlatform>
-    <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) AND '$(MSBuildRestoreSessionId)' == ''"
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">

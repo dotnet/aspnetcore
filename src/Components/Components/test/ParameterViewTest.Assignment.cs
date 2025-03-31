@@ -790,7 +790,7 @@ public partial class ParameterViewTest
             throw new NotImplementedException();
         }
 
-        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        public object GetCurrentValue(object key, in CascadingParameterInfo parameterInfo)
         {
             return _value;
         }

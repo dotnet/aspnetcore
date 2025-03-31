@@ -375,6 +375,8 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
                     apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                 }
 
+                apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
+
                 if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
                 {
                     supportedResponseTypes.Add(apiResponseType);
@@ -394,6 +396,22 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             }
 
             supportedResponseTypes.Add(defaultApiResponseType);
+        }
+
+        static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)
+        {
+            // We set the Description to the LAST non-null value we find that matches the status code.
+            string? matchingDescription = null;
+            foreach (var metadata in responseMetadataTypes)
+            {
+                if (metadata.StatusCode == apiResponseType.StatusCode &&
+                    metadata.Type == apiResponseType.Type &&
+                    metadata.Description is not null)
+                {
+                    matchingDescription = metadata.Description;
+                }
+            }
+            return matchingDescription;
         }
     }
 

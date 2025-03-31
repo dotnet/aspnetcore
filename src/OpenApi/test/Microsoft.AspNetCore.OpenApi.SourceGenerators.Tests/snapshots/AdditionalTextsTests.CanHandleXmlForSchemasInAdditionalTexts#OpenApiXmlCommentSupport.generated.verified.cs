@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+// Suppress warnings about obsolete types and members
+// in generated code
+#pragma warning disable CS0612, CS0618
 
 namespace System.Runtime.CompilerServices
 {
@@ -186,6 +189,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.Project), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.Project), MemberType.Method, ".ctor", typeof(void), [typeof(global::System.String), typeof(global::System.String)]), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectBoard.BoardItem), MemberType.Type, null, null, []), new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectBoard.BoardItem), MemberType.Property, "Name", null, []), new XmlComment(@"The identifier of the board item. Defaults to ""name"".", null, null, null, null, false, null, null, null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Type, null, null, []), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Method, ".ctor", typeof(void), [typeof(global::System.String), typeof(global::System.String)]), new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.ProjectRecord), MemberType.Property, "Name", null, []), new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
@@ -207,6 +211,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "ByteType", null, []), new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "DecimalType", null, []), new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
             _cache.Add(new MemberKey(typeof(global::ClassLibrary.TypeWithExamples), MemberType.Property, "UriType", null, []), new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Holder<>), MemberType.Property, "Value", null, []), new XmlComment(@"The value to hold.", null, null, null, null, false, null, null, null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Endpoints), MemberType.Method, "ExternalMethod", typeof(void), [typeof(global::System.String)]), new XmlComment(@"An external method.", null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the tester. Defaults to ""Tester"".", null, false)], null));
+            _cache.Add(new MemberKey(typeof(global::ClassLibrary.Endpoints), MemberType.Method, "CreateHolder", typeof(global::ClassLibrary.Holder<>), [typeof(object)]), new XmlComment(@"Creates a holder for the specified value.", null, null, @"A holder for the specified value.", null, false, [@"{ value: 42 }"], [new XmlParameterComment(@"value", @"The value to hold.", null, false)], null));
 
 
             return _cache;

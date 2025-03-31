@@ -34,6 +34,7 @@ public class EndpointHtmlRendererTest
 {
     private const string MarkerPrefix = "<!--Blazor:";
     private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
+    private const string WebAssemblyOptionsPattern = "^<!--Blazor-WebAssembly:(.*?)-->";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
 
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
@@ -57,6 +58,7 @@ public class EndpointHtmlRendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -80,6 +82,7 @@ public class EndpointHtmlRendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveWebAssembly, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -123,6 +126,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -160,6 +164,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -195,6 +200,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -244,6 +250,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -1063,6 +1070,7 @@ public class EndpointHtmlRendererTest
         var lines = content.Replace("\r\n", "\n").Split('\n');
         var serverMarkerMatch = Regex.Match(lines[0], PrerenderedComponentPattern);
         var serverNonPrerenderedMarkerMatch = Regex.Match(lines[1], ComponentPattern);
+        lines[2] = AssertAndStripWebAssemblyOptions(lines[2]);
         var webAssemblyMarkerMatch = Regex.Match(lines[2], PrerenderedComponentPattern);
         var webAssemblyNonPrerenderedMarkerMatch = Regex.Match(lines[3], ComponentPattern);
 
@@ -1166,6 +1174,8 @@ public class EndpointHtmlRendererTest
         // Assert
         var numMarkers = Regex.Matches(content, MarkerPrefix).Count;
         Assert.Equal(2, numMarkers); // A start and an end marker
+
+        content = AssertAndStripWebAssemblyOptions(content);
 
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Singleline);
         Assert.True(match.Success);
@@ -1498,6 +1508,14 @@ public class EndpointHtmlRendererTest
         }
     }
 
+    private string AssertAndStripWebAssemblyOptions(string content)
+    {
+        var wasmOptionsMatch = Regex.Match(content, WebAssemblyOptionsPattern);
+        Assert.True(wasmOptionsMatch.Success);
+        content = content.Substring(wasmOptionsMatch.Groups[0].Length);
+        return content;
+    }
+
     private class NamedEventHandlerComponent : ComponentBase
     {
         [Parameter]
@@ -1681,6 +1699,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
         services.AddScoped<ResourceCollectionProvider>();
+        services.AddSingleton(new WebAssemblySettingsEmitter(new TestEnvironment(Environments.Development)));
         return services;
     }
 

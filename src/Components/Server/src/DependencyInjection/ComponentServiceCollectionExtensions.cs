@@ -62,7 +62,7 @@ public static class ComponentServiceCollectionExtensions
         // Components entrypoints, this lot is the same and repeated registrations are a no-op.
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootComponentTypeCache>();
+        services.TryAddSingleton<RootTypeCache>();
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();

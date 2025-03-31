@@ -1377,8 +1377,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Exists(By.Id("submit-button")).Click();
 
-        Assert.False(Browser.Exists(By.Id("checkbox")).Selected);
-        Assert.False(Browser.Exists(By.Id("radio-button")).Selected);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("checkbox")).Selected);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("radio-button")).Selected);
     }
 
     [Fact]

@@ -9,8 +9,10 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage.Services;
 
 namespace TestServer;
 
@@ -32,6 +34,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
+            .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
+            .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
+            .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
             .AddInteractiveServerComponents()
             .AddAuthenticationStateSerialization(options =>
@@ -39,6 +44,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        services.AddScoped<InteractiveWebAssemblyService>();
+        services.AddScoped<InteractiveServerService>();
+        services.AddScoped<InteractiveAutoService>();
+
+        
+        
+        
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();

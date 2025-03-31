@@ -46,7 +46,7 @@ internal sealed record MemberKey(
 
             returnType = actualReturnType.TypeKind == TypeKind.TypeParameter
                 ? "typeof(object)"
-                : $"typeof({actualReturnType.ToDisplayString(_typeKeyFormat)})";
+                : $"typeof({ReplaceGenericArguments(actualReturnType.ToDisplayString(_typeKeyFormat))})";
         }
 
         // Handle extension methods by skipping the 'this' parameter
@@ -62,10 +62,10 @@ internal sealed record MemberKey(
                 // For params arrays, use the array type
                 if (p.IsParams && p.Type is IArrayTypeSymbol arrayType)
                 {
-                    return $"typeof({arrayType.ToDisplayString(_typeKeyFormat)})";
+                    return $"typeof({ReplaceGenericArguments(arrayType.ToDisplayString(_typeKeyFormat))})";
                 }
 
-                return $"typeof({p.Type.ToDisplayString(_typeKeyFormat)})";
+                return $"typeof({ReplaceGenericArguments(p.Type.ToDisplayString(_typeKeyFormat))})";
             })
             .ToArray();
 

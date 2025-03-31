@@ -189,4 +189,26 @@ internal static class ISymbolExtensions
             current = current.BaseType;
         }
     }
+
+    public static bool IsAccessibleType(this ISymbol symbol)
+    {
+        // Check if the symbol itself is public
+        if (symbol.DeclaredAccessibility != Accessibility.Public)
+        {
+            return false;
+        }
+
+        // Check if all containing types are public as well
+        var containingType = symbol.ContainingType;
+        while (containingType != null)
+        {
+            if (containingType.DeclaredAccessibility != Accessibility.Public)
+            {
+                return false;
+            }
+            containingType = containingType.ContainingType;
+        }
+
+        return true;
+    }
 }

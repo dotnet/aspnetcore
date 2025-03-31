@@ -305,8 +305,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
+    /// <remarks>
+    /// Regression test for https://github.com/dotnet/aspnetcore/issues/60518
+    /// </remarks>
     [Fact]
-    public async Task GetOpenApiResponse_UsesDescriptionSetByUser()
+    public async Task GetOpenApiResponse_WithEmptyMethodBody_UsesDescriptionSetByUser()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -315,8 +318,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         const string expectedBadRequestDescription = "Validation failed for the request";
 
         // Act
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = expectedCreatedDescription)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
         () =>
             { });
@@ -328,7 +331,41 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Collection(operation.Responses.OrderBy(r => r.Key),
                 response =>
                 {
-                    Assert.Equal("201", response.Key);
+                    Assert.Equal("200", response.Key);
+                    Assert.Equal(expectedCreatedDescription, response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal(expectedBadRequestDescription, response.Value.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDescriptionSetByUser()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        const string expectedCreatedDescription = "A new todo item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        // Act
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () =>
+            { return TypedResults.Ok(new Todo(1, "Lorem", true, DateTime.UtcNow)); }); // This code doesn't return Bad Request, but that doesn't matter for this test.
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("200", response.Key);
                     Assert.Equal(expectedCreatedDescription, response.Value.Description);
                 },
                 response =>
@@ -346,8 +383,42 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = null)] // Explicitly set to NULL
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = null)] // Explicitly set to NULL
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
+        () =>
+            { return TypedResults.Ok(new Todo(1, "Lorem", true, DateTime.UtcNow)); }); // This code doesn't return Bad Request, but that doesn't matter for this test.
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Collection(operation.Responses.OrderBy(r => r.Key),
+                response =>
+                {
+                    Assert.Equal("200", response.Key);
+                    Assert.Equal("OK", response.Value.Description);
+                },
+                response =>
+                {
+                    Assert.Equal("400", response.Key);
+                    Assert.Equal("Bad Request", response.Value.Description);
+                });
+        });
+    }
+
+    /// <remarks>
+    /// Regression test for https://github.com/dotnet/aspnetcore/issues/60518
+    /// </remarks>
+    [Fact]
+    public async Task GetOpenApiResponse_WithEmptyMethodBody_UsesStatusCodeReasonPhraseWhenExplicitDescriptionIsMissing()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api/todos",
+            [ProducesResponseType<Todo>(StatusCodes.Status200OK, Description = null)] // Explicitly set to NULL
         [ProducesResponseType(StatusCodes.Status400BadRequest)] // Omitted, meaning it should be NULL
         () =>
             { });
@@ -359,8 +430,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Collection(operation.Responses.OrderBy(r => r.Key),
                 response =>
                 {
-                    Assert.Equal("201", response.Key);
-                    Assert.Equal("Created", response.Value.Description);
+                    Assert.Equal("200", response.Key);
+                    Assert.Equal("OK", response.Value.Description);
                 },
                 response =>
                 {

@@ -4,10 +4,16 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using TestContentPackage.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddSingleton<AsyncOperationService>();
+builder.Services.AddSingleton<InteractiveWebAssemblyService>();
+builder.Services.AddSingleton<InteractiveAutoService>();
+builder.Services.AddSingleton<InteractiveServerService>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthenticationStateDeserialization(options =>

@@ -280,7 +280,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <summary>
     /// Closes the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI that was previously displayed.
     /// </summary>
-    public Task CloseColumnOptionsAsync()
+    public Task HideColumnOptionsAsync()
     {
         _displayOptionsForColumn = null;
         StateHasChanged();
