@@ -194,11 +194,12 @@ public static class StatusCodePagesExtensions
             });
         }
 
-        return app.UseStatusCodePages(new StatusCodePagesOptions
+        var options = new StatusCodePagesOptions
         {
             HandleAsync = CreateHandler(pathFormat, queryFormat),
             CreateScopeForErrors = createScopeForErrors
-        });
+        };
+        return app.UseMiddleware<StatusCodePagesMiddleware>(options);
     }
 
     private static Func<StatusCodeContext, Task> CreateHandler(string pathFormat, string? queryFormat, RequestDelegate? next = null)
