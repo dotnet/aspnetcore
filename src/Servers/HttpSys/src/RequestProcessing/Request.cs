@@ -264,10 +264,7 @@ internal sealed partial class Request
         set
         {
             EnsureRequestStream();
-            if (_nativeStream != null)
-            {
-                _nativeStream.MaxSize = value;
-            }
+            _nativeStream?.MaxSize = value;
         }
     }
 

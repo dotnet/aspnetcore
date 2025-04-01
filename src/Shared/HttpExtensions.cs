@@ -58,7 +58,6 @@ internal static class HttpExtensions
             context.SetEndpoint(endpoint: null);
         }
 
-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        routeValuesFeature?.RouteValues = null!;
+        context.Features.Get<IRouteValuesFeature>()?.RouteValues = null!;
     }
 }
