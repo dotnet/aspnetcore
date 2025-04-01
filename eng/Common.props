@@ -37,4 +37,15 @@
   <PropertyGroup Condition=" '$(DotNetBuildPass)' == '2' " >
     <RestoreUsingNuGetTargets>false</RestoreUsingNuGetTargets>
   </PropertyGroup>
+
+  <PropertyGroup>
+      <!--
+      Some assets are produced in all jobs, but only one job can publish them. We follow the following rules in that case:
+      - If we're building outside of the VMR, publish these assets from the Windows job.
+      - If we're building inside the VMR, publish these assets from whichever job is producing non-RID-specific artifacts.
+    -->
+    <PublishAllBuildsAssetsInThisJob Condition="('$(OS)' == 'Windows_NT' and '$(DotNetBuildOrchestrator)' != 'true')
+                                                or ('$(DotNetBuildOrchestrator)' == 'true' and '$(EnableDefaultRidSpecificArtifacts)' != 'true'
+                                                    and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'))">true</PublishAllBuildsAssetsInThisJob>
+  </PropertyGroup>
 </Project>
