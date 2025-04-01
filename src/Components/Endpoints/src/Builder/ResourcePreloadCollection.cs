@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class ResourcePreloadCollection
 {
-    private readonly Dictionary<string?, StringValues> _storage = new();
+    private readonly Dictionary<string, StringValues> _storage = new();
 
     public ResourcePreloadCollection(ResourceAssetCollection assets)
     {
         if (assets != null)
         {
-            var headers = new List<(string? Order, string Value)>();
+            var headers = new List<(string? Group, string? Order, string Value)>();
             foreach (var asset in assets)
             {
                 if (asset.Properties == null)
@@ -71,11 +71,14 @@ internal class ResourcePreloadCollection
 
                 if (header != null)
                 {
-                    headers.Add((order, header));
+                    headers.Add((group, order, header));
                 }
             }
 
-            headers.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
+            foreach (var group in headers.GroupBy(h => h.Group))
+            {
+                _storage[group.Key ?? string.Empty] = group.OrderBy(h => h.Order).Select(h => h.Value).ToArray();
+            }
         }
     }
 
