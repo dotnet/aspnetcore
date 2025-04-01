@@ -199,14 +199,14 @@ public static class StatusCodePagesExtensions
             HandleAsync = CreateHandler(pathFormat, queryFormat),
             CreateScopeForErrors = createScopeForErrors
         };
-        return app.UseMiddleware<StatusCodePagesMiddleware>(options);
+        var wrappedOptions = new OptionsWrapper<StatusCodePagesOptions>(options);
+        return app.UseMiddleware<StatusCodePagesMiddleware>(wrappedOptions);
     }
 
     private static Func<StatusCodeContext, Task> CreateHandler(string pathFormat, string? queryFormat, RequestDelegate? next = null)
     {
         var handler = async (StatusCodeContext context) =>
         {
-            // context.Options.CreateScopeForErrors
             var originalStatusCode = context.HttpContext.Response.StatusCode;
 
             var newPath = new PathString(
@@ -221,7 +221,7 @@ public static class StatusCodePagesExtensions
             var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
             var oldScope = context.Options.CreateScopeForErrors ? context.HttpContext.RequestServices : null;
             await using AsyncServiceScope? scope = context.Options.CreateScopeForErrors
-                ? context.HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope() // or .GetRequiredService<IServiceScopeFactory>().CreateAsyncScope()
+                ? context.HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope()
                 : null;
 
             // Store the original paths so the app can check it.

@@ -21,9 +21,9 @@ public class StatusCodePagesTest(BrowserFixture browserFixture, BasicTestAppServ
 {
 
     [Fact]
-    public async Task StatusCodePagesWithReexecution()
+    public void StatusCodePagesWithReexecution()
     {
-        Navigate($"{ServerPathBase}/set-not-found");
+        Navigate($"{ServerPathBase}/reexecution/set-not-found");
 
         Browser.Equal("Re-executed page", () => Browser.Title);
         var infoText = Browser.FindElement(By.Id("test-info")).Text;

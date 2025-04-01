@@ -76,6 +76,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.Map("/reexecution", reexecutionApp =>
             {
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", true);
+
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>();
+                });
             });
 
             ConfigureSubdirPipeline(app, env);
