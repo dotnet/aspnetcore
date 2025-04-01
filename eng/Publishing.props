@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="Common.props" />
-
   <PropertyGroup>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
 
