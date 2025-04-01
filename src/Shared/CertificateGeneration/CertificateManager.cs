@@ -9,6 +9,9 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -16,7 +19,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 2;
+    internal const int CurrentAspNetCoreCertificateVersion = 3;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 3;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -24,7 +28,12 @@ internal abstract class CertificateManager
 
     private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
+    
+    // dns names of the host from a container
+    private const string LocalHostDockerHttpsDnsName = "host.docker.internal";
+    private const string ContainersDockerHttpsDnsName = "host.containers.internal";
 
+    // main cert subject
     private const string LocalhostHttpsDnsName = "localhost";
     internal const string LocalhostHttpsDistinguishedName = "CN=" + LocalhostHttpsDnsName;
 
@@ -49,6 +58,13 @@ internal abstract class CertificateManager
         internal set;
     }
 
+    public int MinimumAspNetHttpsCertificateVersion
+    {
+        get;
+        // For testing purposes only
+        internal set;
+    }
+
     public string Subject { get; }
 
     public CertificateManager() : this(LocalhostHttpsDistinguishedName, CurrentAspNetCoreCertificateVersion)
@@ -57,9 +73,16 @@ internal abstract class CertificateManager
 
     // For testing purposes only
     internal CertificateManager(string subject, int version)
+        : this(subject, version, version)
+    {
+    }
+
+    // For testing purposes only
+    internal CertificateManager(string subject, int generatedVersion, int minimumVersion)
     {
         Subject = subject;
-        AspNetHttpsCertificateVersion = version;
+        AspNetHttpsCertificateVersion = generatedVersion;
+        MinimumAspNetHttpsCertificateVersion = minimumVersion;
     }
 
     /// <remarks>
@@ -147,30 +170,30 @@ internal abstract class CertificateManager
             certificate.Extensions.OfType<X509Extension>()
                 .Any(e => string.Equals(oid, e.Oid?.Value, StringComparison.Ordinal));
 
-        static byte GetCertificateVersion(X509Certificate2 c)
-        {
-            var byteArray = c.Extensions.OfType<X509Extension>()
-                .Where(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal))
-                .Single()
-                .RawData;
-
-            if ((byteArray.Length == AspNetHttpsOidFriendlyName.Length && byteArray[0] == (byte)'A') || byteArray.Length == 0)
-            {
-                // No Version set, default to 0
-                return 0b0;
-            }
-            else
-            {
-                // Version is in the only byte of the byte array.
-                return byteArray[0];
-            }
-        }
-
         bool IsValidCertificate(X509Certificate2 certificate, DateTimeOffset currentDate, bool requireExportable) =>
             certificate.NotBefore <= currentDate &&
             currentDate <= certificate.NotAfter &&
             (!requireExportable || IsExportable(certificate)) &&
-            GetCertificateVersion(certificate) >= AspNetHttpsCertificateVersion;
+            GetCertificateVersion(certificate) >= MinimumAspNetHttpsCertificateVersion;
+    }
+
+    private static byte GetCertificateVersion(X509Certificate2 c)
+    {
+        var byteArray = c.Extensions.OfType<X509Extension>()
+            .Where(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal))
+            .Single()
+            .RawData;
+
+        if ((byteArray.Length == AspNetHttpsOidFriendlyName.Length && byteArray[0] == (byte)'A') || byteArray.Length == 0)
+        {
+            // No Version set, default to 0
+            return 0b0;
+        }
+        else
+        {
+            // Version is in the only byte of the byte array.
+            return byteArray[0];
+        }
     }
 
     protected virtual void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates, bool requireExportable)
@@ -487,7 +510,7 @@ internal abstract class CertificateManager
     /// <remarks>Implementations may choose to throw, rather than returning <see cref="TrustLevel.None"/>.</remarks>
     protected abstract TrustLevel TrustCertificateCore(X509Certificate2 certificate);
 
-    protected abstract bool IsExportable(X509Certificate2 c);
+    internal abstract bool IsExportable(X509Certificate2 c);
 
     protected abstract void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate);
 
@@ -649,6 +672,8 @@ internal abstract class CertificateManager
         var extensions = new List<X509Extension>();
         var sanBuilder = new SubjectAlternativeNameBuilder();
         sanBuilder.AddDnsName(LocalhostHttpsDnsName);
+        sanBuilder.AddDnsName(LocalHostDockerHttpsDnsName);
+        sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
         var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(

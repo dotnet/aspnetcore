@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -42,6 +46,8 @@ internal sealed class Program
 'dotnet dev-certs https -ep ./certificate.crt -p password --trust --format Pem'";
 
     public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
+
+    private static bool _parsableOutput;
 
     public static int Main(string[] args)
     {
@@ -110,11 +116,17 @@ internal sealed class Program
                     "Display warnings and errors only.",
                     CommandOptionType.NoValue);
 
+                var parsableOutput = c.Option("--parsable",
+                    "Produce a parsable output, to be used by other tools.",
+                    CommandOptionType.NoValue);
+
                 c.HelpOption("-h|--help");
 
                 c.OnExecute(() =>
                 {
                     var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
+
+                    _parsableOutput = parsableOutput.HasValue();
 
                     if (verbose.HasValue())
                     {
@@ -328,11 +340,18 @@ internal sealed class Program
 
     private static void ReportCertificates(IReporter reporter, IReadOnlyList<X509Certificate2> certificates, string certificateState)
     {
-        reporter.Output(certificates.Count switch
+        if (_parsableOutput)
         {
-            1 => $"A {certificateState} certificate was found: {CertificateManager.GetDescription(certificates[0])}",
-            _ => $"{certificates.Count} {certificateState} certificates were found: {CertificateManager.ToCertificateDescription(certificates)}"
-        });
+            reporter.Output(JsonSerializer.Serialize(CertificateReport.FromX509Certificate2List(certificates)));
+        }
+        else
+        {
+            reporter.Output(certificates.Count switch
+            {
+                1 => $"A {certificateState} certificate was found: {CertificateManager.GetDescription(certificates[0])}",
+                _ => $"{certificates.Count} {certificateState} certificates were found: {CertificateManager.ToCertificateDescription(certificates)}"
+            });
+        }
     }
 
     private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
@@ -450,5 +469,61 @@ internal sealed class Program
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;
         }
+    }
+}
+
+/// <summary>
+/// A Serializable friendly version of the cert report output
+/// </summary>
+internal class CertificateReport
+{
+    public string Thumbprint { get; init; }
+    public string Subject { get; init; }
+    public List<string> X509SubjectAlternativeNameExtension { get; init; }
+    public int Version { get; init; }
+    public DateTime ValidityNotBefore { get; init; }
+    public DateTime ValidityNotAfter { get; init; }
+    public bool IsHttpsDevelopmentCertificate { get; init; }
+    public bool IsExportable { get; init; }
+
+    public static CertificateReport FromX509Certificate2(X509Certificate2 cert)
+    {
+        return new CertificateReport
+        {
+            Thumbprint = cert.Thumbprint,
+            Subject = cert.Subject,
+            X509SubjectAlternativeNameExtension = GetSanExtension(cert),
+            Version = cert.Version,
+            ValidityNotBefore = cert.NotBefore,
+            ValidityNotAfter = cert.NotAfter,
+            IsHttpsDevelopmentCertificate = CertificateManager.IsHttpsDevelopmentCertificate(cert),
+            IsExportable = CertificateManager.Instance.IsExportable(cert)
+        };
+
+        static List<string> GetSanExtension(X509Certificate2 cert)
+        {
+            var dnsNames = new List<string>();
+            foreach (var extension in cert.Extensions)
+            {
+                if (extension is X509SubjectAlternativeNameExtension sanExtension)
+                {
+                    foreach (var dns in sanExtension.EnumerateDnsNames())
+                    {
+                        dnsNames.Add(dns);
+                    }
+                }
+            }
+            return dnsNames;
+        }
+    }
+
+    public static List<CertificateReport> FromX509Certificate2List(IEnumerable<X509Certificate2> certs)
+    {
+        var list = new List<CertificateReport>();
+        foreach (var cert in certs)
+        {
+            list.Add(FromX509Certificate2(cert));
+        }
+        return list;
     }
 }
