@@ -245,10 +245,10 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     static void ScalableCount(ref uint counter)
     {
         // Start using random for counting after 2^12 (4096)
-        const int threshold = 8;
+        //const int threshold = 12;
         uint count = counter;
         uint delta = 1;
-#if true
+#if false
         if (count > 0)
         {
             int logCount = 31 - (int)uint.LeadingZeroCount(count);

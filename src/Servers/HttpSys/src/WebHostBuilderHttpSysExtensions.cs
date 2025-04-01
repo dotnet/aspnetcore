@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Runtime.Versioning;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -45,6 +48,8 @@ public static class WebHostBuilderHttpSysExtensions
                 };
             });
             services.AddAuthenticationCore();
+
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
         });
     }
 

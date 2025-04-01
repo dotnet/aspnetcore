@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,12 +28,13 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     private readonly ServerAddressesFeature _serverAddresses;
 
-    public MessagePump(IOptions<HttpSysOptions> options, ILoggerFactory loggerFactory, IAuthenticationSchemeProvider authentication)
+    public MessagePump(IOptions<HttpSysOptions> options, IMemoryPoolFactory<byte> memoryPoolFactory,
+        ILoggerFactory loggerFactory, IAuthenticationSchemeProvider authentication)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _options = options.Value;
-        Listener = new HttpSysListener(_options, loggerFactory);
+        Listener = new HttpSysListener(_options, memoryPoolFactory, loggerFactory);
         _logger = loggerFactory.CreateLogger<MessagePump>();
 
         if (_options.Authentication.Schemes != AuthenticationSchemes.None)

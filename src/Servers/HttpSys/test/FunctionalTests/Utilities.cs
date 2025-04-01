@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,13 +113,13 @@ internal static class Utilities
     }
 
     internal static MessagePump CreatePump(ILoggerFactory loggerFactory)
-        => new MessagePump(Options.Create(new HttpSysOptions()), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        => new MessagePump(Options.Create(new HttpSysOptions()), new DefaultMemoryPoolFactory(), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
     internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         var options = new HttpSysOptions();
         configureOptions(options);
-        return new MessagePump(Options.Create(options), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        return new MessagePump(Options.Create(options), new DefaultMemoryPoolFactory(), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
     }
 
     internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app, ILoggerFactory loggerFactory)
