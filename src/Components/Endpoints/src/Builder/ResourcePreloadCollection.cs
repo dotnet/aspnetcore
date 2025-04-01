@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -23,45 +24,48 @@ internal class ResourcePreloadCollection
                 }
 
                 // Use preloadgroup=webassembly to identify assets that should to be preloaded
-                string? header = null;
                 string? group = null;
                 foreach (var property in asset.Properties)
                 {
                     if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase))
                     {
-                        group = property.Value;
-                        header = $"<{asset.Url}>";
+                        group = property.Value ?? string.Empty;
                         break;
                     }
                 }
 
-                if (header == null)
+                if (group == null)
                 {
                     continue;
                 }
+
+                var header = new StringBuilder();
+                header.Append('<');
+                header.Append(asset.Url);
+                header.Append('>');
 
                 string? order = null;
                 foreach (var property in asset.Properties)
                 {
                     if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat(header, "; rel=", property.Value);
+                        header.Append("; rel=").Append(property.Value);
                     }
                     else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat(header, "; as=", property.Value);
+                        header.Append("; as=").Append(property.Value);
                     }
                     else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat(header, "; fetchpriority=", property.Value);
+                        header.Append("; fetchpriority=").Append(property.Value);
                     }
                     else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat(header, "; crossorigin=", property.Value);
+                        header.Append("; crossorigin=").Append(property.Value);
                     }
                     else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
                     {
-                        header = String.Concat(header, "; integrity=\"", property.Value, "\"");
+                        header.Append("; integrity=\"").Append(property.Value).Append('"');
                     }
                     else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
                     {
@@ -71,7 +75,7 @@ internal class ResourcePreloadCollection
 
                 if (header != null)
                 {
-                    headers.Add((group, order, header));
+                    headers.Add((group, order, header.ToString()));
                 }
             }
 
