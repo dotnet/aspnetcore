@@ -59,9 +59,6 @@ internal static class HttpExtensions
         }
 
         var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        if (routeValuesFeature != null)
-        {
-            routeValuesFeature.RouteValues = null!;
-        }
+        routeValuesFeature?.RouteValues = null!;
     }
 }
