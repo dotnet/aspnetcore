@@ -184,16 +184,14 @@ internal partial class EndpointHtmlRenderer
     {
         if (NonStreamingPendingTasksCompletion == null)
         {
-            // Iterate over the tasks and handle their exceptions
             foreach (var task in _nonStreamingPendingTasks)
             {
-                _ = GetErrorHandledTask(task); // Fire-and-forget with exception handling
+                _ = GetErrorHandledTask(task);
             }
 
             // Clear the pending tasks since we are handling them
             _nonStreamingPendingTasks.Clear();
 
-            // Mark the tasks as completed
             NonStreamingPendingTasksCompletion = Task.CompletedTask;
         }
     }
