@@ -251,6 +251,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                         {
                             // Include the thing after the CR in the rejection exception.
                             var stopIndex = crIndex + 2;
+                            stopIndex = stopIndex > span.Length ? span.Length : stopIndex;
                             RejectRequestHeader(span[..stopIndex]);
                         }
                     }
