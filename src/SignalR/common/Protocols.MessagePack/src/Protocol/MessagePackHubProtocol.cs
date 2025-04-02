@@ -48,6 +48,7 @@ public class MessagePackHubProtocol : IHubProtocol
         ArgumentNullThrowHelper.ThrowIfNull(options);
 
         _worker = new DefaultMessagePackHubProtocolWorker(options.Value.SerializerOptions);
+        _worker.OnMessageWriten += options.Value.RaiseOnMessageWritten;
     }
 
     /// <inheritdoc />
