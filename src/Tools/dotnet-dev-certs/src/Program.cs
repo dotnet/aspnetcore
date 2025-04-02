@@ -47,8 +47,6 @@ internal sealed class Program
 
     public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
-    private static bool _parsableOutput;
-
     public static int Main(string[] args)
     {
         if (args.Contains("--debug"))
@@ -116,8 +114,8 @@ internal sealed class Program
                     "Display warnings and errors only.",
                     CommandOptionType.NoValue);
 
-                var parsableOutput = c.Option("--parsable",
-                    "Produce a parsable output, to be used by other tools.",
+                var checkJsonOutput = c.Option("--check-json-output",
+                    "Same as running --check --trust, but output the results in json.",
                     CommandOptionType.NoValue);
 
                 c.HelpOption("-h|--help");
@@ -126,17 +124,26 @@ internal sealed class Program
                 {
                     var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
 
-                    _parsableOutput = parsableOutput.HasValue();
-
                     if (verbose.HasValue())
                     {
                         var listener = new ReporterEventListener(reporter);
                         listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Verbose);
                     }
 
+                    if (checkJsonOutput.HasValue())
+                    {
+                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || clean.HasValue() ||
+                           (!import.HasValue() && password.HasValue()) || 
+                           (import.HasValue() && !password.HasValue()))
+                        {
+                            reporter.Error(InvalidUsageErrorMessage);
+                            return CriticalError;
+                        }
+                    }
+
                     if (clean.HasValue())
                     {
-                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() ||
+                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || checkJsonOutput.HasValue() ||
                            (!import.HasValue() && password.HasValue()) ||
                            (import.HasValue() && !password.HasValue()))
                         {
@@ -147,7 +154,7 @@ internal sealed class Program
 
                     if (check.HasValue())
                     {
-                        if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || format.HasValue() || import.HasValue())
+                        if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || format.HasValue() || import.HasValue() || checkJsonOutput.HasValue())
                         {
                             reporter.Error(InvalidUsageErrorMessage);
                             return CriticalError;
@@ -189,6 +196,11 @@ internal sealed class Program
                         }
 
                         return ImportCertificate(import, password, reporter);
+                    }
+
+                    if (checkJsonOutput.HasValue())
+                    {
+                        return CheckHttpsCertificateJsonOutput(reporter);
                     }
 
                     return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
@@ -340,18 +352,21 @@ internal sealed class Program
 
     private static void ReportCertificates(IReporter reporter, IReadOnlyList<X509Certificate2> certificates, string certificateState)
     {
-        if (_parsableOutput)
+        reporter.Output(certificates.Count switch
         {
-            reporter.Output(JsonSerializer.Serialize(CertificateReport.FromX509Certificate2List(certificates)));
-        }
-        else
-        {
-            reporter.Output(certificates.Count switch
-            {
-                1 => $"A {certificateState} certificate was found: {CertificateManager.GetDescription(certificates[0])}",
-                _ => $"{certificates.Count} {certificateState} certificates were found: {CertificateManager.ToCertificateDescription(certificates)}"
-            });
-        }
+            1 => $"A {certificateState} certificate was found: {CertificateManager.GetDescription(certificates[0])}",
+            _ => $"{certificates.Count} {certificateState} certificates were found: {CertificateManager.ToCertificateDescription(certificates)}"
+        });
+    }
+
+    private static int CheckHttpsCertificateJsonOutput(IReporter reporter)
+    {
+        var availableCertificates = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
+
+        var certReports = availableCertificates.Select(CertificateReport.FromX509Certificate2).ToList();
+        reporter.Output(JsonSerializer.Serialize(certReports, options: new JsonSerializerOptions { WriteIndented = true }));
+
+        return Success;
     }
 
     private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
@@ -361,7 +376,7 @@ internal sealed class Program
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, exportPath.HasValue());
+            var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, exportPath.HasValue());
             foreach (var certificate in certificates)
             {
                 var status = manager.CheckCertificateState(certificate);
@@ -485,19 +500,33 @@ internal class CertificateReport
     public DateTime ValidityNotAfter { get; init; }
     public bool IsHttpsDevelopmentCertificate { get; init; }
     public bool IsExportable { get; init; }
+    public string TrustLevel { get; private set; }
 
     public static CertificateReport FromX509Certificate2(X509Certificate2 cert)
     {
+        var certificateManager = CertificateManager.Instance;
+        var status = certificateManager.CheckCertificateState(cert);
+        string statusString;
+        if (!status.Success)
+        {
+            statusString = "Invalid";
+        }
+        else
+        {
+            var trustStatus = certificateManager.GetTrustLevel(cert);
+            statusString = trustStatus.ToString();
+        }
         return new CertificateReport
         {
             Thumbprint = cert.Thumbprint,
             Subject = cert.Subject,
             X509SubjectAlternativeNameExtension = GetSanExtension(cert),
-            Version = cert.Version,
+            Version = CertificateManager.GetCertificateVersion(cert),
             ValidityNotBefore = cert.NotBefore,
             ValidityNotAfter = cert.NotAfter,
             IsHttpsDevelopmentCertificate = CertificateManager.IsHttpsDevelopmentCertificate(cert),
-            IsExportable = CertificateManager.Instance.IsExportable(cert)
+            IsExportable = certificateManager.IsExportable(cert),
+            TrustLevel = statusString
         };
 
         static List<string> GetSanExtension(X509Certificate2 cert)
@@ -515,15 +544,5 @@ internal class CertificateReport
             }
             return dnsNames;
         }
-    }
-
-    public static List<CertificateReport> FromX509Certificate2List(IEnumerable<X509Certificate2> certs)
-    {
-        var list = new List<CertificateReport>();
-        foreach (var cert in certs)
-        {
-            list.Add(FromX509Certificate2(cert));
-        }
-        return list;
     }
 }

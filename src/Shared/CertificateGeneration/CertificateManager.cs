@@ -177,7 +177,7 @@ internal abstract class CertificateManager
             GetCertificateVersion(certificate) >= MinimumAspNetHttpsCertificateVersion;
     }
 
-    private static byte GetCertificateVersion(X509Certificate2 c)
+    internal static byte GetCertificateVersion(X509Certificate2 c)
     {
         var byteArray = c.Extensions.OfType<X509Extension>()
             .Where(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal))
