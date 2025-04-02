@@ -81,38 +81,40 @@ public class EndpointHtmlRendererTest
             new Endpoint(
                 ctx => Task.CompletedTask,
                 new EndpointMetadataCollection([
-                    new ResourceAssetCollection([
-                        new ResourceAsset("second.js", [
-                            new ResourceAssetProperty("preloadrel", "preload"),
-                            new ResourceAssetProperty("preloadas", "script"),
-                            new ResourceAssetProperty("preloadpriority", "high"),
-                            new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
-                            new ResourceAssetProperty("integrity", "abcd"),
-                            new ResourceAssetProperty("preloadorder", "2"),
-                            new ResourceAssetProperty("preloadgroup", "webassembly")
-                        ]),
-                        new ResourceAsset("first.js", [
-                            new ResourceAssetProperty("preloadrel", "preload"),
-                            new ResourceAssetProperty("preloadas", "script"),
-                            new ResourceAssetProperty("preloadpriority", "high"),
-                            new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
-                            new ResourceAssetProperty("integrity", "abcd"),
-                            new ResourceAssetProperty("preloadorder", "1"),
-                            new ResourceAssetProperty("preloadgroup", "webassembly")
-                        ]),
-                        new ResourceAsset("preload-nowebassembly.js", [
-                            new ResourceAssetProperty("preloadrel", "preload"),
-                            new ResourceAssetProperty("preloadas", "script"),
-                            new ResourceAssetProperty("preloadpriority", "high"),
-                            new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
-                            new ResourceAssetProperty("integrity", "abcd"),
-                            new ResourceAssetProperty("preloadorder", "1"),
-                            new ResourceAssetProperty("preloadgroup", "abcd")
-                        ]),
-                        new ResourceAsset("nopreload.js", [
-                            new ResourceAssetProperty("integrity", "abcd")
+                    new ResourcePreloadCollection(
+                        new ResourceAssetCollection([
+                            new ResourceAsset("second.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "2"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("first.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("preload-nowebassembly.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "abcd")
+                            ]),
+                            new ResourceAsset("nopreload.js", [
+                                new ResourceAssetProperty("integrity", "abcd")
+                            ])
                         ])
-                    ])
+                    )
                 ]),
                 "TestEndpoint"
             )
