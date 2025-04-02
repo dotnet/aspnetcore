@@ -544,34 +544,22 @@ public class RemoteAuthenticationServiceTests
         }
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         private object GetInvocationResult(string identifier)
         {

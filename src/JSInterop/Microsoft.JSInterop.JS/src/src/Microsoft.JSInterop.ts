@@ -446,36 +446,32 @@ export module DotNet {
               : stringifyArgs(this, result);
       }
 
-      beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null {
+      async beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> {
           const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
 
-          // Coerce synchronous functions into async ones, plus treat
-          // synchronous exceptions the same as async ones
-          const promise = new Promise<any>(resolve => {
-              const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
-              resolve(valueOrPromise);
-          });
+          try {
+            const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
 
-          // We only listen for a result if the caller wants to be notified about it
-          if (asyncHandle) {
-              // On completion, dispatch result back to .NET
-              // Not using "await" because it codegens a lot of boilerplate
-              return promise.
-                  then(result => stringifyArgs(this, [
-                      asyncHandle,
-                      true,
-                      createJSCallResult(result, resultType)
-                  ])).
-                  then(
-                      result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
-                      error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
-                          asyncHandle,
-                          false,
-                          formatError(error)
-                      ]))
-                  );
-          } else {
-              return null;
+            // We only listen for a result if the caller wants to be notified about it
+            if (asyncHandle) {
+                // On completion, dispatch result back to .NET
+                const result = await valueOrPromise;
+                const serializedResult = stringifyArgs(this, [
+                    asyncHandle,
+                    true,
+                    createJSCallResult(result, resultType)
+                ]);
+                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
+            }
+          } catch(error: any) {
+            if (asyncHandle) {
+                const serializedError = JSON.stringify([
+                    asyncHandle,
+                    false,
+                    formatError(error)
+                ]);
+                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, serializedError);
+            }
           }
       }
 

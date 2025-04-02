@@ -131,39 +131,25 @@ public class PullFromJSDataStreamTest
         }
 
         public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
-        {
-            return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
-        }
+            => await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
 
         public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 
     class TestJSRuntime_ProvidesInsufficientData : TestJSRuntime
