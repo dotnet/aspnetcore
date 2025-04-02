@@ -148,7 +148,7 @@ internal partial class EndpointHtmlRenderer
         {
             var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
-            stopAddingTasks = httpContext.Response.StatusCode == StatusCodes.Status404NotFound && waitForQuiescence;
+            stopAddingTasks = httpContext.Response.StatusCode == StatusCodes.Status404NotFound && _hasStatusCodePage;
 
             await WaitForResultReady(waitForQuiescence, result);
 
