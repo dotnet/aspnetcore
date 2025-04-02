@@ -180,8 +180,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             // Disable POST functionality during exception handling and reexecution.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
-            (context.Features.Get<IExceptionHandlerFeature>() == null ||
-            context.Features.Get<IStatusCodePagesFeature>() == null);
+            context.Features.Get<IExceptionHandlerFeature>() == null &&
+            context.Features.Get<IStatusCodePagesFeature>() == null;
 
         if (processPost)
         {
