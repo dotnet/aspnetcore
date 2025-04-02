@@ -331,6 +331,8 @@ internal abstract class MessagePackHubProtocolWorker
         return destination;
     }
 
+    public event Action<HubMessage, long>? OnMessageWriten;
+
     /// <inheritdoc />
     public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
     {
@@ -349,6 +351,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
         finally
         {
+            OnMessageWriten?.Invoke(message, memoryBufferWriter.Length);
             MemoryBufferWriter.Return(memoryBufferWriter);
         }
     }
