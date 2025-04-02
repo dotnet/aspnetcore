@@ -15,7 +15,7 @@ internal class ResourcePreloadCollection
     {
         if (assets != null)
         {
-            var headers = new List<(string? Group, string? Order, string Value)>();
+            var headers = new List<(string? Group, int Order, string Value)>();
             foreach (var asset in assets)
             {
                 if (asset.Properties == null)
@@ -44,7 +44,7 @@ internal class ResourcePreloadCollection
                 header.Append(asset.Url);
                 header.Append('>');
 
-                string? order = null;
+                int order = 0;
                 foreach (var property in asset.Properties)
                 {
                     if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
@@ -69,7 +69,10 @@ internal class ResourcePreloadCollection
                     }
                     else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
                     {
-                        order = property.Value;
+                        if (!int.TryParse(property.Value, out order))
+                        {
+                            order = 0;
+                        }
                     }
                 }
 
