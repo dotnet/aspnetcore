@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#nullable enable
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -496,6 +496,7 @@ public abstract class MessagePackHubProtocolTestBase
         }
     }
 
+    public event Action<HubMessage, long>? OnMessageWriten;
     protected byte[] Write(HubMessage message)
     {
         var writer = MemoryBufferWriter.Get();
@@ -506,6 +507,8 @@ public abstract class MessagePackHubProtocolTestBase
         }
         finally
         {
+            
+            OnMessageWriten?.Invoke(message, writer.Length);
             MemoryBufferWriter.Return(writer);
         }
     }

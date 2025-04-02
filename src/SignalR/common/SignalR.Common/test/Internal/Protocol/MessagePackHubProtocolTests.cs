@@ -4,6 +4,7 @@
 using System.Buffers;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -70,6 +71,31 @@ public class MessagePackHubProtocolTests : MessagePackHubProtocolTestBase
 
             var resultDateTimeOffset = (DateTimeOffset)completionMessage.Result;
             Assert.Equal(dateTimeOffset, resultDateTimeOffset);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
+        [Fact]
+    public void WriteAndSendWrittenEvent()
+    {
+        var result = string.Empty;
+        var expectedMessage = "FinalResult";
+        var options = new MessagePackHubProtocolOptions();
+        options.OnMessageWritten += (message, length) =>
+        {
+            result = "FinalResult";
+        };
+        var hubProtocol = new MessagePackHubProtocol(Options.Create(options));
+        var dateTimeOffset = new DateTimeOffset(new DateTime(2018, 4, 9), TimeSpan.FromHours(10));
+        var writer = MemoryBufferWriter.Get();
+
+        try
+        {
+            hubProtocol.WriteMessage(CompletionMessage.WithResult("xyz", dateTimeOffset), writer);
+            Assert.Equal(expectedMessage, result);
         }
         finally
         {
