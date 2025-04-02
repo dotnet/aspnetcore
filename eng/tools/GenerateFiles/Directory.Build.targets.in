@@ -64,7 +64,7 @@
 
   <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
-    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App" Condition=" '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <LatestRuntimeFrameworkVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <TargetingPackVersion
@@ -83,7 +83,7 @@
       <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
-    <KnownAppHostPack Update="Microsoft.NETCore.App">
+    <KnownAppHostPack Update="Microsoft.NETCore.App" Condition=" '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <AppHostPackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
