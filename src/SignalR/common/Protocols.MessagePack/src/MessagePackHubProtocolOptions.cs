@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
@@ -37,5 +38,20 @@ public class MessagePackHubProtocolOptions
         {
             _messagePackSerializerOptions = value;
         }
+    }
+
+    /// <summary>
+    /// Event that is raised when a message is written.
+    /// </summary>
+    public event Action<HubMessage, long>? OnMessageWritten;
+
+    /// <summary>
+    /// Raises the <see cref="OnMessageWritten"/> event.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="messageLength"></param>
+    internal void RaiseOnMessageWritten(HubMessage message, long messageLength)
+    {
+        OnMessageWritten?.Invoke(message, messageLength);
     }
 }

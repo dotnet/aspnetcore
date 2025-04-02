@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions.OnMessageWritten -> System.Action<Microsoft.AspNetCore.SignalR.Protocol.HubMessage!, long>?
