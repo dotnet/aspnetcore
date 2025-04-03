@@ -46,4 +46,3 @@ While not necessarily associated with a specific area, these community members h
 - [@Kahbazi](https://github.com/Kahbazi)
 - [@marinasundstrom](https://github.com/marinasundstrom)
 - [@martincostello](https://github.com/martincostello)
-
