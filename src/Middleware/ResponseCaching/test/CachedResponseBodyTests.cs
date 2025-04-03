@@ -70,6 +70,7 @@ public class CachedResponseBodyTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61293")]
     public async Task Copy_MultipleSegments()
     {
         var segments = new List<byte[]>
