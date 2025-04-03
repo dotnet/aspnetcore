@@ -66,10 +66,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Fact]
-    public async Task NavigatesWithoutInteractivityByRequestRedirection()
+    public void NavigatesWithoutInteractivityByRequestRedirection()
     {
         Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
-        await Task.Delay(TimeSpan.FromSeconds(30));
         Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
         Browser.Click(By.Id("redirectButton"));
         Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
