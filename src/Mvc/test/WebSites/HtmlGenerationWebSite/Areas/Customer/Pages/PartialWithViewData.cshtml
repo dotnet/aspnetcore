@@ -1,0 +1,13 @@
+@page
+
+@{
+  ViewData["Title"] = "PartialWithViewData";
+}
+
+<div>
+  <partial name="_PrintViewData" view-data-id="123" view-data-returnUrl='"/dashboard"' />
+</div>
+
+<div>
+  <partial name="_PrintViewData" view-data-id="456" view-data-name='"John Doe"' />
+</div>
