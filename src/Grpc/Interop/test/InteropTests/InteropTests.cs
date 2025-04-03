@@ -22,6 +22,7 @@ public class InteropTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61291")]
     public Task EmptyUnary() => InteropTestCase("empty_unary");
 
     [Fact]
