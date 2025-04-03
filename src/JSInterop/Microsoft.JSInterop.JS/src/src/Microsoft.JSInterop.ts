@@ -35,7 +35,7 @@ export module DotNet {
   }
 
   class JSObject {
-      // TODO(oroztocil): Is it correct to cache functions/properties when they can change?
+      // We cache resolved members. Note that this means we can return stale values if the object has been modified since then.
       _cachedMembers: Map<string, ObjectMemberDescriptor>;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +78,8 @@ export module DotNet {
 
           const result =  { parent, name: lastKey } as ObjectMemberDescriptor;
 
-          if (typeof current === "function") {
+          if (current instanceof Function) {
+              // If the member is a function, we bind the parent object as its "this" context.
               result.func = current.bind(parent);
           }
 
@@ -452,15 +453,15 @@ export module DotNet {
           try {
             const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
 
-            // We only listen for a result if the caller wants to be notified about it
+            // We only await the result if the caller wants to be notified about it
             if (asyncHandle) {
-                // On completion, dispatch result back to .NET
                 const result = await valueOrPromise;
                 const serializedResult = stringifyArgs(this, [
                     asyncHandle,
                     true,
                     createJSCallResult(result, resultType)
                 ]);
+                // On success, dispatch result back to .NET
                 this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
             }
           } catch(error: any) {
@@ -470,6 +471,7 @@ export module DotNet {
                     false,
                     formatError(error)
                 ]);
+                // On failure, dispatch error back to .NET
                 this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, serializedError);
             }
           }
@@ -496,7 +498,7 @@ export module DotNet {
       }
 
       handleJSFunctionCall(identifier: string, func: any, args: unknown[]): any {
-          if (typeof func === "function") {
+          if (func instanceof Function) {
               return func(...args);
           } else {
               throw new Error(`The value '${identifier}' is not a function.`);
@@ -504,7 +506,7 @@ export module DotNet {
       }
 
       handleJSNewCall(identifier: string, func: any, args: unknown[]): any {
-          if (typeof func === "function") {
+          if (func instanceof Function) {
               try {
                   // The new expression throws if the function is not constructible (e.g. an arrow function).
                   return new func(...args);

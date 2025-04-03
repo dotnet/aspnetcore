@@ -1,3 +1,4 @@
 #nullable enable
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> void
-override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> string?
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> string!

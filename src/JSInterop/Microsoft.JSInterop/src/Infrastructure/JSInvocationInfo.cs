@@ -10,7 +10,7 @@ namespace Microsoft.JSInterop.Infrastructure;
 /// <summary>
 /// Configuration of an interop call from .NET to JavaScript.
 /// </summary>
-public sealed class JSInvocationInfo
+public readonly struct JSInvocationInfo
 {
     /// <summary>
     /// The identifier for the interop call, or zero if no async callback is required.

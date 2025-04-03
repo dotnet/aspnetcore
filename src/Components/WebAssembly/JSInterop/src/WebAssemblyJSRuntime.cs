@@ -35,11 +35,11 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
             ArgsJson = argsJson,
         };
 
-        return InvokeJS(invocationInfo) ?? "";
+        return InvokeJS(invocationInfo);
     }
 
     /// <inheritdoc />
-    protected override string? InvokeJS(JSInvocationInfo invocationInfo)
+    protected override string InvokeJS(JSInvocationInfo invocationInfo)
     {
         var invocationInfoJson = invocationInfo.ToJson();
 
