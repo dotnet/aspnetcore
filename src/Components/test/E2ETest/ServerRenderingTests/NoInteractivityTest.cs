@@ -64,4 +64,14 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-1")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-2")).Text);
     }
+
+    [Fact]
+    public async Task NavigatesWithoutInteractivityByRequestRedirection()
+    {
+        Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
+        await Task.Delay(TimeSpan.FromSeconds(30));
+        Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Click(By.Id("redirectButton"));
+        Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
+    }
 }
