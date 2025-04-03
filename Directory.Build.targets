@@ -160,7 +160,8 @@
   <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
     <DisablePackageBaselineValidation Condition="'$(IsServicingBuild)' != 'true'">true</DisablePackageBaselineValidation>
-    <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>
+    <!-- We enable package validation against our 9.0.0 baseline version for all packages to ensure we don't make unintentional breaking changes to our packages. -->
+    <PackageValidationBaselineVersion>9.0.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <Target Name="_CopySymbolsToArtifacts">
