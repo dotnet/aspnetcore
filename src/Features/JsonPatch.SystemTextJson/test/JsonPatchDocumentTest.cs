@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -67,6 +68,41 @@ public class JsonPatchDocumentTest
 
         // Assert
         Assert.Equal("A", targetObject.AnotherStringProperty);
+    }
+
+    public class Employee
+    {
+        public int EmployeeId { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class SalariedEmployee : Employee
+    {
+        public decimal AnnualSalary { get; set; }
+    }
+
+    public class Organization
+    {
+        public List<Employee> Employees { get; } = new();
+    }
+
+    [Fact]
+    public void ListWithGenericTypeWorkForSpecificChildren()
+    {
+        //Arrange
+        var org = new Organization();
+        // Populate Employees with two employees
+        org.Employees.Add(new SalariedEmployee { EmployeeId = 2, Name = "Jane", AnnualSalary = 50000 });
+        org.Employees.Add(new Employee { EmployeeId = 1, Name = "John" });
+
+        var doc = new JsonPatchDocument<Organization>();
+        doc.Operations.Add(new Operations.Operation<Organization>("add", "/Employees/0/AnnualSalary", "", 100));
+
+        // Act
+        doc.ApplyTo(org);
+
+        // Assert
+        Assert.Equal(100, (org.Employees[0] as SalariedEmployee).AnnualSalary);
     }
 
     [Fact]
