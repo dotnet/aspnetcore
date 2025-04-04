@@ -121,7 +121,7 @@ internal sealed class MessageBuffer : IDisposable
 
     public ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
-        // Default to HubInvocationMessage as that's the only type we use SerializedHubMessage for currently. Should harden this in the future.
+        // Default to HubInvocationMessage as that's the only type we use SerializedHubMessage for currently when Message is null. Should harden this in the future.
         return WriteAsyncCore(hubMessage.Message?.GetType() ?? typeof(HubInvocationMessage), hubMessage.GetSerializedMessage(_protocol), cancellationToken);
     }
 
