@@ -82,6 +82,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
+    <LatestPackageReference Include="System.Memory" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />

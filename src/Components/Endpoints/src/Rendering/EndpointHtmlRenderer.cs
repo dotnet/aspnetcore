@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
@@ -42,6 +43,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
+    private bool _rendererIsStopped;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -70,14 +72,19 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    internal static async Task InitializeStandardComponentServicesAsync(
+    internal async Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
     {
-        var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+        var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+
+        if (navigationManager != null)
+        {
+            navigationManager.OnNotFound += SetNotFoundResponse;
+        }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
@@ -113,6 +120,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
 
         if (componentType != null)
@@ -168,6 +176,23 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
+    private void SignalRendererToFinishRendering()
+    {
+        _rendererIsStopped = true;
+    }
+
+    protected override void ProcessPendingRender()
+    {
+        if (_rendererIsStopped)
+        {
+            // When the application triggers a NotFound event, we continue rendering the current batch.
+            // However, after completing this batch, we do not want to process any further UI updates,
+            // as we are going to return a 404 status and discard the UI updates generated so far.
+            return;
+        }
+        base.ProcessPendingRender();
+    }
+
     // For tests only
     internal Task? NonStreamingPendingTasksCompletion;
 
@@ -175,7 +200,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         UpdateNamedSubmitEvents(in renderBatch);
 
-        if (_streamingUpdatesWriter is { } writer)
+        if (_streamingUpdatesWriter is { } writer && !_rendererIsStopped)
         {
             // Important: SendBatchAsStreamingUpdate *must* be invoked synchronously
             // before any 'await' in this method. That's enforced by the compiler

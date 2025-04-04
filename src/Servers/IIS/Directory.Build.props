@@ -1,13 +1,28 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-  
+
   <PropertyGroup>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
+
+    <EnableManagedPackageReferenceSupport>true</EnableManagedPackageReferenceSupport>
     <HostArch>$(Platform)</HostArch>
     <HostArch Condition="'$(Platform)' == 'Win32'">x86</HostArch>
     <HostArch Condition="'$(Platform)' == 'AnyCPU'">x64</HostArch>
-    <LibNetHostPath>$(NetCoreTargetingPackRoot)Microsoft.NETCore.App.Host.win-$(HostArch)\$(LibNetHostAppPackVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
+    <HostArch Condition="'$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' != '2'">$(TargetArchitecture)</HostArch>
+    <LibNetHostPath>$(NuGetPackageRoot)microsoft.netcore.app.host.win-$(HostArch)\$(LibNetHostAppPackVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
     <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
     <PlatformToolsetVersion>143</PlatformToolsetVersion>
   </PropertyGroup>
+
+  <!-- Platform is different during restore than during build. Therefore, restore everything when not building the product. -->
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and ('$(DotNetBuild)' != 'true' OR '$(DotNetBuildPass)' == '2') ">
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="[$(LibNetHostAppPackVersion)]" PrivateAssets="all" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-x86" Version="[$(LibNetHostAppPackVersion)]" PrivateAssets="all" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-arm64" Version="[$(LibNetHostAppPackVersion)]" PrivateAssets="all" ExcludeAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' != '2' ">
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-$(TargetArchitecture)" Version="[$(LibNetHostAppPackVersion)]" PrivateAssets="all" ExcludeAssets="all" />
+  </ItemGroup>
+
 </Project>

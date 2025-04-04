@@ -195,4 +195,10 @@
   <data name="KeyedAndNotKeyedServiceAttributesNotSupported_Message" xml:space="preserve">
     <value>The [FromKeyedServices] attribute is not supported on parameters that are also annotated with IFromServiceMetadata. For more information, please see https://aka.ms/aspnet/rdg-known-issues</value>
   </data>
+  <data name="InvalidAsParametersEnumerableType_Title" xml:space="preserve">
+    <value>Invalid enumerable type</value>
+  </data>
+  <data name="InvalidAsParametersEnumerableType_Message" xml:space="preserve">
+    <value>The enumerable type '{0}' is not supported. For more information, please see https://aka.ms/aspnet/rdg-known-issues</value>
+  </data>
 </root>

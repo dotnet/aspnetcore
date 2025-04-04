@@ -74,7 +74,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             return Task.CompletedTask;
         });
 
-        await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
+        await _renderer.InitializeStandardComponentServicesAsync(
             context,
             componentType: pageComponent,
             handler: result.HandlerName,

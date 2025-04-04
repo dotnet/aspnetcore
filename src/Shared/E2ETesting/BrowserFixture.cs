@@ -65,14 +65,20 @@ public class BrowserFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var browsers = _browsers.Values;
-        foreach (var (browser, _) in browsers)
+        try
         {
-            browser?.Quit();
-            browser?.Dispose();
-        }
+            var browsers = _browsers.Values;
+            foreach (var (browser, _) in browsers)
+            {
+                browser?.Quit();
+                browser?.Dispose();
+            }
 
-        await DeleteBrowserUserProfileDirectoriesAsync();
+            await DeleteBrowserUserProfileDirectoriesAsync();
+        }
+        catch
+        {
+        }
     }
 
     private async Task DeleteBrowserUserProfileDirectoriesAsync()

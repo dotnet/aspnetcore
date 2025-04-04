@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Internetowy interfejs API platformy ASP.NET Core (native AOT)",
-  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API platformy ASP.NET Core publikowanego jako native AOT.",
+  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API ASP.NET Core opublikowanych jako natywne AOT z opcjonalną obsługą interfejsu OpenAPI.",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
   "symbols/kestrelHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP w pliku launchSettings.json.",
   "symbols/iisHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP usług IIS Express w pliku launchSettings.json.",
@@ -10,6 +10,7 @@
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
+  "symbols/DisableOpenAPI/description": "Włącz obsługę interfejsu OpenAPI (Swagger)",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
 }

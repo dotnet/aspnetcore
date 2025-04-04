@@ -27,6 +27,7 @@ var app = builder.Build();
 app.MapPost("/todo", (Todo todo) => { });
 app.MapPost("/project", (Project project) => { });
 app.MapPost("/board", (ProjectBoard.BoardItem boardItem) => { });
+app.MapPost("/protected-internal-element", (ProjectBoard.ProtectedInternalElement element) => { });
 app.MapPost("/project-record", (ProjectRecord project) => { });
 app.MapPost("/todo-with-description", (TodoWithDescription todo) => { });
 app.MapPost("/type-with-examples", (TypeWithExamples typeWithExamples) => { });
@@ -56,6 +57,43 @@ public class ProjectBoard
     /// </summary>
     public class BoardItem
     {
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// No XML comment processed here.
+    /// </summary>
+    private class Element
+    {
+        /// <summary>
+        /// The unique identifier for the element.
+        /// </summary>
+        /// <remarks>
+        /// This won't be emitted since it is a public
+        /// property on a private class.
+        /// </remarks>
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// Can find this XML comment.
+    /// </summary>
+    protected internal class ProtectedInternalElement
+    {
+        /// <summary>
+        /// The unique identifier for the element.
+        /// </summary>
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// No XML comment processed here.
+    /// </summary>
+    protected class ProtectedElement
+    {
+        /// <summary>
+        /// The unique identifier for the element.
+        /// </summary>
         public string Name { get; set; }
     }
 }
@@ -130,7 +168,7 @@ public interface IUser
 }
 
 /// <inheritdoc/>
-public class User : IUser
+internal class User : IUser
 {
     /// <inheritdoc/>
     public int Id { get; set; }
@@ -154,6 +192,11 @@ public class User : IUser
             path = document.Paths["/board"].Operations[OperationType.Post];
             var board = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("An item on the board.", board.Description);
+
+            path = document.Paths["/protected-internal-element"].Operations[OperationType.Post];
+            var element = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("The unique identifier for the element.", element.Properties["name"].Description);
+            Assert.Equal("Can find this XML comment.", element.Description);
 
             path = document.Paths["/project-record"].Operations[OperationType.Post];
             project = path.RequestBody.Content["application/json"].Schema;
@@ -179,18 +222,17 @@ public class User : IUser
             var longTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["longType"].Example);
             Assert.Equal(1234567890123456789, longTypeExample.GetValue<long>());
 
-            // Broken due to https://github.com/microsoft/OpenAPI.NET/issues/2137
-            // var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Example);
-            // Assert.Equal("3.14", doubleTypeExample.GetValue<string>());
+            var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Example);
+            Assert.Equal(3.14, doubleTypeExample.GetValue<double>());
 
-            // var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Example);
-            // Assert.Equal(3.14f, floatTypeExample.GetValue<float>());
+            var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Example);
+            Assert.Equal(3.14f, floatTypeExample.GetValue<float>());
 
-            // var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Example);
-            // Assert.Equal(DateTime.Parse("2022-01-01T00:00:00Z", CultureInfo.InvariantCulture), dateTimeTypeExample.GetValue<DateTime>());
+            var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Example);
+            Assert.Equal(new DateTime(2022, 01, 01), dateTimeTypeExample.GetValue<DateTime>());
 
-            // var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Example);
-            // Assert.Equal(DateOnly.Parse("2022-01-01", CultureInfo.InvariantCulture), dateOnlyTypeExample.GetValue<DateOnly>());
+            var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Example);
+            Assert.Equal("2022-01-01", dateOnlyTypeExample.GetValue<string>());
 
             var stringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Example);
             Assert.Equal("Hello, World!", stringTypeExample.GetValue<string>());
@@ -201,15 +243,14 @@ public class User : IUser
             var byteTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["byteType"].Example);
             Assert.Equal(255, byteTypeExample.GetValue<int>());
 
-            // Broken due to https://github.com/microsoft/OpenAPI.NET/issues/2137
-            // var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Example);
-            // Assert.Equal(TimeOnly.Parse("12:30:45", CultureInfo.InvariantCulture), timeOnlyTypeExample.GetValue<TimeOnly>());
+            var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Example);
+            Assert.Equal("12:30:45", timeOnlyTypeExample.GetValue<string>());
 
-            // var timeSpanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeSpanType"].Example);
-            // Assert.Equal(TimeSpan.Parse("P3DT4H5M", CultureInfo.InvariantCulture), timeSpanTypeExample.GetValue<TimeSpan>());
+            var timeSpanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeSpanType"].Example);
+            Assert.Equal("P3DT4H5M", timeSpanTypeExample.GetValue<string>());
 
-            // var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Example);
-            // Assert.Equal(3.14159265359m, decimalTypeExample.GetValue<decimal>());
+            var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Example);
+            Assert.Equal(3.14159265359m, decimalTypeExample.GetValue<decimal>());
 
             var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Example);
             Assert.Equal("https://example.com", uriTypeExample.GetValue<string>());

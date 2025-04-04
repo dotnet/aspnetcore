@@ -83,30 +83,26 @@ public sealed partial class XmlCommentGenerator
         return comments;
     }
 
-    internal static IEnumerable<(MemberKey, XmlComment?)> ParseComments(
+    internal static IEnumerable<(string, XmlComment?)> ParseComments(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
     {
         var compilation = input.Compilation;
-        var comments = new List<(MemberKey, XmlComment?)>();
+        var comments = new List<(string, XmlComment?)>();
         foreach (var (name, value) in input.RawComments)
         {
-            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol)
+            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
+                // Only include symbols that are declared in the application assembly or are
+                // accessible from the application assembly.
+                (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, compilation.Assembly) || symbol.IsAccessibleType()) &&
+                // Skip static classes that are just containers for members with annotations
+                // since they cannot be instantiated.
+                symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
             {
                 var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
                 if (parsedComment is not null)
                 {
-                    var memberKey = symbol switch
-                    {
-                        IMethodSymbol methodSymbol => MemberKey.FromMethodSymbol(methodSymbol, input.Compilation),
-                        IPropertySymbol propertySymbol => MemberKey.FromPropertySymbol(propertySymbol),
-                        INamedTypeSymbol typeSymbol => MemberKey.FromTypeSymbol(typeSymbol),
-                        _ => null
-                    };
-                    if (memberKey is not null)
-                    {
-                        comments.Add((memberKey, parsedComment));
-                    }
+                    comments.Add((name, parsedComment));
                 }
             }
         }
