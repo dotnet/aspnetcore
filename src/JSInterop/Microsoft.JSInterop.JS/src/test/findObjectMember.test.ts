@@ -47,20 +47,15 @@ describe("findObjectMember", () => {
 });
 
 describe("findObjectMember with window object", () => {
-    test("Resolves document.title", () => {
-        document.title = "Test Title";
-        const result = DotNet.findObjectMember("document.title", 0);
-        expect(result).toEqual({ parent: document, name: "title", func: undefined });
-    });
-
     test("Resolves window.location", () => {
         const result = DotNet.findObjectMember("location", 0);
         expect(result).toEqual({ parent: expect.any(Object), name: "location", func: undefined });
     });
 
-    test("Resolves window.alert", () => {
-        const result = DotNet.findObjectMember("alert", 0);
-        expect(result).toEqual({ parent: expect.any(Object), name: "alert", func: expect.any(Function) });
+    test("Resolves document.title", () => {
+        document.title = "Test Title";
+        const result = DotNet.findObjectMember("document.title", 0);
+        expect(result).toEqual({ parent: document, name: "title", func: undefined });
     });
 
     test("Resolves undefined for non-existent window member", () => {

@@ -25,27 +25,29 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var invocationInfo = new JSInvocationInfo
-        {
-            AsyncHandle = 0,
-            TargetInstanceId = targetInstanceId,
-            Identifier = identifier,
-            CallType = JSCallType.FunctionCall,
-            ResultType = resultType,
-            ArgsJson = argsJson,
-        };
-
-        return InvokeJS(invocationInfo);
+        return InternalCalls.InvokeJSJson(
+            identifier,
+            targetInstanceId,
+            (int)resultType,
+            argsJson ?? "[]",
+            0,
+            (int)JSCallType.FunctionCall
+        );
     }
 
     /// <inheritdoc />
-    protected override string InvokeJS(JSInvocationInfo invocationInfo)
+    protected override string InvokeJS(in JSInvocationInfo invocationInfo)
     {
-        var invocationInfoJson = invocationInfo.ToJson();
-
         try
         {
-            return InternalCalls.InvokeJSJson(invocationInfoJson);
+            return InternalCalls.InvokeJSJson(
+                invocationInfo.Identifier,
+                invocationInfo.TargetInstanceId,
+                (int)invocationInfo.ResultType,
+                invocationInfo.ArgsJson,
+                invocationInfo.AsyncHandle,
+                (int)invocationInfo.CallType
+            );
         }
         catch (Exception ex)
         {
@@ -56,24 +58,27 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var invocationInfo = new JSInvocationInfo
-        {
-            AsyncHandle = asyncHandle,
-            TargetInstanceId = targetInstanceId,
-            Identifier = identifier,
-            CallType = JSCallType.FunctionCall,
-            ResultType = resultType,
-            ArgsJson = argsJson,
-        };
-
-        BeginInvokeJS(invocationInfo);
+        InternalCalls.InvokeJSJson(
+            identifier,
+            targetInstanceId,
+            (int)resultType,
+            argsJson ?? "[]",
+            asyncHandle,
+            (int)JSCallType.FunctionCall
+        );
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        var invocationInfoJson = invocationInfo.ToJson();
-        InternalCalls.InvokeJSJson(invocationInfoJson);
+        InternalCalls.InvokeJSJson(
+            invocationInfo.Identifier,
+            invocationInfo.TargetInstanceId,
+            (int)invocationInfo.ResultType,
+            invocationInfo.ArgsJson,
+            invocationInfo.AsyncHandle,
+            (int)invocationInfo.CallType
+        );
     }
 
     /// <inheritdoc />

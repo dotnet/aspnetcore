@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -12,6 +10,8 @@ namespace Microsoft.JSInterop.Infrastructure;
 /// </summary>
 public readonly struct JSInvocationInfo
 {
+    private readonly string? _argsJson;
+
     /// <summary>
     /// The identifier for the interop call, or zero if no async callback is required.
     /// </summary>
@@ -41,14 +41,9 @@ public readonly struct JSInvocationInfo
     /// A JSON representation of the arguments.
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]
-    public required string? ArgsJson { get; init; }
-
-    /// <summary>
-    /// Converts the instance to a JSON string representation.
-    /// </summary>
-    public string ToJson() => JsonSerializer.Serialize(this, JSInvocationInfoSourceGenerationContext.Default.JSInvocationInfo);
+    public required string ArgsJson
+    {
+        get => _argsJson ?? "[]";
+        init => _argsJson = value;
+    }
 }
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, GenerationMode = JsonSourceGenerationMode.Serialization)]
-[JsonSerializable(typeof(JSInvocationInfo))]
-internal partial class JSInvocationInfoSourceGenerationContext : JsonSerializerContext;

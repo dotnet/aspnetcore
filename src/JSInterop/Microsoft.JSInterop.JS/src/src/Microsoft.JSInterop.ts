@@ -298,23 +298,6 @@ export module DotNet {
   }
 
   /**
-   * @param asyncHandle A value identifying an asynchronous operation that is passed back in a later call to endInvokeJSFromDotNet. If the call is synchronous, this value is zero.
-   * @param targetInstanceId The ID of the target JS object instance.
-   * @param identifier The identifier of the function to invoke or property to access.
-   * @param callType The type of operation that should be performed in JS.
-   * @param resultType The type of result expected from the JS interop call.
-   * @param argsJson JSON array of arguments to be passed to the operation. First element is used when setting a property value.
-   */
-  export interface JSInvocationInfo {
-      asyncHandle: number,
-      targetInstanceId: number,
-      identifier: string,
-      callType: JSCallType,
-      resultType: JSCallResultType,
-      argsJson: string | null,
-  }
-
-  /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
@@ -364,16 +347,26 @@ export module DotNet {
     /**
      * Invokes the specified synchronous JavaScript function.
      *
-     * @param invocationInfo Configuration of the interop call.
+     * @param identifier Identifies the globally-reachable function to invoke.
+     * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The instance ID of the target JS object.
+     * @param callType The type of operation that should be performed in JS.
+     * @returns JSON representation of the invocation result.
      */
-    invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null;
+    invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): string | null;
 
     /**
      * Invokes the specified synchronous or asynchronous JavaScript function.
      *
-     * @param invocationInfo Configuration of the interop call.
+     * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
+     * @param identifier Identifies the globally-reachable function to invoke.
+     * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The ID of the target JS object instance.
+     * @param callType The type of operation that should be performed in JS.
      */
-    beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> | null;
+    beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any>;
 
     /**
      * Receives notification that an async call from JS to .NET has completed.
@@ -437,8 +430,7 @@ export module DotNet {
           return this._dotNetCallDispatcher;
       }
 
-      invokeJSFromDotNet(invocationInfo: JSInvocationInfo): string | null {
-          const { targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+      invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): string | null {
           const returnValue = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
           const result = createJSCallResult(returnValue, resultType);
 
@@ -447,9 +439,7 @@ export module DotNet {
               : stringifyArgs(this, result);
       }
 
-      async beginInvokeJSFromDotNet(invocationInfo: JSInvocationInfo): Promise<any> {
-          const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
-
+      async beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any> {
           try {
             const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
 

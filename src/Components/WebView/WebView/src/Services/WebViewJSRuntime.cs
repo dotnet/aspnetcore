@@ -43,7 +43,7 @@ internal sealed class WebViewJSRuntime : JSRuntime
         BeginInvokeJS(invocationInfo);
     }
 
-    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
         if (_ipcSender is null)
         {

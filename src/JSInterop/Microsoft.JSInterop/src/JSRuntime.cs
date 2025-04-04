@@ -15,7 +15,8 @@ namespace Microsoft.JSInterop;
 /// </summary>
 public abstract partial class JSRuntime : IJSRuntime, IDisposable
 {
-    private const long WindowObjectId = 0;
+    internal const long WindowObjectId = 0;
+
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
     private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
@@ -188,19 +189,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     protected virtual void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
-    {
-        var invocationInfo = new JSInvocationInfo
-        {
-            AsyncHandle = taskId,
-            TargetInstanceId = WindowObjectId,
-            Identifier = identifier,
-            CallType = JSCallType.FunctionCall,
-            ResultType = JSCallResultType.Default,
-            ArgsJson = argsJson,
-        };
-
-        BeginInvokeJS(invocationInfo);
-    }
+        => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, WindowObjectId);
 
     /// <summary>
     /// Begins an asynchronous function invocation.
@@ -215,8 +204,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Begins an asynchronous function invocation.
     /// </summary>
-    /// <param name="invocationInfo"></param>
-    protected abstract void BeginInvokeJS(JSInvocationInfo invocationInfo);
+    /// <param name="invocationInfo">Configuration of the interop call from .NET to JavaScript.</param>
+    protected abstract void BeginInvokeJS(in JSInvocationInfo invocationInfo);
 
     /// <summary>
     /// Completes an async JS interop call from JavaScript to .NET

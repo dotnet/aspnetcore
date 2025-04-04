@@ -1,6 +1,6 @@
 #nullable enable
-abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> string?
-abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(Microsoft.JSInterop.Infrastructure.JSInvocationInfo! invocationInfo) -> void
+abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string?
+abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> void
 Microsoft.JSInterop.IJSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.IJSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.IJSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
@@ -38,7 +38,7 @@ Microsoft.JSInterop.Infrastructure.JSCallType.GetValue = 3 -> Microsoft.JSIntero
 Microsoft.JSInterop.Infrastructure.JSCallType.NewCall = 2 -> Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSCallType.SetValue = 4 -> Microsoft.JSInterop.Infrastructure.JSCallType
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo
-Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ArgsJson.get -> string?
+Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ArgsJson.get -> string!
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ArgsJson.init -> void
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.AsyncHandle.get -> long
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.AsyncHandle.init -> void
@@ -51,7 +51,6 @@ Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ResultType.get -> Microsoft.
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ResultType.init -> void
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.get -> long
 Microsoft.JSInterop.Infrastructure.JSInvocationInfo.TargetInstanceId.init -> void
-Microsoft.JSInterop.Infrastructure.JSInvocationInfo.ToJson() -> string!
 Microsoft.JSInterop.JSInProcessRuntime.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.JSInProcessRuntime.InvokeNew(string! identifier, params object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.JSInProcessRuntime.SetValue<TValue>(string! identifier, TValue value) -> void

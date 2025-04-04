@@ -13,6 +13,8 @@ namespace Microsoft.JSInterop;
 /// </summary>
 public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
 {
+    internal const long SyncCallIndicator = 0;
+
     /// <summary>
     /// Invokes the specified JavaScript function synchronously.
     /// </summary>
@@ -22,22 +24,22 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
-        => Invoke<TValue>(identifier, 0, JSCallType.FunctionCall, args);
+        => Invoke<TValue>(identifier, WindowObjectId, JSCallType.FunctionCall, args);
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public IJSInProcessObjectReference InvokeNew(string identifier, params object?[]? args)
-        => Invoke<IJSInProcessObjectReference>(identifier, 0, JSCallType.NewCall, args);
+        => Invoke<IJSInProcessObjectReference>(identifier, WindowObjectId, JSCallType.NewCall, args);
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
-        => Invoke<TValue>(identifier, 0, JSCallType.GetValue);
+        => Invoke<TValue>(identifier, WindowObjectId, JSCallType.GetValue);
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
-        => Invoke<IJSVoidResult>(identifier, 0, JSCallType.SetValue, value);
+        => Invoke<IJSVoidResult>(identifier, WindowObjectId, JSCallType.SetValue, value);
 
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, JSCallType callType, params object?[]? args)
@@ -46,7 +48,7 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
         var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
         var invocationInfo = new JSInvocationInfo
         {
-            AsyncHandle = 0,
+            AsyncHandle = SyncCallIndicator,
             TargetInstanceId = targetInstanceId,
             Identifier = identifier,
             CallType = callType,
@@ -76,15 +78,7 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     /// <returns>A JSON representation of the result.</returns>
     protected virtual string? InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
-        => InvokeJS(new JSInvocationInfo
-        {
-            AsyncHandle = 0,
-            TargetInstanceId = 0,
-            Identifier = identifier,
-            CallType = JSCallType.FunctionCall,
-            ResultType = JSCallResultType.Default,
-            ArgsJson = argsJson,
-        });
+        => InvokeJS(identifier, argsJson, JSCallResultType.Default, WindowObjectId);
 
     /// <summary>
     /// Performs a synchronous function invocation.
@@ -101,5 +95,5 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// </summary>
     /// <param name="invocationInfo">Configuration of the interop call.</param>
     /// <returns>A JSON representation of the result.</returns>
-    protected abstract string? InvokeJS(JSInvocationInfo invocationInfo);
+    protected abstract string? InvokeJS(in JSInvocationInfo invocationInfo);
 }

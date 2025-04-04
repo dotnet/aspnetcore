@@ -167,20 +167,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     }
 
     string IInternalWebJSInProcessRuntime.InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
-    {
-        var invocationInfo = new JSInvocationInfo
-        {
-            AsyncHandle = 0,
-            TargetInstanceId = targetInstanceId,
-            Identifier = identifier,
-            CallType = JSCallType.FunctionCall,
-            ResultType = resultType,
-            ArgsJson = argsJson
-        };
+        => InvokeJS(identifier, argsJson, resultType, targetInstanceId);
 
-        return InvokeJS(invocationInfo);
-    }
-
-    string IInternalWebJSInProcessRuntime.InvokeJS(JSInvocationInfo invocationInfo)
+    string IInternalWebJSInProcessRuntime.InvokeJS(in JSInvocationInfo invocationInfo)
         => InvokeJS(invocationInfo);
 }

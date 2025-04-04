@@ -10,19 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 public class AssertHelpers
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     internal static void IsAttachWebRendererInteropMessage(string message)
     {
         Assert.True(IpcCommon.TryDeserializeOutgoing(message, out var messageType, out var args));
         Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, messageType);
-        Assert.Equal(1, args.Count);
-
-        var invocationInfo = JsonSerializer.Deserialize<JSInvocationInfo>(args[0].GetString(), _jsonSerializerOptions);
-        Assert.Equal("Blazor._internal.attachWebRendererInterop", invocationInfo.Identifier);
+        Assert.Equal(6, args.Count);
+        Assert.Equal("Blazor._internal.attachWebRendererInterop", args[1].GetString());
     }
 
     internal static void IsAttachToDocumentMessage(string message, int componentId, string selector)

@@ -9,80 +9,66 @@ const dotNetCallDispatcher: DotNet.DotNetCallDispatcher = {
     endInvokeJSFromDotNet: function (callId: number, succeeded: boolean, resultOrError: any): void {
         lastAsyncResult = { callId, succeeded, resultOrError };
     },
-}
+};
 const dispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher(dotNetCallDispatcher);
 const getObjectReferenceId = (obj: any) => DotNet.createJSObjectReference(obj)[jsObjectId];
 
 describe("CallDispatcher", () => {
     test("FunctionCall: Function with no arguments is invoked and returns value", () => {
-        const testFunc = jest.fn(() => 1);
+        const testFunc = () => 1;
         const objectId = getObjectReferenceId({ testFunc });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "testFunc",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "testFunc",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        );
         expect(result).toBe("1");
-        expect(testFunc).toHaveBeenCalled();
     });
 
     test("FunctionCall: Function with arguments is invoked and returns value", () => {
-        const testFunc = jest.fn((a, b) => a + b);
+        const testFunc = (a: number, b: number) => a + b;
         const objectId = getObjectReferenceId({ testFunc });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "testFunc",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: JSON.stringify([1, 2])
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "testFunc",
+            JSON.stringify([1, 2]),
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        );
 
         expect(result).toBe("3");
-        expect(testFunc).toHaveBeenCalledWith(1, 2);
     });
 
     test("FunctionCall: Non-function value is invoked and throws", () => {
         const objectId = getObjectReferenceId({ x: 1 });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "x",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("The value 'x' is not a function.");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "x",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        )).toThrowError("The value 'x' is not a function.");
     });
 
     test("FunctionCall: Function is invoked via async interop and returns value", () => {
-        const testFunc = jest.fn((a, b) => a + b);
+        const testFunc = (a: number, b: number) => a + b;
         const objectId = getObjectReferenceId({ testFunc });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 1,
-            targetInstanceId: objectId,
-            identifier: "testFunc",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: JSON.stringify([1, 2])
-        };
-
-        const promise = dispatcher.beginInvokeJSFromDotNet(invocationInfo);
+        const promise = dispatcher.beginInvokeJSFromDotNet(
+            1,
+            "testFunc",
+            JSON.stringify([1, 2]),
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        );
 
         promise?.then(() => {
-            expect(testFunc).toHaveBeenCalledWith(1, 2);
             expect(lastAsyncResult).toStrictEqual({ callId: 1, succeeded: true, resultOrError: "[1,true,3]" });
         });
     });
@@ -90,16 +76,14 @@ describe("CallDispatcher", () => {
     test("FunctionCall: Non-function value is invoked via async interop and throws", () => {
         const objectId = getObjectReferenceId({ x: 1 });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 1,
-            targetInstanceId: objectId,
-            identifier: "x",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const promise = dispatcher.beginInvokeJSFromDotNet(invocationInfo);
+        const promise = dispatcher.beginInvokeJSFromDotNet(
+            1,
+            "x",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        );
 
         promise?.then(() => {
             expect(lastAsyncResult?.succeeded).toBe(false);
@@ -108,34 +92,28 @@ describe("CallDispatcher", () => {
     });
 
     test("FunctionCall: should handle functions that throw errors", () => {
-        const testFunc = jest.fn(() => { throw new Error("Test error"); });
+        const testFunc = () => { throw new Error("Test error"); };
         const objectId = getObjectReferenceId({ testFunc });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "testFunc",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("Test error");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "testFunc",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.FunctionCall
+        )).toThrowError("Test error");
     });
 
     test("NewCall: Constructor function is invoked and returns reference to new object", () => {
         window["testCtor"] = function () { this.a = 10; };
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: 0,
-            identifier: "testCtor",
-            callType: DotNet.JSCallType.NewCall,
-            resultType: DotNet.JSCallResultType.JSObjectReference,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "testCtor",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            0,
+            DotNet.JSCallType.NewCall
+        );
 
         expect(result).toMatch("__jsObjectId");
     });
@@ -147,34 +125,28 @@ describe("CallDispatcher", () => {
         };
         const objectId = getObjectReferenceId({ TestClass });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "TestClass",
-            callType: DotNet.JSCallType.NewCall,
-            resultType: DotNet.JSCallResultType.JSObjectReference,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "TestClass",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.NewCall
+        );
 
         expect(result).toMatch("__jsObjectId");
     });
 
-    test("GetValue: Simple property value is retrived", () => {
+    test("GetValue: Simple property value is retrieved", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result).toBe("10");
     });
@@ -183,16 +155,13 @@ describe("CallDispatcher", () => {
         const testObject = { a: { b: 20 } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a.b",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "a.b",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result).toBe("20");
     });
@@ -203,16 +172,13 @@ describe("CallDispatcher", () => {
         const testObject = Object.create(parentPrototype);
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result).toBe("30");
     });
@@ -221,32 +187,26 @@ describe("CallDispatcher", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "b",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("The property 'b' is not defined or is not readable.");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "b",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        )).toThrowError("The property 'b' is not defined or is not readable.");
     });
 
     test("GetValue: Object reference is retrieved", () => {
         const testObject = { a: { b: 20 } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.JSObjectReference,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result).toMatch("__jsObjectId");
     });
@@ -255,50 +215,41 @@ describe("CallDispatcher", () => {
         const testObject = { a: { b: 20 } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
+        const result = dispatcher.invokeJSFromDotNet(
+            "",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
-
-        expect(result).toBe(JSON.stringify(testObject))
+        expect(result).toBe(JSON.stringify(testObject));
     });
 
     test("GetValue: Reading from setter-only property throws", () => {
         const testObject = { set a(_: any) { } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("The property 'a' is not defined or is not readable");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        )).toThrowError("The property 'a' is not defined or is not readable");
     });
 
     test("SetValue: Simple property is updated", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([20])
-        };
-
-        dispatcher.invokeJSFromDotNet(invocationInfo);
+        dispatcher.invokeJSFromDotNet(
+            "a",
+            JSON.stringify([20]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        );
 
         expect(testObject.a).toBe(20);
     });
@@ -307,16 +258,13 @@ describe("CallDispatcher", () => {
         const testObject = { a: { b: 10 } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a.b",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([20])
-        };
-
-        dispatcher.invokeJSFromDotNet(invocationInfo);
+        dispatcher.invokeJSFromDotNet(
+            "a.b",
+            JSON.stringify([20]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        );
 
         expect(testObject.a.b).toBe(20);
     });
@@ -325,16 +273,13 @@ describe("CallDispatcher", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "b",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([30])
-        };
-
-        dispatcher.invokeJSFromDotNet(invocationInfo);
+        dispatcher.invokeJSFromDotNet(
+            "b",
+            JSON.stringify([30]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        );
 
         expect((testObject as any).b).toBe(30);
     });
@@ -343,59 +288,47 @@ describe("CallDispatcher", () => {
         const testObject = { get a() { return 10; } };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([20])
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("The property 'a' is not writable.");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "a",
+            JSON.stringify([20]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        )).toThrowError("The property 'a' is not writable.");
     });
 
     test("SetValue: Writing to non-writable data property throws", () => {
         const testObject = Object.create({}, { a: { value: 10, writable: false } });
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([20])
-        };
-
-        expect(() => dispatcher.invokeJSFromDotNet(invocationInfo)).toThrowError("The property 'a' is not writable.");
+        expect(() => dispatcher.invokeJSFromDotNet(
+            "a",
+            JSON.stringify([20]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        )).toThrowError("The property 'a' is not writable.");
     });
 
     test("SetValue + GetValue: Updated primitive value is read", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([20])
-        };
+        dispatcher.invokeJSFromDotNet(
+            "a",
+            JSON.stringify([20]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objectId,
+            DotNet.JSCallType.SetValue
+        );
 
-        dispatcher.invokeJSFromDotNet(invocationInfo);
-
-        const invocationInfo2: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo2);
+        const result = dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result).toBe("20");
     });
@@ -406,27 +339,21 @@ describe("CallDispatcher", () => {
         const objB = { x: 30 };
         const objBRef = DotNet.createJSObjectReference(objB);
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objARef[jsObjectId],
-            identifier: "b",
-            callType: DotNet.JSCallType.SetValue,
-            resultType: DotNet.JSCallResultType.JSVoidResult,
-            argsJson: JSON.stringify([objBRef])
-        };
+        dispatcher.invokeJSFromDotNet(
+            "b",
+            JSON.stringify([objBRef]),
+            DotNet.JSCallResultType.JSVoidResult,
+            objARef[jsObjectId],
+            DotNet.JSCallType.SetValue
+        );
 
-        dispatcher.invokeJSFromDotNet(invocationInfo);
-
-        const invocationInfo2: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objARef[jsObjectId],
-            identifier: "",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo2);
+        const result = dispatcher.invokeJSFromDotNet(
+            "",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            objARef[jsObjectId],
+            DotNet.JSCallType.GetValue
+        );
         const resultObj = JSON.parse(result ?? "{}");
 
         expect((resultObj as any).b.x).toBe(30);
@@ -439,28 +366,22 @@ describe("CallDispatcher", () => {
         };
         const objectId = getObjectReferenceId({ TestClass });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "TestClass",
-            callType: DotNet.JSCallType.NewCall,
-            resultType: DotNet.JSCallResultType.JSObjectReference,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "TestClass",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.NewCall
+        );
         const newObjectId = JSON.parse(result ?? "")[jsObjectId];
 
-        const invocationInfo2: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: newObjectId,
-            identifier: "a",
-            callType: DotNet.JSCallType.GetValue,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result2 = dispatcher.invokeJSFromDotNet(invocationInfo2);
+        const result2 = dispatcher.invokeJSFromDotNet(
+            "a",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            newObjectId,
+            DotNet.JSCallType.GetValue
+        );
 
         expect(result2).toBe("20");
     });
@@ -471,28 +392,22 @@ describe("CallDispatcher", () => {
         };
         const objectId = getObjectReferenceId({ TestClass });
 
-        const invocationInfo: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: objectId,
-            identifier: "TestClass",
-            callType: DotNet.JSCallType.NewCall,
-            resultType: DotNet.JSCallResultType.JSObjectReference,
-            argsJson: null
-        };
-
-        const result = dispatcher.invokeJSFromDotNet(invocationInfo);
+        const result = dispatcher.invokeJSFromDotNet(
+            "TestClass",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.NewCall
+        );
         const newObjectId = JSON.parse(result ?? "")[jsObjectId];
 
-        const invocationInfo2: DotNet.JSInvocationInfo = {
-            asyncHandle: 0,
-            targetInstanceId: newObjectId,
-            identifier: "f",
-            callType: DotNet.JSCallType.FunctionCall,
-            resultType: DotNet.JSCallResultType.Default,
-            argsJson: null
-        };
-
-        const result2 = dispatcher.invokeJSFromDotNet(invocationInfo2);
+        const result2 = dispatcher.invokeJSFromDotNet(
+            "f",
+            "[]",
+            DotNet.JSCallResultType.Default,
+            newObjectId,
+            DotNet.JSCallType.FunctionCall
+        );
 
         expect(result2).toBe("30");
     });

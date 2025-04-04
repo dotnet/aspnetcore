@@ -49,10 +49,17 @@ internal sealed class IpcSender
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.AttachToDocument, componentId, selector));
     }
 
-    public void BeginInvokeJS(JSInvocationInfo invocationInfo)
+    public void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        var invocationInfoJson = invocationInfo.ToJson();
-        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.BeginInvokeJS, invocationInfoJson));
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(
+            IpcCommon.OutgoingMessageType.BeginInvokeJS,
+            invocationInfo.AsyncHandle,
+            invocationInfo.Identifier,
+            invocationInfo.ArgsJson,
+            invocationInfo.ResultType,
+            invocationInfo.TargetInstanceId,
+            invocationInfo.CallType
+        ));
     }
 
     public void EndInvokeDotNet(string callId, bool success, string invocationResultOrError)
