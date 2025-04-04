@@ -64,7 +64,8 @@
 
   <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
-    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+    <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+    <KnownFrameworkReference Update="Microsoft.NETCore.App" Condition=" '$(DotNetBuild)' != 'true' OR '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <LatestRuntimeFrameworkVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <TargetingPackVersion
@@ -83,7 +84,8 @@
       <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
-    <KnownAppHostPack Update="Microsoft.NETCore.App">
+    <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+    <KnownAppHostPack Update="Microsoft.NETCore.App" Condition=" '$(DotNetBuild)' != 'true' OR '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <AppHostPackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>

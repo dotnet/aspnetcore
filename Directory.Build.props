@@ -8,7 +8,9 @@
     <!-- $(RepoRoot) is normally set globally and Arcade overrides it to ensure a trailing slash. -->
     <RepoRoot Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') ">$(MSBuildThisFileDirectory)</RepoRoot>
 
-    <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
+    <DefaultRepositoryUrl>https://github.com/dotnet/aspnetcore</DefaultRepositoryUrl>
+    <RepositoryUrl>$(DefaultRepositoryUrl)</RepositoryUrl>
+    <PackageProjectUrl>$(DefaultRepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

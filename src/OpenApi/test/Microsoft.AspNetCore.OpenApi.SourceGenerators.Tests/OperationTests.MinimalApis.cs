@@ -14,6 +14,8 @@ public partial class OperationTests
     {
         var source = """
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -32,6 +34,16 @@ app.MapGet("/4", RouteHandlerExtensionMethods.Get4);
 app.MapGet("/5", RouteHandlerExtensionMethods.Get5);
 app.MapPost("/6", RouteHandlerExtensionMethods.Post6);
 app.MapPut("/7", RouteHandlerExtensionMethods.Put7);
+app.MapGet("/8", RouteHandlerExtensionMethods.Get8);
+app.MapGet("/9", RouteHandlerExtensionMethods.Get9);
+app.MapGet("/10", RouteHandlerExtensionMethods.Get10);
+app.MapGet("/11", RouteHandlerExtensionMethods.Get11);
+app.MapGet("/12", RouteHandlerExtensionMethods.Get12);
+app.MapGet("/13", RouteHandlerExtensionMethods.Get13);
+app.MapGet("/14", RouteHandlerExtensionMethods.Get14);
+app.MapGet("/15", RouteHandlerExtensionMethods.Get15);
+app.MapPost("/16", RouteHandlerExtensionMethods.Post16);
+app.MapGet("/17", RouteHandlerExtensionMethods.Get17);
 
 app.Run();
 
@@ -114,12 +126,105 @@ public static class RouteHandlerExtensionMethods
     {
         return TypedResults.NoContent();
     }
+
+    /// <summary>
+    /// A summary of Get8.
+    /// </summary>
+    public static async Task Get8()
+    {
+        await Task.Delay(1000);
+        return;
+    }
+    /// <summary>
+    /// A summary of Get9.
+    /// </summary>
+    public static async ValueTask Get9()
+    {
+        await Task.Delay(1000);
+        return;
+    }
+    /// <summary>
+    /// A summary of Get10.
+    /// </summary>
+    public static Task Get10()
+    {
+        return Task.CompletedTask;
+    }
+    /// <summary>
+    /// A summary of Get11.
+    /// </summary>
+    public static ValueTask Get11()
+    {
+        return ValueTask.CompletedTask;
+    }
+    /// <summary>
+    /// A summary of Get12.
+    /// </summary>
+    public static Task<string> Get12()
+    {
+        return Task.FromResult("Hello, World!");
+    }
+    /// <summary>
+    /// A summary of Get13.
+    /// </summary>
+    public static ValueTask<string> Get13()
+    {
+        return new ValueTask<string>("Hello, World!");
+    }
+    /// <summary>
+    /// A summary of Get14.
+    /// </summary>
+    public static async Task<Holder<string>> Get14()
+    {
+        await Task.Delay(1000);
+        return new Holder<string> { Value = "Hello, World!" };
+    }
+    /// <summary>
+    /// A summary of Get15.
+    /// </summary>
+    public static Task<Holder<string>> Get15()
+    {
+        return Task.FromResult(new Holder<string> { Value = "Hello, World!" });
+    }
+
+    /// <summary>
+    /// A summary of Post16.
+    /// </summary>
+    public static void Post16(Example example)
+    {
+        return;
+    }
+
+    /// <summary>
+    /// A summary of Get17.
+    /// </summary>
+    public static int[][] Get17(int[] args)
+    {
+        return [[1, 2, 3], [4, 5, 6], [7, 8, 9], args];
+
+    }
 }
 
 public class User
 {
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+}
+
+public class Holder<T>
+{
+    public T Value { get; set; } = default!;
+}
+
+public class Example : Task<int>
+{
+    public Example(Func<int> function) : base(function)
+    {
+    }
+
+    public Example(Func<object?, int> function, object? state) : base(function, state)
+    {
+    }
 }
 """;
         var generator = new XmlCommentGenerator();
@@ -159,6 +264,36 @@ public class User
             var idParam = path7.Parameters.First(p => p.Name == "id");
             Assert.True(idParam.Deprecated);
             Assert.Equal("Legacy ID parameter - use uuid instead.", idParam.Description);
+
+            var path8 = document.Paths["/8"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get8.", path8.Summary);
+
+            var path9 = document.Paths["/9"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get9.", path9.Summary);
+
+            var path10 = document.Paths["/10"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get10.", path10.Summary);
+
+            var path11 = document.Paths["/11"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get11.", path11.Summary);
+
+            var path12 = document.Paths["/12"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get12.", path12.Summary);
+
+            var path13 = document.Paths["/13"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get13.", path13.Summary);
+
+            var path14 = document.Paths["/14"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get14.", path14.Summary);
+
+            var path15 = document.Paths["/15"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get15.", path15.Summary);
+
+            var path16 = document.Paths["/16"].Operations[OperationType.Post];
+            Assert.Equal("A summary of Post16.", path16.Summary);
+
+            var path17 = document.Paths["/17"].Operations[OperationType.Get];
+            Assert.Equal("A summary of Get17.", path17.Summary);
         });
     }
 }

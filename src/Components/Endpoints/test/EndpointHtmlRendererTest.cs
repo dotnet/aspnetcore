@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -69,6 +68,78 @@ public class EndpointHtmlRendererTest
         Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, marker.Assembly);
         Assert.Equal(typeof(SimpleComponent).FullName, marker.TypeName);
         Assert.Empty(httpContext.Items);
+    }
+
+    [Fact]
+    public async Task CanPreload_WebAssembly_ResourceAssets()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        httpContext.SetEndpoint(
+            new Endpoint(
+                ctx => Task.CompletedTask,
+                new EndpointMetadataCollection([
+                    new ResourcePreloadCollection(
+                        new ResourceAssetCollection([
+                            new ResourceAsset("second.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "2"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("first.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("preload-nowebassembly.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "abcd")
+                            ]),
+                            new ResourceAsset("nopreload.js", [
+                                new ResourceAssetProperty("integrity", "abcd")
+                            ])
+                        ])
+                    )
+                ]),
+                "TestEndpoint"
+            )
+        );
+
+        // Act
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+
+        // Assert
+        Assert.Equal(2, httpContext.Response.Headers.Link.Count);
+
+        var firstPreloadLink = httpContext.Response.Headers.Link[0];
+        Assert.Contains("<first.js>", firstPreloadLink);
+        Assert.Contains("rel=preload", firstPreloadLink);
+        Assert.Contains("as=script", firstPreloadLink);
+        Assert.Contains("fetchpriority=high", firstPreloadLink);
+        Assert.Contains("integrity=\"abcd\"", firstPreloadLink);
+
+        var secondPreloadLink = httpContext.Response.Headers.Link[1];
+        Assert.Contains("<second.js>", secondPreloadLink);
+        Assert.Contains("rel=preload", secondPreloadLink);
+        Assert.Contains("as=script", secondPreloadLink);
+        Assert.Contains("fetchpriority=high", secondPreloadLink);
+        Assert.Contains("integrity=\"abcd\"", secondPreloadLink);
     }
 
     [Fact]

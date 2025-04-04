@@ -186,10 +186,7 @@ internal sealed class Response
     // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
     internal void MakeTrailersReadOnly()
     {
-        if (_trailers != null)
-        {
-            _trailers.IsReadOnly = true;
-        }
+        _trailers?.IsReadOnly = true;
     }
 
     internal void Abort()

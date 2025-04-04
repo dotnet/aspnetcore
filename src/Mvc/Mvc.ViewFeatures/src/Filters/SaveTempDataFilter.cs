@@ -83,11 +83,7 @@ internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
         // not be available.
         if (!context.HttpContext.Response.HasStarted && context.Exception != null)
         {
-            var saveTempDataContext = GetTempDataContext(context.HttpContext);
-            if (saveTempDataContext != null)
-            {
-                saveTempDataContext.RequestHasUnhandledException = true;
-            }
+            GetTempDataContext(context.HttpContext)?.RequestHasUnhandledException = true;
         }
     }
 
@@ -105,12 +101,7 @@ internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
         if (!context.HttpContext.Response.HasStarted)
         {
             SaveTempData(context.Result, _factory, context.Filters, context.HttpContext);
-
-            var saveTempDataContext = GetTempDataContext(context.HttpContext);
-            if (saveTempDataContext != null)
-            {
-                saveTempDataContext.TempDataSaved = true;
-            }
+            GetTempDataContext(context.HttpContext)?.TempDataSaved = true;
         }
     }
 

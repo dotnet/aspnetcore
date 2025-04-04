@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
 
@@ -14,16 +13,6 @@
 
     <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
-
-    <!--
-      Some assets are produced in all jobs, but only one job can publish them. We follow the following rules in that case:
-      - If we're building outside of the VMR, publish these assets from the Windows job.
-      - If we're building inside the VMR, publish these assets from whichever job is producing non-RID-specific artifacts.
-    -->
-    <PublishAllBuildsAssetsInThisJob Condition="('$(OS)' == 'Windows_NT' and '$(DotNetBuildOrchestrator)' != 'true')
-                                                or ('$(DotNetBuildOrchestrator)' == 'true' and '$(EnableDefaultRidSpecificArtifacts)' != 'true'
-                                                    and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'))">true</PublishAllBuildsAssetsInThisJob>
-    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == ''">$(PublishAllBuildsAssetsInThisJob)</PublishInstallerBaseVersion>
   </PropertyGroup>
 
   <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
