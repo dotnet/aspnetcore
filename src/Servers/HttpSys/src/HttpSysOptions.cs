@@ -172,7 +172,7 @@ public class HttpSysOptions
     /// Gets or sets the security descriptor for the request queue.
     /// </summary>
     /// <remarks>
-    /// Only applies when creating a new request queue, see <cref="RequestQueueMode" />.
+    /// Only applies when creating a new request queue, see <see cref="RequestQueueMode" />.
     /// </remarks>
     public GenericSecurityDescriptor? RequestQueueSecurityDescriptor { get; set; }
 
