@@ -7,8 +7,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
 {
-    private const string EnableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.EnableThrowNavigationException";
-    private static readonly bool _throwNavigationException = AppContext.TryGetSwitch(EnableThrowNavigationException, out var switchValue) && switchValue;
+    private const string EnableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+    private static bool ThrowNavigationException =>
+        AppContext.TryGetSwitch(EnableThrowNavigationException, out var switchValue) && switchValue;
 
     private EventHandler<NavigationEventArgs>? _onNavigateTo;
     public event EventHandler<NavigationEventArgs> OnNavigateTo
@@ -22,7 +23,7 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-        if (_throwNavigationException)
+        if (ThrowNavigationException)
         {
             throw new NavigationException(absoluteUriString);
         }
