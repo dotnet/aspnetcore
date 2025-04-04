@@ -19,8 +19,6 @@
     <IsShipping>true</IsShipping>
     <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
     <SiteExtensionsReferenceLayoutDir>$(ArtifactsObjDir)SiteExtensionsReferenceLayout/</SiteExtensionsReferenceLayoutDir>
-    <MicrosoftWebXdtExtensionsPath>$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
-    <MicrosoftWebXdtExtensionsPath Condition="'$(DotNetBuildPass)' == '2'">$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(TargetArchitecture)\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
