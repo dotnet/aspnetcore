@@ -84,6 +84,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (navigationManager != null)
         {
             navigationManager.OnNotFound += SetNotFoundResponse;
+            if (navigationManager is HttpNavigationManager httpNavigationManager)
+            {
+                httpNavigationManager.OnNavigateTo += OnNavigateTo;
+            }
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
@@ -133,6 +137,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
                 routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;
             }
         }
+    }
+
+    private void OnNavigateTo(object? sender, NavigationEventArgs args)
+    {
+        _httpContext.Response.Redirect(args.Uri);
     }
 
     private static void InitializeResourceCollection(HttpContext httpContext)

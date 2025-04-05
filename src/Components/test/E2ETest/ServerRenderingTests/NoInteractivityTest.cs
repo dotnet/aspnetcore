@@ -64,4 +64,16 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-1")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-2")).Text);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NavigatesWithoutInteractivityByRequestRedirection(bool controlFlowByException)
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.EnableThrowNavigationException", isEnabled: controlFlowByException);
+        Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
+        Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Click(By.Id("redirectButton"));
+        Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
+    }
 }
