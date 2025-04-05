@@ -387,7 +387,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
-        _manager.AspNetHttpsCertificateVersion = 2;
+        _manager.MinimumAspNetHttpsCertificateVersion = 2;
 
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         Assert.Empty(httpsCertificateList);
@@ -419,7 +419,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
 
         var now = DateTimeOffset.UtcNow;
         now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-        _manager.AspNetHttpsCertificateVersion = 0;
+        _manager.MinimumAspNetHttpsCertificateVersion = 0;
         var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
         Output.WriteLine(creation.ToString());
         ListCertificates();
@@ -460,11 +460,12 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         ListCertificates();
 
         _manager.AspNetHttpsCertificateVersion = 2;
+        _manager.MinimumAspNetHttpsCertificateVersion = 2;
         creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
-        _manager.AspNetHttpsCertificateVersion = 1;
+        _manager.MinimumAspNetHttpsCertificateVersion = 1;
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         Assert.Equal(2, httpsCertificateList.Count);
 
@@ -532,6 +533,8 @@ public class CertFixture : IDisposable
 
     internal void CleanupCertificates()
     {
+        Manager.AspNetHttpsCertificateVersion = 1;
+        Manager.MinimumAspNetHttpsCertificateVersion = 1;
         Manager.RemoveAllCertificates(StoreName.My, StoreLocation.CurrentUser);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
