@@ -39,12 +39,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         if (isErrorHandler)
         {
             Log.InteractivityDisabledForErrorHandling(_logger);
         }
-        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
-        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler, hasStatusCodePage);
+        bool avoidEditingHeaders = hasStatusCodePage && context.Response.StatusCode == StatusCodes.Status404NotFound;
+        if (!avoidEditingHeaders)
+        {
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        }
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
@@ -85,6 +90,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
 
+        int originalStatusCode = context.Response.StatusCode;
+
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
@@ -92,7 +99,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandler);
+            waitForQuiescence: result.IsPost || isErrorHandler || hasStatusCodePage);
+
+        bool requresReexecution = originalStatusCode != context.Response.StatusCode && hasStatusCodePage;
+        if (requresReexecution)
+        {
+            // If the response is a 404, we don't want to write any content.
+            // This is because the 404 status code is used by the routing middleware
+            // to indicate that no endpoint was found for the request.
+            await bufferWriter.FlushAsync();
+            return;
+        }
 
         Task quiesceTask;
         if (!result.IsPost)
@@ -145,7 +162,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
 
         // Emit comment containing state.
-        if (!isErrorHandler)
+        if (!isErrorHandler && !hasStatusCodePage)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
@@ -160,10 +177,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
         var processPost = HttpMethods.IsPost(context.Request.Method) &&
-            // Disable POST functionality during exception handling.
+            // Disable POST functionality during exception handling and reexecution.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
-            context.Features.Get<IExceptionHandlerFeature>() == null;
+            context.Features.Get<IExceptionHandlerFeature>() == null &&
+            context.Features.Get<IStatusCodePagesFeature>() == null;
 
         if (processPost)
         {

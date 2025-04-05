@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -15,10 +16,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
+    private bool stopAddingTasks;
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
-        if (_isHandlingErrors)
+        if (_isHandlingErrors || _hasStatusCodePage)
         {
             // Ignore the render mode boundary in error scenarios.
             return componentActivator.CreateInstance(componentType);
@@ -146,6 +148,7 @@ internal partial class EndpointHtmlRenderer
         {
             var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
+            stopAddingTasks = httpContext.Response.StatusCode == StatusCodes.Status404NotFound && _hasStatusCodePage;
 
             await WaitForResultReady(waitForQuiescence, result);
 
@@ -166,7 +169,50 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            await WaitForNonStreamingPendingTasks();
+            if (stopAddingTasks)
+            {
+                HandleNonStreamingTasks();
+            }
+            else
+            {
+                await WaitForNonStreamingPendingTasks();
+            }
+        }
+    }
+
+    public void HandleNonStreamingTasks()
+    {
+        if (NonStreamingPendingTasksCompletion == null)
+        {
+            foreach (var task in _nonStreamingPendingTasks)
+            {
+                _ = GetErrorHandledTask(task);
+            }
+
+            // Clear the pending tasks since we are handling them
+            _nonStreamingPendingTasks.Clear();
+
+            NonStreamingPendingTasksCompletion = Task.CompletedTask;
+        }
+    }
+
+    private async Task GetErrorHandledTask(Task taskToHandle)
+    {
+        try
+        {
+            await taskToHandle;
+        }
+        catch (Exception ex)
+        {
+            // Ignore errors due to task cancellations.
+            if (!taskToHandle.IsCanceled)
+            {
+                _logger.LogError(
+                    ex,
+                    @"An exception occurred during non-streaming rendering.
+                    This exception will be ignored because the response
+                    is being discarded and the request is being re-executed.");
+            }
         }
     }
 

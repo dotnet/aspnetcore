@@ -23,11 +23,14 @@ internal partial class EndpointHtmlRenderer
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
+    private bool _hasStatusCodePage;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool hasStatusCodePage)
     {
         _isHandlingErrors = isErrorHandler;
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        _hasStatusCodePage = hasStatusCodePage;
+        bool avoidEditingHeaders = hasStatusCodePage && httpContext.Response.StatusCode == StatusCodes.Status404NotFound;
+        if (!avoidEditingHeaders && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
