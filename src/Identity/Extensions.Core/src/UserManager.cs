@@ -571,10 +571,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual async Task<IdentityResult> CreateAsync(TUser user, string password)
     {
         ThrowIfDisposed();
-        var passwordStore = GetPasswordStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(password);
-        var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
+        var result = await UpdatePasswordHash(user, password, validatePassword: true).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
@@ -684,7 +683,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var result = await VerifyPasswordAsync(passwordStore, user, password).ConfigureAwait(false);
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            await UpdatePasswordHash(passwordStore, user, password, validatePassword: false).ConfigureAwait(false);
+            await UpdatePasswordHash(user, password, validatePassword: false).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
         }
 
@@ -735,7 +734,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             Logger.LogDebug(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
         }
-        var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
+        var result = await UpdatePasswordHash(user, password, validatePassword: true).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
@@ -762,7 +761,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (await VerifyPasswordAsync(passwordStore, user, currentPassword).ConfigureAwait(false) != PasswordVerificationResult.Failed)
         {
-            var result = await UpdatePasswordHash(passwordStore, user, newPassword).ConfigureAwait(false);
+            var result = await UpdatePasswordHash(user, newPassword, validatePassword: true).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return result;
@@ -784,10 +783,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user)
     {
         ThrowIfDisposed();
-        var passwordStore = GetPasswordStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
 
-        await UpdatePasswordHash(passwordStore, user, null, validatePassword: false).ConfigureAwait(false);
+        await UpdatePasswordHash(user, null, validatePassword: false).ConfigureAwait(false);
         return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
@@ -2211,12 +2209,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="newPassword">The new password.</param>
     /// <param name="validatePassword">Whether to validate the password.</param>
     /// <returns>Whether the password has was successfully updated.</returns>
-    protected virtual Task<IdentityResult> UpdatePasswordHash(TUser user, string newPassword, bool validatePassword)
-        => UpdatePasswordHash(GetPasswordStore(), user, newPassword, validatePassword);
-
-    private async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
-        TUser user, string? newPassword, bool validatePassword = true)
+    protected virtual async Task<IdentityResult> UpdatePasswordHash(TUser user, string newPassword, bool validatePassword)
     {
+        var passwordStore = GetPasswordStore();
         if (validatePassword)
         {
             var validate = await ValidatePasswordAsync(user, newPassword).ConfigureAwait(false);
