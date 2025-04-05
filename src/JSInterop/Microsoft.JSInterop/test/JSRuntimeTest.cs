@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Implementation;
@@ -445,8 +446,8 @@ public class JSRuntimeTest
 
     class TestJSRuntime : JSRuntime
     {
-        public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
-        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = new List<EndInvokeDotNetArgs>();
+        public List<JSInvocationInfo> BeginInvokeCalls = [];
+        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = [];
 
         public TimeSpan? DefaultTimeout
         {
@@ -454,13 +455,6 @@ public class JSRuntimeTest
             {
                 base.DefaultAsyncTimeout = value;
             }
-        }
-
-        public class BeginInvokeAsyncArgs
-        {
-            public long AsyncHandle { get; set; }
-            public string? Identifier { get; set; }
-            public string? ArgsJson { get; set; }
         }
 
         public class EndInvokeDotNetArgs
@@ -482,14 +476,14 @@ public class JSRuntimeTest
             });
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
-            {
-                AsyncHandle = asyncHandle,
-                Identifier = identifier,
-                ArgsJson = argsJson,
-            });
+            throw new NotImplementedException();
+        }
+
+        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        {
+            BeginInvokeCalls.Add(invocationInfo);
         }
 
         protected internal override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)

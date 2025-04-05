@@ -23,7 +23,8 @@ internal static partial class InternalCalls
         [JSMarshalAs<JSType.Number>] long targetInstanceId,
         int resultType,
         string argsJson,
-        [JSMarshalAs<JSType.Number>] long asyncHandle);
+        [JSMarshalAs<JSType.Number>] long asyncHandle,
+        int callType);
 
     [JSImport("Blazor._internal.endInvokeDotNetFromJS", "blazor-internal")]
     public static partial void EndInvokeDotNetFromJS(
