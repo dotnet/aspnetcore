@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",

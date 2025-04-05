@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",

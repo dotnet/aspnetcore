@@ -18,6 +18,7 @@
     "dbaeumer.vscode-eslint"
   ],
   "settings": {
+    "dotnet.defaultSolution": "AspNetCore.slnx",
     // Loading projects on demand is better for larger codebases
     "omnisharp.enableMsBuildLoadProjectsOnDemand": true,
     "omnisharp.enableRoslynAnalyzers": true,

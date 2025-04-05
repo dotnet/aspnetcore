@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Caching\\SqlServer\\src\\Microsoft.Extensions.Caching.SqlServer.csproj",
       "src\\Caching\\SqlServer\\test\\Microsoft.Extensions.Caching.SqlServer.Tests.csproj",
