@@ -211,21 +211,6 @@ describe("CallDispatcher", () => {
         expect(result).toMatch("__jsObjectId");
     });
 
-    test("GetValue: Object value is retrieved from reference with empty identifier", () => {
-        const testObject = { a: { b: 20 } };
-        const objectId = getObjectReferenceId(testObject);
-
-        const result = dispatcher.invokeJSFromDotNet(
-            "",
-            "[]",
-            DotNet.JSCallResultType.Default,
-            objectId,
-            DotNet.JSCallType.GetValue
-        );
-
-        expect(result).toBe(JSON.stringify(testObject));
-    });
-
     test("GetValue: Reading from setter-only property throws", () => {
         const testObject = { set a(_: any) { } };
         const objectId = getObjectReferenceId(testObject);
@@ -348,15 +333,14 @@ describe("CallDispatcher", () => {
         );
 
         const result = dispatcher.invokeJSFromDotNet(
-            "",
+            "b.x",
             "[]",
             DotNet.JSCallResultType.Default,
             objARef[jsObjectId],
             DotNet.JSCallType.GetValue
         );
-        const resultObj = JSON.parse(result ?? "{}");
 
-        expect((resultObj as any).b.x).toBe(30);
+        expect(result).toBe("30");
     });
 
     test("NewCall + GetValue: Class constructor is invoked and the new instance value is retrieved", () => {

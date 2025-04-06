@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.JSInterop", "Microsoft.JSInterop", "{858B5D40-ED74-2150-A8A2-365B5B420ABA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop", "Microsoft.JSInterop\src\Microsoft.JSInterop.csproj", "{CF7471C8-620A-6EBA-58DD-0A6B81AF790B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop.Tests", "Microsoft.JSInterop\test\Microsoft.JSInterop.Tests.csproj", "{60AF6814-2890-E499-8733-A9657CAAD7C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CF7471C8-620A-6EBA-58DD-0A6B81AF790B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF7471C8-620A-6EBA-58DD-0A6B81AF790B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF7471C8-620A-6EBA-58DD-0A6B81AF790B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF7471C8-620A-6EBA-58DD-0A6B81AF790B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60AF6814-2890-E499-8733-A9657CAAD7C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60AF6814-2890-E499-8733-A9657CAAD7C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60AF6814-2890-E499-8733-A9657CAAD7C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60AF6814-2890-E499-8733-A9657CAAD7C1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CF7471C8-620A-6EBA-58DD-0A6B81AF790B} = {858B5D40-ED74-2150-A8A2-365B5B420ABA}
+		{60AF6814-2890-E499-8733-A9657CAAD7C1} = {858B5D40-ED74-2150-A8A2-365B5B420ABA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0760FACE-6DB9-4BCC-8ADD-82292DDB6BE7}
+	EndGlobalSection
+EndGlobal

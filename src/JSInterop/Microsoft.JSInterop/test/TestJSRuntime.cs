@@ -13,7 +13,7 @@ internal class TestJSRuntime : JSRuntime
         throw new NotImplementedException();
     }
 
-    protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
         throw new NotImplementedException();
     }

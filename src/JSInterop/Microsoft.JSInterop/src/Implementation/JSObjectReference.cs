@@ -66,22 +66,6 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
-    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>()
-    {
-        ThrowIfDisposed();
-
-        return _jsRuntime.InvokeAsync<TValue>(Id, string.Empty, JSCallType.GetValue, null);
-    }
-
-    /// <inheritdoc />
-    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(CancellationToken cancellationToken)
-    {
-        ThrowIfDisposed();
-
-        return _jsRuntime.InvokeAsync<TValue>(Id, string.Empty, JSCallType.GetValue, cancellationToken, null);
-    }
-
-    /// <inheritdoc />
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
     {
         ThrowIfDisposed();

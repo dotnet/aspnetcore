@@ -58,24 +58,6 @@ public interface IJSObjectReference : IAsyncDisposable
     ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);
 
     /// <summary>
-    /// Reads the value of the referenced JavaScript object asynchronously.
-    /// </summary>
-    /// <typeparam name="TValue">The JSON-serializable model of the object.</typeparam>
-    /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>();
-
-    /// <summary>
-    /// Reads the value of the referenced JavaScript object asynchronously.
-    /// </summary>
-    /// <typeparam name="TValue">The JSON-serializable model of the object.</typeparam>
-    /// <param name="cancellationToken">
-    /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
-    /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
-    /// </param>
-    /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(CancellationToken cancellationToken);
-
-    /// <summary>
     /// Reads the value of the specified JavaScript property asynchronously.
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>

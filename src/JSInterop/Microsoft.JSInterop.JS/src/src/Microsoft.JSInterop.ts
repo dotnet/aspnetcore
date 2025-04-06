@@ -21,76 +21,55 @@ export module DotNet {
   // Provides access to the "current" call dispatcher without having to flow it through nested function calls.
   let currentCallDispatcher: CallDispatcher | undefined;
 
-  /**
-   * Represents a resolved property of a JS object.
-   * 
-   * @param parent The immediate parent object that contains the property.
-   * @param name The name of the property.
-   * @param func Reference to a function if the member is a function. Otherwise, undefined.
-   */
-  interface ObjectMemberDescriptor {
-      parent: any;
-      name: string;
-      func?: Function;
-  }
+  type MemberCache = Map<string, { [k in JSCallType]?: Function }>;
 
   class JSObject {
       // We cache resolved members. Note that this means we can return stale values if the object has been modified since then.
-      _cachedMembers: Map<string, ObjectMemberDescriptor>;
+      _cachedFunctions: MemberCache;;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(private _jsObject: any) {
-          this._cachedMembers = new Map<string, ObjectMemberDescriptor>();
+        this._cachedFunctions = new Map();
       }
 
-      public findMember(identifier: string): ObjectMemberDescriptor {
-          if (identifier === "") {
-              return { parent: this.getWrappedObject(), name: "" };
+      public resolveFunction(identifier: string, callType: JSCallType): Function {
+          const cachedFunction = this._cachedFunctions.get(identifier)?.[callType];
+
+          if (cachedFunction) {
+              return cachedFunction;
           }
 
-          const cachedMember = this._cachedMembers.get(identifier);
+          const [parent, memberName] = findObjectMember(this._jsObject, identifier);
+          const func = wrapJSCallAsFunction(parent, memberName, callType, identifier);
+          this.addFunctionToCache(identifier, func, callType);
 
-          if (cachedMember) {
-              return cachedMember;
-          }
-
-          let current: any = this._jsObject;
-          let parent: any = null;
-
-          const keys = identifier.split(".");
-
-          // First, we iterate over all but the last key. We throw error for missing intermediate keys.
-          for (let i = 0; i < keys.length - 1; i++) {
-              const key = keys[i];
-
-              if (current && typeof current === 'object' && key in current) {
-                  parent = current;
-                  current = current[key];
-              } else {
-                  throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
-              }
-          }
-
-          // We don't check the last key because error handling depends on the type of operation.
-          const lastKey = keys[keys.length - 1];
-          parent = current;
-          current = current[lastKey];
-
-          const result =  { parent, name: lastKey } as ObjectMemberDescriptor;
-
-          if (current instanceof Function) {
-              // If the member is a function, we bind the parent object as its "this" context.
-              result.func = current.bind(parent);
-          }
-
-          this._cachedMembers.set(identifier, result);
-          return result;
+          return func;
       }
 
       public getWrappedObject() {
           return this._jsObject;
       }
+
+      private addFunctionToCache(identifier: string, func: Function, callType: JSCallType) {
+          const cachedIdentifier = this._cachedFunctions.get(identifier);
+
+          if (cachedIdentifier) {
+            cachedIdentifier[callType] = func;
+          } else {
+            this._cachedFunctions.set(identifier, { [callType]: func });
+          }
+      }
   }
+
+    /**
+   * Represents the type of operation that should be performed in JS.
+   */
+    export enum JSCallType {
+        FunctionCall = 1,
+        NewCall = 2,
+        GetValue = 3,
+        SetValue = 4
+      }
 
   const windowJSObjectId = 0;
   const cachedJSObjectsById: { [id: number]: JSObject } = {
@@ -98,7 +77,7 @@ export module DotNet {
   };
 
   const windowObject = cachedJSObjectsById[windowJSObjectId];
-  windowObject._cachedMembers.set("import", { parent: windowObject, name: "import", func: (url: any) => {
+  windowObject._cachedFunctions.set("import", { [JSCallType.FunctionCall]: (url: any) => {
       // In most cases developers will want to resolve dynamic imports relative to the base HREF.
       // However since we're the one calling the import keyword, they would be resolved relative to
       // this framework bundle URL. Fix this by providing an absolute URL.
@@ -288,16 +267,6 @@ export module DotNet {
   }
 
   /**
-   * Represents the type of operation that should be performed in JS.
-   */
-  export enum JSCallType {
-    FunctionCall = 1,
-    NewCall = 2,
-    GetValue = 3,
-    SetValue = 4
-  }
-
-  /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
@@ -469,122 +438,8 @@ export module DotNet {
 
       handleJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
           const args = parseJsonWithRevivers(this, argsJson) ?? [];
-          const member = findObjectMember(identifier, targetInstanceId);
-          let returnValue = null;
-
-          if (callType === JSCallType.FunctionCall) {
-              returnValue = this.handleJSFunctionCall(identifier, member.func, args);
-          } else if (callType === JSCallType.NewCall) {
-              returnValue = this.handleJSNewCall(identifier, member.func, args);
-          } else if (callType === JSCallType.GetValue) {
-              returnValue = this.handleJSPropertyGet(identifier, member);
-          } else if (callType === JSCallType.SetValue) {
-              this.handleJSPropertySet(identifier, member, args);
-          } else {
-              throw new Error(`Unsupported call type '${callType}'.`);
-          }
-
-          return returnValue;
-      }
-
-      handleJSFunctionCall(identifier: string, func: any, args: unknown[]): any {
-          if (func instanceof Function) {
-              return func(...args);
-          } else {
-              throw new Error(`The value '${identifier}' is not a function.`);
-          }
-      }
-
-      handleJSNewCall(identifier: string, func: any, args: unknown[]): any {
-          if (func instanceof Function) {
-              try {
-                  // The new expression throws if the function is not constructible (e.g. an arrow function).
-                  return new func(...args);
-              } catch (err) {
-                  if (err instanceof TypeError) {
-                      throw new Error(`The value '${identifier}' is not a constructor function.`);
-                  } else {
-                      throw err;
-                  }
-              }
-          } else {
-              throw new Error(`The value '${identifier}' is not a function.`);
-          }
-      }
-
-      handleJSPropertyGet(identifier: string, property: ObjectMemberDescriptor): any {
-          if (property.name === "") {
-              return property.parent;
-          }
-
-          // TODO(oroztocil): Do we want to throw on undefined property or return null?
-          if (!this.isReadableProperty(property.parent, property.name)) {
-              throw new Error(`The property '${identifier}' is not defined or is not readable.`);
-          }
-
-          // For empty identifier, we return the object itself to support "dereferencing" JS object references.
-          return property.parent[property.name];
-      }
-
-      handleJSPropertySet(identifier: string, property: ObjectMemberDescriptor, args: unknown[]) {
-          if (!this.isWritableProperty(property.parent, property.name)) {
-              throw new Error(`The property '${identifier}' is not writable.`);
-          }
-
-          const value = args[0];
-          property.parent[property.name] = value;
-      }
-
-      isReadableProperty(obj: any, propName: string) {
-          // Return false for missing property.
-          if (!(propName in obj)) {
-              return false;
-          }
-
-          // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
-          while (obj !== undefined) {
-              const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-
-              if (descriptor) {
-                  // Return true for data property
-                  if (descriptor.hasOwnProperty('value')) {
-                      return true
-                  }
-              
-                  // Return true for accessor property with defined getter.
-                  return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
-              }
-
-              obj = Object.getPrototypeOf(obj);
-          }
-
-          return false;
-      }
-        
-      isWritableProperty(obj: any, propName: string) {
-          // Return true for missing property if the property can be added.
-          if (!(propName in obj)) {
-              return Object.isExtensible(obj);
-          }
-
-          // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
-          while (obj !== undefined) {
-              const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-
-              if (descriptor) {
-                  // Return true for writable data property.
-                  if (descriptor.hasOwnProperty('value') && descriptor.writable) {
-                      return true;
-                  }
-                  
-                  // Return true for accessor property with defined setter.
-                  return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
-              }
-
-              obj = Object.getPrototypeOf(obj);
-          }
-
-          return false;
+          const func = findJSFunction(identifier, targetInstanceId, callType);
+          return func(...args);
       }
 
       endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
@@ -703,34 +558,133 @@ export module DotNet {
       return error ? error.toString() : "null";
   }
 
-  export function findJSFunction(identifier: string, targetInstanceId: number): Function {
+  export function findJSFunction(identifier: string, targetInstanceId: number, callType?: JSCallType): Function {
       const targetInstance = cachedJSObjectsById[targetInstanceId];
 
       if (targetInstance) {
-          const member = targetInstance.findMember(identifier);
-
-          if (!member.func) {
-              throw new Error(`The value '${identifier}' is not a function.`);
-          }
-
-          return member.func;
+          return targetInstance.resolveFunction(identifier, callType ?? JSCallType.FunctionCall);
       }
 
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
   }
 
-  export function findObjectMember(identifier: string, targetInstanceId: number): ObjectMemberDescriptor {
-      const targetInstance = cachedJSObjectsById[targetInstanceId];
-
-      if (!targetInstance) {
-          throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
-      }
-
-      return targetInstance.findMember(identifier);
-  }
-
   export function disposeJSObjectReferenceById(id: number) {
       delete cachedJSObjectsById[id];
+  }
+
+  /** Traverses the object hierarchy to find an object member specified by the identifier.
+   * 
+   * @param obj Root object to search in.
+   * @param identifier Complete identifier of the member to find, e.g. "document.location.href".
+   * @returns A tuple containing the immediate parent of the member and the member name.
+   */
+  export function findObjectMember(obj: any, identifier: string): [any, string] {
+      const keys = identifier.split(".");
+      let current = obj;
+
+      // First, we iterate over all but the last key. We throw error for missing intermediate keys.
+      // Error handling in case of undefined last key depends on the type of operation.
+      for (let i = 0; i < keys.length - 1; i++) {
+          const key = keys[i];
+  
+          if (current && typeof current === 'object' && key in current) {
+              current = current[key];
+          } else {
+              throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
+          }
+      }
+  
+      return [current, keys[keys.length - 1]];
+  }
+
+  /** Takes an object member and a call type and returns a function that performs the operation specified by the call type on the member.
+   * 
+   * @param parent Immediate parent of the accessed object member.
+   * @param memberName Name (key) of the accessed member.
+   * @param callType The type of the operation to perform on the member.
+   * @param identifier The full member identifier. Only used for error messages.
+   * @returns A function that performs the operation on the member.
+   */
+  function wrapJSCallAsFunction(parent: any, memberName: string, callType: JSCallType, identifier: string): Function {
+      switch (callType) {
+          case JSCallType.FunctionCall:
+              const func = parent[memberName];
+              if (func instanceof Function) {
+                  return func.bind(parent);
+              } else {
+                  throw new Error(`The value '${identifier}' is not a function.`);
+              }
+          case JSCallType.NewCall:
+              const ctor = parent[memberName];
+              if (ctor instanceof Function) {
+                  const bound = ctor.bind(parent);
+                  return (...args: any[]) => new bound(...args);
+              } else {
+                  throw new Error(`The value '${identifier}' is not a function.`);
+              }
+          case JSCallType.GetValue:
+              if (!isReadableProperty(parent, memberName)) {
+                  throw new Error(`The property '${identifier}' is not defined or is not readable.`);
+              }
+              return () => parent[memberName];
+          case JSCallType.SetValue:
+              if (!isWritableProperty(parent, memberName)) {
+                  throw new Error(`The property '${identifier}' is not writable.`);
+              }
+              return (...args: any[]) => parent[memberName] = args[0];
+      }
+  }
+
+  function isReadableProperty(obj: any, propName: string) {
+    // Return false for missing property.
+    if (!(propName in obj)) {
+        return false;
+    }
+
+    // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
+    while (obj !== undefined) {
+        const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+
+        if (descriptor) {
+            // Return true for data property
+            if (descriptor.hasOwnProperty('value')) {
+                return true
+            }
+        
+            // Return true for accessor property with defined getter.
+            return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
+        }
+
+        obj = Object.getPrototypeOf(obj);
+    }
+
+    return false;
+}
+  
+  function isWritableProperty(obj: any, propName: string) {
+      // Return true for missing property if the property can be added.
+      if (!(propName in obj)) {
+          return Object.isExtensible(obj);
+      }
+  
+      // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
+      while (obj !== undefined) {
+          const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+  
+          if (descriptor) {
+              // Return true for writable data property.
+              if (descriptor.hasOwnProperty('value') && descriptor.writable) {
+                  return true;
+              }
+              
+              // Return true for accessor property with defined setter.
+              return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
+          }
+  
+          obj = Object.getPrototypeOf(obj);
+      }
+  
+      return false;
   }
 
   export class DotNetObject {

@@ -70,7 +70,7 @@ public class JSObjectReferenceTest
     {
         public int BeginInvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             BeginInvokeJSInvocationCount++;
         }
@@ -89,7 +89,7 @@ public class JSObjectReferenceTest
     {
         public int InvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
         }
 
@@ -98,7 +98,7 @@ public class JSObjectReferenceTest
             throw new NotImplementedException();
         }
 
-        protected override string? InvokeJS(JSInvocationInfo invocationInfo)
+        protected override string? InvokeJS(in JSInvocationInfo invocationInfo)
         {
             InvokeJSInvocationCount++;
 

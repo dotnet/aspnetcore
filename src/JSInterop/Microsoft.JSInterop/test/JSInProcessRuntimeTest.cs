@@ -101,7 +101,7 @@ public class JSInProcessRuntimeBaseTest
             throw new NotImplementedException();
         }
 
-        protected override string? InvokeJS(JSInvocationInfo invocationInfo)
+        protected override string? InvokeJS(in JSInvocationInfo invocationInfo)
         {
             InvokeCalls.Add(invocationInfo);
             return NextResultJson;
@@ -110,7 +110,7 @@ public class JSInProcessRuntimeBaseTest
         protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
             => throw new NotImplementedException("This test only covers sync calls");
 
-        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
             => throw new NotImplementedException("This test only covers sync calls");
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

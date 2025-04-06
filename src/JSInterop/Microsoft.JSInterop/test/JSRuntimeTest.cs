@@ -481,7 +481,7 @@ public class JSRuntimeTest
             throw new NotImplementedException();
         }
 
-        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             BeginInvokeCalls.Add(invocationInfo);
         }

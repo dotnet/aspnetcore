@@ -1080,7 +1080,7 @@ public class DotNetDispatcherTest
         public string LastCompletionCallId { get; private set; }
         public DotNetInvocationResult LastCompletionResult { get; private set; }
 
-        protected override void BeginInvokeJS(JSInvocationInfo invocationInfo)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             LastInvocationAsyncHandle = invocationInfo.AsyncHandle;
             LastInvocationIdentifier = invocationInfo.Identifier;
@@ -1094,7 +1094,7 @@ public class DotNetDispatcherTest
             throw new NotImplementedException();
         }
 
-        protected override string InvokeJS(JSInvocationInfo invocationInfo)
+        protected override string InvokeJS(in JSInvocationInfo invocationInfo)
         {
             LastInvocationAsyncHandle = default;
             LastInvocationIdentifier = invocationInfo.Identifier;
