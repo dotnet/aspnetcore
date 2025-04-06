@@ -630,15 +630,10 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     {
         // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
         // Only decrement once total.
-        lock (_completionLock)
+        if (Interlocked.CompareExchange(ref _decrementCalled, true, false))
         {
-            if (_decrementCalled)
-            {
                 return;
             }
-
-            _decrementCalled = true;
-        }
 
         _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
     }
