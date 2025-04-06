@@ -165,7 +165,7 @@ try {
     }
 
     # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
-    $solution = Get-ChildItem "$repoRoot/AspNetCore.sln"
+    $solution = Get-ChildItem "$repoRoot/AspNetCore.slnx"
     $solutionFile = Split-Path -Leaf $solution
 
     Write-Host "Checking that $solutionFile is up to date"
