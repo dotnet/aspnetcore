@@ -62,6 +62,15 @@ public abstract class NavigationManager
     private string? _uri;
     private bool _isInitialized;
     private const string EnableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+
+    /// <summary>
+    /// Gets a value indicating whether navigation exceptions should be thrown during navigation.
+    /// </summary>
+    /// <remarks>
+    /// This property is controlled by the AppContext switch
+    /// <c>Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException</c>.
+    /// When enabled, navigation operations may throw exceptions for debugging or testing purposes.
+    /// </remarks>
     protected static bool ThrowNavigationException =>
         AppContext.TryGetSwitch(EnableThrowNavigationException, out var switchValue) && switchValue;
 
