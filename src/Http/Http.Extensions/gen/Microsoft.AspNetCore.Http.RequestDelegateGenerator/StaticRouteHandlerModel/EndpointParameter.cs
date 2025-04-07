@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -168,7 +169,7 @@ internal class EndpointParameter
             }
             if (symbol is IPropertySymbol ||
                 Type is not INamedTypeSymbol namedTypeSymbol ||
-                !TryGetAsParametersConstructor(endpoint, namedTypeSymbol, out var isDefaultConstructor, out var matchedProperties))
+                !TryGetAsParametersConstructor(endpoint, namedTypeSymbol, wellKnownTypes, out var isDefaultConstructor, out var matchedProperties))
             {
                 if (symbol is IPropertySymbol)
                 {
@@ -454,7 +455,7 @@ internal class EndpointParameter
         }
     }
 
-    private static bool TryGetAsParametersConstructor(Endpoint endpoint, INamedTypeSymbol type, out bool? isDefaultConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedProperties)
+    private static bool TryGetAsParametersConstructor(Endpoint endpoint, INamedTypeSymbol type, WellKnownTypes wellKnownTypes, out bool? isDefaultConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedProperties)
     {
         isDefaultConstructor = null;
         matchedProperties = null;
@@ -463,6 +464,12 @@ internal class EndpointParameter
         if (type.IsAbstract)
         {
             endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersAbstractType, location, parameterTypeString));
+            return false;
+        }
+
+        if (type.Implements(wellKnownTypes.Get(WellKnownType.System_Collections_IEnumerable)))
+        {
+            endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersEnumerableType, location, parameterTypeString));
             return false;
         }
 

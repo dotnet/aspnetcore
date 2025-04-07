@@ -483,6 +483,11 @@ public class HubConnection implements AutoCloseable {
                             null, "Client failed to parse argument(s)."));
                     }
                     break;
+                case STREAM_BINDING_FAILURE:
+                    // The server can't receive a response, so we just drop the message and log
+                    StreamBindingFailureMessage streamError = (StreamBindingFailureMessage)message;
+                    logger.error("Failed to bind argument received in stream '{}'.", streamError.getInvocationId(), streamError.getException());
+                    break;
                 case INVOCATION:
                     InvocationMessage invocationMessage = (InvocationMessage) message;
                     connectionState.dispatchInvocation(invocationMessage);

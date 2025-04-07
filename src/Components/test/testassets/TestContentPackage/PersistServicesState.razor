@@ -1,0 +1,32 @@
+﻿@using TestContentPackage.Services
+
+@inject InteractiveServerService InteractiveServerState
+@inject InteractiveWebAssemblyService InteractiveWebAssemblyState
+@inject InteractiveAutoService InteractiveAutoState
+
+<p>Interactive server state is <span id="server-state">@InteractiveServerState.State</span></p>
+<p>Interactive webassembly state is <span id="wasm-state">@InteractiveWebAssemblyState.State</span></p>
+<p>Interactive auto state is <span id="auto-state">@InteractiveAutoState.State</span></p>
+
+<p>Render mode: <span id="render-mode">@_renderMode</span></p>
+
+@code {
+
+    private string _renderMode = "";
+
+    protected override void OnInitialized()
+    {
+        _renderMode = RendererInfo.Name;
+        if (!RendererInfo.IsInteractive)
+        {
+            InteractiveServerState.State = "Server state";
+            InteractiveWebAssemblyState.State = "WebAssembly state";
+            InteractiveAutoState.State = "Auto state";
+        }else
+        {
+            InteractiveServerState.State ??= "not restored";
+            InteractiveWebAssemblyState.State ??= "not restored";
+            InteractiveAutoState.State ??= "not restored";
+        }
+    }
+}
