@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
   </ItemGroup>
 
 </Project>
