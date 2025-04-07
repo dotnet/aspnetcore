@@ -9,8 +9,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConver
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConverter.JsonPatchDocumentConverter() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers.GetValueResult
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers.GetValueResult.HasError.get -> bool
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult.CanBeConverted.get -> bool
@@ -88,8 +86,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError jsonPatchError) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError jsonPatchError, System.Exception innerException) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException(string message, System.Exception innerException) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers.GetValueResult.GetValueResult(object propertyValue, bool hasError) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers.GetValueResult.PropertyValue.get -> object
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.GetOperations() -> System.Collections.Generic.IList<Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.set -> void
