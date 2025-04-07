@@ -7,45 +7,38 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Hosting;
+using TlsFeatureObserve;
 using TlsFeaturesObserve.HttpSys;
 
-namespace TlsFeatureObserve;
+HttpSysConfigurator.ConfigureCacheTlsClientHello();
+CreateHostBuilder(args).Build().Run();
 
-public static class Program
-{
-    public static void Main(string[] args)
-    {
-        HttpSysConfigurator.ConfigureCacheTlsClientHello();
-        CreateHostBuilder(args).Build().Run();
-    }
-
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHost(webBuilder =>
+static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureWebHost(webBuilder =>
+        {
+            webBuilder.UseStartup<Startup>()
+            .UseHttpSys(options =>
             {
-                webBuilder.UseStartup<Startup>()
-                .UseHttpSys(options =>
-                {
-                    // If you want to use https locally: https://stackoverflow.com/a/51841893
-                    options.UrlPrefixes.Add("https://*:6000"); // HTTPS
+                // If you want to use https locally: https://stackoverflow.com/a/51841893
+                options.UrlPrefixes.Add("https://*:6000"); // HTTPS
 
-                    options.Authentication.Schemes = AuthenticationSchemes.None;
-                    options.Authentication.AllowAnonymous = true;
+                options.Authentication.Schemes = AuthenticationSchemes.None;
+                options.Authentication.AllowAnonymous = true;
 
-                    options.TlsClientHelloBytesCallback = ProcessTlsClientHello;
-                });
+                options.TlsClientHelloBytesCallback = ProcessTlsClientHello;
             });
+        });
 
-    private static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
-    {
-        var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
+static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
+{
+    var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
 
-        var myTlsFeature = new MyTlsFeature(
-            connectionId: httpConnectionFeature.ConnectionId,
-            tlsClientHelloLength: tlsClientHelloBytes.Length);
+    var myTlsFeature = new MyTlsFeature(
+        connectionId: httpConnectionFeature.ConnectionId,
+        tlsClientHelloLength: tlsClientHelloBytes.Length);
 
-        features.Set<IMyTlsFeature>(myTlsFeature);
-    }
+    features.Set<IMyTlsFeature>(myTlsFeature);
 }
 
 public interface IMyTlsFeature
