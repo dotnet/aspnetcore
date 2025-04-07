@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Shared;
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 
 /// <inheritdoc />
-public class ObjectAdapter : IObjectAdapterWithTest
+internal class ObjectAdapter : IObjectAdapterWithTest
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectAdapter"/>.

@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 
-public class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
+internal class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
 {
     internal static JsonSerializerOptions DefaultSerializerOptions { get; } = JsonSerializerOptions.Default;
 
