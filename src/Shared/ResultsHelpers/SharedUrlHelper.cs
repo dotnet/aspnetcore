@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Internal;
@@ -75,6 +76,7 @@ internal static class SharedUrlHelper
 
         return false;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
         {
             // URLs may not contain ASCII control characters.
