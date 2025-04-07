@@ -18,11 +18,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryAdd(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -34,7 +34,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, serializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -49,11 +49,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryGet(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             value = null;
@@ -75,10 +75,10 @@ public class PocoAdapter : IAdapter
     public virtual bool TryRemove(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -108,11 +108,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryReplace(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -124,7 +124,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, serializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -139,11 +139,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryTest(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -155,7 +155,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, serializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -175,7 +175,7 @@ public class PocoAdapter : IAdapter
     public virtual bool TryTraverse(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out object value,
         out string errorMessage)
     {
@@ -186,7 +186,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
+        if (TryGetJsonProperty(target, serializerOptions, segment, out var jsonProperty))
         {
             value = jsonProperty.Get(target);
             errorMessage = null;
@@ -200,16 +200,16 @@ public class PocoAdapter : IAdapter
 
     protected virtual bool TryGetJsonProperty(
         object target,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         string segment,
         out JsonPropertyInfo jsonProperty)
     {
-        var typeInfo = jsonSerializerOptions.GetTypeInfo(target.GetType());
+        var typeInfo = serializerOptions.GetTypeInfo(target.GetType());
         if (typeInfo is not null)
         {
             var pocoProperty = typeInfo
                 .Properties
-                .FirstOrDefault(p => string.Equals(p.Name, segment, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(p => string.Equals(p.Name, segment, ExtractStringComparison(serializerOptions)));
 
             if (pocoProperty != null)
             {
@@ -227,9 +227,9 @@ public class PocoAdapter : IAdapter
         return TryConvertValue(value, propertyType, null, out convertedValue);
     }
 
-    protected virtual bool TryConvertValue(object value, Type propertyType, JsonSerializerOptions jsonSerializerOptions, out object convertedValue)
+    protected virtual bool TryConvertValue(object value, Type propertyType, JsonSerializerOptions serializerOptions, out object convertedValue)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, jsonSerializerOptions);
+        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, serializerOptions);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;
@@ -239,4 +239,7 @@ public class PocoAdapter : IAdapter
         convertedValue = conversionResult.ConvertedInstance;
         return true;
     }
+
+    private static StringComparison ExtractStringComparison(JsonSerializerOptions serializerOptions)
+        => serializerOptions.PropertyNameCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 }

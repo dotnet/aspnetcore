@@ -14,41 +14,41 @@ public interface IAdapter
     bool TryTraverse(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out object nextTarget,
         out string errorMessage);
 
     bool TryAdd(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage);
 
     bool TryRemove(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out string errorMessage);
 
     bool TryGet(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         out object value,
         out string errorMessage);
 
     bool TryReplace(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage);
 
     bool TryTest(
         object target,
         string segment,
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage);
 }

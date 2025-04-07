@@ -16,27 +16,27 @@ public class ObjectAdapter : IObjectAdapterWithTest
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectAdapter"/>.
     /// </summary>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
     public ObjectAdapter(
-        JsonSerializerOptions jsonSerializerOptions,
+        JsonSerializerOptions serializerOptions,
         Action<JsonPatchError> logErrorAction) :
-        this(jsonSerializerOptions, logErrorAction, Adapters.AdapterFactory.Default)
+        this(serializerOptions, logErrorAction, Adapters.AdapterFactory.Default)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectAdapter"/>.
     /// </summary>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
     /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
     public ObjectAdapter(
-       JsonSerializerOptions jsonSerializerOptions,
+       JsonSerializerOptions serializerOptions,
        Action<JsonPatchError> logErrorAction,
        IAdapterFactory adapterFactory)
     {
-        SerializerOptions = jsonSerializerOptions ?? throw new ArgumentNullException(nameof(jsonSerializerOptions));
+        SerializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
         LogErrorAction = logErrorAction;
         AdapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
     }
