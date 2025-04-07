@@ -8,12 +8,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
 
 internal sealed class TlsListener
 {
-    private readonly HttpSysOptions _httpSysOptions;
     private readonly ConcurrentDictionary<ulong, bool> _connectionIdsTlsClientHelloCallbackInvokedMap = new();
 
-    internal TlsListener(HttpSysOptions httpSysOptions)
+    private readonly Action<IFeatureCollection, ReadOnlySpan<byte>> _tlsClientHelloBytesCallback;
+
+    internal TlsListener(Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
-        _httpSysOptions = httpSysOptions;
+        _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
     }
 
     internal void InvokeTlsClientHelloCallback(IFeatureCollection features, Request request)
@@ -24,7 +25,7 @@ internal sealed class TlsListener
             return;
         }
 
-        var success = request.GetAndInvokeTlsClientHelloCallback(features, _httpSysOptions.TlsClientHelloBytesCallback);
+        var success = request.GetAndInvokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
         if (success)
         {
             _connectionIdsTlsClientHelloCallbackInvokedMap[request.UConnectionId] = true;

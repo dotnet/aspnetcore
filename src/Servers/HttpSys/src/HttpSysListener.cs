@@ -77,7 +77,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
-            _tlsListener = new TlsListener(options);
+            _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
             _disconnectListener = new DisconnectListener(_requestQueue, Logger, onDisconnect: _tlsListener.ConnectionClosed);
         }
         catch (Exception exception)
