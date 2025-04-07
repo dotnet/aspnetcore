@@ -11,13 +11,8 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
-/// <summary>
-/// This API supports infrastructure and is not intended to be used
-/// directly from your code. This API may change or be removed in future releases.
-/// </summary>
-public class ListAdapter : IAdapter
+internal class ListAdapter : IAdapter
 {
-    #region Existing implementation
     public virtual bool TryAdd(object target, string segment, JsonSerializerOptions serializerOptions, object value, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out var typeArgument, out errorMessage))
@@ -48,8 +43,6 @@ public class ListAdapter : IAdapter
         errorMessage = null;
         return true;
     }
-    #endregion
-
     public virtual bool TryGet(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out _, out errorMessage))

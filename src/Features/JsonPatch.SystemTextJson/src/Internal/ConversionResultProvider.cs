@@ -7,11 +7,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
-/// <summary>
-/// This API supports infrastructure and is not intended to be used
-/// directly from your code. This API may change or be removed in future releases.
-/// </summary>
-public static class ConversionResultProvider
+internal static class ConversionResultProvider
 {
     public static ConversionResult ConvertTo(object value, Type typeToConvertTo)
     {

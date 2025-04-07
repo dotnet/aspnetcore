@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 /// <summary>
 /// The default AdapterFactory to be used for resolving <see cref="IAdapter"/>.
 /// </summary>
-public class AdapterFactory : IAdapterFactory
+internal class AdapterFactory : IAdapterFactory
 {
     internal static AdapterFactory Default { get; } = new();
 

@@ -8,11 +8,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
-/// <summary>
-/// This API supports infrastructure and is not intended to be used
-/// directly from your code. This API may change or be removed in future releases.
-/// </summary>
-public class DictionaryAdapter<TKey, TValue> : IAdapter
+internal class DictionaryAdapter<TKey, TValue> : IAdapter
 {
     public virtual bool TryAdd(
         object target,
