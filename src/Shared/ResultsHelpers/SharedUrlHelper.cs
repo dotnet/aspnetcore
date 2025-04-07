@@ -32,15 +32,15 @@ internal static class SharedUrlHelper
 
     internal static bool IsLocalUrl([NotNullWhen(true)] string? url)
     {
-        if (string.IsNullOrEmpty(url))
+        var urlSpan = url.AsSpan();
+
+        if (urlSpan.IsEmpty)
         {
             return false;
         }
 
-        var urlSpan = url.AsSpan();
-
         // Allows "/" or "/foo" but not "//" or "/\".
-        if (urlSpan.StartsWith('/'))
+        if (urlSpan[0] == '/')
         {
             // url is exactly "/"
             if (urlSpan.Length < 2)
