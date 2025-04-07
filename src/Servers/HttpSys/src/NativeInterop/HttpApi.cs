@@ -14,9 +14,6 @@ internal static partial class HttpApi
     private const string HTTPAPI = "httpapi.dll";
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
-    internal static partial uint HttpSetServiceConfiguration(IntPtr ServiceHandle, ulong configId, IntPtr pConfigInformation, ulong configInformationLength, IntPtr overlapped);
-
-    [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpReceiveRequestEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, IntPtr pEntityBuffer, uint entityBufferLength, out uint bytesReturned, SafeNativeOverlapped pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
