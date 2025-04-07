@@ -54,31 +54,25 @@ internal static partial class HttpApi
 
     internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
-    => HttpGetRequestProperty(requestQueueHandle, requestId, (uint)propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    {
+        return HttpGetRequestProperty(requestQueueHandle, requestId, (uint)propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    }
 
     internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, uint propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
     {
-        if (!HttpGetRequestPropertySupported)
-        {
-            return default;
-        }
-
         return HttpGetRequestInvoker!(requestQueueHandle, requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
     }
 
     internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* input, uint inputSize, IntPtr overlapped)
-    => HttpSetRequestProperty(requestQueueHandle, requestId, (int)propertyId, input, inputSize, overlapped);
+    {
+        return HttpSetRequestProperty(requestQueueHandle, requestId, (int)propertyId, input, inputSize, overlapped);
+    }
 
     internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, int propertyId,
         void* input, uint inputSize, IntPtr overlapped)
     {
-        if (!HttpSetRequestPropertySupported)
-        {
-            return default;
-        }
-
         return HttpSetRequestInvoker!(requestQueueHandle, requestId, propertyId, input, inputSize, overlapped);
     }
 
