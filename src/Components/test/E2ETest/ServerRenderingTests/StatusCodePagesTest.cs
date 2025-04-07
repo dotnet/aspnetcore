@@ -20,13 +20,18 @@ public class StatusCodePagesTest(BrowserFixture browserFixture, BasicTestAppServ
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>(browserFixture, serverFixture, output)
 {
 
-    [Fact]
-    public void StatusCodePagesWithReexecution()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StatusCodePagesWithReexecution(bool setNotFound)
     {
-        Navigate($"{ServerPathBase}/reexecution/set-not-found");
+        Navigate($"{ServerPathBase}/reexecution/set-not-found?shouldSet={setNotFound}");
 
-        Browser.Equal("Re-executed page", () => Browser.Title);
+        string expectedTitle = setNotFound ? "Re-executed page" : "Original page";
+        Browser.Equal(expectedTitle, () => Browser.Title);
         var infoText = Browser.FindElement(By.Id("test-info")).Text;
-        Assert.Contains("Welcome On Page Re-executed After Not Found Event", infoText);
+        string expectedInfoText = setNotFound ? "Welcome On Page Re-executed After Not Found Event" : "Any content";
+        Assert.Contains(expectedInfoText, infoText);
     }
+
 }
