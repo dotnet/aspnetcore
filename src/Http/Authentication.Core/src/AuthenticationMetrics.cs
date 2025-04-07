@@ -42,12 +42,12 @@ internal sealed class AuthenticationMetrics
         _signInCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_ins",
             unit: "{request}",
-            description: "The total number of times a principal is signed in.");
+            description: "The total number of times a principal is signed in with a scheme.");
 
         _signOutCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_outs",
             unit: "{request}",
-            description: "The total number of times a scheme is signed out.");
+            description: "The total number of times a principal is signed out with a scheme.");
     }
 
     public void AuthenticatedRequestCompleted(string? scheme, AuthenticateResult? result, Exception? exception, long startTimestamp, long currentTimestamp)
