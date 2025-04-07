@@ -1,45 +1,11 @@
 #nullable enable
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.AdapterFactory
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.AdapterFactory.AdapterFactory() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapterWithTest
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConverter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConverter.JsonPatchDocumentConverter() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult.CanBeConverted.get -> bool
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResultProvider
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.DictionaryAdapter() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.JsonObjectAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.ListAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType.Get = 2 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType.Replace = 3 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo.Index.get -> int
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo.PositionInfo() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo.PositionInfo(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType type, int index) -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo.Type.get -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType.EndOfList = 1 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType.Index = 0 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType.Invalid = 2 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType.OutOfBounds = 3 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ObjectVisitor
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath.ParsedPath() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.PocoAdapter() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.JsonPatchDocument() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
@@ -70,17 +36,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter.Remove(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter.Replace(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapterWithTest.Test(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.AdapterFactory.get -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Add(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Copy(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.LogErrorAction.get -> System.Action<Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError>
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Move(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.ObjectAdapter(System.Text.Json.JsonSerializerOptions serializerOptions, System.Action<Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError> logErrorAction) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.ObjectAdapter(System.Text.Json.JsonSerializerOptions serializerOptions, System.Action<Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError> logErrorAction, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory adapterFactory) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Remove(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Replace(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.ObjectAdapter.Test(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.AffectedObject.get -> object
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.FailedOperation.get -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError jsonPatchError) -> void
@@ -89,20 +44,12 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.GetOperations() -> System.Collections.Generic.IList<Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.set -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult.ConversionResult(bool canBeConverted, object convertedInstance) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult.ConvertedInstance.get -> object
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object nextTarget, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ObjectVisitor.ObjectVisitor(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath path, System.Text.Json.JsonSerializerOptions serializerOptions) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ObjectVisitor.ObjectVisitor(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath path, System.Text.Json.JsonSerializerOptions serializerOptions, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory adapterFactory) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ObjectVisitor.TryVisit(ref object target, out Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter adapter, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath.LastSegment.get -> string
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath.ParsedPath(string path) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ParsedPath.Segments.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.Add(string path, object value) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.ApplyTo(object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter adapter) -> void
@@ -173,41 +120,3 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.OperationBase(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.path.get -> string
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.path.set -> void
-~override Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
-~override Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters.JsonPatchDocumentConverter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument value, System.Text.Json.JsonSerializerOptions options) -> void
-~static Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResultProvider.ConvertTo(object value, System.Type typeToConvertTo) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult
-~static Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResultProvider.CopyTo(object value, System.Type typeToConvertTo) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ConversionResult
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.AdapterFactory.Create(object target) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryConvertKey(string key, out TKey convertedKey, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryConvertValue(object value, out TValue convertedValue, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryConvertValue(object value, System.Text.Json.JsonSerializerOptions serializerOptions, out TValue convertedValue, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.DictionaryAdapter<TKey, TValue>.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object nextTarget, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.JsonObjectAdapter.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object nextTarget, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, out object convertedValue, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object convertedValue, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryGetPositionInfo(int collectionCount, string segment, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.OperationType operationType, out Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.PositionInfo positionInfo, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.ListAdapter.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, out object convertedValue) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, System.Text.Json.JsonSerializerOptions serializerOptions, out object convertedValue) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryGetJsonProperty(object target, System.Text.Json.JsonSerializerOptions serializerOptions, string segment, out System.Text.Json.Serialization.Metadata.JsonPropertyInfo jsonProperty) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.PocoAdapter.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
