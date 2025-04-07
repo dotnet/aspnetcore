@@ -868,6 +868,7 @@
     <Project Path="src/Servers/HttpSys/samples/QueueSharing/QueueSharing.csproj" />
     <Project Path="src/Servers/HttpSys/samples/SelfHostServer/SelfHostServer.csproj" />
     <Project Path="src/Servers/HttpSys/samples/TestClient/TestClient.csproj" />
+    <Project Path="src/Servers/HttpSys/samples/TlsFeaturesObserve/TlsFeaturesObserve.csproj" />
   </Folder>
   <Folder Name="/src/Servers/HttpSys/test/" Id="c087a640-2922-1045-1264-5231983559f6">
     <Project Path="src/Servers/HttpSys/test/FunctionalTests/Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj" />
