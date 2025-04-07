@@ -14,9 +14,9 @@ internal sealed partial class DisconnectListener
     private readonly RequestQueue _requestQueue;
     private readonly ILogger _logger;
 
-    internal Action<ulong> OnDisconnect { get; }
+    internal Action<ulong>? OnDisconnect { get; }
 
-    internal DisconnectListener(RequestQueue requestQueue, ILogger logger, Action<ulong> onDisconnect)
+    internal DisconnectListener(RequestQueue requestQueue, ILogger logger, Action<ulong>? onDisconnect = null)
     {
         _requestQueue = requestQueue;
         _logger = logger;
@@ -124,7 +124,7 @@ internal sealed partial class DisconnectListener
         bool result;
         if (result = _connectionCancellationTokens.TryRemove(connectionId, out connectionCancellation!))
         {
-            OnDisconnect(connectionId);
+            OnDisconnect?.Invoke(connectionId);
         }
 
         return result;

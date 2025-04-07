@@ -42,7 +42,7 @@ internal sealed partial class HttpSysListener : IDisposable
     private readonly UrlGroup _urlGroup;
     private readonly RequestQueue _requestQueue;
     private readonly DisconnectListener _disconnectListener;
-    private readonly TlsListener _tlsListener;
+    private readonly TlsListener? _tlsListener;
 
     private readonly object _internalLock;
 
@@ -73,13 +73,19 @@ internal sealed partial class HttpSysListener : IDisposable
         try
         {
             _serverSession = new ServerSession();
-
             _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
-
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
-            _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
-            _disconnectListener = new DisconnectListener(_requestQueue, Logger, onDisconnect: _tlsListener.ConnectionClosed);
+            if (options.TlsClientHelloBytesCallback is not null)
+            {
+                _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
+                _disconnectListener = new DisconnectListener(_requestQueue, Logger, onDisconnect: _tlsListener.ConnectionClosed);
+            }
+            else
+            {
+                _tlsListener = null;
+                _disconnectListener = new DisconnectListener(_requestQueue, Logger);
+            }
         }
         catch (Exception exception)
         {
@@ -103,7 +109,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal UrlGroup UrlGroup => _urlGroup;
     internal RequestQueue RequestQueue => _requestQueue;
-    internal TlsListener TlsListener => _tlsListener;
+    internal TlsListener? TlsListener => _tlsListener;
     internal DisconnectListener DisconnectListener => _disconnectListener;
 
     public HttpSysOptions Options { get; }

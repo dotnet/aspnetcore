@@ -247,7 +247,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             {
                 statusCode = HttpApi.HttpGetRequestProperty(
                     Server.RequestQueue.Handle, requestId,
-                    11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                    (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                     qualifier: null, qualifierSize: 0,
                     pBuffer, (uint)buffer.Length,
                     bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
@@ -277,7 +277,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 {
                     statusCode = HttpApi.HttpGetRequestProperty(
                         Server.RequestQueue.Handle, requestId,
-                        11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                         qualifier: null, qualifierSize: 0,
                         pBuffer, (uint)buffer.Length,
                         bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);

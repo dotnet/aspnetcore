@@ -34,10 +34,10 @@ internal static partial class HttpApi
     [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
     internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
-    internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, uint propertyId,
+    internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped);
 
-    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, int propertyId,
+    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* input, uint inputSize, IntPtr overlapped);
 
     // HTTP_PROPERTY_FLAGS.Present (1)
@@ -55,22 +55,10 @@ internal static partial class HttpApi
     internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
     {
-        return HttpGetRequestProperty(requestQueueHandle, requestId, (uint)propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
-    }
-
-    internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, uint propertyId,
-        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
-    {
         return HttpGetRequestInvoker!(requestQueueHandle, requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
     }
 
     internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
-        void* input, uint inputSize, IntPtr overlapped)
-    {
-        return HttpSetRequestProperty(requestQueueHandle, requestId, (int)propertyId, input, inputSize, overlapped);
-    }
-
-    internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, int propertyId,
         void* input, uint inputSize, IntPtr overlapped)
     {
         return HttpSetRequestInvoker!(requestQueueHandle, requestId, propertyId, input, inputSize, overlapped);
