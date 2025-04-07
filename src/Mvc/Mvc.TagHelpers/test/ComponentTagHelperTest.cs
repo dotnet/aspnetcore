@@ -104,7 +104,7 @@ public class ComponentTagHelperTest
 
     class MockNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        private EventHandler<NavigationEventArgs>? _onNavigateTo;
+        private EventHandler<NavigationEventArgs> _onNavigateTo;
 
         public event EventHandler<NavigationEventArgs> OnNavigateTo
         {
