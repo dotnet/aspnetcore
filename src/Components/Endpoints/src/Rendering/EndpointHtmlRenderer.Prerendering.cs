@@ -209,9 +209,9 @@ internal partial class EndpointHtmlRenderer
             {
                 _logger.LogError(
                     ex,
-                    @"An exception occurred during non-streaming rendering.
-                    This exception will be ignored because the response
-                    is being discarded and the request is being re-executed.");
+                    "An exception occurred during non-streaming rendering. " +
+                    "This exception will be ignored because the response " +
+                    "is being discarded and the request is being re-executed.");
             }
         }
     }

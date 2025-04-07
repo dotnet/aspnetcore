@@ -91,6 +91,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         using var bufferWriter = new BufferedTextWriter(writer);
 
         int originalStatusCode = context.Response.StatusCode;
+        bool isErrorHandlerOrHasStatusCodePage = isErrorHandler || hasStatusCodePage;
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
@@ -99,10 +100,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandler || hasStatusCodePage);
+            waitForQuiescence: result.IsPost || isErrorHandlerOrHasStatusCodePage);
 
-        bool requresReexecution = originalStatusCode != context.Response.StatusCode && hasStatusCodePage;
-        if (requresReexecution)
+        bool requiresReexecution = originalStatusCode != context.Response.StatusCode && hasStatusCodePage;
+        if (requiresReexecution)
         {
             // If the response is a 404, we don't want to write any content.
             // This is because the 404 status code is used by the routing middleware
@@ -162,7 +163,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
 
         // Emit comment containing state.
-        if (!isErrorHandler && !hasStatusCodePage)
+        if (!isErrorHandlerOrHasStatusCodePage)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
