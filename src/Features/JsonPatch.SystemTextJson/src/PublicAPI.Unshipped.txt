@@ -10,9 +10,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.JsonPatchDocument() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty.Property.get -> System.Text.Json.JsonProperty
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty.Property.set -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.Operation() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.ShouldSerializevalue() -> bool
@@ -101,9 +98,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError.ErrorMessage.get -> string
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError.JsonPatchError(object affectedObject, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, string errorMessage) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError.Operation.get -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty.JsonPatchProperty(System.Text.Json.JsonProperty property, object parent) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty.Parent.get -> object
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchProperty.Parent.set -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.Apply(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.Operation(string op, string path, string from, object value) -> void
