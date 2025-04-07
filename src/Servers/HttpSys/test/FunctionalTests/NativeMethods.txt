@@ -1,0 +1,7 @@
+// https://github.com/microsoft/cswin32
+// Listing specific types reduces the size of the final dll.
+// Uncomment the next line to import all definitions during development.
+Windows.Win32.Networking.HttpServer
+GetSecurityInfo
+GetSecurityDescriptorLength
+LocalFree
