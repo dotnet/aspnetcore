@@ -165,7 +165,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
-        if (stopAddingTasks)
+        if (_isHandlingNotFound)
         {
             return;
         }

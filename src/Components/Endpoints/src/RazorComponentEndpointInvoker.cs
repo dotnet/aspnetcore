@@ -108,7 +108,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             // If the response is a 404, we don't want to write any content.
             // This is because the 404 status code is used by the routing middleware
             // to indicate that no endpoint was found for the request.
-            await bufferWriter.FlushAsync();
             return;
         }
 

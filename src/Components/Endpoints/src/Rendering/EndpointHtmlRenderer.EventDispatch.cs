@@ -80,10 +80,6 @@ internal partial class EndpointHtmlRenderer
         {
             // We cannot set a NotFound code after the response has already started
             var navigationManager = _httpContext.RequestServices.GetRequiredService<NavigationManager>();
-            if (navigationManager is null)
-            {
-                throw new InvalidOperationException("The NavigationManager service is not available. Cannot navigate to a 404 page.");
-            }
             var notFoundUri = $"{navigationManager.BaseUri}not-found";
             navigationManager.NavigateTo(notFoundUri);
             return;
