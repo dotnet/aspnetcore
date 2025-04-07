@@ -24,7 +24,6 @@ internal partial class RequestContext :
     IHttpResponseBodyFeature,
     ITlsConnectionFeature,
     ITlsHandshakeFeature,
-    ITlsAccessFeature,
     // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
     IHttpRequestLifetimeFeature,
     IHttpAuthenticationFeature,
@@ -383,11 +382,6 @@ internal partial class RequestContext :
         return Request.IsHttps ? this : null;
     }
 
-    internal ITlsAccessFeature? GetTlsFingerprintingFeature()
-    {
-        return Request.IsHttps ? this : null;
-    }
-
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
         if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
@@ -597,11 +591,6 @@ internal partial class RequestContext :
     }
 
     SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
-
-    byte[]? ITlsAccessFeature.GetTlsClientHelloMessageBytes()
-    {
-        return Request.TlsClientHelloMessageBytes;
-    }
 
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;

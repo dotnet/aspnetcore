@@ -48,6 +48,9 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                 context = application.CreateContext(Features);
                 try
                 {
+                    _ = DisconnectToken; // force disconnect to be followed. Required for TlsListener to keep cache about only active connections
+                    Server.TlsListener.InvokeTlsClientHelloCallback(Features, Request); 
+
                     await application.ProcessRequestAsync(context);
                     await CompleteAsync();
                 }

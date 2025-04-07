@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Hosting;
 using TlsFeaturesObserve.HttpSys;
@@ -30,6 +31,37 @@ public static class Program
 
                     options.Authentication.Schemes = AuthenticationSchemes.None;
                     options.Authentication.AllowAnonymous = true;
+
+                    options.TlsClientHelloBytesCallback = ProcessTlsClientHello;
                 });
             });
+
+    private static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
+    {
+        var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
+
+        var myTlsFeature = new MyTlsFeature(
+            connectionId: httpConnectionFeature.ConnectionId,
+            tlsClientHelloLength: tlsClientHelloBytes.Length);
+
+        features.Set<IMyTlsFeature>(myTlsFeature);
+    }
+}
+
+public interface IMyTlsFeature
+{
+    string ConnectionId { get; }
+    int TlsClientHelloLength { get; }
+}
+
+public class MyTlsFeature : IMyTlsFeature
+{
+    public string ConnectionId { get; }
+    public int TlsClientHelloLength { get; }
+
+    public MyTlsFeature(string connectionId, int tlsClientHelloLength)
+    {
+        ConnectionId = connectionId;
+        TlsClientHelloLength = tlsClientHelloLength;
+    }
 }

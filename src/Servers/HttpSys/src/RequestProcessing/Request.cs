@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
@@ -174,7 +175,6 @@ internal sealed partial class Request
             if (IsHttps)
             {
                 GetTlsHandshakeResults();
-                ParseTlsClientHello();
             }
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -338,11 +338,6 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
-    /// <summary>
-    /// Raw bytes of TLS client hello message
-    /// </summary>
-    public byte[]? TlsClientHelloMessageBytes { get; private set; }
-
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
@@ -378,10 +373,8 @@ internal sealed partial class Request
         SniHostName = sni.Hostname.ToString();
     }
 
-    private void ParseTlsClientHello()
-    {
-        TlsClientHelloMessageBytes = RequestContext.GetTlsClientHelloMessageBytes();
-    }
+    internal bool GetAndInvokeTlsClientHelloCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+        => RequestContext.GetAndInvokeTlsClientHelloMessageBytesCallback(features, tlsClientHelloBytesCallback);
 
     public X509Certificate2? ClientCertificate
     {

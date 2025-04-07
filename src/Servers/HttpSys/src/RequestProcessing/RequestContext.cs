@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -222,26 +223,30 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     /// <summary>
     /// Attempts to get the client hello message bytes from the http.sys.
-    /// If not successful, will return `null`
+    /// If not successful, will return false.
     /// </summary>
-    internal unsafe byte[]? GetTlsClientHelloMessageBytes()
+    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
         if (!HttpApi.HttpGetRequestPropertySupported)
         {
-            return default;
+            // not supported, so we just return and don't invoke the callback
+            return false;
         }
 
         uint bytesReturnedValue = 0;
         uint* bytesReturned = &bytesReturnedValue;
         uint statusCode;
 
-        var buffer = ArrayPool<byte>.Shared.Rent(256);
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        // we will try with some "random" buffer size
+        var buffer = ArrayPool<byte>.Shared.Rent(512);
         try
         {
             fixed (byte* pBuffer = buffer)
             {
                 statusCode = HttpApi.HttpGetRequestProperty(
-                    Server.RequestQueue.Handle, RequestId,
+                    Server.RequestQueue.Handle, requestId,
                     11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                     qualifier: null, qualifierSize: 0,
                     pBuffer, (uint)buffer.Length,
@@ -249,7 +254,8 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
                 if (statusCode is ErrorCodes.ERROR_SUCCESS)
                 {
-                    return buffer.AsSpan().ToArray();
+                    tlsClientHelloBytesCallback(features, buffer.AsSpan(0, (int)bytesReturnedValue));
+                    return true;
                 }
             }
         }
@@ -270,7 +276,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 fixed (byte* pBuffer = buffer)
                 {
                     statusCode = HttpApi.HttpGetRequestProperty(
-                        Server.RequestQueue.Handle, RequestId,
+                        Server.RequestQueue.Handle, requestId,
                         11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                         qualifier: null, qualifierSize: 0,
                         pBuffer, (uint)buffer.Length,
@@ -278,7 +284,8 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
                     if (statusCode is ErrorCodes.ERROR_SUCCESS)
                     {
-                        return buffer.AsSpan(0, correctSize).ToArray();
+                        tlsClientHelloBytesCallback(features, buffer.AsSpan(0, correctSize));
+                        return true;
                     }
                 }
             }
@@ -289,7 +296,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
 
         Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
-        return default;
+        return false;
     }
 
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
