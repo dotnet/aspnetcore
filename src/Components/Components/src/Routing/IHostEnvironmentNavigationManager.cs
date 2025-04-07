@@ -15,4 +15,12 @@ public interface IHostEnvironmentNavigationManager
     /// <param name="baseUri">The base URI.</param>
     /// <param name="uri">The absolute URI.</param>
     void Initialize(string baseUri, string uri);
+
+    /// <summary>
+    /// An event that is triggered when SSR navigation occurs.
+    /// </summary>
+    /// <remarks>
+    /// This event allows subscribers to respond to SSR navigation actions, such as updating state or performing side effects.
+    /// </remarks>
+    event EventHandler<NavigationEventArgs> OnNavigateTo;
 }

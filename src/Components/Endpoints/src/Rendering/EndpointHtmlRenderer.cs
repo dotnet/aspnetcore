@@ -84,9 +84,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (navigationManager != null)
         {
             navigationManager.OnNotFound += SetNotFoundResponse;
-            if (navigationManager is HttpNavigationManager httpNavigationManager)
+            if (navigationManager is IHostEnvironmentNavigationManager hostEnvironmentNavigationManager)
             {
-                httpNavigationManager.OnNavigateTo += OnNavigateTo;
+                hostEnvironmentNavigationManager.OnNavigateTo += OnNavigateTo;
             }
         }
 

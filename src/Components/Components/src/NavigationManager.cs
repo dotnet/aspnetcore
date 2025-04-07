@@ -61,6 +61,9 @@ public abstract class NavigationManager
     // The URI. Always represented an absolute URI.
     private string? _uri;
     private bool _isInitialized;
+    private const string EnableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+    protected static bool ThrowNavigationException =>
+        AppContext.TryGetSwitch(EnableThrowNavigationException, out var switchValue) && switchValue;
 
     /// <summary>
     /// Gets or sets the current base URI. The <see cref="BaseUri" /> is always represented as an absolute URI in string form with trailing slash.

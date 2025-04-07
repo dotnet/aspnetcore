@@ -17,6 +17,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
     private bool? _navigationLockStateBeforeJsRuntimeAttached;
+    private EventHandler<NavigationEventArgs>? _onNavigateTo;
+    public event EventHandler<NavigationEventArgs> OnNavigateTo
+    {
+        add => _onNavigateTo += value;
+        remove => _onNavigateTo -= value;
+    }
 
     public event EventHandler<Exception>? UnhandledException;
 
@@ -88,7 +94,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-            throw new NavigationException(absoluteUriString);
+            if (ThrowNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            else
+            {
+                _onNavigateTo?.Invoke(this, new NavigationEventArgs(absoluteUriString));
+            }
         }
 
         _ = PerformNavigationAsync();
@@ -129,7 +142,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
-            throw new NavigationException(absoluteUriString);
+            if (ThrowNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            else
+            {
+                _onNavigateTo?.Invoke(this, new NavigationEventArgs(absoluteUriString));
+            }
         }
 
         _ = RefreshAsync();
