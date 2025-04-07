@@ -21,15 +21,8 @@ public class Startup
         {
             context.Response.ContentType = "text/plain";
 
-            var tlsFingerprintingFeature = context.Features.Get<ITlsAccessFeature>();
-            if (tlsFingerprintingFeature is null)
-            {
-                await context.Response.WriteAsync(nameof(ITlsAccessFeature) + " is not resolved from " + nameof(context));
-                return;
-            }
-
-            var tlsClientHello = tlsFingerprintingFeature.GetTlsClientHelloMessageBytes();
-            await context.Response.WriteAsync("TLS CLIENT HELLO: bytearray.len=" + tlsClientHello.Length);
+            var tlsFeature = context.Features.Get<IMyTlsFeature>();
+            await context.Response.WriteAsync("TlsClientHello data: " + $"connectionId={tlsFeature?.ConnectionId}; length={tlsFeature?.TlsClientHelloLength}");
         });
     }
 }

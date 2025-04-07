@@ -246,6 +246,12 @@ public class HttpSysOptions
     /// </remarks>
     public bool UseLatin1RequestHeaders { get; set; }
 
+    /// <summary>
+    /// A callback to be invoked to get the TLS client hello bytes.
+    /// By default is null, and will not be invoked if is null.
+    /// </summary>
+    public Action<IFeatureCollection, ReadOnlySpan<byte>> TlsClientHelloBytesCallback { get; set; } = null!;
+
     // Not called when attaching to an existing queue.
     internal void Apply(UrlGroup urlGroup, RequestQueue? requestQueue)
     {

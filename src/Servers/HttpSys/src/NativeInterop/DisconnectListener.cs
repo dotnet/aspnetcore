@@ -15,10 +15,14 @@ internal sealed partial class DisconnectListener
     private readonly RequestQueue _requestQueue;
     private readonly ILogger _logger;
 
-    internal DisconnectListener(RequestQueue requestQueue, ILogger logger)
+    internal Action<ulong> OnDisconnect { get; }
+
+    internal DisconnectListener(RequestQueue requestQueue, ILogger logger, Action<ulong> onDisconnect)
     {
         _requestQueue = requestQueue;
         _logger = logger;
+
+        OnDisconnect = onDisconnect;
     }
 
     internal CancellationToken GetTokenForConnection(ulong connectionId)
@@ -70,7 +74,7 @@ internal sealed partial class DisconnectListener
             boundHandle.FreeNativeOverlapped(pOverlapped);
 
             // Pull the token out of the list and Cancel it.
-            _connectionCancellationTokens.TryRemove(connectionId, out _);
+            TryRemoveConnectionCancellationToken(connectionId, out _);
             try
             {
                 cts.Cancel();
@@ -100,7 +104,7 @@ internal sealed partial class DisconnectListener
         {
             // We got an unknown result, assume the connection has been closed.
             boundHandle.FreeNativeOverlapped(nativeOverlapped);
-            _connectionCancellationTokens.TryRemove(connectionId, out _);
+            TryRemoveConnectionCancellationToken(connectionId, out _);
             Log.UnknownDisconnectError(_logger, new Win32Exception((int)statusCode));
             cts.Cancel();
         }
@@ -109,11 +113,22 @@ internal sealed partial class DisconnectListener
         {
             // IO operation completed synchronously - callback won't be called to signal completion
             boundHandle.FreeNativeOverlapped(nativeOverlapped);
-            _connectionCancellationTokens.TryRemove(connectionId, out _);
+            TryRemoveConnectionCancellationToken(connectionId, out _);
             cts.Cancel();
         }
 
         return returnToken;
+    }
+
+    private bool TryRemoveConnectionCancellationToken(ulong connectionId, out ConnectionCancellation connectionCancellation)
+    {
+        bool result;
+        if (result = _connectionCancellationTokens.TryRemove(connectionId, out connectionCancellation!))
+        {
+            OnDisconnect(connectionId);
+        }
+
+        return result;
     }
 
     private sealed class ConnectionCancellation

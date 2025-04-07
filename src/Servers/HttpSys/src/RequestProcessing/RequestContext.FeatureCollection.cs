@@ -24,7 +24,6 @@ internal partial class RequestContext :
     IHttpResponseBodyFeature,
     ITlsConnectionFeature,
     ITlsHandshakeFeature,
-    ITlsAccessFeature,
     // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
     IHttpRequestLifetimeFeature,
     IHttpAuthenticationFeature,
@@ -379,11 +378,6 @@ internal partial class RequestContext :
     }
 
     internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
-    {
-        return Request.IsHttps ? this : null;
-    }
-
-    internal ITlsAccessFeature? GetTlsFingerprintingFeature()
     {
         return Request.IsHttps ? this : null;
     }

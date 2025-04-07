@@ -5,6 +5,8 @@ using System.Buffers;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -37,6 +39,7 @@ internal sealed partial class HttpSysListener : IDisposable
     private readonly UrlGroup _urlGroup;
     private readonly RequestQueue _requestQueue;
     private readonly DisconnectListener _disconnectListener;
+    private readonly TlsListener _tlsListener;
 
     private readonly object _internalLock;
 
@@ -74,7 +77,8 @@ internal sealed partial class HttpSysListener : IDisposable
 
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
-            _disconnectListener = new DisconnectListener(_requestQueue, Logger);
+            _tlsListener = new TlsListener(options);
+            _disconnectListener = new DisconnectListener(_requestQueue, Logger, onDisconnect: _tlsListener.ConnectionClosed);
         }
         catch (Exception exception)
         {
@@ -96,20 +100,10 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal ILogger Logger { get; private set; }
 
-    internal UrlGroup UrlGroup
-    {
-        get { return _urlGroup; }
-    }
-
-    internal RequestQueue RequestQueue
-    {
-        get { return _requestQueue; }
-    }
-
-    internal DisconnectListener DisconnectListener
-    {
-        get { return _disconnectListener; }
-    }
+    internal UrlGroup UrlGroup => _urlGroup;
+    internal RequestQueue RequestQueue => _requestQueue;
+    internal TlsListener TlsListener => _tlsListener;
+    internal DisconnectListener DisconnectListener => _disconnectListener;
 
     public HttpSysOptions Options { get; }
 
