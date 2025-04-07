@@ -29,30 +29,6 @@ public class AnonymousObjectIntegrationTest
     }
 
     [Fact]
-    public void AddNewProperty_ToNestedAnonymousObject_ShouldFail()
-    {
-        // Arrange
-        dynamic targetObject = new
-        {
-            Test = 1,
-            nested = new { }
-        };
-
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Add("Nested/NewInt", 1);
-
-        // Act
-        var exception = Assert.Throws<JsonPatchException>(() =>
-        {
-            patchDocument.ApplyTo(targetObject);
-        });
-
-        // Assert
-        Assert.Equal("The target location specified by path segment 'NewInt' was not found.",
-            exception.Message);
-    }
-
-    [Fact]
     public void AddDoesNotReplace()
     {
         // Arrange

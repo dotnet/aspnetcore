@@ -18,7 +18,7 @@ public static class ConversionResultProvider
         return ConvertTo(value, typeToConvertTo, null);
     }
 
-    internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, JsonSerializerOptions jsonSerializerOptions)
+    internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, JsonSerializerOptions serializerOptions)
     {
         if (value == null)
         {
@@ -39,8 +39,8 @@ public static class ConversionResultProvider
 
         try
         {
-            var serializedDocument = JsonSerializer.Serialize(value, jsonSerializerOptions);
-            var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, jsonSerializerOptions);
+            var serializedDocument = JsonSerializer.Serialize(value, serializerOptions);
+            var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, serializerOptions);
             return new ConversionResult(true, deserialized);
         }
         catch

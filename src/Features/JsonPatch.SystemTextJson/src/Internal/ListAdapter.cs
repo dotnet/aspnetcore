@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 public class ListAdapter : IAdapter
 {
     #region Existing implementation
-    public virtual bool TryAdd(object target, string segment, JsonSerializerOptions jsonSerializerOptions, object value, out string errorMessage)
+    public virtual bool TryAdd(object target, string segment, JsonSerializerOptions serializerOptions, object value, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out var typeArgument, out errorMessage))
         {
@@ -31,7 +31,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -50,7 +50,7 @@ public class ListAdapter : IAdapter
     }
     #endregion
 
-    public virtual bool TryGet(object target, string segment, JsonSerializerOptions jsonSerializerOptions, out object value, out string errorMessage)
+    public virtual bool TryGet(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out _, out errorMessage))
         {
@@ -73,7 +73,7 @@ public class ListAdapter : IAdapter
         return true;
     }
 
-    public virtual bool TryRemove(object target, string segment, JsonSerializerOptions jsonSerializerOptions, out string errorMessage)
+    public virtual bool TryRemove(object target, string segment, JsonSerializerOptions serializerOptions, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out _, out errorMessage))
         {
@@ -93,7 +93,7 @@ public class ListAdapter : IAdapter
         return true;
     }
 
-    public virtual bool TryReplace(object target, string segment, JsonSerializerOptions jsonSerializerOptions, object value, out string errorMessage)
+    public virtual bool TryReplace(object target, string segment, JsonSerializerOptions serializerOptions, object value, out string errorMessage)
     {
         if (!TryGetListTypeArgument(target, out var typeArgument, out errorMessage))
         {
@@ -106,7 +106,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -118,7 +118,7 @@ public class ListAdapter : IAdapter
         return true;
     }
 
-    public virtual bool TryTest(object target, string segment, JsonSerializerOptions jsonSerializerOptions, object value, out string errorMessage)
+    public virtual bool TryTest(object target, string segment, JsonSerializerOptions serializerOptions, object value, out string errorMessage)
     {
 
         if (!TryGetListTypeArgument(target, out var typeArgument, out errorMessage))
@@ -133,7 +133,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -152,7 +152,7 @@ public class ListAdapter : IAdapter
         }
     }
 
-    public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions jsonSerializerOptions, out object value, out string errorMessage)
+    public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
         var list = target as IList;
         if (list == null)
@@ -181,296 +181,14 @@ public class ListAdapter : IAdapter
         return true;
     }
 
-    #region New Implementaiton
-    //public bool TryTraverse2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    out object nextTarget,
-    //    out string errorMessage)
-    //{
-    //    nextTarget = null;
-    //    errorMessage = null;
-
-    //    if (target is IList list && int.TryParse(segment, out int index) && index >= 0 && index < list.Count)
-    //    {
-    //        nextTarget = list[index];
-    //        return true;
-    //    }
-
-    //    errorMessage = "Invalid list index or out of bounds.";
-    //    return false;
-    //}
-
-    //public bool TryAdd2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    object value,
-    //    out string errorMessage)
-    //{
-    //    errorMessage = null;
-
-    //    if (target is IList list)
-    //    {
-    //        if (target.GetType().IsArray)
-    //        {
-    //            errorMessage = $"The type '{target.GetType().FullName}' which is an array is not supported for json patch operations as it has a fixed size.";
-    //            return false;
-    //        }
-
-    //        if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
-    //        {
-    //            return false;
-    //        }
-
-    //        try
-    //        {
-    //            object convertedValue = value;
-    //            if (value != null)
-    //            {
-    //                convertedValue = ConvertValue2(value, typeArgument, jsonSerializerOptions, out errorMessage);
-    //                if (convertedValue == null)
-    //                {
-    //                    return false;
-    //                }
-    //            }
-
-    //            if (segment == "-") // Appending to the list
-    //            {
-    //                list.Add(convertedValue);
-    //                return true;
-    //            }
-
-    //            if (int.TryParse(segment, out int index))
-    //            {
-    //                if (index >= 0 && index <= list.Count)
-    //                {
-    //                    list.Insert(index, convertedValue);
-    //                    return true;
-    //                }
-    //                else
-    //                {
-    //                    errorMessage = $"The index value provided by path segment '{segment}' is out of bounds of the array size.";
-    //                    return false;
-    //                }
-    //            }
-    //            else
-    //            {
-    //                errorMessage = $"The path segment '{segment}' is invalid for an array index.";
-    //                return false;
-    //            }
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            errorMessage = $"Error converting value: {ex.Message}";
-    //            return false;
-    //        }
-    //    }
-
-    //    errorMessage = "Invalid index for add operation.";
-    //    return false;
-    //}
-
-    //public bool TryRemove2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    out string errorMessage)
-    //{
-    //    errorMessage = null;
-
-    //    if (target is IList list)
-    //    {
-    //        if (int.TryParse(segment, out int index))
-    //        {
-    //            if (index >= 0 && index < list.Count)
-    //            {
-    //                list.RemoveAt(index);
-    //                return true;
-    //            }
-    //            else
-    //            {
-    //                errorMessage = $"The index value provided by path segment '{segment}' is out of bounds of the array size.";
-    //                return false;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            errorMessage = $"The path segment '{segment}' is invalid for an array index.";
-    //            return false;
-    //        }
-    //    }
-
-    //    errorMessage = "Invalid index for remove operation.";
-    //    return false;
-    //}
-
-    //public bool TryGet2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    out object value,
-    //    out string errorMessage)
-    //{
-    //    value = null;
-    //    errorMessage = null;
-
-    //    if (target is IList list)
-    //    {
-    //        if (int.TryParse(segment, out int index))
-    //        {
-    //            if (index >= 0 && index < list.Count)
-    //            {
-    //                value = list[index];
-    //                return true;
-    //            }
-    //            else
-    //            {
-    //                errorMessage = $"The index value provided by path segment '{segment}' is out of bounds of the array size.";
-    //                return false;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            errorMessage = $"The path segment '{segment}' is invalid for an array index.";
-    //            return false;
-    //        }
-    //    }
-
-    //    errorMessage = "Invalid index for get operation.";
-    //    return false;
-    //}
-
-    //public bool TryReplace2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    object value,
-    //    out string errorMessage)
-    //{
-    //    errorMessage = null;
-
-    //    if (target is IList list)
-    //    {
-    //        if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
-    //        {
-    //            return false;
-    //        }
-
-    //        if (int.TryParse(segment, out int index))
-    //        {
-    //            if (index >= 0 && index < list.Count)
-    //            {
-    //                try
-    //                {
-    //                    object convertedValue = ConvertValue2(value, typeArgument, jsonSerializerOptions, out errorMessage);
-    //                    if (convertedValue == null)
-    //                    {
-    //                        return false;
-    //                    }
-    //                    list[index] = convertedValue;
-    //                    return true;
-    //                }
-    //                catch (Exception ex)
-    //                {
-    //                    errorMessage = $"Error converting value: {ex.Message}";
-    //                    return false;
-    //                }
-    //            }
-    //            else
-    //            {
-    //                errorMessage = $"The index value provided by path segment '{segment}' is out of bounds of the array size.";
-    //                return false;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            errorMessage = $"The path segment '{segment}' is invalid for an array index.";
-    //            return false;
-    //        }
-    //    }
-
-    //    errorMessage = "Invalid index for replace operation.";
-    //    return false;
-    //}
-
-    //public bool TryTest2(
-    //    object target,
-    //    string segment,
-    //    JsonSerializerOptions jsonSerializerOptions,
-    //    object value,
-    //    out string errorMessage)
-    //{
-    //    errorMessage = null;
-
-    //    if (target is IList list && int.TryParse(segment, out int index) && index >= 0 && index < list.Count)
-    //    {
-    //        try
-    //        {
-    //            object convertedValue = ConvertValue2(value, list.GetType().GetGenericArguments()[0], jsonSerializerOptions, out errorMessage);
-    //            if (convertedValue == null)
-    //            {
-    //                return false;
-    //            }
-    //            if (JsonSerializer.Serialize(list[index], jsonSerializerOptions) == JsonSerializer.Serialize(convertedValue, jsonSerializerOptions))
-    //            {
-    //                return true;
-    //            }
-    //            else
-    //            {
-    //                errorMessage = "Test operation failed. Values do not match.";
-    //                return false;
-    //            }
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            errorMessage = $"Error converting value: {ex.Message}";
-    //            return false;
-    //        }
-    //    }
-
-    //    errorMessage = "Invalid index for test operation.";
-    //    return false;
-    //}
-
-    //private object ConvertValue2(object value, Type targetType, JsonSerializerOptions jsonSerializerOptions, out string errorMessage)
-    //{
-    //    errorMessage = null;
-    //    if (value == null || targetType.IsInstanceOfType(value))
-    //    {
-    //        return value;
-    //    }
-
-    //    try
-    //    {
-    //        return Convert.ChangeType(value, targetType);
-    //    }
-    //    catch (Exception)
-    //    {
-    //        try
-    //        {
-    //            string json = JsonSerializer.Serialize(value, jsonSerializerOptions);
-    //            return JsonSerializer.Deserialize(json, targetType, jsonSerializerOptions);
-    //        }
-    //        catch (Exception)
-    //        {
-    //            errorMessage = $"The value '{value}' is invalid for target location.";
-    //            return null;
-    //        }
-    //    }
-    //}
-
-    #endregion
-
     protected virtual bool TryConvertValue(object originalValue, Type listTypeArgument, string segment, out object convertedValue, out string errorMessage)
     {
         return TryConvertValue(originalValue, listTypeArgument, segment, null, out convertedValue, out errorMessage);
     }
 
-    protected virtual bool TryConvertValue(object originalValue, Type listTypeArgument, string segment, JsonSerializerOptions jsonSerializerOptions, out object convertedValue, out string errorMessage)
+    protected virtual bool TryConvertValue(object originalValue, Type listTypeArgument, string segment, JsonSerializerOptions serializerOptions, out object convertedValue, out string errorMessage)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, jsonSerializerOptions);
+        var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, serializerOptions);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;
