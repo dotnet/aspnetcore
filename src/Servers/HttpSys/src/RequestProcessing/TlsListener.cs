@@ -3,37 +3,93 @@
 
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
 
-internal sealed class TlsListener
+internal sealed partial class TlsListener : IDisposable
 {
-    private readonly ConcurrentDictionary<ulong, bool> _connectionIdsTlsClientHelloCallbackInvokedMap = new();
-
+    private readonly ConcurrentDictionary<ulong, DateTime> _connectionTimestamps = new();
     private readonly Action<IFeatureCollection, ReadOnlySpan<byte>> _tlsClientHelloBytesCallback;
 
-    internal TlsListener(Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    private readonly ILogger _logger;
+    private readonly CancellationTokenSource _cts = new();
+    private readonly Task _cleanupTask;
+
+    private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(30);
+
+    internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
+        _logger = logger;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
+
+        _cleanupTask = Task.Run(() => CleanupLoopAsync(_cts.Token));
     }
 
     internal void InvokeTlsClientHelloCallback(IFeatureCollection features, Request request)
     {
-        if (_connectionIdsTlsClientHelloCallbackInvokedMap.TryGetValue(request.UConnectionId, out _))
+        if (!request.IsHttps)
         {
-            // invoking TLS client hello callback per request on same connection is what we are trying to avoid
+            return;
+        }
+
+        if (_connectionTimestamps.ContainsKey(request.RawConnectionId))
+        {
+            // update the TTL
+            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
             return;
         }
 
         var success = request.GetAndInvokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
         if (success)
         {
-            _connectionIdsTlsClientHelloCallbackInvokedMap[request.UConnectionId] = true;
+            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
         }
     }
 
-    internal void ConnectionClosed(ulong connectionId)
+    private async Task CleanupLoopAsync(CancellationToken cancellationToken)
     {
-        _connectionIdsTlsClientHelloCallbackInvokedMap.TryRemove(connectionId, out _);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                foreach (var kvp in _connectionTimestamps)
+                {
+                    if (now - kvp.Value > ConnectionIdleTime)
+                    {
+                        _connectionTimestamps.TryRemove(kvp.Key, out _);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.CleanupClosedConnectionError(_logger, ex);
+            }
+
+            try
+            {
+                await Task.Delay(CleanupInterval, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        try
+        {
+            _cleanupTask.Wait();
+        }
+        catch
+        {
+            // ignore
+        }
+        _cts.Dispose();
     }
 }

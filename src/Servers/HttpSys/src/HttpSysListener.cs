@@ -75,15 +75,10 @@ internal sealed partial class HttpSysListener : IDisposable
             _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
+            _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             if (options.TlsClientHelloBytesCallback is not null)
             {
-                _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
-                _disconnectListener = new DisconnectListener(_requestQueue, Logger, onDisconnect: _tlsListener.ConnectionClosed);
-            }
-            else
-            {
-                _tlsListener = null;
-                _disconnectListener = new DisconnectListener(_requestQueue, Logger);
+                _tlsListener = new TlsListener(Logger, options.TlsClientHelloBytesCallback);
             }
         }
         catch (Exception exception)
@@ -92,6 +87,7 @@ internal sealed partial class HttpSysListener : IDisposable
             _requestQueue?.Dispose();
             _urlGroup?.Dispose();
             _serverSession?.Dispose();
+            _tlsListener?.Dispose();
             Log.HttpSysListenerCtorError(Logger, exception);
             throw;
         }
@@ -262,6 +258,7 @@ internal sealed partial class HttpSysListener : IDisposable
         Debug.Assert(!_serverSession.Id.IsInvalid, "ServerSessionHandle is invalid in CloseV2Config");
 
         _serverSession.Dispose();
+        _tlsListener?.Dispose();
     }
 
     /// <summary>
