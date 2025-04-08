@@ -67,10 +67,30 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Fact]
-    public void CanRenderNotFoundPage()
+    public void CanRenderNotFoundPageAfterStreamingStarted()
     {
         Navigate($"{ServerPathBase}/streaming-set-not-found");
         Browser.WaitForElementToBeVisible(By.Id("test-info"));
         Browser.Equal("Default Not Found Page", () => Browser.Exists(By.Id("test-info")).Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPageNoStreaming(bool useCustomNotFoundPage)
+    {
+        string query = useCustomNotFoundPage ? "&useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/set-not-found?shouldSet=true{query}");
+
+        if (useCustomNotFoundPage)
+        {
+            var infoText = Browser.FindElement(By.Id("test-info")).Text;
+            Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        }
+        else
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Contains("There's nothing here", bodyText);
+        }
     }
 }

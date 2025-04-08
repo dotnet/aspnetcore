@@ -1,4 +1,5 @@
 ﻿@page "/reexecution/set-not-found"
+@page "/set-not-found"
 @attribute [StreamRendering(false)]
 @inject NavigationManager NavigationManager
 
@@ -9,7 +10,7 @@
 @code{
     [Parameter]
     [SupplyParameterFromQuery(Name = "shouldSet")]
-    private bool ShouldSet { get; set; } = true;
+    public bool ShouldSet { get; set; } = true;
 
     protected override void OnInitialized()
     {
