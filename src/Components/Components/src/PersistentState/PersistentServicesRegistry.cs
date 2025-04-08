@@ -50,7 +50,7 @@ internal sealed class PersistentServicesRegistry
         for (var i = 0; i < _registrations.Length; i++)
         {
             var registration = _registrations[i];
-            var type = ResolveType(registration.Assembly, registration.FullTypeName);
+            var type = ResolveType(registration);
             if (type == null)
             {
                 continue;
@@ -112,7 +112,7 @@ internal sealed class PersistentServicesRegistry
     {
         foreach (var registration in _registrations)
         {
-            var type = ResolveType(registration.Assembly, registration.FullTypeName);
+            var type = ResolveType(registration);
             if (type == null)
             {
                 continue;
@@ -142,8 +142,16 @@ internal sealed class PersistentServicesRegistry
 
     private static IPersistentServiceRegistration[] ResolveRegistrations(IEnumerable<IPersistentServiceRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
 
-    private static Type? ResolveType(string assembly, string fullTypeName) =>
-        _persistentServiceTypeCache.GetRootType(assembly, fullTypeName);
+    private static Type? ResolveType(IPersistentServiceRegistration registration)
+    {
+        if(registration.GetResolvedTypeOrNull() is Type type)
+        {
+            return type;
+        }
+        var assembly = registration.Assembly;
+        var fullTypeName = registration.FullTypeName;
+        return _persistentServiceTypeCache.GetRootType(assembly, fullTypeName);
+    }
 
     private sealed class PropertiesAccessor
     {
