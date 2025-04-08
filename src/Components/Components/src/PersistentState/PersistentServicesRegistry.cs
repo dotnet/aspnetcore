@@ -26,9 +26,8 @@ internal sealed class PersistentServicesRegistry
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
-        var registrations = serviceProvider.GetRequiredService<IEnumerable<IPersistentServiceRegistration>>();
         _serviceProvider = serviceProvider;
-        _registrations = ResolveRegistrations(registrations);
+        _registrations = ResolveRegistrations(serviceProvider.GetRequiredService<RegisteredPersistentServiceRegistrationCollection>().Registrations);
     }
 
     internal IComponentRenderMode? RenderMode { get; set; }
@@ -140,7 +139,7 @@ internal sealed class PersistentServicesRegistry
         }
     }
 
-    private static IPersistentServiceRegistration[] ResolveRegistrations(IEnumerable<IPersistentServiceRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
+    internal static IPersistentServiceRegistration[] ResolveRegistrations(IEnumerable<IPersistentServiceRegistration> registrations) => [.. registrations.DistinctBy(r => (r.Assembly, r.FullTypeName)).OrderBy(r => r.Assembly).ThenBy(r => r.FullTypeName)];
 
     private static Type? ResolveType(IPersistentServiceRegistration registration)
     {
