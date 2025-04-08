@@ -34,7 +34,7 @@ internal sealed partial class TlsListener : IDisposable
             return;
         }
 
-        if (_connectionTimestamps.ContainsKey(request.RawConnectionId))
+        if (!_connectionTimestamps.TryAdd(request.RawConnectionId, DateTime.UtcNow))
         {
             // update the TTL
             _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
@@ -51,21 +51,14 @@ internal sealed partial class TlsListener : IDisposable
     private async Task CleanupLoopAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
-        {
-            try
+        {            
+            var now = DateTime.UtcNow;
+            foreach (var kvp in _connectionTimestamps)
             {
-                var now = DateTime.UtcNow;
-                foreach (var kvp in _connectionTimestamps)
+                if (now - kvp.Value > ConnectionIdleTime)
                 {
-                    if (now - kvp.Value > ConnectionIdleTime)
-                    {
-                        _connectionTimestamps.TryRemove(kvp.Key, out _);
-                    }
+                    _connectionTimestamps.TryRemove(kvp.Key, out _);
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.CleanupClosedConnectionError(_logger, ex);
             }
 
             try
