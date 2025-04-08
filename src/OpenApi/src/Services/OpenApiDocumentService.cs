@@ -278,7 +278,6 @@ internal sealed class OpenApiDocumentService(
             };
 
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
-            operations[description.GetOperationType()] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)
@@ -294,6 +293,24 @@ internal sealed class OpenApiDocumentService(
             foreach (var endpointOperationTransformer in endpointOperationTransformers)
             {
                 await endpointOperationTransformer.TransformAsync(operation, operationContext, cancellationToken);
+            }
+
+            var operationType = description.GetOperationType();
+            if (
+                operations.TryGetValue(operationType, out var existingOperation) &&
+                existingOperation.RequestBody?.Content is not null &&
+                operation.RequestBody is { Content.Count: > 0 }
+            )
+            {
+                // Merge additional accepted content types into the existing operation.
+                foreach (var body in operation.RequestBody.Content)
+                {
+                    existingOperation.RequestBody.Content.Add(body);
+                }
+            }
+            else
+            {
+                operations[operationType] = operation;
             }
         }
         return operations;
