@@ -66,6 +66,6 @@ internal sealed class EndpointModelMetadata : ModelMetadata
             || underlyingType == typeof(decimal)
             || underlyingType == typeof(Guid)
             || underlyingType == typeof(Uri)
-            || underlyingType.IsAssignableTo(typeof(Enum)) ? type : typeof(string);
+            || underlyingType.IsEnum ? type : typeof(string);
     }
 }
