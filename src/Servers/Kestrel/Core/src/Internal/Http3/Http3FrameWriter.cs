@@ -121,7 +121,7 @@ internal sealed class Http3FrameWriter
         WriteSettings(settings, buffer);
 
         // Advance pipe writer and flush
-        _outgoingFrame.Length = totalLength;
+        _outgoingFrame.RemainingLength = totalLength;
         _outputWriter.Advance(totalLength);
 
         return _outputWriter.FlushAsync().GetAsTask();
@@ -186,7 +186,7 @@ internal sealed class Http3FrameWriter
             return;
         }
 
-        _outgoingFrame.Length = (int)dataLength;
+        _outgoingFrame.RemainingLength = (int)dataLength;
 
         WriteHeaderUnsynchronized();
 
@@ -209,7 +209,7 @@ internal sealed class Http3FrameWriter
             do
             {
                 var currentData = remainingData.Slice(0, dataPayloadLength);
-                _outgoingFrame.Length = dataPayloadLength;
+                _outgoingFrame.RemainingLength = dataPayloadLength;
 
                 WriteHeaderUnsynchronized();
 
@@ -223,7 +223,7 @@ internal sealed class Http3FrameWriter
 
             } while (dataLength > dataPayloadLength);
 
-            _outgoingFrame.Length = (int)dataLength;
+            _outgoingFrame.RemainingLength = (int)dataLength;
 
             WriteHeaderUnsynchronized();
 
@@ -240,7 +240,7 @@ internal sealed class Http3FrameWriter
 
         var length = VariableLengthIntegerHelper.GetByteCount(id);
 
-        _outgoingFrame.Length = length;
+        _outgoingFrame.RemainingLength = length;
 
         WriteHeaderUnsynchronized();
 
@@ -253,10 +253,10 @@ internal sealed class Http3FrameWriter
     private void WriteHeaderUnsynchronized()
     {
         _log.Http3FrameSending(_connectionId, _streamIdFeature.StreamId, _outgoingFrame);
-        var headerLength = WriteHeader(_outgoingFrame.Type, _outgoingFrame.Length, _outputWriter);
+        var headerLength = WriteHeader(_outgoingFrame.Type, _outgoingFrame.RemainingLength, _outputWriter);
 
         // We assume the payload will be written prior to the next flush.
-        _unflushedBytes += headerLength + _outgoingFrame.Length;
+        _unflushedBytes += headerLength + _outgoingFrame.RemainingLength;
     }
 
     public ValueTask<FlushResult> Write100ContinueAsync()
@@ -269,7 +269,7 @@ internal sealed class Http3FrameWriter
             }
 
             _outgoingFrame.PrepareHeaders();
-            _outgoingFrame.Length = ContinueBytes.Length;
+            _outgoingFrame.RemainingLength = ContinueBytes.Length;
             WriteHeaderUnsynchronized();
             _outputWriter.Write(ContinueBytes);
             return TimeFlushUnsynchronizedAsync();
@@ -394,7 +394,7 @@ internal sealed class Http3FrameWriter
 
         ValidateHeadersTotalSize();
 
-        _outgoingFrame.Length = _headerEncodingBuffer.WrittenCount;
+        _outgoingFrame.RemainingLength = _headerEncodingBuffer.WrittenCount;
         WriteHeaderUnsynchronized();
         _outputWriter.Write(_headerEncodingBuffer.WrittenSpan);
 
