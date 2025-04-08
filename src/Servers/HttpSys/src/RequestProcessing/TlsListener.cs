@@ -34,17 +34,13 @@ internal sealed partial class TlsListener : IDisposable
             return;
         }
 
-        if (_connectionTimestamps.ContainsKey(request.RawConnectionId))
+        if (!_connectionTimestamps.TryAdd(request.RawConnectionId, DateTime.UtcNow))
         {
-            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
+            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow; // update TTL
             return;
         }
 
-        var success = request.GetAndInvokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
-        if (success)
-        {
-            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
-        }
+        _ = request.GetAndInvokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
     }
 
     private async Task CleanupLoopAsync()
