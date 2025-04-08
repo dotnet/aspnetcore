@@ -376,7 +376,7 @@ internal sealed class Program
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, exportPath.HasValue());
+            var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, exportPath.HasValue());
             foreach (var certificate in certificates)
             {
                 var status = manager.CheckCertificateState(certificate);
