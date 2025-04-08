@@ -149,19 +149,11 @@
         "tags": [
           "Xml"
         ],
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "description": "The name of the person.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "A summary of the action.",
+        "description": "A description of the action.",
         "responses": {
           "200": {
-            "description": "Returns the greeting.",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -210,6 +202,46 @@
         "responses": {
           "200": {
             "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Xml/{name}": {
+      "get": {
+        "tags": [
+          "Xml"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The name of the person.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the greeting.",
             "content": {
               "text/plain": {
                 "schema": {

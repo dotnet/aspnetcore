@@ -261,6 +261,40 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
+    /// <summary>
+    /// Tests documented behavior at https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-9.0#define-supported-request-content-types-with-the-consumes-attribute-1
+    /// </summary>
+    [Fact]
+    public async Task GetRequestBody_HandlesMultipleAcceptedContentType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/", [Consumes("application/json")] (TodoWithDueDate name) => { });
+        builder.MapPost("/", [Consumes("application/x-www-form-urlencoded")] ([FromForm] TodoWithDueDate name) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+
+            Assert.Collection(operation.RequestBody.Content,
+                pair =>
+                {
+                    Assert.Equal("application/json", pair.Key);
+                    Assert.Equal(5, pair.Value.Schema.Properties.Count);
+                },
+                pair =>
+                {
+                    Assert.Equal("application/x-www-form-urlencoded", pair.Key);
+                    Assert.Equal(5, pair.Value.Schema.Properties.Count);
+                });
+            });
+    }
+
     [Fact]
     public async Task GetRequestBody_HandlesJsonBody()
     {
