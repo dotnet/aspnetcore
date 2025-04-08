@@ -237,8 +237,11 @@ public abstract class OpenApiDocumentServiceTestBase
         action.RouteValues.Add("controller", "Test");
         action.RouteValues.Add("action", action.MethodInfo.Name);
         action.EndpointMetadata = [..action.MethodInfo.GetCustomAttributes()];
-        action.ActionConstraints = [new HttpMethodActionConstraint(
-            action.EndpointMetadata.OfType<IActionHttpMethodProvider>().SelectMany(a => a.HttpMethods).DefaultIfEmpty("GET")
+        action.ActionConstraints = [new HttpMethodActionConstraint(action
+            .EndpointMetadata
+            .OfType<IActionHttpMethodProvider>()
+            .SelectMany(a => a.HttpMethods)
+            .DefaultIfEmpty("GET")
         )];
         if (controllerType is not null)
         {
