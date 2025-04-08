@@ -332,6 +332,82 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsResponseDescription_WorksWithGenerics()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        () => new GenericClass<TimeSpan> { Value = new TimeSpan() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenericsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        () => TypedResults.Ok(new GenericClass<TimeSpan> { Value = new TimeSpan() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollections()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        () => new List<TimeSpan> { new() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        () => TypedResults.Ok(new List<TimeSpan> { new() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
     public void WithEmptyMethodBody_AddsResponseDescription()
     {
         const string expectedCreatedDescription = "A new item was created";
@@ -1813,5 +1889,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
             return null;
         }
+
     }
+    private class GenericClass<TType> { public required TType Value { get; set; } }
 }
