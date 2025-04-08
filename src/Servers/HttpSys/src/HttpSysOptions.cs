@@ -243,7 +243,7 @@ public class HttpSysOptions
 
     /// <summary>
     /// A callback to be invoked to get the TLS client hello bytes.
-    /// By default is null, and will not be invoked if is null.
+    /// Null by default.
     /// </summary>
     /// <remarks>
     /// Works only if <c>HTTP_SERVICE_CONFIG_SSL_FLAG_ENABLE_CACHE_CLIENT_HELLO</c> flag is set on http.sys service configuration.
