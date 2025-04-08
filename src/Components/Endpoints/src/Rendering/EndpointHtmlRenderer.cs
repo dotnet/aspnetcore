@@ -136,11 +136,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    private void OnNavigateTo(object? sender, LocationChangedEventArgs args)
-    {
-        _httpContext.Response.Redirect(args.Location);
-    }
-
     private static void InitializeResourceCollection(HttpContext httpContext)
     {
 

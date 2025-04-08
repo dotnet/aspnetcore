@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -82,6 +83,26 @@ internal partial class EndpointHtmlRenderer
         }
         _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
         SignalRendererToFinishRendering();
+    }
+
+    private void OnNavigateTo(object? sender, LocationChangedEventArgs args)
+    {
+        if (_httpContext.Response.HasStarted)
+        {
+            // We cannot redirect after the response has already started
+            RenderMetaRefreshTag(args.Location);
+        }
+        else
+        {
+            _httpContext.Response.Redirect(args.Location);
+        }
+        SignalRendererToFinishRendering();
+    }
+
+    private void RenderMetaRefreshTag(string location)
+    {
+        var metaTag = $"<meta http-equiv=\"refresh\" content=\"0;url={location}\" />";
+        _httpContext.Response.WriteAsync(metaTag);
     }
 
     private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
