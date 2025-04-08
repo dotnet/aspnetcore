@@ -84,10 +84,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (navigationManager != null)
         {
             navigationManager.OnNotFound += SetNotFoundResponse;
-            if (navigationManager is IHostEnvironmentNavigationManager hostEnvironmentNavigationManager)
-            {
-                hostEnvironmentNavigationManager.OnNavigateTo += OnNavigateTo;
-            }
+            navigationManager.LocationChanged += OnNavigateTo;
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
@@ -139,9 +136,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    private void OnNavigateTo(object? sender, NavigationEventArgs args)
+    private void OnNavigateTo(object? sender, LocationChangedEventArgs args)
     {
-        _httpContext.Response.Redirect(args.Uri);
+        _httpContext.Response.Redirect(args.Location);
     }
 
     private static void InitializeResourceCollection(HttpContext httpContext)

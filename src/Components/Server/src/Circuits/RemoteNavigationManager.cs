@@ -17,12 +17,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
     private bool? _navigationLockStateBeforeJsRuntimeAttached;
-    private EventHandler<NavigationEventArgs>? _onNavigateTo;
-    public event EventHandler<NavigationEventArgs> OnNavigateTo
-    {
-        add => _onNavigateTo += value;
-        remove => _onNavigateTo -= value;
-    }
+    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+    private static bool _throwNavigationException =>
+        AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
 
     public event EventHandler<Exception>? UnhandledException;
 
@@ -94,13 +91,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-            if (ThrowNavigationException)
+            if (_throwNavigationException)
             {
                 throw new NavigationException(absoluteUriString);
             }
             else
             {
-                _onNavigateTo?.Invoke(this, new NavigationEventArgs(absoluteUriString));
+                Uri = absoluteUriString;
+                NotifyLocationChanged(isInterceptedLink: false);
             }
         }
 
@@ -142,13 +140,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
-            if (ThrowNavigationException)
+            if (_throwNavigationException)
             {
                 throw new NavigationException(absoluteUriString);
             }
             else
             {
-                _onNavigateTo?.Invoke(this, new NavigationEventArgs(absoluteUriString));
+                Uri = absoluteUriString;
+                NotifyLocationChanged(isInterceptedLink: false);
             }
         }
 

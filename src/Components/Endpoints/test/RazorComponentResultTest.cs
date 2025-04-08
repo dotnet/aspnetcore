@@ -510,14 +510,6 @@ public class RazorComponentResultTest
 
     class FakeNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        private EventHandler<NavigationEventArgs> _onNavigateTo;
-
-        public event EventHandler<NavigationEventArgs> OnNavigateTo
-        {
-            add => _onNavigateTo += value;
-            remove => _onNavigateTo -= value;
-        }
-
         public new void Initialize(string baseUri, string uri)
             => base.Initialize(baseUri, uri);
 

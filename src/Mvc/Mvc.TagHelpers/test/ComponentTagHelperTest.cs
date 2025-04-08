@@ -104,14 +104,6 @@ public class ComponentTagHelperTest
 
     class MockNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        private EventHandler<NavigationEventArgs> _onNavigateTo;
-
-        public event EventHandler<NavigationEventArgs> OnNavigateTo
-        {
-            add => _onNavigateTo += value;
-            remove => _onNavigateTo -= value;
-        }
-
         public MockNavigationManager()
         {
            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
