@@ -316,7 +316,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             }
         }
 
-        Log.TlsClientHelloRetrieveError(Logger, statusCode);
+        Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
         return false;
     }
 
