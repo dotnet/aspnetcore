@@ -17,13 +17,14 @@ internal sealed partial class TlsListener : IDisposable
     private readonly Task _cleanupTask;
 
     private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan CleanupDelay = TimeSpan.FromSeconds(30);
 
     internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
         _logger = logger;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
 
-        _cleanupTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        _cleanupTimer = new PeriodicTimer(CleanupDelay);
         _cleanupTask = CleanupLoopAsync();
     }
 
