@@ -259,11 +259,15 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             fixed (byte* pBuffer = buffer)
             {
                 statusCode = HttpApi.HttpGetRequestProperty(
-                    Server.RequestQueue.Handle, requestId,
-                    (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                    qualifier: null, qualifierSize: 0,
-                    pBuffer, (uint)buffer.Length,
-                    bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
+                    requestQueueHandle: Server.RequestQueue.Handle,
+                    requestId,
+                    propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                    qualifier: null,
+                    qualifierSize: 0,
+                    output: pBuffer,
+                    outputSize: (uint)buffer.Length,
+                    bytesReturned: (IntPtr)bytesReturned,
+                    overlapped: IntPtr.Zero);
 
                 if (statusCode is ErrorCodes.ERROR_SUCCESS)
                 {
@@ -289,11 +293,15 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 fixed (byte* pBuffer = buffer)
                 {
                     statusCode = HttpApi.HttpGetRequestProperty(
-                        Server.RequestQueue.Handle, requestId,
-                        (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                        qualifier: null, qualifierSize: 0,
-                        pBuffer, (uint)buffer.Length,
-                        bytesReturned: (IntPtr)bytesReturned, IntPtr.Zero);
+                        requestQueueHandle: Server.RequestQueue.Handle,
+                        requestId,
+                        propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        qualifier: null,
+                        qualifierSize: 0,
+                        output: pBuffer,
+                        outputSize: (uint)buffer.Length,
+                        bytesReturned: (IntPtr)bytesReturned,
+                        overlapped: IntPtr.Zero);
 
                     if (statusCode is ErrorCodes.ERROR_SUCCESS)
                     {
@@ -308,7 +316,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             }
         }
 
-        Log.TlsClientHelloRetrieveError(Logger, "Status code: " + statusCode);
+        Log.TlsClientHelloRetrieveError(Logger, statusCode);
         return false;
     }
 
