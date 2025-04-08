@@ -11,20 +11,20 @@ internal sealed partial class TlsListener : IDisposable
 {
     private readonly ConcurrentDictionary<ulong, DateTime> _connectionTimestamps = new();
     private readonly Action<IFeatureCollection, ReadOnlySpan<byte>> _tlsClientHelloBytesCallback;
-
     private readonly ILogger _logger;
-    private readonly CancellationTokenSource _cts = new();
+
+    private readonly PeriodicTimer _cleanupTimer;
     private readonly Task _cleanupTask;
 
-    private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(10);
-    private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(5);
 
     internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
         _logger = logger;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
 
-        _cleanupTask = Task.Run(() => CleanupLoopAsync(_cts.Token));
+        _cleanupTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        _cleanupTask = Task.Run(CleanupLoopAsync);
     }
 
     internal void InvokeTlsClientHelloCallback(IFeatureCollection features, Request request)
@@ -34,9 +34,8 @@ internal sealed partial class TlsListener : IDisposable
             return;
         }
 
-        if (!_connectionTimestamps.TryAdd(request.RawConnectionId, DateTime.UtcNow))
+        if (_connectionTimestamps.ContainsKey(request.RawConnectionId))
         {
-            // update the TTL
             _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow;
             return;
         }
@@ -48,41 +47,35 @@ internal sealed partial class TlsListener : IDisposable
         }
     }
 
-    private async Task CleanupLoopAsync(CancellationToken cancellationToken)
+    private async Task CleanupLoopAsync()
     {
-        while (!cancellationToken.IsCancellationRequested)
-        {            
-            var now = DateTime.UtcNow;
-            foreach (var kvp in _connectionTimestamps)
+        try
+        {
+            while (await _cleanupTimer.WaitForNextTickAsync())
             {
-                if (now - kvp.Value > ConnectionIdleTime)
+                var now = DateTime.UtcNow;
+                foreach (var kvp in _connectionTimestamps)
                 {
-                    _connectionTimestamps.TryRemove(kvp.Key, out _);
+                    if (now - kvp.Value > ConnectionIdleTime)
+                    {
+                        _connectionTimestamps.TryRemove(kvp.Key, out _);
+                    }
                 }
             }
-
-            try
-            {
-                await Task.Delay(CleanupInterval, cancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-                break;
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // expected on shutdown
+        }
+        catch (Exception ex)
+        {
+            Log.CleanupClosedConnectionError(_logger, ex);
         }
     }
 
     public void Dispose()
     {
-        _cts.Cancel();
-        try
-        {
-            _cleanupTask.Wait();
-        }
-        catch
-        {
-            // ignore
-        }
-        _cts.Dispose();
+        try { _cleanupTask.Wait(); } catch { }
+        _cleanupTimer.Dispose();
     }
 }
