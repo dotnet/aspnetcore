@@ -82,10 +82,12 @@ internal partial class EndpointHtmlRenderer
             var navigationManager = _httpContext.RequestServices.GetRequiredService<NavigationManager>();
             var notFoundUri = $"{navigationManager.BaseUri}not-found";
             navigationManager.NavigateTo(notFoundUri);
-            return;
         }
-        _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-        _httpContext.Response.ContentType = null;
+        else
+        {
+            _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            _httpContext.Response.ContentType = null;
+        }
         SignalRendererToFinishRendering();
     }
 
