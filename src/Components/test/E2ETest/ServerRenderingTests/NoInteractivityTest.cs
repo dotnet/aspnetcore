@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -63,5 +64,13 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Test claim value", () => Browser.FindElement(By.Id("test-claim")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-1")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-2")).Text);
+    }
+
+    [Fact]
+    public void CanRenderNotFoundPage()
+    {
+        Navigate($"{ServerPathBase}/streaming-set-not-found");
+        Browser.WaitForElementToBeVisible(By.Id("test-info"));
+        Browser.Equal("Default Not Found Page", () => Browser.Exists(By.Id("test-info")).Text);
     }
 }

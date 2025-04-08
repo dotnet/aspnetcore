@@ -1,0 +1,12 @@
+@page "/streaming-set-not-found"
+@attribute [StreamRendering]
+@inject NavigationManager NavigationManager
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate some delay before triggering NotFound to start streaming response
+        await Task.Delay(1000);
+        NavigationManager.NotFound();
+    }
+}
