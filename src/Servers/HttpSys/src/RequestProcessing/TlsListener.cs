@@ -24,7 +24,7 @@ internal sealed partial class TlsListener : IDisposable
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
 
         _cleanupTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
-        _cleanupTask = Task.Run(CleanupLoopAsync);
+        _cleanupTask = CleanupLoopAsync();
     }
 
     internal void InvokeTlsClientHelloCallback(IFeatureCollection features, Request request)
@@ -63,10 +63,6 @@ internal sealed partial class TlsListener : IDisposable
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-            // expected on shutdown
-        }
         catch (Exception ex)
         {
             Log.CleanupClosedConnectionError(_logger, ex);
@@ -75,7 +71,7 @@ internal sealed partial class TlsListener : IDisposable
 
     public void Dispose()
     {
-        try { _cleanupTask.Wait(); } catch { }
         _cleanupTimer.Dispose();
+        _cleanupTask.Wait();
     }
 }
