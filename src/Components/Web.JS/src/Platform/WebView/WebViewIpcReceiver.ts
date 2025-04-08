@@ -80,4 +80,3 @@ function base64ToArrayBuffer(base64: string): Uint8Array {
   }
   return result;
 }
-

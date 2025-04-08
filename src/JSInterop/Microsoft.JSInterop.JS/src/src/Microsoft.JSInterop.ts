@@ -21,19 +21,19 @@ export module DotNet {
   // Provides access to the "current" call dispatcher without having to flow it through nested function calls.
   let currentCallDispatcher: CallDispatcher | undefined;
 
-  type MemberCache = Map<string, { [k in JSCallType]?: Function }>;
+  type InvocationHandlerCache = Map<string, { [k in JSCallType]?: Function }>;
 
   class JSObject {
       // We cache resolved members. Note that this means we can return stale values if the object has been modified since then.
-      _cachedFunctions: MemberCache;;
+      _cachedHandlers: InvocationHandlerCache;;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(private _jsObject: any) {
-        this._cachedFunctions = new Map();
+          this._cachedHandlers = new Map();
       }
 
-      public resolveFunction(identifier: string, callType: JSCallType): Function {
-          const cachedFunction = this._cachedFunctions.get(identifier)?.[callType];
+      public resolveInvocationHandler(identifier: string, callType: JSCallType): Function {
+          const cachedFunction = this._cachedHandlers.get(identifier)?.[callType];
 
           if (cachedFunction) {
               return cachedFunction;
@@ -41,7 +41,7 @@ export module DotNet {
 
           const [parent, memberName] = findObjectMember(this._jsObject, identifier);
           const func = wrapJSCallAsFunction(parent, memberName, callType, identifier);
-          this.addFunctionToCache(identifier, func, callType);
+          this.addHandlerToCache(identifier, func, callType);
 
           return func;
       }
@@ -50,26 +50,26 @@ export module DotNet {
           return this._jsObject;
       }
 
-      private addFunctionToCache(identifier: string, func: Function, callType: JSCallType) {
-          const cachedIdentifier = this._cachedFunctions.get(identifier);
+      private addHandlerToCache(identifier: string, func: Function, callType: JSCallType) {
+          const cachedIdentifier = this._cachedHandlers.get(identifier);
 
           if (cachedIdentifier) {
             cachedIdentifier[callType] = func;
           } else {
-            this._cachedFunctions.set(identifier, { [callType]: func });
+            this._cachedHandlers.set(identifier, { [callType]: func });
           }
       }
   }
 
-    /**
+   /**
    * Represents the type of operation that should be performed in JS.
    */
-    export enum JSCallType {
-        FunctionCall = 1,
-        NewCall = 2,
-        GetValue = 3,
-        SetValue = 4
-      }
+  export enum JSCallType {
+      FunctionCall = 1,
+      NewCall = 2,
+      GetValue = 3,
+      SetValue = 4
+  }
 
   const windowJSObjectId = 0;
   const cachedJSObjectsById: { [id: number]: JSObject } = {
@@ -77,7 +77,7 @@ export module DotNet {
   };
 
   const windowObject = cachedJSObjectsById[windowJSObjectId];
-  windowObject._cachedFunctions.set("import", { [JSCallType.FunctionCall]: (url: any) => {
+  windowObject._cachedHandlers.set("import", { [JSCallType.FunctionCall]: (url: any) => {
       // In most cases developers will want to resolve dynamic imports relative to the base HREF.
       // However since we're the one calling the import keyword, they would be resolved relative to
       // this framework bundle URL. Fix this by providing an absolute URL.
@@ -400,7 +400,7 @@ export module DotNet {
       }
 
       invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): string | null {
-          const returnValue = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
+          const returnValue = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
           const result = createJSCallResult(returnValue, resultType);
 
           return result === null || result === undefined
@@ -410,7 +410,7 @@ export module DotNet {
 
       async beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any> {
           try {
-            const valueOrPromise = this.handleJSCall(targetInstanceId, identifier, callType, argsJson);
+            const valueOrPromise = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
 
             // We only await the result if the caller wants to be notified about it
             if (asyncHandle) {
@@ -436,7 +436,7 @@ export module DotNet {
           }
       }
 
-      handleJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
+      processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
           const args = parseJsonWithRevivers(this, argsJson) ?? [];
           const func = findJSFunction(identifier, targetInstanceId, callType);
           return func(...args);
@@ -562,7 +562,7 @@ export module DotNet {
       const targetInstance = cachedJSObjectsById[targetInstanceId];
 
       if (targetInstance) {
-          return targetInstance.resolveFunction(identifier, callType ?? JSCallType.FunctionCall);
+          return targetInstance.resolveInvocationHandler(identifier, callType ?? JSCallType.FunctionCall);
       }
 
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
@@ -636,30 +636,30 @@ export module DotNet {
   }
 
   function isReadableProperty(obj: any, propName: string) {
-    // Return false for missing property.
-    if (!(propName in obj)) {
-        return false;
-    }
-
-    // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
-    while (obj !== undefined) {
-        const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-
-        if (descriptor) {
-            // Return true for data property
-            if (descriptor.hasOwnProperty('value')) {
-                return true
-            }
-        
-            // Return true for accessor property with defined getter.
-            return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
-        }
-
-        obj = Object.getPrototypeOf(obj);
-    }
-
-    return false;
-}
+      // Return false for missing property.
+      if (!(propName in obj)) {
+          return false;
+      }
+  
+      // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
+      while (obj !== undefined) {
+          const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+  
+          if (descriptor) {
+              // Return true for data property
+              if (descriptor.hasOwnProperty('value')) {
+                  return true
+              }
+          
+              // Return true for accessor property with defined getter.
+              return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
+          }
+  
+          obj = Object.getPrototypeOf(obj);
+      }
+  
+      return false;
+  }
   
   function isWritableProperty(obj: any, propName: string) {
       // Return true for missing property if the property can be added.
