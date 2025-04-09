@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
-    private bool _isHandlingNotFound;
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
@@ -148,7 +147,6 @@ internal partial class EndpointHtmlRenderer
         {
             var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
-            _isHandlingNotFound = httpContext.Response.StatusCode == StatusCodes.Status404NotFound && _hasStatusCodePage;
 
             await WaitForResultReady(waitForQuiescence, result);
 
@@ -169,7 +167,7 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            if (_isHandlingNotFound)
+            if (_hasStatusCodePage)
             {
                 HandleNonStreamingTasks();
             }
