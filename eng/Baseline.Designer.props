@@ -515,13 +515,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
-    <BaselinePackageVersion>2.3.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.3.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.3.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.3.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -665,7 +665,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[8.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="[8.0.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor' AND '$(TargetFramework)' == 'net462' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="[2.3.0, )" />
@@ -679,7 +679,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' ">
     <BaselinePackageVersion>2.3.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net462' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.3.0, )" />
   </ItemGroup>

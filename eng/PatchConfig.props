@@ -18,4 +18,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Identity;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.2' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
