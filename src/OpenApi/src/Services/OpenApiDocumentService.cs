@@ -262,9 +262,18 @@ internal sealed class OpenApiDocumentService(
         CancellationToken cancellationToken)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
-        foreach (var description in descriptions)
+        foreach (var opTypeDescriptions in descriptions.GroupBy(d => d.GetOperationType()))
         {
-            var operation = await GetOperationAsync(description, document, scopedServiceProvider, schemaTransformers, cancellationToken);
+            var operationType = opTypeDescriptions.Key;
+
+            // `description` is the first description for a given Route + HttpMethod.
+            // There may be additional descriptions if the endpoint has additional definitions
+            // with different [Consumes] definitions. We merge in the bodies of these additional endpoints,
+            // but currently don't merge any other parts of the definition.
+            IReadOnlyList<ApiDescription> allDescriptions = [.. opTypeDescriptions];
+            var description = allDescriptions.First();
+
+            var operation = await GetOperationAsync(allDescriptions, document, scopedServiceProvider, schemaTransformers, cancellationToken);
             operation.Annotations ??= new Dictionary<string, object>();
             operation.Annotations.Add(OpenApiConstants.DescriptionId, description.ActionDescriptor.Id);
 
@@ -272,12 +281,14 @@ internal sealed class OpenApiDocumentService(
             {
                 DocumentName = documentName,
                 Description = description,
+                AllDescriptions = [.. allDescriptions],
                 ApplicationServices = scopedServiceProvider,
                 Document = document,
                 SchemaTransformers = schemaTransformers
             };
 
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
+            operations[operationType] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)
@@ -288,41 +299,25 @@ internal sealed class OpenApiDocumentService(
 
             // Apply any endpoint-specific operation transformers registered via
             // the AddOpenApiOperationTransformer extension method.
-            var endpointOperationTransformers = description.ActionDescriptor.EndpointMetadata
-                .OfType<DelegateOpenApiOperationTransformer>();
+            var endpointOperationTransformers = allDescriptions
+                .SelectMany(d => d.ActionDescriptor.EndpointMetadata
+                    .OfType<DelegateOpenApiOperationTransformer>());
             foreach (var endpointOperationTransformer in endpointOperationTransformers)
             {
                 await endpointOperationTransformer.TransformAsync(operation, operationContext, cancellationToken);
-            }
-
-            var operationType = description.GetOperationType();
-            if (
-                operations.TryGetValue(operationType, out var existingOperation) &&
-                existingOperation.RequestBody?.Content is not null &&
-                operation.RequestBody is { Content.Count: > 0 }
-            )
-            {
-                // Merge additional accepted content types into the existing operation.
-                foreach (var body in operation.RequestBody.Content)
-                {
-                    existingOperation.RequestBody.Content.Add(body);
-                }
-            }
-            else
-            {
-                operations[operationType] = operation;
             }
         }
         return operations;
     }
 
     private async Task<OpenApiOperation> GetOperationAsync(
-        ApiDescription description,
+        IReadOnlyList<ApiDescription> descriptions,
         OpenApiDocument document,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
+        var description = descriptions.First();
         var tags = GetTags(description, document);
         var operation = new OpenApiOperation
         {
@@ -331,9 +326,30 @@ internal sealed class OpenApiDocumentService(
             Description = GetDescription(description),
             Responses = await GetResponsesAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
             Parameters = await GetParametersAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
-            RequestBody = await GetRequestBodyAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
             Tags = tags,
         };
+
+        foreach (var bodyDescription in descriptions)
+        {
+            var requestBody = await GetRequestBodyAsync(document, bodyDescription, scopedServiceProvider, schemaTransformers, cancellationToken);
+            if (operation.RequestBody is null)
+            {
+                operation.RequestBody = requestBody;
+            }
+            else if (requestBody is not null)
+            {
+                // Merge additional accepted content types that are defined by additional endpoint descriptions.
+                var existingContent = operation.RequestBody.Content;
+                foreach (var additionalContent in requestBody.Content)
+                {
+                    if (!existingContent.ContainsKey(additionalContent.Key))
+                    {
+                        existingContent.Add(additionalContent);
+                    }
+                }
+            }
+        }
+
         return operation;
     }
 
