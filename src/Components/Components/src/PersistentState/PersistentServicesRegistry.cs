@@ -27,7 +27,7 @@ internal sealed class PersistentServicesRegistry
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _registrations = ResolveRegistrations(serviceProvider.GetRequiredService<RegisteredPersistentServiceRegistrationCollection>().Registrations);
+        _registrations = ResolveRegistrations(serviceProvider.GetService<RegisteredPersistentServiceRegistrationCollection>()?.Registrations ?? []);
     }
 
     internal IComponentRenderMode? RenderMode { get; set; }
