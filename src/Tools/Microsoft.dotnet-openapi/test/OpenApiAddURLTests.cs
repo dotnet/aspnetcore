@@ -177,7 +177,7 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
     }
 
     [Fact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/61348", Queues = "Windows.11.Amd64.Client.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61348")]
     public async Task OpenApi_Add_Url_SameName_UniqueFile()
     {
         var project = CreateBasicProject(withOpenApi: false);
@@ -334,7 +334,7 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
     }
 
     [Fact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/61348", Queues = "Windows.11.Amd64.Client.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61348")]
     public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
     {
         var project = CreateBasicProject(withOpenApi: false);
