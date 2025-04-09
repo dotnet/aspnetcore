@@ -38,7 +38,7 @@ public abstract class NavigationManager
     /// <summary>
     /// An event that fires when the page is not found.
     /// </summary>
-    public event EventHandler<EventArgs> NotFoundEvent
+    public event EventHandler<NotFoundEventArgs> OnNotFound
     {
         add
         {
@@ -52,7 +52,7 @@ public abstract class NavigationManager
         }
     }
 
-    private EventHandler<EventArgs>? _notFound;
+    private EventHandler<NotFoundEventArgs>? _notFound;
 
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
@@ -199,11 +199,11 @@ public abstract class NavigationManager
     /// <summary>
     /// Handles setting the NotFound state.
     /// </summary>
-    public virtual void NotFound() => NotFoundCore();
+    public void NotFound() => NotFoundCore();
 
     private void NotFoundCore()
     {
-        _notFound?.Invoke(this, new EventArgs());
+        _notFound?.Invoke(this, new NotFoundEventArgs());
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿{
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects" : [
       "src\\HealthChecks\\Abstractions\\src\\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj",
       "src\\HealthChecks\\HealthChecks\\src\\Microsoft.Extensions.Diagnostics.HealthChecks.csproj",

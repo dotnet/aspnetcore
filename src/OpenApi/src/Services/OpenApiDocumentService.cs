@@ -77,7 +77,7 @@ internal sealed class OpenApiDocumentService(
         document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
         try
         {
-            await ApplyTransformersAsync(document, scopedServiceProvider, cancellationToken);
+            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, cancellationToken);
         }
 
         finally
@@ -95,13 +95,15 @@ internal sealed class OpenApiDocumentService(
         return document;
     }
 
-    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
+    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
             DocumentName = documentName,
             ApplicationServices = scopedServiceProvider,
             DescriptionGroups = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items,
+            Document = document,
+            SchemaTransformers = schemaTransformers
         };
         // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
@@ -271,6 +273,8 @@ internal sealed class OpenApiDocumentService(
                 DocumentName = documentName,
                 Description = description,
                 ApplicationServices = scopedServiceProvider,
+                Document = document,
+                SchemaTransformers = schemaTransformers
             };
 
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);

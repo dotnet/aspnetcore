@@ -29,8 +29,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using System.Text.Json;
     using System.Text.Json.Nodes;
     using System.Threading;
@@ -61,132 +63,16 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file record XmlResponseComment(string Code, string? Description, string? Example);
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed record MemberKey(
-        Type? DeclaringType,
-        MemberType MemberKind,
-        string? Name,
-        Type? ReturnType,
-        Type[]? Parameters) : IEquatable<MemberKey>
-    {
-        public bool Equals(MemberKey? other)
-        {
-            if (other is null) return false;
-
-            // Check member kind
-            if (MemberKind != other.MemberKind) return false;
-
-            // Check declaring type, handling generic types
-            if (!TypesEqual(DeclaringType, other.DeclaringType)) return false;
-
-            // Check name
-            if (Name != other.Name) return false;
-
-            // For methods, check return type and parameters
-            if (MemberKind == MemberType.Method)
-            {
-                if (!TypesEqual(ReturnType, other.ReturnType)) return false;
-                if (Parameters is null || other.Parameters is null) return false;
-                if (Parameters.Length != other.Parameters.Length) return false;
-
-                for (int i = 0; i < Parameters.Length; i++)
-                {
-                    if (!TypesEqual(Parameters[i], other.Parameters[i])) return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool TypesEqual(Type? type1, Type? type2)
-        {
-            if (type1 == type2) return true;
-            if (type1 == null || type2 == null) return false;
-
-            if (type1.IsGenericType && type2.IsGenericType)
-            {
-                return type1.GetGenericTypeDefinition() == type2.GetGenericTypeDefinition();
-            }
-
-            return type1 == type2;
-        }
-
-        public override int GetHashCode()
-        {
-            var hash = new HashCode();
-            hash.Add(GetTypeHashCode(DeclaringType));
-            hash.Add(MemberKind);
-            hash.Add(Name);
-
-            if (MemberKind == MemberType.Method)
-            {
-                hash.Add(GetTypeHashCode(ReturnType));
-                if (Parameters is not null)
-                {
-                    foreach (var param in Parameters)
-                    {
-                        hash.Add(GetTypeHashCode(param));
-                    }
-                }
-            }
-
-            return hash.ToHashCode();
-        }
-
-        private static int GetTypeHashCode(Type? type)
-        {
-            if (type == null) return 0;
-            return type.IsGenericType ? type.GetGenericTypeDefinition().GetHashCode() : type.GetHashCode();
-        }
-
-        public static MemberKey FromMethodInfo(MethodInfo method)
-        {
-            return new MemberKey(
-                method.DeclaringType,
-                MemberType.Method,
-                method.Name,
-                method.ReturnType.IsGenericParameter ? typeof(object) : method.ReturnType,
-                method.GetParameters().Select(p => p.ParameterType.IsGenericParameter ? typeof(object) : p.ParameterType).ToArray());
-        }
-
-        public static MemberKey FromPropertyInfo(PropertyInfo property)
-        {
-            return new MemberKey(
-                property.DeclaringType,
-                MemberType.Property,
-                property.Name,
-                null,
-                null);
-        }
-
-        public static MemberKey FromTypeInfo(Type type)
-        {
-            return new MemberKey(
-                type,
-                MemberType.Type,
-                null,
-                null,
-                null);
-        }
-    }
-
-    file enum MemberType
-    {
-        Type,
-        Property,
-        Method
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class XmlCommentCache
     {
-        private static Dictionary<MemberKey, XmlComment>? _cache;
-        public static Dictionary<MemberKey, XmlComment> Cache => _cache ??= GenerateCacheEntries();
+        private static Dictionary<string, XmlComment>? _cache;
+        public static Dictionary<string, XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
-        private static Dictionary<MemberKey, XmlComment> GenerateCacheEntries()
+        private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<MemberKey, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Type, null, null, []), new XmlComment(@"Every class and member should have a one sentence
+            cache.Add(@"T:ExampleClass", new XmlComment(@"Every class and member should have a one sentence
 summary describing its purpose.", null, @"     You can expand on that one sentence summary to
      provide more information for readers. In this case,
      the `ExampleClass` provides different C#
@@ -230,82 +116,294 @@ would typically use the ""term"" element.
 
 Note: paragraphs are double spaced. Use the *br*
 tag for single spaced lines.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Type, null, null, []), new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
+            cache.Add(@"T:Person", new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
 created for positional records, yet. The language
 design team is still considering what tags should
 be supported, and where. Currently, you can use
 the ""param"" tag to describe the parameters to the
 primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::MainClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            cache.Add(@"T:MainClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::DerivedClass), MemberType.Type, null, null, []), new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
+            cache.Add(@"T:DerivedClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
 In this example, these comments also explain the
 general information about the derived class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
+            cache.Add(@"T:ITestInterface", new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ImplementingClass), MemberType.Type, null, null, []), new XmlComment(@"This interface would describe all the methods in
+            cache.Add(@"T:ImplementingClass", new XmlComment(@"This interface would describe all the methods in
 its contract.", null, @"While elided for brevity, each method or property
 in this interface would contain docs that you want
 to duplicate in each implementing class.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Type, null, null, []), new XmlComment(@"This class shows hows you can ""inherit"" the doc
+            cache.Add(@"T:InheritOnlyReturns", new XmlComment(@"This class shows hows you can ""inherit"" the doc
 comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
 represented by an xpath expression.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Type, null, null, []), new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::GenericClass<>), MemberType.Type, null, null, []), new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
+            cache.Add(@"T:InheritAllButRemarks", new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:GenericClass`1", new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
 type as a cref attribute.
 In generic classes and methods, you'll often want to reference the
 generic type, or the type parameter.", null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Type, null, null, []), new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Property, "Label", null, []), new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
+            cache.Add(@"T:GenericParent", new XmlComment(@"This class validates the behavior for mapping
+generic types to open generics for use in
+typeof expressions.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
 for this instance.", false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "FirstName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::Person), MemberType.Property, "LastName", null, []), new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "Add", typeof(global::System.Int32), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+            cache.Add(@"P:Person.FirstName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Person.LastName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.Id", new XmlComment(@"This property is a nullable value type.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.Name", new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddAsync", typeof(global::System.Threading.Tasks.Task<>), [typeof(global::System.Int32), typeof(global::System.Int32)]), new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "DoNothingAsync", typeof(global::System.Threading.Tasks.Task), []), new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ExampleClass), MemberType.Method, "AddNumbers", typeof(global::System.Int32), [typeof(global::System.Int32[])]), new XmlComment(@"This method is an example of a method that consumes
+            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
 an params array.", null, null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ITestInterface), MemberType.Method, "Method", typeof(global::System.Int32), [typeof(global::System.Int32)]), new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+            cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritOnlyReturns), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyParentMethod", typeof(global::System.Boolean), [typeof(global::System.Boolean)]), new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::InheritAllButRemarks), MemberType.Method, "MyChildMethod", typeof(global::System.Boolean), []), new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::ParamsAndParamRefs), MemberType.Method, "GetGenericValue", typeof(object), [typeof(object)]), new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
+            cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
+type parameter inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
+type parameter inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
 
-            return _cache;
+            return cache;
         }
+    }
 
-        internal static bool TryGetXmlComment(Type? type, MethodInfo? methodInfo, [NotNullWhen(true)] out XmlComment? xmlComment)
+    file static class DocumentationCommentIdHelper
+    {
+        /// <summary>
+        /// Generates a documentation comment ID for a type.
+        /// Example: T:Namespace.Outer+Inner`1 becomes T:Namespace.Outer.Inner`1
+        /// </summary>
+        public static string CreateDocumentationId(this Type type)
         {
-            if (methodInfo is null)
+            if (type == null)
             {
-                return Cache.TryGetValue(new MemberKey(type, MemberType.Property, null, null, null), out xmlComment);
+                throw new ArgumentNullException(nameof(type));
             }
 
-            return Cache.TryGetValue(MemberKey.FromMethodInfo(methodInfo), out xmlComment);
+            return "T:" + GetTypeDocId(type, includeGenericArguments: false, omitGenericArity: false);
         }
 
-        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        /// <summary>
+        /// Generates a documentation comment ID for a property.
+        /// Example: P:Namespace.ContainingType.PropertyName or for an indexer P:Namespace.ContainingType.Item(System.Int32)
+        /// </summary>
+        public static string CreateDocumentationId(this PropertyInfo property)
         {
-            return Cache.TryGetValue(new MemberKey(type, memberName is null ? MemberType.Type : MemberType.Property, memberName, null, null), out xmlComment);
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+
+            if (property.DeclaringType != null)
+            {
+                sb.Append(GetTypeDocId(property.DeclaringType, includeGenericArguments: false, omitGenericArity: false));
+            }
+
+            sb.Append('.');
+            sb.Append(property.Name);
+
+            // For indexers, include the parameter list.
+            var indexParams = property.GetIndexParameters();
+            if (indexParams.Length > 0)
+            {
+                sb.Append('(');
+                for (int i = 0; i < indexParams.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    sb.Append(GetTypeDocId(indexParams[i].ParameterType, includeGenericArguments: true, omitGenericArity: false));
+                }
+                sb.Append(')');
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a method (or constructor).
+        /// For example:
+        ///   M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
+        ///   M:Namespace.ContainingType.#ctor(ParamType)
+        /// </summary>
+        public static string CreateDocumentationId(this MethodInfo method)
+        {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("M:");
+
+            // Append the fully qualified name of the declaring type.
+            if (method.DeclaringType != null)
+            {
+                sb.Append(GetTypeDocId(method.DeclaringType, includeGenericArguments: false, omitGenericArity: false));
+            }
+
+            sb.Append('.');
+
+            // Append the method name, handling constructors specially.
+            if (method.IsConstructor)
+            {
+                sb.Append(method.IsStatic ? "#cctor" : "#ctor");
+            }
+            else
+            {
+                sb.Append(method.Name);
+                if (method.IsGenericMethod)
+                {
+                    sb.Append("``");
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", method.GetGenericArguments().Length);
+                }
+            }
+
+            // Append the parameter list, if any.
+            var parameters = method.GetParameters();
+            if (parameters.Length > 0)
+            {
+                sb.Append('(');
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    // Omit the generic arity for the parameter type.
+                    sb.Append(GetTypeDocId(parameters[i].ParameterType, includeGenericArguments: true, omitGenericArity: true));
+                }
+                sb.Append(')');
+            }
+
+            // Append the return type after a '~' (if the method returns a value).
+            if (method.ReturnType != typeof(void))
+            {
+                sb.Append('~');
+                // Omit the generic arity for the return type.
+                sb.Append(GetTypeDocId(method.ReturnType, includeGenericArguments: true, omitGenericArity: true));
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation ID string for a type.
+        /// This method handles nested types (replacing '+' with '.'),
+        /// generic types, arrays, pointers, by-ref types, and generic parameters.
+        /// The <paramref name="includeGenericArguments"/> flag controls whether
+        /// constructed generic type arguments are emitted, while <paramref name="omitGenericArity"/>
+        /// controls whether the generic arity marker (e.g. "`1") is appended.
+        /// </summary>
+        private static string GetTypeDocId(Type type, bool includeGenericArguments, bool omitGenericArity)
+        {
+            if (type.IsGenericParameter)
+            {
+                // Use `` for method-level generic parameters and ` for type-level.
+                if (type.DeclaringMethod != null)
+                {
+                    return "``" + type.GenericParameterPosition;
+                }
+                else if (type.DeclaringType != null)
+                {
+                    return "`" + type.GenericParameterPosition;
+                }
+                else
+                {
+                    return type.Name;
+                }
+            }
+
+            if (type.IsGenericType)
+            {
+                Type genericDef = type.GetGenericTypeDefinition();
+                string fullName = genericDef.FullName ?? genericDef.Name;
+
+                var sb = new StringBuilder(fullName.Length);
+
+                // Replace '+' with '.' for nested types
+                for (var i = 0; i < fullName.Length; i++)
+                {
+                    char c = fullName[i];
+                    if (c == '+')
+                    {
+                        sb.Append('.');
+                    }
+                    else if (c == '`')
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                }
+
+                if (!omitGenericArity)
+                {
+                    int arity = genericDef.GetGenericArguments().Length;
+                    sb.Append('`');
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", arity);
+                }
+
+                if (includeGenericArguments && !type.IsGenericTypeDefinition)
+                {
+                    var typeArgs = type.GetGenericArguments();
+                    sb.Append('{');
+
+                    for (int i = 0; i < typeArgs.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sb.Append(',');
+                        }
+
+                        sb.Append(GetTypeDocId(typeArgs[i], includeGenericArguments, omitGenericArity));
+                    }
+
+                    sb.Append('}');
+                }
+
+                return sb.ToString();
+            }
+
+            // For non-generic types, use FullName (if available) and replace nested type separators.
+            return (type.FullName ?? type.Name).Replace('+', '.');
         }
     }
 
@@ -322,7 +420,7 @@ T", null, null, false, null, null, null));
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo, out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -395,7 +493,7 @@ T", null, null, false, null, null, null));
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -404,7 +502,7 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
-            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, (string?)null, out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
