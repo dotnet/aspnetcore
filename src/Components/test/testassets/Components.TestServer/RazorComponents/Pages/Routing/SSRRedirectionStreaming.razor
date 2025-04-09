@@ -12,7 +12,7 @@
 @code {
     private async Task Submit()
     {
-        await Task.Delay(1000); // Simulate some async work to let the streaming begin
+        await Task.Yield();
         NavigationManager.NavigateTo("/subdir/routing");
     }
 }
