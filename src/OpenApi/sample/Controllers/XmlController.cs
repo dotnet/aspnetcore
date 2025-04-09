@@ -8,14 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 [ApiExplorerSettings(GroupName = "xml")]
 public class XmlController : ControllerBase
 {
-    /// <param name="name">The name of the person.</param>
-    /// <response code="200">Returns the greeting.</response>
-    [HttpGet]
-    public string Get1(string name)
-    {
-        return $"Hello, {name}!";
-    }
-
     /// <summary>
     /// A summary of the action.
     /// </summary>
@@ -26,6 +18,14 @@ public class XmlController : ControllerBase
     public string Get()
     {
         return "Hello, World!";
+    }
+
+    /// <param name="name">The name of the person.</param>
+    /// <response code="200">Returns the greeting.</response>
+    [HttpGet("{name}")]
+    public string Get1(string name)
+    {
+        return $"Hello, {name}!";
     }
 
     /// <param name="todo">The todo to insert into the database.</param>
