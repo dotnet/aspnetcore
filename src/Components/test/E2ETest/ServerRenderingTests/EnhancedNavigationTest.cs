@@ -717,7 +717,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
-        var expectedFragmentScrollPosition = fragmentScrollPosition - 1;
+        var expectedFragmentScrollPosition = fragmentScrollPosition;
         Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
     }
 
