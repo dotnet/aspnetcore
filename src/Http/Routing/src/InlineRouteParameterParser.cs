@@ -167,7 +167,7 @@ public static class InlineRouteParameterParser
                             // determine if the terminator needs to be consumed as part of the current constraint
                             // specification.
                             var indexOfClosingParantheses = routeParameter.IndexOf(')', currentIndex + 1);
-                            if (indexOfClosingParantheses == -1)
+                            if (indexOfClosingParantheses < 0)
                             {
                                 constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
                                 inlineConstraints.Add(new InlineConstraint(constraintText));

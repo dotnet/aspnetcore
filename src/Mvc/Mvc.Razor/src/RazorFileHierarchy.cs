@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
@@ -26,7 +26,7 @@ internal static class RazorFileHierarchy
         var builder = new StringBuilder(path);
         var maxIterations = 255;
         var index = path.Length;
-        while (maxIterations-- > 0 && index > 1 && (index = path.LastIndexOf('/', index - 1)) != -1)
+        while (maxIterations-- > 0 && index > 1 && (index = path.LastIndexOf('/', index - 1)) >= 0)
         {
             builder.Length = index + 1;
             builder.Append(ViewStartFileName);

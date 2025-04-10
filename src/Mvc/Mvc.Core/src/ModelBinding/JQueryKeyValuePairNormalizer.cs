@@ -45,7 +45,7 @@ internal static class JQueryKeyValuePairNormalizer
         }
 
         var indexOpen = key.IndexOf('[');
-        if (indexOpen == -1)
+        if (indexOpen < 0)
         {
             // Fast path, no normalization needed.
             // This skips string conversion and allocating the string builder.
@@ -55,7 +55,7 @@ internal static class JQueryKeyValuePairNormalizer
         var position = 0;
         while (position < key.Length)
         {
-            if (indexOpen == -1)
+            if (indexOpen < 0)
             {
                 // No more brackets.
                 builder.Append(key, position, key.Length - position);
@@ -66,7 +66,7 @@ internal static class JQueryKeyValuePairNormalizer
 
             // Find closing bracket.
             var indexClose = key.IndexOf(']', indexOpen);
-            if (indexClose == -1)
+            if (indexClose < 0)
             {
                 throw new ArgumentException(
                     message: Resources.FormatJQueryFormValueProviderFactory_MissingClosingBracket(key),

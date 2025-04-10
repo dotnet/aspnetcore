@@ -369,7 +369,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         // No CR or LF found in the SequenceReader
-        if (index == -1)
+        if (index < 0)
         {
             return -1;
         }
@@ -445,7 +445,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         // Last chance to bail if the terminator size is not valid or the header doesn't parse.
-        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
+        if (terminatorSize < 0 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
         {
             RejectRequestHeader(headerSpan);
         }

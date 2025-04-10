@@ -29,7 +29,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         get
         {
-            if (_count == -1)
+            if (_count < 0)
             {
                 // We haven't computed the real count of segments yet.
                 if (_path.Length == 0)
@@ -79,7 +79,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
 
             // Skip the first `/`.
             var delimiterIndex = 1;
-            while ((delimiterIndex = _path.IndexOf('/', delimiterIndex)) != -1)
+            while ((delimiterIndex = _path.IndexOf('/', delimiterIndex)) >= 0)
             {
                 if (currentSegmentIndex++ == index)
                 {
@@ -158,7 +158,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
                 return false;
             }
 
-            if (_index == -1)
+            if (_index < 0)
             {
                 // Skip the first `/`.
                 _index = 1;
@@ -176,7 +176,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
             }
 
             var delimiterIndex = _path.IndexOf('/', _index);
-            if (delimiterIndex != -1)
+            if (delimiterIndex >= 0)
             {
                 _length = delimiterIndex - _index;
                 return true;

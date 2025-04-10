@@ -397,7 +397,7 @@ public class HttpRequestStreamReader : TextReader
 
         var index = span.IndexOfAny(carriageReturn, lineFeed);
 
-        if (index != -1)
+        if (index >= 0)
         {
             if (span[index] == carriageReturn)
             {

@@ -84,14 +84,14 @@ public static class QueryHelpers
         var uriToBeAppended = uri.AsSpan();
         var anchorText = ReadOnlySpan<char>.Empty;
         // If there is an anchor, then the query string must be inserted before its first occurrence.
-        if (anchorIndex != -1)
+        if (anchorIndex >= 0)
         {
             anchorText = uriToBeAppended.Slice(anchorIndex);
             uriToBeAppended = uriToBeAppended.Slice(0, anchorIndex);
         }
 
         var queryIndex = uriToBeAppended.IndexOf('?');
-        var hasQuery = queryIndex != -1;
+        var hasQuery = queryIndex >= 0;
 
         var sb = new StringBuilder();
         sb.Append(uriToBeAppended);

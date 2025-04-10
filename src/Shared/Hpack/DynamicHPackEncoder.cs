@@ -75,7 +75,7 @@ internal sealed class DynamicHPackEncoder
         {
             int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
-            return index == -1
+            return index < 0
                 ? HPackEncoder.EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, valueEncoding, buffer, out bytesWritten)
                 : HPackEncoder.EncodeLiteralHeaderFieldNeverIndexing(index, value, valueEncoding, buffer, out bytesWritten);
         }
@@ -83,7 +83,7 @@ internal sealed class DynamicHPackEncoder
         // No dynamic table. Only use the static table.
         if (!_allowDynamicCompression || _maxHeaderTableSize == 0 || encodingHint == HeaderEncodingHint.IgnoreIndex)
         {
-            return staticTableIndex == -1
+            return staticTableIndex < 0
                 ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, valueEncoding, buffer, out bytesWritten)
                 : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(staticTableIndex, value, valueEncoding, buffer, out bytesWritten);
         }
@@ -95,7 +95,7 @@ internal sealed class DynamicHPackEncoder
         {
             int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
-            return index == -1
+            return index < 0
                 ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, valueEncoding, buffer, out bytesWritten)
                 : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(index, value, valueEncoding, buffer, out bytesWritten);
         }
@@ -105,7 +105,7 @@ internal sealed class DynamicHPackEncoder
 
     private int ResolveDynamicTableIndex(int staticTableIndex, string name)
     {
-        if (staticTableIndex != -1)
+        if (staticTableIndex >= 0)
         {
             // Prefer static table index.
             return staticTableIndex;
@@ -129,7 +129,7 @@ internal sealed class DynamicHPackEncoder
             // Doesn't exist in dynamic table. Add new entry to dynamic table.
 
             int index = ResolveDynamicTableIndex(staticTableIndex, name);
-            bool success = index == -1
+            bool success = index < 0
                 ? HPackEncoder.EncodeLiteralHeaderFieldIndexingNewName(name, value, valueEncoding, buffer, out bytesWritten)
                 : HPackEncoder.EncodeLiteralHeaderFieldIndexing(index, value, valueEncoding, buffer, out bytesWritten);
 
@@ -204,7 +204,7 @@ internal sealed class DynamicHPackEncoder
 
     private int CalculateDynamicTableIndex(int index)
     {
-        return index == -1 ? -1 : index - Head.Before!.Index + 1 + H2StaticTable.Count;
+        return index < 0 ? -1 : index - Head.Before!.Index + 1 + H2StaticTable.Count;
     }
 
     private void AddHeaderEntry(string name, string value, uint headerSize)

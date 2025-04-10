@@ -143,7 +143,7 @@ public static class ViewDataEvaluator
         }
 
         var lastDot = expression.LastIndexOf('.');
-        if (lastDot == -1)
+        if (lastDot < 0)
         {
             return string.Empty;
         }

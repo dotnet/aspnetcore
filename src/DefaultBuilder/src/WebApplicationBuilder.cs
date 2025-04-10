@@ -501,7 +501,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             destinationValue is List<string> destinationDescriptions)
         {
             var wireUpIndex = destinationDescriptions.IndexOf(typeof(WireSourcePipeline).FullName!);
-            if (wireUpIndex != -1)
+            if (wireUpIndex >= 0)
             {
                 destinationDescriptions.RemoveAt(wireUpIndex);
                 destinationDescriptions.InsertRange(wireUpIndex, sourceDescriptions);

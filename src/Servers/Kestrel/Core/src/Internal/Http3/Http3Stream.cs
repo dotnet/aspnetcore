@@ -1079,9 +1079,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         var queryIndex = path.IndexOf('?');
-        QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
+        QueryString = queryIndex < 0 ? string.Empty : path.Substring(queryIndex);
 
-        var pathSegment = queryIndex == -1 ? path.AsSpan() : path.AsSpan(0, queryIndex);
+        var pathSegment = queryIndex < 0 ? path.AsSpan() : path.AsSpan(0, queryIndex);
 
         return TryValidatePath(pathSegment);
     }

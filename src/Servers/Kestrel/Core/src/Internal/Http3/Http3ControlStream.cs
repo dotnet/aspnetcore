@@ -76,7 +76,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     public KestrelTrace Log => _context.ServiceContext.Log;
 
     public long StreamTimeoutTimestamp { get; set; }
-    public bool IsReceivingHeader => _headerType == -1;
+    public bool IsReceivingHeader => _headerType < 0;
     public bool IsDraining => false;
     public bool IsRequestStream => false;
     public string TraceIdentifier => _context.StreamContext.ConnectionId;
@@ -195,7 +195,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             // avoid perf issues with the current implementation
             // we can defer the reading until now
             // (https://github.com/dotnet/aspnetcore/issues/42789)
-            if (_headerType == -1)
+            if (_headerType < 0)
             {
                 _headerType = await TryReadStreamHeaderAsync();
             }
