@@ -828,10 +828,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
-                        if (pendingTasks != null)
-                        {
-                            pendingTasks[i] = task;
-                        }
+                        pendingTasks?[i] = task;
                         break;
                     case RootComponentOperationType.Update:
                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.

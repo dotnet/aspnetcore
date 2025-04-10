@@ -19,6 +19,8 @@
     <IsShipping>true</IsShipping>
     <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
     <SiteExtensionsReferenceLayoutDir>$(ArtifactsObjDir)SiteExtensionsReferenceLayout/</SiteExtensionsReferenceLayoutDir>
+    <MicrosoftWebXdtExtensionsPath>$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
+    <MicrosoftWebXdtExtensionsPath Condition="'$(DotNetBuildPass)' == '2'">$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(TargetArchitecture)\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
@@ -59,30 +61,27 @@
       BeforeTargets="Restore"
       Condition=" '$(DotNetBuildPass)' == '2' ">
 
-    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
-        BuildInParallel="$(BuildInParallel)"
-        Properties="Platform=x64;DisableTransitiveFrameworkReferences=true"
-        Targets="_VmrBuild" />
-    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
-        BuildInParallel="$(BuildInParallel)"
-        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86;DisableTransitiveFrameworkReferences=true"
-        Targets="_VmrBuild" />
     <MSBuild Projects="..\..\..\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj"
-        BuildInParallel="$(BuildInParallel)"
+        BuildInParallel="false"
         Properties="Platform=x64"
         Targets="_VmrBuild" />
     <MSBuild Projects="..\..\..\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj"
-        BuildInParallel="$(BuildInParallel)"
+        BuildInParallel="false"
         Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86"
+        Targets="_VmrBuild" />
+    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
+        BuildInParallel="false"
+        Properties="Platform=x64;DisableTransitiveFrameworkReferences=true"
+        Targets="_VmrBuild" />
+    <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
+        BuildInParallel="false"
+        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86;DisableTransitiveFrameworkReferences=true"
         Targets="_VmrBuild" />
   </Target>
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\$(DefaultNetFxTargetFramework)\Microsoft.Web.Xdt.Extensions.dll"
-        Condition="EXISTS('$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\$(DefaultNetFxTargetFramework)\Microsoft.Web.Xdt.Extensions.dll')"
-        PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
@@ -129,6 +128,8 @@
         OverwriteReadOnlyFiles="true"
         Condition="'$(DotNetBuild)' == 'true'" />
 
+    <Error Condition="!Exists('$(MicrosoftWebXdtExtensionsPath)')" Text="Microsoft.Web.Xdt.Extensions.dll should be available for SiteExtensions .nupkg, but isn't." />
+
     <ItemGroup>
       <!--
         The x64 & x86 SiteExtension packages have identical deps.json files. We include only the x64 files to
@@ -146,6 +147,7 @@
       <!-- Temporarily skip the common files -->
       <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
       <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
+      <Content Include="$(MicrosoftWebXdtExtensionsPath)" PackagePath="content" />
     </ItemGroup>
   </Target>
 </Project>

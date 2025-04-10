@@ -29,8 +29,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using System.Text.Json;
     using System.Text.Json.Nodes;
     using System.Threading;
@@ -61,160 +63,250 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file record XmlResponseComment(string Code, string? Description, string? Example);
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed record MemberKey(
-        Type? DeclaringType,
-        MemberType MemberKind,
-        string? Name,
-        Type? ReturnType,
-        Type[]? Parameters) : IEquatable<MemberKey>
-    {
-        public bool Equals(MemberKey? other)
-        {
-            if (other is null) return false;
-
-            // Check member kind
-            if (MemberKind != other.MemberKind) return false;
-
-            // Check declaring type, handling generic types
-            if (!TypesEqual(DeclaringType, other.DeclaringType)) return false;
-
-            // Check name
-            if (Name != other.Name) return false;
-
-            // For methods, check return type and parameters
-            if (MemberKind == MemberType.Method)
-            {
-                if (!TypesEqual(ReturnType, other.ReturnType)) return false;
-                if (Parameters is null || other.Parameters is null) return false;
-                if (Parameters.Length != other.Parameters.Length) return false;
-
-                for (int i = 0; i < Parameters.Length; i++)
-                {
-                    if (!TypesEqual(Parameters[i], other.Parameters[i])) return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool TypesEqual(Type? type1, Type? type2)
-        {
-            if (type1 == type2) return true;
-            if (type1 == null || type2 == null) return false;
-
-            if (type1.IsGenericType && type2.IsGenericType)
-            {
-                return type1.GetGenericTypeDefinition() == type2.GetGenericTypeDefinition();
-            }
-
-            return type1 == type2;
-        }
-
-        public override int GetHashCode()
-        {
-            var hash = new HashCode();
-            hash.Add(GetTypeHashCode(DeclaringType));
-            hash.Add(MemberKind);
-            hash.Add(Name);
-
-            if (MemberKind == MemberType.Method)
-            {
-                hash.Add(GetTypeHashCode(ReturnType));
-                if (Parameters is not null)
-                {
-                    foreach (var param in Parameters)
-                    {
-                        hash.Add(GetTypeHashCode(param));
-                    }
-                }
-            }
-
-            return hash.ToHashCode();
-        }
-
-        private static int GetTypeHashCode(Type? type)
-        {
-            if (type == null) return 0;
-            return type.IsGenericType ? type.GetGenericTypeDefinition().GetHashCode() : type.GetHashCode();
-        }
-
-        public static MemberKey FromMethodInfo(MethodInfo method)
-        {
-            return new MemberKey(
-                method.DeclaringType,
-                MemberType.Method,
-                method.Name,
-                method.ReturnType.IsGenericParameter ? typeof(object) : method.ReturnType,
-                method.GetParameters().Select(p => p.ParameterType.IsGenericParameter ? typeof(object) : p.ParameterType).ToArray());
-        }
-
-        public static MemberKey FromPropertyInfo(PropertyInfo property)
-        {
-            return new MemberKey(
-                property.DeclaringType,
-                MemberType.Property,
-                property.Name,
-                null,
-                null);
-        }
-
-        public static MemberKey FromTypeInfo(Type type)
-        {
-            return new MemberKey(
-                type,
-                MemberType.Type,
-                null,
-                null,
-                null);
-        }
-    }
-
-    file enum MemberType
-    {
-        Type,
-        Property,
-        Method
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class XmlCommentCache
     {
-        private static Dictionary<MemberKey, XmlComment>? _cache;
-        public static Dictionary<MemberKey, XmlComment> Cache => _cache ??= GenerateCacheEntries();
+        private static Dictionary<string, XmlComment>? _cache;
+        public static Dictionary<string, XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
-        private static Dictionary<MemberKey, XmlComment> GenerateCacheEntries()
+        private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var _cache = new Dictionary<MemberKey, XmlComment>();
+            var cache = new Dictionary<string, XmlComment>();
 
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get", typeof(global::System.String), []), new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get2", typeof(global::System.String), [typeof(global::System.String)]), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get3", typeof(global::System.String), [typeof(global::System.String)]), new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get4", typeof(global::Microsoft.AspNetCore.Http.HttpResults.NotFound<>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Get5", typeof(global::Microsoft.AspNetCore.Http.HttpResults.Results<,,>), []), new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Post6", typeof(global::Microsoft.AspNetCore.Http.IResult), [typeof(global::User)]), new XmlComment(@"Creates a new user.", null, @"Sample request:
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Creates a new user.", null, @"Sample request:
     POST /6
     {
         ""username"": ""johndoe"",
         ""email"": ""john@example.com""
     }", null, null, false, null, [new XmlParameterComment(@"user", @"The user information.", @"{""username"": ""johndoe"", ""email"": ""john@example.com""}", false)], [new XmlResponseComment(@"201", @"Successfully created the user.", @""), new XmlResponseComment(@"400", @"If the user data is invalid.", @"")]));
-            _cache.Add(new MemberKey(typeof(global::RouteHandlerExtensionMethods), MemberType.Method, "Put7", typeof(global::Microsoft.AspNetCore.Http.IResult), [typeof(global::System.Int32?), typeof(global::System.String)]), new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Put7(System.Nullable{System.Int32},System.String)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get8~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get8.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get9~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get9.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get10~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get10.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get11~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get12~System.Threading.Tasks.Task{System.String}", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get13~System.Threading.Tasks.ValueTask{System.String}", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Post16(Example)", new XmlComment(@"A summary of Post16.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get17(System.Int32[])~System.Int32[][]", new XmlComment(@"A summary of Get17.", null, null, null, null, false, null, null, null));
 
-            return _cache;
+            return cache;
         }
+    }
 
-        internal static bool TryGetXmlComment(Type? type, MethodInfo? methodInfo, [NotNullWhen(true)] out XmlComment? xmlComment)
+    file static class DocumentationCommentIdHelper
+    {
+        /// <summary>
+        /// Generates a documentation comment ID for a type.
+        /// Example: T:Namespace.Outer+Inner`1 becomes T:Namespace.Outer.Inner`1
+        /// </summary>
+        public static string CreateDocumentationId(this Type type)
         {
-            if (methodInfo is null)
+            if (type == null)
             {
-                return Cache.TryGetValue(new MemberKey(type, MemberType.Property, null, null, null), out xmlComment);
+                throw new ArgumentNullException(nameof(type));
             }
 
-            return Cache.TryGetValue(MemberKey.FromMethodInfo(methodInfo), out xmlComment);
+            return "T:" + GetTypeDocId(type, includeGenericArguments: false, omitGenericArity: false);
         }
 
-        internal static bool TryGetXmlComment(Type? type, string? memberName, [NotNullWhen(true)] out XmlComment? xmlComment)
+        /// <summary>
+        /// Generates a documentation comment ID for a property.
+        /// Example: P:Namespace.ContainingType.PropertyName or for an indexer P:Namespace.ContainingType.Item(System.Int32)
+        /// </summary>
+        public static string CreateDocumentationId(this PropertyInfo property)
         {
-            return Cache.TryGetValue(new MemberKey(type, memberName is null ? MemberType.Type : MemberType.Property, memberName, null, null), out xmlComment);
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+
+            if (property.DeclaringType != null)
+            {
+                sb.Append(GetTypeDocId(property.DeclaringType, includeGenericArguments: false, omitGenericArity: false));
+            }
+
+            sb.Append('.');
+            sb.Append(property.Name);
+
+            // For indexers, include the parameter list.
+            var indexParams = property.GetIndexParameters();
+            if (indexParams.Length > 0)
+            {
+                sb.Append('(');
+                for (int i = 0; i < indexParams.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    sb.Append(GetTypeDocId(indexParams[i].ParameterType, includeGenericArguments: true, omitGenericArity: false));
+                }
+                sb.Append(')');
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a method (or constructor).
+        /// For example:
+        ///   M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
+        ///   M:Namespace.ContainingType.#ctor(ParamType)
+        /// </summary>
+        public static string CreateDocumentationId(this MethodInfo method)
+        {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("M:");
+
+            // Append the fully qualified name of the declaring type.
+            if (method.DeclaringType != null)
+            {
+                sb.Append(GetTypeDocId(method.DeclaringType, includeGenericArguments: false, omitGenericArity: false));
+            }
+
+            sb.Append('.');
+
+            // Append the method name, handling constructors specially.
+            if (method.IsConstructor)
+            {
+                sb.Append(method.IsStatic ? "#cctor" : "#ctor");
+            }
+            else
+            {
+                sb.Append(method.Name);
+                if (method.IsGenericMethod)
+                {
+                    sb.Append("``");
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", method.GetGenericArguments().Length);
+                }
+            }
+
+            // Append the parameter list, if any.
+            var parameters = method.GetParameters();
+            if (parameters.Length > 0)
+            {
+                sb.Append('(');
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    // Omit the generic arity for the parameter type.
+                    sb.Append(GetTypeDocId(parameters[i].ParameterType, includeGenericArguments: true, omitGenericArity: true));
+                }
+                sb.Append(')');
+            }
+
+            // Append the return type after a '~' (if the method returns a value).
+            if (method.ReturnType != typeof(void))
+            {
+                sb.Append('~');
+                // Omit the generic arity for the return type.
+                sb.Append(GetTypeDocId(method.ReturnType, includeGenericArguments: true, omitGenericArity: true));
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation ID string for a type.
+        /// This method handles nested types (replacing '+' with '.'),
+        /// generic types, arrays, pointers, by-ref types, and generic parameters.
+        /// The <paramref name="includeGenericArguments"/> flag controls whether
+        /// constructed generic type arguments are emitted, while <paramref name="omitGenericArity"/>
+        /// controls whether the generic arity marker (e.g. "`1") is appended.
+        /// </summary>
+        private static string GetTypeDocId(Type type, bool includeGenericArguments, bool omitGenericArity)
+        {
+            if (type.IsGenericParameter)
+            {
+                // Use `` for method-level generic parameters and ` for type-level.
+                if (type.DeclaringMethod != null)
+                {
+                    return "``" + type.GenericParameterPosition;
+                }
+                else if (type.DeclaringType != null)
+                {
+                    return "`" + type.GenericParameterPosition;
+                }
+                else
+                {
+                    return type.Name;
+                }
+            }
+
+            if (type.IsGenericType)
+            {
+                Type genericDef = type.GetGenericTypeDefinition();
+                string fullName = genericDef.FullName ?? genericDef.Name;
+
+                var sb = new StringBuilder(fullName.Length);
+
+                // Replace '+' with '.' for nested types
+                for (var i = 0; i < fullName.Length; i++)
+                {
+                    char c = fullName[i];
+                    if (c == '+')
+                    {
+                        sb.Append('.');
+                    }
+                    else if (c == '`')
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                }
+
+                if (!omitGenericArity)
+                {
+                    int arity = genericDef.GetGenericArguments().Length;
+                    sb.Append('`');
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", arity);
+                }
+
+                if (includeGenericArguments && !type.IsGenericTypeDefinition)
+                {
+                    var typeArgs = type.GetGenericArguments();
+                    sb.Append('{');
+
+                    for (int i = 0; i < typeArgs.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sb.Append(',');
+                        }
+
+                        sb.Append(GetTypeDocId(typeArgs[i], includeGenericArguments, omitGenericArity));
+                    }
+
+                    sb.Append('}');
+                }
+
+                return sb.ToString();
+            }
+
+            // For non-generic types, use FullName (if available) and replace nested type separators.
+            return (type.FullName ?? type.Name).Replace('+', '.');
         }
     }
 
@@ -231,7 +323,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.TryGetXmlComment(methodInfo.DeclaringType, methodInfo, out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -304,7 +396,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.TryGetXmlComment(propertyInfo.DeclaringType, propertyInfo.Name, out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -313,7 +405,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.TryGetXmlComment(context.JsonTypeInfo.Type, (string?)null, out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)

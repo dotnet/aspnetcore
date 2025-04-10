@@ -52,6 +52,70 @@ public class ComplexType
     }
 
     [Fact]
+    public async Task DoesNotEmitIfNotCorrectAddValidationCallExists()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation("example");
+SomeExtensions.AddValidation(builder.Services);
+
+var app = builder.Build();
+
+app.MapPost("/complex-type", (ComplexType complexType) => Results.Ok("Passed"));
+
+app.Run();
+
+public class ComplexType
+{
+    [Range(10, 100)]
+    public int IntegerWithRange { get; set; } = 10;
+}
+
+public static class SomeExtensions
+{
+    public static IServiceCollection AddValidation(this IServiceCollection services, string someString)
+    {
+        // This is not the correct AddValidation method
+        return services;
+    }
+
+    public static IServiceCollection AddValidation(this IServiceCollection services, Action<ValidationOptions>? configureOptions = null)
+    {
+        // This is not the correct AddValidation method
+        return services;
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        // Verify that we don't validate types if no AddValidation call exists
+        await VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+                {
+                    "IntegerWithRange": 5
+                }
+                """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
     public async Task DoesNotEmitForExemptTypes()
     {
         var source = """

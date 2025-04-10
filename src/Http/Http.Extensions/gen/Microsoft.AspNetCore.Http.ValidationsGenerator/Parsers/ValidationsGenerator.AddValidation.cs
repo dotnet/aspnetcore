@@ -26,6 +26,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     {
         var node = (InvocationExpressionSyntax)context.Node;
         var semanticModel = context.SemanticModel;
+        var symbol = semanticModel.GetSymbolInfo(node, cancellationToken).Symbol;
+        if (symbol is not IMethodSymbol methodSymbol
+            || methodSymbol.ContainingType.Name != "ValidationServiceCollectionExtensions"
+            || methodSymbol.ContainingAssembly.Name != "Microsoft.AspNetCore.Http.Abstractions")
+        {
+            return null;
+        }
         return semanticModel.GetInterceptableLocation(node, cancellationToken);
     }
 }

@@ -777,6 +777,7 @@ public class RemoteAuthenticatorCoreTests
     private class TestJsRuntime : IJSRuntime
     {
         public (string identifier, object[] args) LastInvocation { get; set; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             LastInvocation = (identifier, args);
@@ -788,6 +789,24 @@ public class RemoteAuthenticatorCoreTests
             LastInvocation = (identifier, args);
             return default;
         }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+            => throw new NotImplementedException();
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
     }
 
     public class TestRemoteAuthenticatorView : RemoteAuthenticatorViewCore<RemoteAuthenticationState>
