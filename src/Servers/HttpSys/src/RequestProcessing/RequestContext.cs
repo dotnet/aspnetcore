@@ -227,7 +227,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     /// </summary>
     internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
-        if (!HttpApi.HttpGetRequestPropertySupported)
+        if (!HttpApi.SupportsClientHello)
         {
             // not supported, so we just return and don't invoke the callback
             return false;

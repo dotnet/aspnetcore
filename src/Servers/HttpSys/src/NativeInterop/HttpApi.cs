@@ -69,6 +69,7 @@ internal static partial class HttpApi
     [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsReset { get; }
     internal static bool SupportsDelegation { get; }
+    internal static bool SupportsClientHello { get; }
     internal static bool Supported { get; }
 
     static unsafe HttpApi()
@@ -84,6 +85,7 @@ internal static partial class HttpApi
             SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            SupportsClientHello = IsFeatureSupported((HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */) && HttpGetRequestPropertySupported;
         }
     }
 
