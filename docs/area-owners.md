@@ -38,6 +38,8 @@ The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime
 
 While not necessarily associated with a specific area, these community members have the power to assist with routing and labeling issues and pull requests, and have been recognized for being consistently knowledgeable about and helpful in this repo:
 
+- [@Andrzej-W](https://github.com/Andrzej-W)
+- [@davidacker](https://github.com/davidacker)
 - [@egil](https://github.com/egil)
 - [@gfoidl](https://github.com/gfoidl)
 - [@hishamco](https://github.com/hishamco)

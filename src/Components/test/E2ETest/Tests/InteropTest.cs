@@ -28,7 +28,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void CanInvokeDotNetMethods()
+    public void CanInvokeInteropMethods()
     {
         // Arrange
         var expectedAsyncValues = new Dictionary<string, string>
@@ -92,6 +92,21 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
             ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
             ["disposeJSObjectReferenceAsync"] = "Success",
+            // GetValue tests
+            ["getValueFromDataPropertyAsync"] = "10",
+            ["getValueFromGetterAsync"] = "20",
+            ["getValueFromSetterAsync"] = "Success",
+            ["getValueFromUndefinedPropertyAsync"] = "Success",
+            // SetValueTests
+            ["setValueToDataPropertyAsync"] = "30",
+            ["setValueToSetterAsync"] = "40",
+            ["setValueToUndefinedPropertyAsync"] = "50",
+            ["setValueToGetterAsync"] = "Success",
+            // InvokeNew tests
+            ["invokeNewWithClassConstructorAsync"] = "Success",
+            ["invokeNewWithClassConstructorAsync.dataProperty"] = "abraka",
+            ["invokeNewWithClassConstructorAsync.function"] = "6",
+            ["invokeNewWithNonConstructorAsync"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -141,6 +156,21 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
+            // GetValue tests
+            ["getValueFromDataProperty"] = "10",
+            ["getValueFromGetter"] = "20",
+            ["getValueFromSetter"] = "Success",
+            ["getValueFromUndefinedProperty"] = "Success",
+            // SetValue tests
+            ["setValueToDataProperty"] = "30",
+            ["setValueToSetter"] = "40",
+            ["setValueToUndefinedProperty"] = "50",
+            ["setValueToGetter"] = "Success",
+            // InvokeNew tests
+            ["invokeNewWithClassConstructor"] = "Success",
+            ["invokeNewWithClassConstructor.dataProperty"] = "abraka",
+            ["invokeNewWithClassConstructor.function"] = "6",
+            ["invokeNewWithNonConstructor"] = "Success",
         };
 
         // Include the sync assertions only when running under WebAssembly

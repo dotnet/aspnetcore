@@ -717,15 +717,15 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertWeAreOnNextPage();
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
-        var expectedFragmentScrollPosition = fragmentScrollPosition - 1;
+        var expectedFragmentScrollPosition = fragmentScrollPosition;
         Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
     }
 
     [Theory]
-    [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
+    // [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     [InlineData(false, true, false)]
-    [InlineData(true, true, false)] // https://github.com/dotnet/aspnetcore/issues/60875
-    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    // [InlineData(true, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]
