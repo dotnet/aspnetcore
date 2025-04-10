@@ -1,0 +1,69 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
+
+<p>
+    This component shows it's possible to save and load value types (in this case, a guid)
+    to and from localstorage,
+    and also that a null value can be loaded into a nullable value type, i.e. a Guid?.
+</p>
+
+<p>
+    String value from guid:
+    <strong id="string-get-by-interop">@(StringFromInterop ?? "No value yet")</strong>
+</p>
+
+<p>
+    Guid value from guid is default(Guid) if it wasn't loaded correctly:
+    <strong id="guid-get-by-interop">@GuidFromInterop</strong>
+</p>
+
+<p>
+    Nullable Guid value from guid is null if it wasn't loaded correctly:
+    <strong id="nullable-guid-get-by-interop">@NullableGuidFromInterop</strong>
+</p>
+
+<p>
+    Nullable load result is false if the null value wasn't loaded into the nullable guid correctly:
+    <strong id="null-loaded-into-nullable">@NullableLoadResult</strong>
+</p>
+
+@if (DoneWithInterop)
+{
+    <p id="done-with-interop">
+        Done with interop!
+    </p>
+}
+
+@code {
+    public Guid Guid { get; } = Guid.NewGuid();
+    public string StringFromInterop { get; set; }
+    public Guid GuidFromInterop { get; set; }
+    public Guid? NullableGuidFromInterop { get; set; }
+    public bool NullableLoadResult { get; set; }
+    public bool DoneWithInterop { get; set; }
+
+    private async Task InvokeInteropAsync()
+    {
+        // Store guid in localStorage
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "guid", Guid);
+
+        // Retrieve guid from localStorage as string because it's a simple conversion
+        StringFromInterop = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "guid");
+
+        // Retrieve guid from localStorage as Guid
+        GuidFromInterop = await JSRuntime.InvokeAsync<Guid>("localStorage.getItem", "guid");
+
+        // Retrieve guid from localStorage as Guid?
+        NullableGuidFromInterop = await JSRuntime.InvokeAsync<Guid?>("localStorage.getItem", "guid");
+
+        // Retrieve null from localStorage as Guid?
+        var nullableGuid = await JSRuntime.InvokeAsync<Guid?>("localStorage.getItem", "nothingHere");
+
+        // If the retrieval crashes, the bool stays false
+        NullableLoadResult = !nullableGuid.HasValue;
+
+        DoneWithInterop = true;
+    }
+}
