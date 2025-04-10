@@ -152,6 +152,7 @@ internal static unsafe partial class HttpApi
             SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            SupportsClientHello = IsFeatureSupported((HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */) && HttpGetRequestPropertySupported;
         }
     }
 

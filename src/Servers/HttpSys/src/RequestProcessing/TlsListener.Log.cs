@@ -9,7 +9,7 @@ internal sealed partial class TlsListener : IDisposable
 {
     private static partial class Log
     {
-        [LoggerMessage(LoggerEventIds.TlsListenerError, LogLevel.Error, "Error during closed connection cleanup", EventName = "TlsListenerCleanupClosedConnectionError")]
+        [LoggerMessage(LoggerEventIds.TlsListenerError, LogLevel.Error, "Error during closed connection cleanup.", EventName = "TlsListenerCleanupClosedConnectionError")]
         public static partial void CleanupClosedConnectionError(ILogger logger, Exception exception);
     }
 }
