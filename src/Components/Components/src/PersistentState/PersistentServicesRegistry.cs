@@ -143,7 +143,7 @@ internal sealed class PersistentServicesRegistry
 
     private static Type? ResolveType(IPersistentServiceRegistration registration)
     {
-        if(registration.GetResolvedTypeOrNull() is Type type)
+        if (registration.GetResolvedTypeOrNull() is Type type)
         {
             return type;
         }
