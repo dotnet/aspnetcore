@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Buffers;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -74,14 +77,16 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    private void SetNotFoundResponse(object? sender, EventArgs args)
+    private async Task SetNotFoundResponseAsync(string baseUri)
     {
         if (_httpContext.Response.HasStarted)
         {
-            // We cannot set a NotFound code after the response has already started
-            var navigationManager = _httpContext.RequestServices.GetRequiredService<NavigationManager>();
-            var notFoundUri = $"{navigationManager.BaseUri}not-found";
-            navigationManager.NavigateTo(notFoundUri);
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            var notFoundUri = $"{baseUri}not-found";
+            HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, notFoundUri);
+            await bufferWriter.FlushAsync();
         }
         else
         {
