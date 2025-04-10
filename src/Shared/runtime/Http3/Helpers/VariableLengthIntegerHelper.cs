@@ -128,19 +128,19 @@ namespace System.Net.Http
             }
         }
 
-        // If callsite has 'examined', set it to buffer.End if the integer wasn't successfully read, otherwise set examined = consumed.
-        public static bool TryGetInteger(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out long integer)
+        public static long GetInteger(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             var reader = new SequenceReader<byte>(buffer);
-            if (TryRead(ref reader, out integer))
+            if (TryRead(ref reader, out long value))
             {
-                consumed = buffer.GetPosition(reader.Consumed);
-                return true;
+                consumed = examined = buffer.GetPosition(reader.Consumed);
+                return value;
             }
             else
             {
-                consumed = buffer.Start;
-                return false;
+                consumed = default;
+                examined = buffer.End;
+                return -1;
             }
         }
 
