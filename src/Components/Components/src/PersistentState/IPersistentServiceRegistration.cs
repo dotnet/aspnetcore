@@ -10,4 +10,6 @@ internal interface IPersistentServiceRegistration
     public string FullTypeName { get; }
 
     public IComponentRenderMode? GetRenderModeOrDefault();
+
+    public Type? GetResolvedTypeOrNull() => null;
 }
