@@ -48,9 +48,10 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                 context = application.CreateContext(Features);
                 try
                 {
-                    if (Server.Options.TlsClientHelloBytesCallback is not null && Server.TlsListener is not null)
+                    if (Server.Options.TlsClientHelloBytesCallback is not null && Server.TlsListener is not null
+                        && Request.IsHttps)
                     {
-                        Server.TlsListener.InvokeTlsClientHelloCallback(Features, Request);
+                        Server.TlsListener.InvokeTlsClientHelloCallback(Request.RawConnectionId, Features, Request.GetAndInvokeTlsClientHelloCallback);
                     }
 
                     await application.ProcessRequestAsync(context);

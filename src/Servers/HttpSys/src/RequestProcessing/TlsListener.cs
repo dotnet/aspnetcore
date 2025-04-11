@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
@@ -9,54 +10,57 @@ namespace Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
 
 internal sealed partial class TlsListener : IDisposable
 {
-    private readonly ConcurrentDictionary<ulong, DateTime> _connectionTimestamps = new();
+    private readonly ConcurrentDictionary<ulong, DateTimeOffset> _connectionTimestamps = new();
     private readonly Action<IFeatureCollection, ReadOnlySpan<byte>> _tlsClientHelloBytesCallback;
     private readonly ILogger _logger;
 
     private readonly PeriodicTimer _cleanupTimer;
     private readonly Task _cleanupTask;
+    private readonly TimeProvider _timeProvider;
 
     private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan CleanupDelay = TimeSpan.FromSeconds(10);
-    private const int CacheSizeLimit = 1_000_000;
+    internal const int CacheSizeLimit = 1_000_000;
 
-    internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    // Internal for testing purposes
+    internal ReadOnlyDictionary<ulong, DateTimeOffset> ConnectionTimeStamps => _connectionTimestamps.AsReadOnly();
+
+    internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback, TimeProvider? timeProvider = null)
     {
         _logger = logger;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
 
-        _cleanupTimer = new PeriodicTimer(CleanupDelay);
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _cleanupTimer = new PeriodicTimer(CleanupDelay, _timeProvider);
         _cleanupTask = CleanupLoopAsync();
     }
 
-    internal void InvokeTlsClientHelloCallback(IFeatureCollection features, Request request)
+    // Method looks weird because we want it to be testable by not directly requiring a Request object
+    internal void InvokeTlsClientHelloCallback(ulong connectionId, IFeatureCollection features,
+        Func<IFeatureCollection, Action<IFeatureCollection, ReadOnlySpan<byte>>, bool> invokeTlsClientHelloCallback)
     {
-        if (!request.IsHttps)
+        if (!_connectionTimestamps.TryAdd(connectionId, _timeProvider.GetUtcNow()))
         {
+            // update TTL
+            _connectionTimestamps[connectionId] = _timeProvider.GetUtcNow();
             return;
         }
 
-        if (!_connectionTimestamps.TryAdd(request.RawConnectionId, DateTime.UtcNow))
-        {
-            _connectionTimestamps[request.RawConnectionId] = DateTime.UtcNow; // update TTL
-            return;
-        }
-
-        _ = request.GetAndInvokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
+        _ = invokeTlsClientHelloCallback(features, _tlsClientHelloBytesCallback);
     }
 
-    private async Task CleanupLoopAsync()
+    internal async Task CleanupLoopAsync()
     {
         while (await _cleanupTimer.WaitForNextTickAsync())
         {
             try
             {
-                var now = DateTime.UtcNow;
+                var now = _timeProvider.GetUtcNow();
 
                 // Remove idle connections
                 foreach (var kvp in _connectionTimestamps)
                 {
-                    if (now - kvp.Value > ConnectionIdleTime)
+                    if (now - kvp.Value >= ConnectionIdleTime)
                     {
                         _connectionTimestamps.TryRemove(kvp.Key, out _);
                     }
@@ -69,18 +73,18 @@ internal sealed partial class TlsListener : IDisposable
                     var excessCount = currentCount - CacheSizeLimit;
 
                     // Find the oldest items in a single pass
-                    var oldestTimestamps = new SortedSet<KeyValuePair<ulong, DateTime>>(TimeComparer.Instance);
+                    var oldestTimestamps = new SortedSet<KeyValuePair<ulong, DateTimeOffset>>(TimeComparer.Instance);
 
                     foreach (var kvp in _connectionTimestamps)
                     {
                         if (oldestTimestamps.Count < excessCount)
                         {
-                            oldestTimestamps.Add(new KeyValuePair<ulong, DateTime>(kvp.Key, kvp.Value));
+                            oldestTimestamps.Add(new KeyValuePair<ulong, DateTimeOffset>(kvp.Key, kvp.Value));
                         }
                         else if (kvp.Value < oldestTimestamps.Max.Value)
                         {
                             oldestTimestamps.Remove(oldestTimestamps.Max);
-                            oldestTimestamps.Add(new KeyValuePair<ulong, DateTime>(kvp.Key, kvp.Value));
+                            oldestTimestamps.Add(new KeyValuePair<ulong, DateTimeOffset>(kvp.Key, kvp.Value));
                         }
                     }
 
@@ -104,13 +108,21 @@ internal sealed partial class TlsListener : IDisposable
         _cleanupTask.Wait();
     }
 
-    private sealed class TimeComparer : IComparer<KeyValuePair<ulong, DateTime>>
+    private sealed class TimeComparer : IComparer<KeyValuePair<ulong, DateTimeOffset>>
     {
         public static TimeComparer Instance { get; } = new TimeComparer();
 
-        public int Compare(KeyValuePair<ulong, DateTime> x, KeyValuePair<ulong, DateTime> y)
+        public int Compare(KeyValuePair<ulong, DateTimeOffset> x, KeyValuePair<ulong, DateTimeOffset> y)
         {
-            return x.Value.CompareTo(y.Value);
+            // Compare timestamps first
+            int timestampComparison = x.Value.CompareTo(y.Value);
+            if (timestampComparison != 0)
+            {
+                return timestampComparison;
+            }
+
+            // Use the key as a tiebreaker to ensure uniqueness
+            return x.Key.CompareTo(y.Key);
         }
     }
 }
