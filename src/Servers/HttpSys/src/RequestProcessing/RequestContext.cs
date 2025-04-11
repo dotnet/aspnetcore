@@ -265,7 +265,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
         }
 
         // if buffer supplied is too small, `bytesReturned` will have proper size
@@ -299,7 +299,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             }
             finally
             {
-                ArrayPool<byte>.Shared.Return(buffer);
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
             }
         }
 
