@@ -100,14 +100,14 @@ public class TlsListenerTests
         var features = Mock.Of<IFeatureCollection>();
 
         ulong i = 0;
-        for (; i < TlsListener.CacheSizeLimit; i++)
+        for (; i < (ulong)tlsListener.CacheSizeLimit; i++)
         {
             tlsListener.InvokeTlsClientHelloCallback(i, features, (f, cb) => { cb(f, ReadOnlySpan<byte>.Empty); return true; });
         }
 
         timeProvider.Advance(TimeSpan.FromSeconds(5));
 
-        for (; i < TlsListener.CacheSizeLimit + 3; i++)
+        for (; i < (ulong)tlsListener.CacheSizeLimit + 3; i++)
         {
             tlsListener.InvokeTlsClientHelloCallback(i, features, (f, cb) => { cb(f, ReadOnlySpan<byte>.Empty); return true; });
         }
@@ -122,7 +122,7 @@ public class TlsListenerTests
         while (timeout > TimeSpan.Zero)
         {
             // Wait for the cleanup loop to run
-            if (tlsListener.ConnectionTimeStamps.Count == TlsListener.CacheSizeLimit)
+            if (tlsListener.ConnectionTimeStamps.Count == tlsListener.CacheSizeLimit)
             {
                 break;
             }
@@ -130,7 +130,7 @@ public class TlsListenerTests
             await Task.Delay(100);
         }
 
-        Assert.Equal(TlsListener.CacheSizeLimit, tlsListener.ConnectionTimeStamps.Count);
+        Assert.Equal(tlsListener.CacheSizeLimit, tlsListener.ConnectionTimeStamps.Count);
         Assert.Contains(0UL, tlsListener.ConnectionTimeStamps.Keys);
         // 3 newest connections should be present
         Assert.Contains(i - 1, tlsListener.ConnectionTimeStamps.Keys);

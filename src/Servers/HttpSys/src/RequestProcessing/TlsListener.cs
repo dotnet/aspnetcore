@@ -18,15 +18,30 @@ internal sealed partial class TlsListener : IDisposable
     private readonly Task _cleanupTask;
     private readonly TimeProvider _timeProvider;
 
-    private static readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan CleanupDelay = TimeSpan.FromSeconds(10);
-    internal const int CacheSizeLimit = 1_000_000;
+    private readonly TimeSpan ConnectionIdleTime = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan CleanupDelay = TimeSpan.FromSeconds(10);
+    internal readonly int CacheSizeLimit = 1_000_000;
 
     // Internal for testing purposes
     internal ReadOnlyDictionary<ulong, DateTimeOffset> ConnectionTimeStamps => _connectionTimestamps.AsReadOnly();
 
     internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback, TimeProvider? timeProvider = null)
     {
+        if (AppContext.GetData("Microsoft.AspNetCore.Server.HttpSys.TlsListener.CacheSizeLimit") is int limit)
+        {
+            CacheSizeLimit = limit;
+        }
+
+        if (AppContext.GetData("Microsoft.AspNetCore.Server.HttpSys.TlsListener.ConnectionIdleTime") is int idleTime)
+        {
+            ConnectionIdleTime = TimeSpan.FromSeconds(idleTime);
+        }
+
+        if (AppContext.GetData("Microsoft.AspNetCore.Server.HttpSys.TlsListener.CleanupDelay") is int cleanupDelay)
+        {
+            CleanupDelay = TimeSpan.FromSeconds(cleanupDelay);
+        }
+
         _logger = logger;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
 
