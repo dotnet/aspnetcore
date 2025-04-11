@@ -20,6 +20,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
     private static bool _throwNavigationException =>
         AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
+    private Func<string, Task>? _onNavigateTo;
 
     public event EventHandler<Exception>? UnhandledException;
 
@@ -44,6 +45,19 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// <param name="uri">The absolute URI.</param>
     public new void Initialize(string baseUri, string uri)
     {
+        base.Initialize(baseUri, uri);
+        NotifyLocationChanged(isInterceptedLink: false);
+    }
+
+    /// <summary>
+    /// Initializes the <see cref="NavigationManager" />.
+    /// </summary>
+    /// <param name="baseUri">The base URI.</param>
+    /// <param name="uri">The absolute URI.</param>
+    /// <param name="onNavigateTo">A delegate that points to a method handling navigation events. </param>
+    public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+    {
+        _onNavigateTo += onNavigateTo;
         base.Initialize(baseUri, uri);
         NotifyLocationChanged(isInterceptedLink: false);
     }
@@ -87,33 +101,18 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         Log.RequestingNavigation(_logger, uri, options);
-
-        if (_jsRuntime == null)
-        {
-            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-            if (_throwNavigationException)
-            {
-                throw new NavigationException(absoluteUriString);
-            }
-            else
-            {
-                if (!IsInternalUri(absoluteUriString))
-                {
-                    // it's an external navigation, avoid Uri validation exception
-                    BaseUri = GetBaseUriFromAbsoluteUri(absoluteUriString);
-                }
-                Uri = absoluteUriString;
-                NotifyLocationChanged(isInterceptedLink: false);
-                return;
-            }
-        }
-
         _ = PerformNavigationAsync();
 
         async Task PerformNavigationAsync()
         {
             try
             {
+                if (_jsRuntime == null)
+                {
+                    await NavigateWithEndpoint(uri);
+                    return;
+                }
+
                 var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
 
                 if (!shouldContinueNavigation)
@@ -140,69 +139,40 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
-    private bool IsInternalUri(string uri)
+    private async Task NavigateWithEndpoint(string uri)
     {
-        var normalizedBaseUri = NormalizeBaseUri(BaseUri);
-        return uri.StartsWith(normalizedBaseUri, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string GetBaseUriFromAbsoluteUri(string absoluteUri)
-    {
-        // Find the position of the first single slash after the scheme (e.g., "https://")
-        var schemeDelimiterIndex = absoluteUri.IndexOf("://", StringComparison.Ordinal);
-        if (schemeDelimiterIndex == -1)
+        var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
+        if (_throwNavigationException)
         {
-            throw new ArgumentException($"The provided URI '{absoluteUri}' is not a valid absolute URI.");
+            throw new NavigationException(absoluteUriString);
         }
-
-        // Find the end of the authority section (e.g., "https://example.com/")
-        var authorityEndIndex = absoluteUri.IndexOf('/', schemeDelimiterIndex + 3);
-        if (authorityEndIndex == -1)
+        else
         {
-            // If no slash is found, the entire URI is the authority (e.g., "https://example.com")
-            return NormalizeBaseUri(absoluteUri + "/");
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            await _onNavigateTo(absoluteUriString);
         }
-
-        // Extract the base URI up to the authority section
-        return NormalizeBaseUri(absoluteUri.Substring(0, authorityEndIndex + 1));
-    }
-
-    private static string NormalizeBaseUri(string baseUri)
-    {
-        var lastSlashIndex = baseUri.LastIndexOf('/');
-        if (lastSlashIndex >= 0)
-        {
-            baseUri = baseUri.Substring(0, lastSlashIndex + 1);
-        }
-
-        return baseUri;
     }
 
     /// <inheritdoc />
     public override void Refresh(bool forceReload = false)
     {
-        if (_jsRuntime == null)
-        {
-            var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
-            if (_throwNavigationException)
-            {
-                throw new NavigationException(absoluteUriString);
-            }
-            else
-            {
-                Uri = absoluteUriString;
-                NotifyLocationChanged(isInterceptedLink: false);
-                return;
-            }
-        }
-
         _ = RefreshAsync();
 
         async Task RefreshAsync()
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
+                if (_jsRuntime == null)
+                {
+                    await NavigateWithEndpoint(Uri);
+                }
+                else
+                {
+                    await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
+                }
             }
             catch (Exception ex)
             {

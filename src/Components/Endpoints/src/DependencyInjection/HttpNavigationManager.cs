@@ -12,7 +12,15 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
     private static bool _throwNavigationException =>
         AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
 
+    private Func<string, Task>? _onNavigateTo;
+
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
+
+    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+    {
+        _onNavigateTo = onNavigateTo;
+        Initialize(baseUri, uri);
+    }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
@@ -23,52 +31,16 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
         }
         else
         {
-            if (!IsInternalUri(absoluteUriString))
+            _ = PerformNavigationAsync();
+        }
+
+        async Task PerformNavigationAsync()
+        {
+            if (_onNavigateTo == null)
             {
-                // it's an external navigation, avoid Uri validation exception
-                BaseUri = GetBaseUriFromAbsoluteUri(absoluteUriString);
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
             }
-            Uri = absoluteUriString;
-            NotifyLocationChanged(isInterceptedLink: false);
+            await _onNavigateTo(absoluteUriString);
         }
-    }
-
-    // ToDo: the following are copy-paste, consider refactoring to a common place
-    private bool IsInternalUri(string uri)
-    {
-        var normalizedBaseUri = NormalizeBaseUri(BaseUri);
-        return uri.StartsWith(normalizedBaseUri, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string GetBaseUriFromAbsoluteUri(string absoluteUri)
-    {
-        // Find the position of the first single slash after the scheme (e.g., "https://")
-        var schemeDelimiterIndex = absoluteUri.IndexOf("://", StringComparison.Ordinal);
-        if (schemeDelimiterIndex == -1)
-        {
-            throw new ArgumentException($"The provided URI '{absoluteUri}' is not a valid absolute URI.");
-        }
-
-        // Find the end of the authority section (e.g., "https://example.com/")
-        var authorityEndIndex = absoluteUri.IndexOf('/', schemeDelimiterIndex + 3);
-        if (authorityEndIndex == -1)
-        {
-            // If no slash is found, the entire URI is the authority (e.g., "https://example.com")
-            return NormalizeBaseUri(absoluteUri + "/");
-        }
-
-        // Extract the base URI up to the authority section
-        return NormalizeBaseUri(absoluteUri.Substring(0, authorityEndIndex + 1));
-    }
-
-    private static string NormalizeBaseUri(string baseUri)
-    {
-        var lastSlashIndex = baseUri.LastIndexOf('/');
-        if (lastSlashIndex >= 0)
-        {
-            baseUri = baseUri.Substring(0, lastSlashIndex + 1);
-        }
-
-        return baseUri;
     }
 }

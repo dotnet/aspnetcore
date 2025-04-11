@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Buffers;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -85,24 +87,21 @@ internal partial class EndpointHtmlRenderer
         SignalRendererToFinishRendering();
     }
 
-    private void OnNavigateTo(object? sender, LocationChangedEventArgs args)
+    private async Task OnNavigateTo(string uri)
     {
         if (_httpContext.Response.HasStarted)
         {
-            // We cannot redirect after the response has already started
-            RenderMetaRefreshTag(args.Location);
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, uri);
+            await bufferWriter.FlushAsync();
         }
         else
         {
-            _httpContext.Response.Redirect(args.Location);
+            _httpContext.Response.Redirect(uri);
         }
         SignalRendererToFinishRendering();
-    }
-
-    private void RenderMetaRefreshTag(string location)
-    {
-        var metaTag = $"<meta http-equiv=\"refresh\" content=\"0;url={location}\" />";
-        _httpContext.Response.WriteAsync(metaTag);
     }
 
     private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
