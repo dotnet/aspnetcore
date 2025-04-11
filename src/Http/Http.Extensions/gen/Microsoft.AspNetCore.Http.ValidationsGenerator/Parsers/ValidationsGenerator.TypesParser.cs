@@ -89,15 +89,74 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, RequiredSymbols requiredSymbols, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
     {
         var members = new List<ValidatableProperty>();
+        var resolvedRecordProperty = new List<IPropertySymbol>();
+
+        // Special handling for record types to extract properties from
+        // the primary constructor.
+        if (typeSymbol is INamedTypeSymbol { IsRecord: true } namedType)
+        {
+            // Find the primary constructor for the record, account
+            // for members that are in base types to account for
+            // record inheritance scenarios
+            var primaryConstructor = namedType.Constructors
+                .FirstOrDefault(c => c.Parameters.Length > 0 && c.Parameters.All(p =>
+                    namedType.FindPropertyIncludingBaseTypes(p.Name) != null));
+
+            if (primaryConstructor != null)
+            {
+                // Process all parameters in constructor order to maintain parameter ordering
+                foreach (var parameter in primaryConstructor.Parameters)
+                {
+                    // Find the corresponding property in this type, we ignore
+                    // base types here since that will be handled by the inheritance
+                    // checks in the default ValidatableTypeInfo implementation.
+                    var correspondingProperty = typeSymbol.GetMembers()
+                        .OfType<IPropertySymbol>()
+                        .FirstOrDefault(p => string.Equals(p.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+
+                    if (correspondingProperty != null)
+                    {
+                        resolvedRecordProperty.Add(correspondingProperty);
+
+                        // Check if the property's type is validatable, this resolves
+                        // validatable types in the inheritance hierarchy
+                        var hasValidatableType = TryExtractValidatableType(
+                            correspondingProperty.Type.UnwrapType(requiredSymbols.IEnumerable),
+                            requiredSymbols,
+                            ref validatableTypes,
+                            ref visitedTypes);
+
+                        members.Add(new ValidatableProperty(
+                            ContainingType: correspondingProperty.ContainingType,
+                            Type: correspondingProperty.Type,
+                            Name: correspondingProperty.Name,
+                            DisplayName: parameter.GetDisplayName(requiredSymbols.DisplayAttribute) ??
+                                        correspondingProperty.GetDisplayName(requiredSymbols.DisplayAttribute),
+                            Attributes: []));
+                    }
+                }
+            }
+        }
+
+        // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
+            // Skip compiler generated properties and properties already processed via
+            // the record processing logic above.
+            if (member.IsImplicitlyDeclared || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            {
+                continue;
+            }
+
             var hasValidatableType = TryExtractValidatableType(member.Type.UnwrapType(requiredSymbols.IEnumerable), requiredSymbols, ref validatableTypes, ref visitedTypes);
             var attributes = ExtractValidationAttributes(member, requiredSymbols, out var isRequired);
+
             // If the member has no validation attributes or validatable types and is not required, skip it.
             if (attributes.IsDefaultOrEmpty && !hasValidatableType && !isRequired)
             {
                 continue;
             }
+
             members.Add(new ValidatableProperty(
                 ContainingType: member.ContainingType,
                 Type: member.Type,

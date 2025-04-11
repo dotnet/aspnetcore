@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
@@ -100,5 +102,40 @@ internal static class ITypeSymbolExtensions
                || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormFile)
                || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.Stream)
                || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.PipeReader);
+    }
+
+    internal static IPropertySymbol? FindPropertyIncludingBaseTypes(this INamedTypeSymbol typeSymbol, string propertyName)
+    {
+        var property = typeSymbol.GetMembers()
+            .OfType<IPropertySymbol>()
+            .FirstOrDefault(p => string.Equals(p.Name, propertyName, System.StringComparison.OrdinalIgnoreCase));
+
+        if (property != null)
+        {
+            return property;
+        }
+
+        // If not found, recursively search base types
+        if (typeSymbol.BaseType is INamedTypeSymbol baseType)
+        {
+            return FindPropertyIncludingBaseTypes(baseType, propertyName);
+        }
+
+        return null;
+    }
+
+    // Helper method to get all properties including inherited ones
+    internal static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol typeSymbol)
+    {
+        var current = typeSymbol;
+        var properties = new List<IPropertySymbol>();
+
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            properties.AddRange(current.GetMembers().OfType<IPropertySymbol>());
+            current = current.BaseType;
+        }
+
+        return properties;
     }
 }
