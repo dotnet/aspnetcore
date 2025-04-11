@@ -15,4 +15,13 @@ public interface IHostEnvironmentNavigationManager
     /// <param name="baseUri">The base URI.</param>
     /// <param name="uri">The absolute URI.</param>
     void Initialize(string baseUri, string uri);
+
+    /// <summary>
+    /// Initializes the <see cref="NavigationManager" />.
+    /// </summary>
+    /// <param name="baseUri">The base URI.</param>
+    /// <param name="uri">The absolute URI.</param>
+    /// <param name="onNavigateTo">A delegate that points to a method handling navigation events. </param>
+    void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo) =>
+        Initialize(baseUri, uri);
 }
