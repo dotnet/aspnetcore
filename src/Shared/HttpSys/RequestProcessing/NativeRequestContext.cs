@@ -684,7 +684,7 @@ internal unsafe class NativeRequestContext : IDisposable
     {
         uint dataRead = 0;
 
-        if (request->EntityChunkCount > 0 && dataChunkIndex < request->EntityChunkCount && dataChunkIndex != -1)
+        if (request->EntityChunkCount > 0 && dataChunkIndex < request->EntityChunkCount && dataChunkIndex >= 0)
         {
             var pDataChunk = (HTTP_DATA_CHUNK*)(fixup + (byte*)&request->pEntityChunks[dataChunkIndex]);
 
