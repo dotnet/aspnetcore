@@ -155,7 +155,7 @@ export module DotNet {
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
-      if (jsObject && typeof jsObject === "object") {
+      if (jsObject && (typeof jsObject === "object" || jsObject instanceof Function)) {
           cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
           const result = {
