@@ -35,22 +35,41 @@ internal static partial class HttpApi
     internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
     internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
-        void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped);
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped);
 
-    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
+    internal unsafe delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* input, uint inputSize, IntPtr overlapped);
 
     // HTTP_PROPERTY_FLAGS.Present (1)
     internal static HTTP_PROPERTY_FLAGS HTTP_PROPERTY_FLAGS_PRESENT { get; } = new() { _bitfield = 0x00000001 };
     // This property is used by HttpListener to pass the version structure to the native layer in API calls.
     internal static HTTPAPI_VERSION Version { get; } = new () { HttpApiMajorVersion = 2 };
     internal static SafeLibraryHandle? HttpApiModule { get; }
-    internal static HttpGetRequestPropertyInvoker? HttpGetRequestProperty { get; }
-    internal static HttpSetRequestPropertyInvoker? HttpSetRequestProperty { get; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+
+    private static HttpGetRequestPropertyInvoker? HttpGetRequestInvoker { get; }
+    private static HttpSetRequestPropertyInvoker? HttpSetRequestInvoker { get; }
+
+    internal static bool HttpGetRequestPropertySupported => HttpGetRequestInvoker is not null;
+    internal static bool HttpSetRequestPropertySupported => HttpSetRequestInvoker is not null;
+
+    internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped)
+    {
+        return HttpGetRequestInvoker!(requestQueueHandle, requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    }
+
+    internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* input, uint inputSize, IntPtr overlapped)
+    {
+        return HttpSetRequestInvoker!(requestQueueHandle, requestId, propertyId, input, inputSize, overlapped);
+    }
+
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsTrailers { get; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsReset { get; }
     internal static bool SupportsDelegation { get; }
+    internal static bool SupportsClientHello { get; }
     internal static bool Supported { get; }
 
     static unsafe HttpApi()
@@ -61,11 +80,12 @@ internal static partial class HttpApi
         {
             Supported = true;
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
-            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
-            HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-            SupportsReset = HttpSetRequestProperty != null;
+            HttpGetRequestInvoker = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
+            HttpSetRequestInvoker = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+            SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            SupportsClientHello = IsFeatureSupported((HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */) && HttpGetRequestPropertySupported;
         }
     }
 

@@ -59,4 +59,5 @@ internal static class LoggerEventIds
     public const int AcceptCancelExpectationMismatch = 52;
     public const int AcceptObserveExpectationMismatch = 53;
     public const int RequestParsingError = 54;
+    public const int TlsListenerError = 55;
 }
