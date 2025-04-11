@@ -1,0 +1,22 @@
+﻿@page "/reexecution/set-not-found"
+@page "/set-not-found"
+@attribute [StreamRendering(false)]
+@inject NavigationManager NavigationManager
+
+<PageTitle>Original page</PageTitle>
+
+<p id="test-info">Any content</p>
+
+@code{
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "shouldSet")]
+    public bool ShouldSet { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        if (ShouldSet)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}
