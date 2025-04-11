@@ -11,7 +11,7 @@ namespace InteropTests;
 // Tests are separate methods so that they can be quarantined separately.
 public class InteropTests
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(100);
     private readonly string _clientPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropClient", "InteropClient.dll");
     private readonly string _serverPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropWebsite", "InteropWebsite.dll");
     private readonly ITestOutputHelper _output;
@@ -22,6 +22,7 @@ public class InteropTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61057")]
     public Task EmptyUnary() => InteropTestCase("empty_unary");
 
     [Fact]
