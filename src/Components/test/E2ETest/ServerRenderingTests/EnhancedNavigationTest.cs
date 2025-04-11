@@ -668,6 +668,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60875")]
     // [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
     [InlineData(false, true, false)]
     [InlineData(true, true, false)]
