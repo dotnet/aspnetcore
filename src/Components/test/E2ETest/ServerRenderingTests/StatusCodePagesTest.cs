@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
-using TestServer;
 using Components.TestServer.RazorComponents;
+using Components.TestServer.RazorComponents.Pages.StreamingRendering;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Xunit.Abstractions;
 using OpenQA.Selenium;
+using TestServer;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -21,16 +22,19 @@ public class StatusCodePagesTest(BrowserFixture browserFixture, BasicTestAppServ
 {
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void StatusCodePagesWithReexecution(bool setNotFound)
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public void StatusCodePagesWithReExecution(bool setNotFound, bool streaming)
     {
-        Navigate($"{ServerPathBase}/reexecution/set-not-found?shouldSet={setNotFound}");
+        string streamingPath = streaming ? "streaming-" : "";
+        Navigate($"{ServerPathBase}/reexecution/{streamingPath}set-not-found?shouldSet={setNotFound}");
 
         string expectedTitle = setNotFound ? "Re-executed page" : "Original page";
         Browser.Equal(expectedTitle, () => Browser.Title);
         var infoText = Browser.FindElement(By.Id("test-info")).Text;
-        string expectedInfoText = setNotFound ? "Welcome On Page Re-executed After Not Found Event" : "Any content";
+        // streaming when response started does not re-execute
+        string expectedInfoText = streaming ? "Default Not Found Page" : setNotFound ? "Welcome On Page Re-executed After Not Found Event" : "Any content";
         Assert.Contains(expectedInfoText, infoText);
     }
 

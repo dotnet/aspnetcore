@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -93,6 +94,8 @@ internal partial class EndpointHtmlRenderer
             _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             _httpContext.Response.ContentType = null;
         }
+        var statusCodeFeature = new StatusCodeReExecuteFeature();
+        _httpContext.Features.Set<IStatusCodeReExecuteFeature>(statusCodeFeature);
         SignalRendererToFinishRendering();
     }
 

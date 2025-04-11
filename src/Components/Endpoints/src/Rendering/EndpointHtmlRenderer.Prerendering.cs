@@ -19,7 +19,7 @@ internal partial class EndpointHtmlRenderer
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
-        if (_isHandlingErrors || _hasStatusCodePage)
+        if (_isHandlingErrors || _isReExecuted)
         {
             // Ignore the render mode boundary in error scenarios.
             return componentActivator.CreateInstance(componentType);
@@ -167,7 +167,7 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            if (_hasStatusCodePage)
+            if (_isReExecuted)
             {
                 HandleNonStreamingTasks();
             }
