@@ -9,12 +9,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
+using CustomPolicyProvider;
 
 namespace AuthSamples.FunctionalTests;
 
-public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<CustomPolicyProvider.Startup>>
+public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    public CustomPolicyProviderTests(WebApplicationFactory<CustomPolicyProvider.Startup> fixture)
+    public CustomPolicyProviderTests(WebApplicationFactory<Program> fixture)
     {
         Client = fixture.CreateClient();
     }
