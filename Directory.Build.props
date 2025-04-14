@@ -107,6 +107,8 @@
 
     <IncludeSymbols>true</IncludeSymbols>
     <DefaultNetFxTargetFramework>net462</DefaultNetFxTargetFramework>
+
+    <CrossgenOutput Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">false</CrossgenOutput>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
