@@ -22,19 +22,16 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
-    [InlineData("server", true)]
-    [InlineData("webassembly", true)]
-    [InlineData("ssr", false)]
-    public void CanRenderNotFoundInteractive(string renderingMode, bool isInteractive)
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    [InlineData("ssr")]
+    public void CanRenderNotFoundInteractive(string renderingMode)
     {
         Navigate($"/subdir/render-not-found-{renderingMode}");
 
-        if (isInteractive)
-        {
-            var buttonId = "trigger-not-found";
-            Browser.WaitForElementToBeVisible(By.Id(buttonId));
-            Browser.Exists(By.Id(buttonId)).Click();
-        }
+        var buttonId = "trigger-not-found";
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
+        Browser.Exists(By.Id(buttonId)).Click();
 
         var bodyText = Browser.FindElement(By.TagName("body")).Text;
         Assert.Contains("There's nothing here", bodyText);
