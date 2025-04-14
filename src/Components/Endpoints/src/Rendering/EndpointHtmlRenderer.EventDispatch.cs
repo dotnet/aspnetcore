@@ -89,7 +89,7 @@ internal partial class EndpointHtmlRenderer
 
     private async Task OnNavigateTo(string uri)
     {
-        if (_httpContext.Response.HasStarted)
+        if (_httpContext.Response.HasStarted || _httpContext.Request.Method == HttpMethods.Post)
         {
             var defaultBufferSize = 16 * 1024;
             await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
