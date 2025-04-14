@@ -5,13 +5,14 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
 
 internal sealed partial class TlsListener : IDisposable
 {
     private readonly ConcurrentDictionary<ulong, DateTimeOffset> _connectionTimestamps = new();
-    private readonly Action<IFeatureCollection, ReadOnlySpan<byte>> _tlsClientHelloBytesCallback;
+    private readonly TlsClientHelloCallback _tlsClientHelloBytesCallback;
     private readonly ILogger _logger;
 
     private readonly PeriodicTimer _cleanupTimer;
@@ -25,7 +26,7 @@ internal sealed partial class TlsListener : IDisposable
     // Internal for testing purposes
     internal ReadOnlyDictionary<ulong, DateTimeOffset> ConnectionTimeStamps => _connectionTimestamps.AsReadOnly();
 
-    internal TlsListener(ILogger logger, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback, TimeProvider? timeProvider = null)
+    internal TlsListener(ILogger logger, TlsClientHelloCallback tlsClientHelloBytesCallback, TimeProvider? timeProvider = null)
     {
         if (AppContext.GetData("Microsoft.AspNetCore.Server.HttpSys.TlsListener.CacheSizeLimit") is int limit)
         {
@@ -52,7 +53,7 @@ internal sealed partial class TlsListener : IDisposable
 
     // Method looks weird because we want it to be testable by not directly requiring a Request object
     internal void InvokeTlsClientHelloCallback(ulong connectionId, IFeatureCollection features,
-        Func<IFeatureCollection, Action<IFeatureCollection, ReadOnlySpan<byte>>, bool> invokeTlsClientHelloCallback)
+        Func<IFeatureCollection, TlsClientHelloCallback, bool> invokeTlsClientHelloCallback)
     {
         if (!_connectionTimestamps.TryAdd(connectionId, _timeProvider.GetUtcNow()))
         {

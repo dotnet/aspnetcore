@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using static Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -363,7 +364,7 @@ internal sealed partial class Request
         SniHostName = sni.Hostname;
     }
 
-    internal bool GetAndInvokeTlsClientHelloCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    internal bool GetAndInvokeTlsClientHelloCallback(IFeatureCollection features, TlsClientHelloCallback tlsClientHelloBytesCallback)
         => RequestContext.GetAndInvokeTlsClientHelloMessageBytesCallback(features, tlsClientHelloBytesCallback);
 
     public X509Certificate2? ClientCertificate

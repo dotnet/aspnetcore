@@ -2,12 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
+using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
+using static Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -238,7 +243,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     /// Attempts to get the client hello message bytes from the http.sys.
     /// If not successful, will return false.
     /// </summary>
-    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, TlsClientHelloCallback tlsClientHelloBytesCallback)
     {
         if (!HttpApi.SupportsClientHello)
         {
@@ -266,7 +271,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                     qualifierSize: 0,
                     output: pBuffer,
                     outputSize: (uint)buffer.Length,
-                    bytesReturned: (IntPtr)bytesReturned,
+                    bytesReturned: bytesReturned,
                     overlapped: IntPtr.Zero);
 
                 if (statusCode is ErrorCodes.ERROR_SUCCESS)
@@ -300,7 +305,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                         qualifierSize: 0,
                         output: pBuffer,
                         outputSize: (uint)buffer.Length,
-                        bytesReturned: (IntPtr)bytesReturned,
+                        bytesReturned: bytesReturned,
                         overlapped: IntPtr.Zero);
 
                     if (statusCode is ErrorCodes.ERROR_SUCCESS)
@@ -338,7 +343,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 qualifierSize: 0,
                 pBuffer,
                 (uint)buffer.Length,
-                bytesReturned: IntPtr.Zero,
+                bytesReturned: null,
                 IntPtr.Zero);
 
             if (statusCode == ErrorCodes.ERROR_SUCCESS)

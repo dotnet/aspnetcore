@@ -255,7 +255,9 @@ public class HttpSysOptions
     /// See <see href="https://learn.microsoft.com/windows/win32/api/http/nf-http-httpsetserviceconfiguration"/>
     /// and <see href="https://learn.microsoft.com/windows/win32/api/http/ne-http-http_service_config_id"/>
     /// </remarks>
-    public Action<IFeatureCollection, ReadOnlySpan<byte>>? TlsClientHelloBytesCallback { get; set; }
+    internal TlsClientHelloCallback? TlsClientHelloBytesCallback { get; set; }
+
+    internal delegate void TlsClientHelloCallback(IFeatureCollection features, ReadOnlySpan<byte> clientHelloBytes);
 
     // Not called when attaching to an existing queue.
     internal void Apply(UrlGroup urlGroup, RequestQueue? requestQueue)

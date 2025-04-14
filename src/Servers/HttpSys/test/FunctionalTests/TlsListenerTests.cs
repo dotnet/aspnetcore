@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Server.HttpSys.RequestProcessing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using static Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
@@ -54,7 +55,7 @@ public class TlsListenerTests
 
         var features = Mock.Of<IFeatureCollection>();
 
-        bool InvokeCallback(IFeatureCollection f, Action<IFeatureCollection, ReadOnlySpan<byte>> cb)
+        bool InvokeCallback(IFeatureCollection f, TlsClientHelloCallback cb)
         {
             cb(f, ReadOnlySpan<byte>.Empty);
             return true;

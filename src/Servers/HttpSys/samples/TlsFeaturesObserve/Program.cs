@@ -26,19 +26,28 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                 options.Authentication.Schemes = AuthenticationSchemes.None;
                 options.Authentication.AllowAnonymous = true;
 
-                options.TlsClientHelloBytesCallback = ProcessTlsClientHello;
+                var property = typeof(HttpSysOptions).GetProperty("TlsClientHelloBytesCallback", BindingFlags.NonPublic | BindingFlags.Instance);
+                var delegateType = property.PropertyType; // Get the exact delegate type
+
+                // Create a delegate of the correct type
+                var callbackDelegate = Delegate.CreateDelegate(delegateType, typeof(Holder).GetMethod(nameof(Holder.ProcessTlsClientHello), BindingFlags.Static | BindingFlags.Public));
+
+                property?.SetValue(options, callbackDelegate);
             });
         });
 
-static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
+public static class Holder
 {
-    var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
+    public static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
+    {
+        var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
 
-    var myTlsFeature = new MyTlsFeature(
-        connectionId: httpConnectionFeature.ConnectionId,
-        tlsClientHelloLength: tlsClientHelloBytes.Length);
+        var myTlsFeature = new MyTlsFeature(
+            connectionId: httpConnectionFeature.ConnectionId,
+            tlsClientHelloLength: tlsClientHelloBytes.Length);
 
-    features.Set<IMyTlsFeature>(myTlsFeature);
+        features.Set<IMyTlsFeature>(myTlsFeature);
+    }
 }
 
 public interface IMyTlsFeature
