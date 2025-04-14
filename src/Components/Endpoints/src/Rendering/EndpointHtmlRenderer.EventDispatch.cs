@@ -89,7 +89,7 @@ internal partial class EndpointHtmlRenderer
 
     private async Task OnNavigateTo(string uri)
     {
-        if (_httpContext.Response.HasStarted || _httpContext.Request.Method == HttpMethods.Post)
+        if (_httpContext.Response.HasStarted)
         {
             var defaultBufferSize = 16 * 1024;
             await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
@@ -99,7 +99,7 @@ internal partial class EndpointHtmlRenderer
         }
         else
         {
-            _httpContext.Response.Redirect(uri);
+            await HandleNavigationBeforeResponseStarted(_httpContext, uri);
         }
         SignalRendererToFinishRendering();
     }
