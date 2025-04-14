@@ -7,20 +7,6 @@
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
   </PropertyGroup>
 
-  <!--
-    Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
-    Leaving the inner will cause all conflicting settings to be ignored.
-    https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files#general-options.
-    This only needs to be done if there is an inner clone.
-  -->
-  <Target Name="RemoveInnerGlobalConfig"
-          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
-          BeforeTargets="RunInnerSourceBuildCommand"
-          Condition="'$(DotNetBuildOrchestrator)' != 'true'">
-
-    <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
-  </Target>
-
   <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
        https://github.com/dotnet/source-build/issues/3807 -->
   <Target Name="BuildRepoTasks"
@@ -73,45 +59,6 @@
       <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.msi" />
       <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.pkg" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="RestoreNpmPackages"
-          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
-          BeforeTargets="RunInnerSourceBuildCommand">
-
-    <Message Text="Checking node version..." Importance="high" />
-    <Exec
-      Command="node --version"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
-
-    <Message Text="Checking npm version..." Importance="high" />
-    <Exec
-      Command="npm --version"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
-
-    <PropertyGroup>
-      <!-- Disable installing puppeteer browsers when running in source build -->
-      <_AdditionalEnvironmentVariable Condition="$(DotNetBuildSourceOnly) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
-    </PropertyGroup>
-
-    <Exec
-      Command="npm ci"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      EnvironmentVariables="$(_AdditionalEnvironmentVariable)" />
-
-  </Target>
-
-  <Target Name="BuildNpmFiles"
-          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
-          DependsOnTargets="RestoreNpmPackages"
-          BeforeTargets="RunInnerSourceBuildCommand">
-
-    <Message Text="Building Node JS files..." Importance="high" />
-
-    <Exec
-      Command="npm run build"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
-
   </Target>
 
 </Project>
