@@ -107,6 +107,8 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeNewWithClassConstructorAsync.dataProperty"] = "abraka",
             ["invokeNewWithClassConstructorAsync.function"] = "6",
             ["invokeNewWithNonConstructorAsync"] = "Success",
+            // Function reference tests
+            ["changeFunctionViaObjectReferenceAsync"] = "42"
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -171,6 +173,8 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeNewWithClassConstructor.dataProperty"] = "abraka",
             ["invokeNewWithClassConstructor.function"] = "6",
             ["invokeNewWithNonConstructor"] = "Success",
+            // Function reference tests
+            ["changeFunctionViaObjectReference"] = "42"
         };
 
         // Include the sync assertions only when running under WebAssembly

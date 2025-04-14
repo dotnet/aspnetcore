@@ -301,6 +301,13 @@
             InvokeNewTests();
         }
 
+        await FunctionReferenceAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            FunctionReferenceTests();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -599,6 +606,24 @@
         {
             ReturnValues["invokeNewWithNonConstructor"] = $"Failure: {ex.Message}";
         }
+    }
+
+    private async Task FunctionReferenceAsyncTests()
+    {
+        var funcRef = await JSRuntime.GetValueAsync<IJSObjectReference>("jsInteropTests.nonConstructorFunction");
+        var testClassRef = await JSRuntime.InvokeNewAsync("jsInteropTests.TestClass", "abraka");
+        await testClassRef.SetValueAsync("getTextLength", funcRef);
+        ReturnValues["changeFunctionViaObjectReferenceAsync"] = (await testClassRef.InvokeAsync<int>("getTextLength")).ToString();
+    }
+
+    private void FunctionReferenceTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        var funcRef = inProcRuntime.GetValue<IJSObjectReference>("jsInteropTests.nonConstructorFunction");
+        var testClassRef = inProcRuntime.InvokeNew("jsInteropTests.TestClass", "abraka");
+        testClassRef.SetValue("getTextLength", funcRef);
+        ReturnValues["changeFunctionViaObjectReference"] = testClassRef.Invoke<int>("getTextLength").ToString();
     }
 
     public class PassDotNetObjectByRefArgs
