@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.AspNetCore.Http;
 
 namespace TlsFeaturesObserve.HttpSys;
 
@@ -19,21 +15,22 @@ internal static class HttpSysConfigurator
 
     internal static void ConfigureCacheTlsClientHello()
     {
-        IPEndPoint ipPort = new IPEndPoint(new IPAddress([0, 0, 0, 0]), 6000);
-        string certThumbprint = "" /* your cert thumbprint here */;
-        Guid appId = Guid.NewGuid();
-        string sslCertStoreName = "My";
+        // Arbitrarily chosen port, but must match the port used in the web server. Via UrlPrefixes or launchsettings.
+        var ipPort = new IPEndPoint(new IPAddress([0, 0, 0, 0]), 6000);
+        var certThumbprint = "" /* your cert thumbprint here */;
+        var appId = Guid.NewGuid();
+        var sslCertStoreName = "My";
 
         CallHttpApi(() => SetConfiguration(ipPort, certThumbprint, appId, sslCertStoreName));
     }
 
     static void SetConfiguration(IPEndPoint ipPort, string certThumbprint, Guid appId, string sslCertStoreName)
     {
-        GCHandle sockAddrHandle = CreateSockaddrStructure(ipPort);
+        var sockAddrHandle = CreateSockaddrStructure(ipPort);
         var pIpPort = sockAddrHandle.AddrOfPinnedObject();
         var httpServiceConfigSslKey = new HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
 
-        byte[] hash = GetHash(certThumbprint);
+        var hash = GetHash(certThumbprint);
         var handleHash = GCHandle.Alloc(hash, GCHandleType.Pinned);
         var configSslParam = new HTTP_SERVICE_CONFIG_SSL_PARAM
         {
@@ -58,7 +55,7 @@ internal static class HttpSysConfigurator
             Marshal.SizeOf(typeof(HTTP_SERVICE_CONFIG_SSL_SET)));
         Marshal.StructureToPtr(configSslSet, pInputConfigInfo, false);
 
-        uint status = HttpSetServiceConfiguration(nint.Zero,
+        var status = HttpSetServiceConfiguration(nint.Zero,
             HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
             pInputConfigInfo,
             Marshal.SizeOf(configSslSet),
@@ -66,7 +63,7 @@ internal static class HttpSysConfigurator
 
         if (status == ERROR_ALREADY_EXISTS || status == 0) // already present or success
         {
-            Console.WriteLine("HttpServiceConfiguration is correct");
+            Console.WriteLine($"HttpServiceConfiguration is correct");
         }
         else
         {
@@ -76,9 +73,9 @@ internal static class HttpSysConfigurator
 
     static byte[] GetHash(string thumbprint)
     {
-        int length = thumbprint.Length;
-        byte[] bytes = new byte[length / 2];
-        for (int i = 0; i < length; i += 2)
+        var length = thumbprint.Length;
+        var bytes = new byte[length / 2];
+        for (var i = 0; i < length; i += 2)
         {
             bytes[i / 2] = Convert.ToByte(thumbprint.Substring(i, 2), 16);
         }
@@ -88,12 +85,12 @@ internal static class HttpSysConfigurator
 
     static GCHandle CreateSockaddrStructure(IPEndPoint ipEndPoint)
     {
-        SocketAddress socketAddress = ipEndPoint.Serialize();
+        var socketAddress = ipEndPoint.Serialize();
 
         // use an array of bytes instead of the sockaddr structure 
-        byte[] sockAddrStructureBytes = new byte[socketAddress.Size];
-        GCHandle sockAddrHandle = GCHandle.Alloc(sockAddrStructureBytes, GCHandleType.Pinned);
-        for (int i = 0; i < socketAddress.Size; ++i)
+        var sockAddrStructureBytes = new byte[socketAddress.Size];
+        var sockAddrHandle = GCHandle.Alloc(sockAddrStructureBytes, GCHandleType.Pinned);
+        for (var i = 0; i < socketAddress.Size; ++i)
         {
             sockAddrStructureBytes[i] = socketAddress[i];
         }
@@ -103,7 +100,7 @@ internal static class HttpSysConfigurator
     static void CallHttpApi(Action body)
     {
         const uint flags = HTTP_INITIALIZE_CONFIG;
-        uint retVal = HttpInitialize(HttpApiVersion, flags, IntPtr.Zero);
+        var retVal = HttpInitialize(HttpApiVersion, flags, IntPtr.Zero);
         body();
     }
 
