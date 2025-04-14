@@ -8,6 +8,8 @@ using System.Text;
 
 namespace TlsFeaturesObserve.HttpSys;
 
+// Http.Sys types from https://learn.microsoft.com/windows/win32/api/http/
+
 [StructLayout(LayoutKind.Sequential, Pack = 2)]
 public struct HTTPAPI_VERSION
 {
