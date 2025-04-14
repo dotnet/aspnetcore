@@ -176,21 +176,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRendering()
+    protected override void SignalRendererToFinishRendering()
     {
         _rendererIsStopped = true;
-    }
-
-    protected override void ProcessPendingRender()
-    {
-        if (_rendererIsStopped)
-        {
-            // When the application triggers a NotFound event, we continue rendering the current batch.
-            // However, after completing this batch, we do not want to process any further UI updates,
-            // as we are going to return a 404 status and discard the UI updates generated so far.
-            return;
-        }
-        base.ProcessPendingRender();
+        base.SignalRendererToFinishRendering();
     }
 
     // For tests only
