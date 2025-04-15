@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
@@ -274,5 +272,32 @@ public class OpenApiServiceCollectionExtensions
         Assert.NotNull(document.Info);
         Assert.Equal($"Test Application | {documentName.ToLowerInvariant()}", document.Info.Title);
         Assert.Equal("1.0.0", document.Info.Version);
+    }
+
+    [Fact]
+    public async Task GetOpenApiDocumentAsync_HandlesCancellation()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+        var documentName = "v1";
+        services.AddOpenApi(documentName);
+        var serviceProvider = services.BuildServiceProvider();
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName.ToLowerInvariant());
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await documentProvider.GetOpenApiDocumentAsync(cts.Token);
+        });
     }
 }

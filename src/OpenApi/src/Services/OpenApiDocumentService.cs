@@ -747,5 +747,8 @@ internal sealed class OpenApiDocumentService(
 
     /// <inheritdoc />
     public Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
-        => GetOpenApiDocumentAsync(serviceProvider, null, cancellationToken);
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return GetOpenApiDocumentAsync(serviceProvider, httpRequest: null, cancellationToken);
+    }
 }
