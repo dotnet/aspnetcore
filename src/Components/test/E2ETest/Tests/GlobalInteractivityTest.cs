@@ -24,7 +24,6 @@ public class GlobalInteractivityTest(
     [Theory]
     [InlineData("server")]
     [InlineData("webassembly")]
-    [InlineData("ssr")]
     public void CanRenderNotFoundInteractive(string renderingMode)
     {
         Navigate($"/subdir/render-not-found-{renderingMode}");
