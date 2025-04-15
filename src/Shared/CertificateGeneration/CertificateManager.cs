@@ -55,14 +55,28 @@ internal abstract class CertificateManager
     {
         get;
         // For testing purposes only
-        internal set;
+        internal set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(
+                value,
+                MinimumAspNetHttpsCertificateVersion,
+                $"{nameof(AspNetHttpsCertificateVersion)} cannot be lesser than {nameof(MinimumAspNetHttpsCertificateVersion)}");
+            field = value;
+        }
     }
 
     public int MinimumAspNetHttpsCertificateVersion
     {
         get;
         // For testing purposes only
-        internal set;
+        internal set
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(
+                value,
+                AspNetHttpsCertificateVersion,
+                $"{nameof(MinimumAspNetHttpsCertificateVersion)} cannot be greater than {nameof(AspNetHttpsCertificateVersion)}");
+            field = value;
+        }
     }
 
     public string Subject { get; }

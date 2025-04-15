@@ -387,6 +387,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
+        _manager.AspNetHttpsCertificateVersion = 2;
         _manager.MinimumAspNetHttpsCertificateVersion = 2;
 
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
@@ -400,15 +401,37 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
 
         var now = DateTimeOffset.UtcNow;
         now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+        _manager.MinimumAspNetHttpsCertificateVersion = 0;
         _manager.AspNetHttpsCertificateVersion = 0;
         var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
         _manager.AspNetHttpsCertificateVersion = 1;
+        _manager.MinimumAspNetHttpsCertificateVersion = 1;
 
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         Assert.Empty(httpsCertificateList);
+    }
+
+    [Fact]
+    public void EnsureCreateHttpsCertificate_DoNotOverrideValidOldCertificate()
+    {
+        _fixture.CleanupCertificates();
+
+        var now = DateTimeOffset.UtcNow;
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+        var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+        Output.WriteLine(creation.ToString());
+        ListCertificates();
+
+        // Simulate a tool with the same min version as the already existing cert but with a more
+        // recent generation version
+        _manager.MinimumAspNetHttpsCertificateVersion = 1;
+        _manager.AspNetHttpsCertificateVersion = 2;
+        var alreadyExist = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+        Output.WriteLine(alreadyExist.ToString());
+        Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, alreadyExist);
     }
 
     [ConditionalFact]
@@ -441,7 +464,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
-        _manager.AspNetHttpsCertificateVersion = 1;
+        _manager.MinimumAspNetHttpsCertificateVersion = 1;
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         Assert.NotEmpty(httpsCertificateList);
     }
@@ -533,8 +556,8 @@ public class CertFixture : IDisposable
 
     internal void CleanupCertificates()
     {
-        Manager.AspNetHttpsCertificateVersion = 1;
         Manager.MinimumAspNetHttpsCertificateVersion = 1;
+        Manager.AspNetHttpsCertificateVersion = 1;
         Manager.RemoveAllCertificates(StoreName.My, StoreLocation.CurrentUser);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {

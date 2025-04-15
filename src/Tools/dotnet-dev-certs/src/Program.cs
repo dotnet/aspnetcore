@@ -114,7 +114,7 @@ internal sealed class Program
                     "Display warnings and errors only.",
                     CommandOptionType.NoValue);
 
-                var checkJsonOutput = c.Option("--check-json-output",
+                var checkJsonOutput = c.Option("--check-trust-machine-readable",
                     "Same as running --check --trust, but output the results in json.",
                     CommandOptionType.NoValue);
 
