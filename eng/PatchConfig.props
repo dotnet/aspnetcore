@@ -20,6 +20,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.2' ">
     <PackagesInPatch>
+      Microsoft.Extensions.Identity.Stores;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

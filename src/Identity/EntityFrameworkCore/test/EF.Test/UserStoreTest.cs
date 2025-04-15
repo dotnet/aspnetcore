@@ -165,6 +165,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetTwoFactorEnabledAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await store.SetTwoFactorEnabledAsync(null, true));
+            await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.RedeemCodeAsync(user: null, code: "fake", default));
+            await Assert.ThrowsAsync<ArgumentNullException>("code", async () => await store.RedeemCodeAsync(new IdentityUser("fake"), code: null, default));
+            await Assert.ThrowsAsync<ArgumentException>("code", async () => await store.RedeemCodeAsync(new IdentityUser("fake"), code: "", default));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetAccessFailedCountAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetLockoutEnabledAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetLockoutEnabledAsync(null, false));
