@@ -478,6 +478,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         var now = DateTimeOffset.UtcNow;
         now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
         _manager.AspNetHttpsCertificateVersion = 1;
+        _manager.MinimumAspNetHttpsCertificateVersion = 1;
         var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
         Output.WriteLine(creation.ToString());
         ListCertificates();
@@ -488,7 +489,13 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Output.WriteLine(creation.ToString());
         ListCertificates();
 
-        _manager.MinimumAspNetHttpsCertificateVersion = 1;
+        _manager.AspNetHttpsCertificateVersion = 3;
+        _manager.MinimumAspNetHttpsCertificateVersion = 3;
+        creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+        Output.WriteLine(creation.ToString());
+        ListCertificates();
+
+        _manager.MinimumAspNetHttpsCertificateVersion = 2;
         var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         Assert.Equal(2, httpsCertificateList.Count);
 
@@ -499,13 +506,13 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             firstCertificate.Extensions.OfType<X509Extension>(),
             e => e.Critical == false &&
                 e.Oid.Value == CertificateManager.AspNetHttpsOid &&
-                e.RawData[0] == 2);
+                e.RawData[0] == 3);
 
         Assert.Contains(
             secondCertificate.Extensions.OfType<X509Extension>(),
             e => e.Critical == false &&
                 e.Oid.Value == CertificateManager.AspNetHttpsOid &&
-                e.RawData[0] == 1);
+                e.RawData[0] == 2);
     }
 
     [ConditionalFact]
