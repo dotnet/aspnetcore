@@ -240,7 +240,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     }
 
     /// <summary>
-    /// Attempts to get the client hello message bytes from the http.sys.
+    /// Attempts to get the client hello message bytes from HTTP.sys and calls the user provided callback.
     /// If not successful, will return false.
     /// </summary>
     internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, TlsClientHelloCallback tlsClientHelloBytesCallback)
