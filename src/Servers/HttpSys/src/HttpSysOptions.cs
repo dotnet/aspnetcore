@@ -242,9 +242,22 @@ public class HttpSysOptions
     /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
     /// </summary>
     /// <remarks>
-    /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
+    /// Defaults to <c>false</c>, in which case <see cref="Encoding.UTF8"/> will be used. />.
     /// </remarks>
     public bool UseLatin1RequestHeaders { get; set; }
+
+    /// <summary>
+    /// A callback to be invoked to get the TLS client hello bytes.
+    /// Null by default.
+    /// </summary>
+    /// <remarks>
+    /// Works only if <c>HTTP_SERVICE_CONFIG_SSL_FLAG_ENABLE_CACHE_CLIENT_HELLO</c> flag is set on http.sys service configuration.
+    /// See <see href="https://learn.microsoft.com/windows/win32/api/http/nf-http-httpsetserviceconfiguration"/>
+    /// and <see href="https://learn.microsoft.com/windows/win32/api/http/ne-http-http_service_config_id"/>
+    /// </remarks>
+    internal TlsClientHelloCallback? TlsClientHelloBytesCallback { get; set; }
+
+    internal delegate void TlsClientHelloCallback(IFeatureCollection features, ReadOnlySpan<byte> clientHelloBytes);
 
     // Not called when attaching to an existing queue.
     internal void Apply(UrlGroup urlGroup, RequestQueue? requestQueue)

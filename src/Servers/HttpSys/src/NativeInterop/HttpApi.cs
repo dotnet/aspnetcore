@@ -122,13 +122,30 @@ internal static unsafe partial class HttpApi
     }
 
     internal static SafeLibraryHandle? HttpApiModule { get; private set; }
-    internal static HttpGetRequestPropertyInvoker? HttpGetRequestProperty { get; private set; }
-    internal static HttpSetRequestPropertyInvoker? HttpSetRequestProperty { get; private set; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+    private static HttpGetRequestPropertyInvoker? HttpGetRequestInvoker { get; set; }
+    private static HttpSetRequestPropertyInvoker? HttpSetRequestInvoker { get; set; }
+
+    internal static bool HttpGetRequestPropertySupported => HttpGetRequestInvoker is not null;
+    internal static bool HttpSetRequestPropertySupported => HttpSetRequestInvoker is not null;
+
+    internal static unsafe uint HttpGetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped)
+    {
+        return HttpGetRequestInvoker!(requestQueueHandle, requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    }
+
+    internal static unsafe uint HttpSetRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* input, uint inputSize, IntPtr overlapped)
+    {
+        return HttpSetRequestInvoker!(requestQueueHandle, requestId, propertyId, input, inputSize, overlapped);
+    }
+
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsTrailers { get; private set; }
-    [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
+    [MemberNotNullWhen(true, nameof(HttpSetRequestInvoker))]
     internal static bool SupportsReset { get; private set; }
     internal static bool SupportsDelegation { get; private set; }
+    internal static bool SupportsClientHello { get; private set; }
 
     static HttpApi()
     {
@@ -147,11 +164,12 @@ internal static unsafe partial class HttpApi
         if (supported)
         {
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
-            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
-            HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-            SupportsReset = HttpSetRequestProperty != null;
+            HttpGetRequestInvoker = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
+            HttpSetRequestInvoker = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+            SupportsReset = HttpSetRequestPropertySupported;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
             SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            SupportsClientHello = IsFeatureSupported((HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */) && HttpGetRequestPropertySupported;
         }
     }
 
