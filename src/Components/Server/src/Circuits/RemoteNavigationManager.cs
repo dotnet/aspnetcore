@@ -17,7 +17,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
     private bool? _navigationLockStateBeforeJsRuntimeAttached;
-    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException";
     private static bool _throwNavigationException =>
         AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
     private Func<string, Task>? _onNavigateTo;

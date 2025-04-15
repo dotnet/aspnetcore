@@ -71,7 +71,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     public void NavigatesWithoutInteractivityByRequestRedirection(bool controlFlowByException, bool isStreaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.EnableThrowNavigationException", isEnabled: controlFlowByException);
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: controlFlowByException);
         string streaming = isStreaming ? $"streaming-" : "";
         Navigate($"{ServerPathBase}/routing/ssr-{streaming}navigate-to");
         Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);

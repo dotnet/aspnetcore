@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
 {
-    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager.EnableThrowNavigationException";
+    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException";
 
     private static bool _throwNavigationException =>
         AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
