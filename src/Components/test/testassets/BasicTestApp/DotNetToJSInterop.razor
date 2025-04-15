@@ -92,6 +92,7 @@
 <div style="margin-top: 2em">
     <button @onclick="CreateInstanceByConstructorFunction">Call constructor function InvokeNewAsync</button>
     <button @onclick="CreateInstanceByClassConstructor">Call class constructor with InvokeNewAsync</button>
+    <button @onclick="ChangeInstanceMethodWithFunctionReference">Change instance method with function reference</button>
     <span>@InstanceMessage</span>
 </div>
 
@@ -146,13 +147,13 @@
 
     private async Task CreateInstanceByConstructorFunction()
     {
-        var dogRef = await JSRuntime.InvokeNewAsync("Dog", ["Igor"]);
+        var dogRef = await JSRuntime.InvokeNewAsync("Dog", "A dog");
         InstanceMessage = await dogRef.InvokeAsync<string>("bark");
     }
 
     private async Task CreateInstanceByClassConstructor()
     {
-        var catRef = await JSRuntime.InvokeNewAsync("Cat", ["Whiskers"]);
+        var catRef = await JSRuntime.InvokeNewAsync("Cat", "A cat");
         InstanceMessage = await catRef.InvokeAsync<string>("meow");
     }
 
@@ -164,6 +165,15 @@
     private async Task SetInvalid(MouseEventArgs args)
     {
         await JSRuntime.SetValueAsync<int>("testObject.getOnlyProperty", 123);
+    }
+
+    private async Task ChangeInstanceMethodWithFunctionReference()
+    {
+        var dogRef = await JSRuntime.InvokeNewAsync("Dog", "A dog");
+        var dogFuncRef = await dogRef.GetValueAsync<IJSObjectReference>("bark");
+        var catRef = await JSRuntime.InvokeNewAsync("Cat", "A cat");
+        await catRef.SetValueAsync("meow", dogFuncRef);
+        InstanceMessage = await catRef.InvokeAsync<string>("meow");
     }
 
     class TestObjectModel
