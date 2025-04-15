@@ -32,6 +32,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="System.Net.Http.WinHttpHandler" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
   <PropertyGroup>

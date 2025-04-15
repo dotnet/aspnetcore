@@ -9,10 +9,12 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using static Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -361,6 +363,9 @@ internal sealed partial class Request
         var sni = RequestContext.GetClientSni();
         SniHostName = sni.Hostname;
     }
+
+    internal bool GetAndInvokeTlsClientHelloCallback(IFeatureCollection features, TlsClientHelloCallback tlsClientHelloBytesCallback)
+        => RequestContext.GetAndInvokeTlsClientHelloMessageBytesCallback(features, tlsClientHelloBytesCallback);
 
     public X509Certificate2? ClientCertificate
     {
