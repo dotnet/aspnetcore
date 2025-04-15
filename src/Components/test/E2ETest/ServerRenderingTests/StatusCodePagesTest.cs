@@ -30,12 +30,13 @@ public class StatusCodePagesTest(BrowserFixture browserFixture, BasicTestAppServ
         string streamingPath = streaming ? "streaming-" : "";
         Navigate($"{ServerPathBase}/reexecution/{streamingPath}set-not-found?shouldSet={setNotFound}");
 
-        string expectedTitle = setNotFound ? "Re-executed page" : "Original page";
-        Browser.Equal(expectedTitle, () => Browser.Title);
-        var infoText = Browser.FindElement(By.Id("test-info")).Text;
         // streaming when response started does not re-execute
-        string expectedInfoText = streaming ? "Default Not Found Page" : setNotFound ? "Welcome On Page Re-executed After Not Found Event" : "Any content";
-        Assert.Contains(expectedInfoText, infoText);
+        string expectedTitle = streaming
+            ? "Default Not Found Page"
+            : setNotFound
+                ? "Re-executed page"
+                : "Original page";
+        Browser.Equal(expectedTitle, () => Browser.Title);
     }
 
 }

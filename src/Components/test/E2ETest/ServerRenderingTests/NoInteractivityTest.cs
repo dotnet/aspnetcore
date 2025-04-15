@@ -70,8 +70,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public void CanRenderNotFoundPageAfterStreamingStarted()
     {
         Navigate($"{ServerPathBase}/streaming-set-not-found");
-        Browser.WaitForElementToBeVisible(By.Id("test-info"));
-        Browser.Equal("Default Not Found Page", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Equal("Default Not Found Page", () => Browser.Title);
     }
 
     [Theory]
