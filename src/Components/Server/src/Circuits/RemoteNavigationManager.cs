@@ -101,18 +101,28 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         Log.RequestingNavigation(_logger, uri, options);
+
+        if (_jsRuntime == null)
+        {
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            _ = _onNavigateTo(absoluteUriString);
+            return;
+        }
+
         _ = PerformNavigationAsync();
 
         async Task PerformNavigationAsync()
         {
             try
             {
-                if (_jsRuntime == null)
-                {
-                    await NavigateWithEndpoint(uri);
-                    return;
-                }
-
                 var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
 
                 if (!shouldContinueNavigation)
@@ -139,40 +149,31 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
-    private async Task NavigateWithEndpoint(string uri)
+    /// <inheritdoc />
+    public override void Refresh(bool forceReload = false)
     {
-        var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-        if (_throwNavigationException)
+        if (_jsRuntime == null)
         {
-            throw new NavigationException(absoluteUriString);
-        }
-        else
-        {
+            var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
             if (_onNavigateTo == null)
             {
                 throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
             }
-            await _onNavigateTo(absoluteUriString);
+            _ = _onNavigateTo(absoluteUriString);
+            return;
         }
-    }
 
-    /// <inheritdoc />
-    public override void Refresh(bool forceReload = false)
-    {
         _ = RefreshAsync();
 
         async Task RefreshAsync()
         {
             try
             {
-                if (_jsRuntime == null)
-                {
-                    await NavigateWithEndpoint(Uri);
-                }
-                else
-                {
-                    await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
-                }
+                await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
             }
             catch (Exception ex)
             {
