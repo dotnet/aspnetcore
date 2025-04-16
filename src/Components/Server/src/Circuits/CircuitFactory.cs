@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -20,11 +21,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
     private readonly ILogger _logger;
+    private readonly CircuitMetrics? _circuitMetrics;
 
     public CircuitFactory(
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
+        CircuitMetrics? circuitMetrics,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
@@ -32,6 +35,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         _circuitIdFactory = circuitIdFactory;
         _options = options.Value;
         _logger = _loggerFactory.CreateLogger<CircuitFactory>();
+
+        _circuitMetrics = circuitMetrics;
     }
 
     public async ValueTask<CircuitHost> CreateCircuitHostAsync(
@@ -104,6 +109,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             jsRuntime,
             navigationManager,
             circuitHandlers,
+            _circuitMetrics,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 

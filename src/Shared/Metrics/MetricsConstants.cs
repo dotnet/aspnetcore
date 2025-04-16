@@ -10,4 +10,7 @@ internal static class MetricsConstants
 
     // Not based on a standard. Larger bucket sizes for longer lasting operations, e.g. HTTP connection duration. See https://github.com/open-telemetry/semantic-conventions/issues/336
     public static readonly IReadOnlyList<double> LongSecondsBucketBoundaries = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 60, 120, 300];
+
+    // For Blazor/signalR sessions, which can last a long time.
+    public static readonly IReadOnlyList<double> VeryLongSecondsBucketBoundaries = [0.5, 1, 2, 5, 10, 30, 60, 120, 300, 600, 1500, 60*60, 2 * 60 * 60, 4 * 60 * 60];
 }

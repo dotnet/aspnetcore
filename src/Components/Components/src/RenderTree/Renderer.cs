@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 // dispatching events to them, and notifying when the user interface is being updated.
 public abstract partial class Renderer : IDisposable, IAsyncDisposable
 {
-    private readonly RenderingMetrics? _renderingMetrics;
     private readonly object _lockObject = new();
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
@@ -35,6 +34,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
+    private readonly RenderingMetrics? _renderingMetrics;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
 
@@ -92,6 +92,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
 
+        // TODO register RenderingMetrics as singleton in DI
         var meterFactory = serviceProvider.GetService<IMeterFactory>();
         _renderingMetrics = meterFactory != null ? new RenderingMetrics(meterFactory) : null;
 
@@ -931,7 +932,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         var componentState = renderQueueEntry.ComponentState;
         Log.RenderingComponent(_logger, componentState);
-        var startTime = _renderingMetrics != null ? Stopwatch.GetTimestamp() : 0;
+        var startTime = ((bool)_renderingMetrics?.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
         _renderingMetrics?.RenderStart(componentState.Component.GetType().FullName);
         componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
         if (renderFragmentException != null)

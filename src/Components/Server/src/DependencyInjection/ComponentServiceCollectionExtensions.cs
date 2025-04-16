@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -60,6 +61,12 @@ public static class ComponentServiceCollectionExtensions
         // Here we add a bunch of services that don't vary in any way based on the
         // user's configuration. So even if the user has multiple independent server-side
         // Components entrypoints, this lot is the same and repeated registrations are a no-op.
+
+        services.TryAddSingleton(s =>
+        {
+            var meterFactory = s.GetService<IMeterFactory>();
+            return meterFactory != null ? new CircuitMetrics(meterFactory) : null;
+        });
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
         services.TryAddSingleton<RootTypeCache>();

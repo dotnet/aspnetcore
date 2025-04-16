@@ -12,16 +12,22 @@ internal sealed class RenderingMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Components.Rendering";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _renderCounter;
+    private readonly Counter<long> _renderTotalCounter;
+    private readonly UpDownCounter<long> _renderActiveCounter;
     private readonly Histogram<double> _renderDuration;
 
     public RenderingMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _renderCounter = _meter.CreateCounter<long>(
+        _renderTotalCounter = _meter.CreateCounter<long>(
             "aspnetcore.components.rendering.count",
-            unit: "{render}",
+            unit: "{renders}",
+            description: "Number of component renders performed.");
+
+        _renderActiveCounter = _meter.CreateUpDownCounter<long>(
+            "aspnetcore.components.rendering.active_renders",
+            unit: "{renders}",
             description: "Number of component renders performed.");
 
         _renderDuration = _meter.CreateHistogram<double>(
@@ -36,18 +42,25 @@ internal sealed class RenderingMetrics : IDisposable
         var tags = new TagList();
         tags = InitializeRequestTags(componentType, tags);
 
-        _renderCounter.Add(1, tags);
+        if (_renderActiveCounter.Enabled)
+        {
+            _renderActiveCounter.Add(1, tags);
+        }
+        if (_renderTotalCounter.Enabled)
+        {
+            _renderTotalCounter.Add(1, tags);
+        }
     }
 
     public void RenderEnd(string componentType, Exception? exception, long startTimestamp, long currentTimestamp)
     {
+        // Tags must match request start.
         var tags = new TagList();
         tags = InitializeRequestTags(componentType, tags);
 
-        // Tags must match request start.
-        if (_renderCounter.Enabled)
+        if (_renderActiveCounter.Enabled)
         {
-            _renderCounter.Add(-1, tags);
+            _renderActiveCounter.Add(-1, tags);
         }
 
         if (_renderDuration.Enabled)
@@ -68,7 +81,7 @@ internal sealed class RenderingMetrics : IDisposable
         return tags;
     }
 
-    public bool IsEnabled() => _renderCounter.Enabled || _renderDuration.Enabled;
+    public bool IsDurationEnabled() => _renderDuration.Enabled;
 
     public void Dispose()
     {
