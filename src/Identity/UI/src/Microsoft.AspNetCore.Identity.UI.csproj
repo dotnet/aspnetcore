@@ -28,9 +28,9 @@
   <ItemGroup>
     <None Include="@(Content)" />
     <Content Remove="@(Content)" />
-    <None Include="build\*" Pack="true" PackagePath="build\" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
-    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
+    <None Include="build\*" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
   <ItemGroup>
