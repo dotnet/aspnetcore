@@ -136,13 +136,12 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     {
         Debug.Assert(state != null);
 
-        var stateTuple = ((string[] tags, Guid entryId))state;
-        var tags = stateTuple.tags;
-        var entryId = stateTuple.entryId;
+        var (tags, entryId) = ((string[] tags, Guid entryId))state;
 
         Debug.Assert(tags != null);
         Debug.Assert(tags.Length > 0);
         Debug.Assert(key is string);
+        Debug.Assert(entryId != Guid.Empty);
 
         lock (_tagsLock)
         {
