@@ -9,6 +9,7 @@ namespace InteropTests;
 
 // All interop test cases, minus GCE authentication specific tests.
 // Tests are separate methods so that they can be quarantined separately.
+[Retry]
 public class InteropTests
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(100);
@@ -83,6 +84,39 @@ public class InteropTests
 
     private async Task InteropTestCase(string name)
     {
+        // Building interop tests processes can be flaky. Sometimes it times out.
+        // To mitigate this, we retry the test case a few times on timeout.
+        const int maxRetries = 3;
+        var attempt = 0;
+
+        while (true)
+        {
+            attempt++;
+
+            try
+            {
+                await InteropTestCaseCore(name);
+                break; // Exit loop on success
+            }
+            catch (TimeoutException ex)
+            {
+                _output.WriteLine($"Attempt {attempt} failed: {ex.Message}");
+
+                if (attempt == maxRetries)
+                {
+                    _output.WriteLine("Maximum retry attempts reached. Giving up.");
+                    throw;
+                }
+                else
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+    }
+
+    private async Task InteropTestCaseCore(string name)
+    {
         _output.WriteLine($"Starting {nameof(WebsiteProcess)}.");
         using (var serverProcess = new WebsiteProcess(_serverPath, _output))
         {
@@ -91,7 +125,7 @@ public class InteropTests
                 _output.WriteLine($"Waiting for {nameof(WebsiteProcess)} to be ready.");
                 await serverProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TimeoutException)
             {
                 var errorMessage = $@"Error while running server process.
 
@@ -117,7 +151,7 @@ Server process output:
 
                     Assert.Equal(0, clientProcess.ExitCode);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not TimeoutException)
                 {
                     var errorMessage = $@"Error while running client process.
 
