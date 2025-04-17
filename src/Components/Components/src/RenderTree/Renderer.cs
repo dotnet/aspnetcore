@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -33,6 +34,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
+    private readonly RenderingMetrics? _renderingMetrics;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
 
@@ -89,6 +91,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
+
+        // TODO register RenderingMetrics as singleton in DI
+        var meterFactory = serviceProvider.GetService<IMeterFactory>();
+        _renderingMetrics = meterFactory != null ? new RenderingMetrics(meterFactory) : null;
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
@@ -926,12 +932,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         var componentState = renderQueueEntry.ComponentState;
         Log.RenderingComponent(_logger, componentState);
+        var startTime = (_renderingMetrics != null && _renderingMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+        _renderingMetrics?.RenderStart(componentState.Component.GetType().FullName);
         componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
         if (renderFragmentException != null)
         {
             // If this returns, the error was handled by an error boundary. Otherwise it throws.
             HandleExceptionViaErrorBoundary(renderFragmentException, componentState);
         }
+        _renderingMetrics?.RenderEnd(componentState.Component.GetType().FullName, renderFragmentException, startTime, Stopwatch.GetTimestamp());
 
         // Process disposal queue now in case it causes further component renders to be enqueued
         ProcessDisposalQueueInExistingBatch();
