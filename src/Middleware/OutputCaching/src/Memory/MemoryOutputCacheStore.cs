@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly MemoryCache _cache;
-    private readonly Dictionary<string, HashSet<ValueTuple<string,Guid>>> _taggedEntries = new();
+    private readonly Dictionary<string, HashSet<ValueTuple<string,Guid>>> _taggedEntries = [];
     private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(MemoryCache cache)
