@@ -134,7 +134,7 @@ internal class ListAdapter : IAdapter
 
         var currentValue = GenericListOrJsonArrayUtilities.GetElementAt(target, positionInfo.Index);
 
-        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue), JsonSerializer.SerializeToNode(convertedValue)))
+        if (!JsonUtilities.DeepEquals(currentValue, convertedValue, serializerOptions))
         {
             errorMessage = Resources.FormatValueAtListPositionNotEqualToTestValue(currentValue, value, positionInfo.Index);
             return false;

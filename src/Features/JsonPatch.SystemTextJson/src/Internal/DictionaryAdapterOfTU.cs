@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -17,7 +17,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         object value,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         // As per JsonPatch spec, if a key already exists, adding should replace the existing value
@@ -43,7 +43,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         out object value,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         if (!TryConvertKey(key, out var convertedKey, out errorMessage))
@@ -70,7 +70,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         JsonSerializerOptions serializerOptions,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         if (!TryConvertKey(key, out var convertedKey, out errorMessage))
@@ -96,7 +96,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         object value,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         if (!TryConvertKey(key, out var convertedKey, out errorMessage))
@@ -129,7 +129,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         object value,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         if (!TryConvertKey(key, out var convertedKey, out errorMessage))
@@ -156,7 +156,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue), JsonSerializer.SerializeToNode(convertedValue)))
+        if (!JsonUtilities.DeepEquals(currentValue, convertedValue, serializerOptions))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;
@@ -175,7 +175,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         out object nextTarget,
         out string errorMessage)
     {
-        var key = ExtractKeyFromSegment(segment);
+        var key = segment;
         var dictionary = (IDictionary<TKey, TValue>)target;
 
         if (!TryConvertKey(key, out var convertedKey, out errorMessage))
@@ -198,12 +198,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         }
     }
 
-    private static string ExtractKeyFromSegment(string segment)
-    {
-        return segment.ToString();
-    }
-
-    protected virtual bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
+    private static bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
     {
         var options = new JsonSerializerOptions() { NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString };
         var conversionResult = ConversionResultProvider.ConvertTo(key, typeof(TKey), options);
@@ -221,12 +216,7 @@ internal class DictionaryAdapter<TKey, TValue> : IAdapter
         }
     }
 
-    protected virtual bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
-    {
-        return TryConvertValue(value, null, out convertedValue, out errorMessage);
-    }
-
-    protected virtual bool TryConvertValue(object value, JsonSerializerOptions serializerOptions, out TValue convertedValue, out string errorMessage)
+    private static bool TryConvertValue(object value, JsonSerializerOptions serializerOptions, out TValue convertedValue, out string errorMessage)
     {
         var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue), serializerOptions);
         if (conversionResult.CanBeConverted)

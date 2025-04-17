@@ -183,7 +183,7 @@ internal class ObjectAdapter : IObjectAdapterWithTest
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
         {
             // Create deep copy
-            var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue?.GetType());
+            var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue?.GetType(), SerializerOptions);
             if (copyResult.CanBeConverted)
             {
                 Add(operation.path, copyResult.ConvertedInstance, objectToApplyTo, operation);

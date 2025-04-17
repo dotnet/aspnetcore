@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -158,7 +159,7 @@ internal class PocoAdapter : IAdapter
         }
 
         var currentValue = jsonProperty.Get(target);
-        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue), JsonSerializer.SerializeToNode(convertedValue)))
+        if (!JsonUtilities.DeepEquals(currentValue, convertedValue, serializerOptions))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;

@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -105,7 +106,7 @@ internal class JsonObjectAdapter : IAdapter
             return false;
         }
 
-        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue, serializerOptions), JsonSerializer.SerializeToNode(value, serializerOptions)))
+        if (!JsonUtilities.DeepEquals(currentValue, value, serializerOptions))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;

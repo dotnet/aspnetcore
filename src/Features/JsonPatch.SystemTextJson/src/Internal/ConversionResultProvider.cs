@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
 internal static class ConversionResultProvider
 {
-    public static ConversionResult ConvertTo(object value, Type typeToConvertTo)
-    {
-        return ConvertTo(value, typeToConvertTo, null);
-    }
-
     internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, JsonSerializerOptions serializerOptions)
     {
         if (value == null)
@@ -35,8 +30,7 @@ internal static class ConversionResultProvider
 
         try
         {
-            var serializedDocument = JsonSerializer.Serialize(value, serializerOptions);
-            var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, serializerOptions);
+            var deserialized = ConvertToTargetType(value, typeToConvertTo, serializerOptions);
             return new ConversionResult(true, deserialized);
         }
         catch
@@ -45,7 +39,7 @@ internal static class ConversionResultProvider
         }
     }
 
-    public static ConversionResult CopyTo(object value, Type typeToConvertTo)
+    internal static ConversionResult CopyTo(object value, Type typeToConvertTo, JsonSerializerOptions serializerOptions)
     {
         var targetType = typeToConvertTo;
         if (value == null)
@@ -67,7 +61,7 @@ internal static class ConversionResultProvider
 
         try
         {
-            var deserialized = JsonSerializer.Deserialize(JsonSerializer.Serialize(value), targetType);
+            var deserialized = ConvertToTargetType(value, targetType, serializerOptions);
             return new ConversionResult(true, deserialized);
         }
         catch
@@ -86,5 +80,10 @@ internal static class ConversionResultProvider
 
         // reference types are always nullable
         return true;
+    }
+
+    private static object ConvertToTargetType(object value, Type targetType, JsonSerializerOptions serializerOptions)
+    {
+        return JsonSerializer.Deserialize(JsonSerializer.Serialize(value, serializerOptions), targetType, serializerOptions);
     }
 }
