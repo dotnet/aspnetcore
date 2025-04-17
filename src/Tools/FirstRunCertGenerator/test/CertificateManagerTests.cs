@@ -415,6 +415,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
     }
 
     [Fact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
     public void EnsureCreateHttpsCertificate_DoNotOverrideValidOldCertificate()
     {
         _fixture.CleanupCertificates();
