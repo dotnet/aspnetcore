@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly MemoryCache _cache;
-    private readonly Dictionary<string, HashSet<(string key, Guid entryId)>> _taggedEntries = [];
+    private readonly Dictionary<string, HashSet<(string Key, Guid EntryId)>> _taggedEntries = [];
     private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(MemoryCache cache)
@@ -21,7 +21,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     }
 
     // For testing
-    internal Dictionary<string, HashSet<string>> TaggedEntries => _taggedEntries.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(t => t.key).ToHashSet());
+    internal Dictionary<string, HashSet<string>> TaggedEntries => _taggedEntries.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(t => t.Key).ToHashSet());
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
@@ -31,7 +31,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         {
             if (_taggedEntries.TryGetValue(tag, out var keys))
             {
-                if (keys != null && keys.Count > 0)
+                if (keys is { Count: > 0 })
                 {
                     // If MemoryCache changed to run eviction callbacks inline in Remove, iterating over keys could throw
                     // To prevent allocating a copy of the keys we check if the eviction callback ran,
@@ -41,9 +41,9 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                     while (i > 0)
                     {
                         var oldCount = keys.Count;
-                        foreach (var tuple in keys)
+                        foreach (var (key, _) in keys)
                         {
-                            _cache.Remove(tuple.key);
+                            _cache.Remove(key);
                             i--;
                             if (oldCount != keys.Count)
                             {
@@ -99,7 +99,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
                     Debug.Assert(keys != null);
 
-                    keys.Add(ValueTuple.Create(key, entryId));
+                    keys.Add((key, entryId));
                 }
 
                 SetEntry(key, value, tags, validFor, entryId);
@@ -126,17 +126,17 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         if (tags is { Length: > 0 })
         {
             // Remove cache keys from tag lists when the entry is evicted
-            options.RegisterPostEvictionCallback(RemoveFromTags, ValueTuple.Create(tags, entryId));
+            options.RegisterPostEvictionCallback(RemoveFromTags, (tags, entryId));
         }
 
         _cache.Set(key, value, options);
     }
 
-    void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
+    private void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
     {
         Debug.Assert(state != null);
 
-        var (tags, entryId) = ((string[] tags, Guid entryId))state;
+        var (tags, entryId) = ((string[] Tags, Guid EntryId))state;
 
         Debug.Assert(tags != null);
         Debug.Assert(tags.Length > 0);
@@ -149,7 +149,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (_taggedEntries.TryGetValue(tag, out var tagged))
                 {
-                    tagged.Remove((key: (string)key, entryId));
+                    tagged.Remove((Key: (string)key, entryId));
 
                     // Remove the collection if there is no more keys in it
                     if (tagged.Count == 0)
