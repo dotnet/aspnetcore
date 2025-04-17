@@ -39,6 +39,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         var isReExecuted = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
         if (isErrorHandler)
         {
@@ -90,7 +91,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
 
-        int originalStatusCode = context.Response.StatusCode;
         bool isErrorHandlerOrReExecuted = isErrorHandler || isReExecuted;
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
@@ -102,13 +102,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             ParameterView.Empty,
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
-        bool isReExecutionRequested = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
-        bool avoidStartingResponse = !isReExecuted && isReExecutionRequested;
+        bool avoidStartingResponse = hasStatusCodePage && !isReExecuted && context.Response.StatusCode == StatusCodes.Status404NotFound;
         if (avoidStartingResponse)
         {
-            // re-execution feature was set during rendering,
-            // we should finish early to avoid writing to the response
-            // and let the re-execution middleware take care of it
+            // the request is going to be re-executed, we should avoid writing to the response
             return;
         }
 
